@@ -2,11 +2,14 @@
 
 - **Date:** 2026-10-31. **Branch:** `t03-packaging-dryrun`. **Evidence commit:** `ffa639f` (logs
   captured against it; later commits on the branch add only docs and logs).
-- **Author:** Claude (Opus 5.5), BE lane under OD-2. **GPT review is pending** (resume). Nothing
-  here merges before that review passes.
+- **Author:** Claude (Opus 5.5), BE lane under OD-2. GPT review R1 (`docs/reviews/T03-r1.md`)
+  requested changes; they are addressed in **Fix r1** below, and a new GPT review is pending.
+  Nothing here merges before that review passes.
 - **Subject:** the T04b hello agent (`backend/src/Zilo.Agent`). It prints
-  `Zilo.Agent scaffold: scanning is not implemented.` and exits 0. `backend/**` was **not
-  modified**.
+  `Zilo.Agent scaffold: scanning is not implemented.` and exits 0. Up to fix r1, `backend/**` was
+  not modified. Fix r1 changes only RID publish metadata (`RuntimeIdentifiers` in
+  `Zilo.Agent.csproj`) and the regenerated `Zilo.Agent/packages.lock.json`, under the narrow scope
+  that both masters agreed in `docs/tasks/T03-fix-r1.md`.
 - **Host:** Ubuntu 24.04.5 LTS on WSL2 (kernel 6.18.54.1, x86_64). No binary ran natively on
   Windows (OD-6). Headless only (OD-4). No push, no merge.
 - **Logs (redacted):** [`docs/validation/logs/T03/`](../validation/logs/T03/).
@@ -26,10 +29,10 @@
 | test-sign verify (Linux) | **pass** | `test-sign.log`: throwaway root and code-signing leaf. osslsigncode 2.8 signs and verifies `Zilo.Agent.exe` and all 5 DLLs, plus a wixl-built MSI (`Signature verification: ok`). Three negative controls fail as expected: unsigned file, tampered file, unrelated root. GPG: `rpmsign` + `rpmkeys -K` OK (and not OK without the key). apt `InRelease` → `Packages` → `.deb` hash chain verifies with `gpgv`, and a tampered `InRelease` is a BAD signature. |
 | MSI build | **pending (WiX is Windows-only; host may run only Microsoft-signed tools)** | `msi-build-linux.log`: WiX 5.0.2 on Linux prints `WIX0000 … only supports Windows … behavior … undefined` and fails with WIX0389/WIX0027 path errors (exit 27). WiX is signed by the .NET Foundation, not Microsoft, so OD-6 forbids running it on the host. `Zilo.Agent.wxs` is authored and XML-well-formed only; **it has not been compiled anywhere.** CI job `windows-msi` builds it. |
 | MSI install smoke | **pending (blocked-by-host-SAC)** | Not attempted on the host (OD-6). CI job `windows-msi` runs `install-smoke.ps1` on the hosted runner. |
-| pkg build | **pending (no macOS host)** | Scripts, plists and the distribution file are authored. The plists parse (`plistlib`), XML is well-formed, `sh -n` passes, and the `osx-arm64` apphost publishes on Linux (`publish-osx.log`). CI job `macos-pkg` builds the universal pkg. |
+| pkg build | **fail at `c00f066` (hosted run 41240014938, job was a false green); fix r1 pending hosted evidence** | **Correction:** the earlier claim that `publish-osx.log` showed an `osx-arm64` apphost published on Linux was wrong. That log shows a 78192-byte file, the size of the linux-x64 ELF apphost reused from a shared `obj/` (review finding 1). On the hosted macOS runner, both "thin" inputs were arm64, `lipo` failed fatally, and no pkg was built. The job still reported success because `… \| tee` masked the exit status (finding 6); the 588-byte `macos-pkg` artifact contains only the log. See **Fix r1**. |
 | notarization | **pending (M6 / SP-4b)** | Needs owner Apple credentials. |
 | workflow lint | **pass** | `actionlint.log`: actionlint 1.7.12, 0 errors. The shellcheck/pyflakes rules were disabled (tools not installed). |
-| hosted CI | **pending** | No git remote (D-010). |
+| hosted CI, run 41240014938 @ `c00f066` | **failure overall** | Ubuntu 24.04 container `DEB SMOKE PASS` and Fedora 43 container `RPM SMOKE PASS` (real hosted containers). Linux build job green, but the exit status was masked by `tee`. Windows MSI build **failed** (`Resolve-Path` of `packaging/windows/artifacts/publish-win`, finding 2); install smoke skipped. macOS **false green** (finding 6). The run's logs are kept as evidence and the run was not rerun. |
 
 **Deviations of the local rootless-chroot smokes** (all confined to
 `packaging/linux/smoke/rootless-chroot.sh`; the CI container jobs have none):
@@ -42,6 +45,30 @@
 3. Transitive recommends are not installed, because dbus's `dpkg-statoverride` cannot be shimmed.
    Recommends resolution is shown with `apt-get --simulate`/`dnf --assumeno` (recommends on), then
    `sane-airscan` is installed explicitly.
+
+## Fix r1 (review T03-r1)
+
+Inputs: `docs/reviews/T03-r1.md` (`f30645e`, merged fast-forward; it adds no tests) and hosted run
+41240014938. Linux-only verification (OD-6). Logs are in
+[`docs/validation/logs/T03/fix-r1/`](../validation/logs/T03/fix-r1/). The earlier logs in
+`docs/validation/logs/T03/` stay as the `ffa639f` evidence.
+
+| # | Finding | Fix | Local evidence (Linux) |
+|---|---|---|---|
+| 1 (high) | Shared `obj/` reused the apphost across targets: duplicate arm64 inputs to `lipo`, and a linux ELF ended up in the osx output | `Zilo.Agent.csproj` declares `RuntimeIdentifiers=linux-x64;win-x64;osx-x64;osx-arm64`, and its lock file was regenerated, gaining the four `net10.0/<rid>` graphs (the other locks are unchanged). `publish.sh` now does real per-RID framework-dependent publishes (`-r <rid> --self-contained false`), each with its **own `--artifacts-path`** (isolated obj/bin, removed afterwards). Restore stays `--locked-mode`, once per target, without `-r`; a `-r` restore pushes the RID onto the RID-agnostic library references (NU1004, shown in the log). `-p:PlatformTarget=AnyCPU`: without it the RID build compiled `Zilo.Agent.dll` as arm64-only (PE machine 0xAA64), which would break the x64 slice of the universal app. The script asserts the apphost's format and architecture from its header bytes, that every DLL is AnyCPU, that the deps.json runtime target matches the RID, and that both osx managed payloads are byte-identical. On macOS it then asserts that `lipo -archs` lists both x86_64 and arm64. | `publish-{linux,win,osx}.log`, run in the review's contamination order (linux, win, then osx): ELF x86-64, PE32+ x86-64, Mach-O arm64 (`bad7f686…`), Mach-O x86_64 (`ef5b63e9…`). `rid-locked-restore.log`: locked restore of the solution and per RID, assets target present for each RID, publish 0 errors, `-r` negative control (5× NU1004), agent runs. `negative-controls.log`: wrong-architecture assertions exit 1. Backend tests: 6/6 pass with locked restore. |
+| 2 (high) | `build-msi.ps1` resolved `-PublishDir` after `Push-Location` | `-PublishDir`/`-Out` are made absolute against the caller's directory **before** changing location; the `.wxs` is taken from the script's own directory. The script requires `Zilo.Agent.exe` in the publish dir and a non-empty MSI after WiX. The workflow passes absolute paths, and a second step runs the exact root-relative invocation that failed. | Not executable on this host (WiX/PowerShell, OD-6); the hosted Windows job is the evidence. |
+| 3 (medium) | Uninstall deleted `HKCU\Software\Zilo` (the vendor namespace) | `RemoveRegistryKey Software\Zilo` dropped. The marker is now `RegistryKey Software\Zilo\Agent ForceDeleteOnUninstall="yes"`: the package deletes only its own exact key. The smoke creates a pre-existing sibling `HKCU\Software\Zilo\SmokeSiblingSentinel`, then asserts that `…\Zilo\Agent` is gone after uninstall and that the sentinel survived. | XML well-formed; hosted Windows job. |
+| 4 (medium) | `rpm -V … && echo` masked verification failures | `rpm -V zilo-agent \|\| fail`, plus an in-smoke negative control: chmod a payload DLL, require `rpm -V` to fail, restore the mode, and require a clean result again. Both smokes are now bash with `set -euo pipefail` (the workflow and the rootless wrapper invoke `bash`). | `rpm-smoke-rootless.log`: `rpm -V: clean`, then the negative control detects the changed mode, then `RPM SMOKE PASS`. `deb-smoke-rootless.log`: `DEB SMOKE PASS`. |
+| 5 (medium) | `osslsigncode` was unpinned in CI | The workflow downloads `osslsigncode_2.8-2_amd64.deb` from the Ubuntu pool over https, checks SHA-256 `1aee7be6…3f632b0` (the same build logged locally), installs that file, and asserts `dpkg-query` version `2.8-2`. wixl, rpm and desktop-file-utils remain unpinned dry-run inspection tools (disclosed). | Pool file downloaded locally; its hash matches `toolchain.log`. |
+| 6 (high) | `… \| tee` gave false greens and hid missing artifacts | Workflow-level `defaults.run.shell: bash` (GitHub runs it as `bash -eo pipefail`), plus `set -euo pipefail` in every run block. Explicit artifact assertions follow each step: deb/rpm exist, `Zilo.Agent.exe` exists after publish, the MSI exists, and the universal pkg exists with `lipo -archs` showing both slices. The build scripts (`linux/build.sh`, `macos/build-pkg.sh`, `build-msi.ps1`) also assert their outputs. Uploads use `if-no-files-found: error` for Linux and Windows. A workflow step is a pipefail negative control. The Linux job also publishes osx after linux and win, as an in-CI cross-target isolation check. | `negative-controls.log`: `bash -e 'false \| tee'` exits 0 (masked), while `bash -eo pipefail` exits 1. actionlint 1.7.12: 0 findings. |
+
+WiX stays at **5.0.2 as a provisional dry-run tool**. No decision on WiX 6+ or its OSMF EULA is
+made or implied. The RID set is the dry-run packaging set only. It is not a decision on supported
+platforms, win-arm64 or self-contained production packaging. Those remain master/owner items.
+
+Still not established locally (OD-6): the MSI compile and install/uninstall, the macOS universal
+build and pkg, and any runtime behaviour on Windows or macOS. The hosted run on the fix-r1 SHA is
+the evidence for those.
 
 ## What was built
 
@@ -63,12 +90,11 @@ the mime cache, so the scripts don't call `update-desktop-database`.
 - **D-002:** every assembly stays a separate, replaceable file: no `PublishSingleFile`, no
   trimming. The scaffold carries no NAPS2 yet. The layout already keeps
   `Zilo.Drivers.Naps2.dll` separate, which is where NAPS2's LGPL DLLs will sit.
-- **Why not self-contained:** `dotnet publish -r <rid> --self-contained` fails locked restore with
-  `NU1004: The project's runtime identifiers have changed`. The committed lock files have no RIDs.
-  The fix (adding `RuntimeIdentifiers` and regenerating the lock files) changes `backend/**`,
-  which T03 may not do without approval. So the dry run publishes portable framework-dependent
-  output and sets only `DefaultAppHostRuntimeIdentifier`, which yields the `linux-x64`,
-  `win-x64` (PE32+) and `osx-arm64`/`osx-x64` apphosts. Locked restore stays enforced.
+- **RIDs (fix r1):** originally the dry run swapped only `DefaultAppHostRuntimeIdentifier` on a
+  portable publish. That reused the apphost across targets (finding 1). Fix r1 adds
+  `RuntimeIdentifiers` to `Zilo.Agent.csproj`, regenerates its lock file, and publishes per RID,
+  framework-dependent, with isolated obj/bin (see **Fix r1**). Locked restore stays enforced.
+  Self-contained publishing is still not done here.
 - **Linux: framework-dependent is a viable production option.** Ubuntu 24.04 ships
   `dotnet-runtime-10.0` 10.0.14 (noble-updates/security) and Fedora 43 ships 10.0.13. Both
   resolved in the smokes, and the distro patches the runtime. Caveat: older LTS releases
@@ -188,12 +214,13 @@ proves the tooling and the signing points, nothing more.
 
 ## Open items
 
-1. Approve the backend `RuntimeIdentifiers` and lock-file regeneration for self-contained
-   Windows/macOS builds (above).
+1. The dry-run RID set (`linux-x64;win-x64;osx-x64;osx-arm64`) is in place (fix r1). Still open:
+   the production RID set (for example win-arm64) and self-contained Windows/macOS packaging.
 2. WiX 5.0.2 (MS-RL) vs 6+/7 (OSMF EULA): owner/legal.
 3. Placeholders to replace before external release: maintainer, vendor and homepage
    (`zilo.invalid`), and the macOS bundle id / LaunchAgent label `dev.zilo.agent`.
-4. Container smokes, the MSI build and install smoke, and the pkg build run only once a hosted
-   remote exists (D-010). The workflow is ready (`.github/workflows/packaging-dryrun.yml`).
+4. Hosted CI (OD-7): run 41240014938 @ `c00f066` passed the deb/rpm container smokes, failed the
+   MSI build and false-greened macOS. The fix-r1 push triggers a new run, which is the evidence for
+   the MSI and pkg rows.
 5. T40 should decide between the Run key (used here) and a scheduled task. T41 replaces the
    LaunchAgent with `SMAppService`.

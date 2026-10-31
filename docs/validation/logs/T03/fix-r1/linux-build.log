@@ -1,0 +1,29 @@
+  Determining projects to restore...
+  Restored <repo>/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 70 ms).
+  Restored <repo>/backend/src/Zilo.Security/Zilo.Security.csproj (in 70 ms).
+  Restored <repo>/backend/src/Zilo.Core/Zilo.Core.csproj (in 63 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 70 ms).
+  Restored <repo>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 137 ms).
+  Zilo.Core -> <scratch>/out/publish-linux.work/linux-x64/bin/Zilo.Core/release/Zilo.Core.dll
+  Zilo.Security -> <scratch>/out/publish-linux.work/linux-x64/bin/Zilo.Security/release/Zilo.Security.dll
+  Zilo.Drivers.Naps2 -> <scratch>/out/publish-linux.work/linux-x64/bin/Zilo.Drivers.Naps2/release/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> <scratch>/out/publish-linux.work/linux-x64/bin/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> <scratch>/out/publish-linux.work/linux-x64/bin/Zilo.Agent/release_linux-x64/Zilo.Agent.dll
+  Zilo.Agent -> <scratch>/out/publish-linux/
+apphost ok: <scratch>/out/publish-linux/Zilo.Agent (elf-x64, sha256 0df1f9d1ad140f3cb563a6238b3c561902ce56fdebdef3a646f4d497c0ef65f8)
+total 112
+-rwxr-xr-x 1 user user 78192 Oct 31 17:52 Zilo.Agent
+-rw-r--r-- 1 user user  2087 Oct 31 17:52 Zilo.Agent.deps.json
+-rw-r--r-- 1 user user  4608 Oct 31 17:52 Zilo.Agent.dll
+-rw-r--r-- 1 user user   330 Oct 31 17:52 Zilo.Agent.runtimeconfig.json
+-rw-r--r-- 1 user user  3584 Oct 31 17:52 Zilo.Core.dll
+-rw-r--r-- 1 user user  3584 Oct 31 17:52 Zilo.Drivers.Naps2.dll
+-rw-r--r-- 1 user user  3584 Oct 31 17:52 Zilo.Drivers.Virtual.dll
+-rw-r--r-- 1 user user  3584 Oct 31 17:52 Zilo.Security.dll
+GitVersion:    2.48.0
+using deb packager...
+created package: <scratch>/out/zilo-agent_0.0.1-1_amd64.deb
+using rpm packager...
+created package: <scratch>/out/zilo-agent-0.0.1-1.x86_64.rpm
+-rw-r--r-- 1 user user 44284 Oct 31 17:52 <scratch>/out/zilo-agent-0.0.1-1.x86_64.rpm
+-rw-r--r-- 1 user user 40128 Oct 31 17:52 <scratch>/out/zilo-agent_0.0.1-1_amd64.deb

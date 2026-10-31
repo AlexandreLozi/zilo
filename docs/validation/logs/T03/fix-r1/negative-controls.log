@@ -1,0 +1,10 @@
+--- pipefail control (review finding 6)
+bash -e:             'false | tee' exit 0  (masked)
+bash -eo pipefail:   'false | tee' exit 1  (propagated)
+--- apphost assertion negative controls (publish.sh functions)
+assert_apphost pub/osx/Zilo.Agent as macho-x64: exit 1
+assert_apphost pub/osx/Zilo.Agent as macho-arm64: exit 0
+assert_apphost pub/linux/Zilo.Agent as macho-arm64: exit 1
+assert_apphost pub/win/Zilo.Agent.exe as elf-x64: exit 1
+assert_apphost pub/win/Zilo.Agent.dll as pe-x64: exit 1
+pre-fix RID-built Zilo.Agent.dll PE machine bytes: 64aa (0xAA64 = arm64-only, rejected by the AnyCPU check)

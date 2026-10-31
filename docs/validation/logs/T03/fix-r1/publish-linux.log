@@ -1,0 +1,22 @@
+  Determining projects to restore...
+  Restored <repo>/backend/src/Zilo.Core/Zilo.Core.csproj (in 58 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 65 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 65 ms).
+  Restored <repo>/backend/src/Zilo.Security/Zilo.Security.csproj (in 65 ms).
+  Restored <repo>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 122 ms).
+  Zilo.Core -> <scratch>/pub/linux.work/linux-x64/bin/Zilo.Core/release/Zilo.Core.dll
+  Zilo.Drivers.Virtual -> <scratch>/pub/linux.work/linux-x64/bin/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.dll
+  Zilo.Drivers.Naps2 -> <scratch>/pub/linux.work/linux-x64/bin/Zilo.Drivers.Naps2/release/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> <scratch>/pub/linux.work/linux-x64/bin/Zilo.Security/release/Zilo.Security.dll
+  Zilo.Agent -> <scratch>/pub/linux.work/linux-x64/bin/Zilo.Agent/release_linux-x64/Zilo.Agent.dll
+  Zilo.Agent -> <scratch>/pub/linux/
+apphost ok: <scratch>/pub/linux/Zilo.Agent (elf-x64, sha256 0df1f9d1ad140f3cb563a6238b3c561902ce56fdebdef3a646f4d497c0ef65f8)
+total 112
+-rwxr-xr-x 1 user user 78192 Oct 31 17:54 Zilo.Agent
+-rw-r--r-- 1 user user  2087 Oct 31 17:54 Zilo.Agent.deps.json
+-rw-r--r-- 1 user user  4608 Oct 31 17:54 Zilo.Agent.dll
+-rw-r--r-- 1 user user   330 Oct 31 17:54 Zilo.Agent.runtimeconfig.json
+-rw-r--r-- 1 user user  3584 Oct 31 17:54 Zilo.Core.dll
+-rw-r--r-- 1 user user  3584 Oct 31 17:54 Zilo.Drivers.Naps2.dll
+-rw-r--r-- 1 user user  3584 Oct 31 17:54 Zilo.Drivers.Virtual.dll
+-rw-r--r-- 1 user user  3584 Oct 31 17:54 Zilo.Security.dll

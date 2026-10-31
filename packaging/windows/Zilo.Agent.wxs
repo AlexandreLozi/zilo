@@ -30,8 +30,12 @@
     <!-- Payload: separate, replaceable assemblies (D-002); no single-file bundle. -->
     <ComponentGroup Id="AgentPayload" Directory="INSTALLFOLDER">
       <Component Id="AgentFiles" Guid="3a0f3e2c-8d7b-4c1e-9f55-0b6f2d1c7a01">
-        <!-- Per-user components need an HKCU key path (ICE38). -->
-        <RegistryValue Root="HKCU" Key="Software\Zilo\Agent" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+        <!-- Per-user components need an HKCU key path (ICE38). The package owns exactly
+             HKCU\Software\Zilo\Agent and deletes only that key on uninstall; the shared vendor
+             key HKCU\Software\Zilo and any sibling under it are never touched (review T03-r1 #3). -->
+        <RegistryKey Root="HKCU" Key="Software\Zilo\Agent" ForceDeleteOnUninstall="yes">
+          <RegistryValue Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+        </RegistryKey>
         <File Id="AgentExe" Source="$(var.PublishDir)\Zilo.Agent.exe" />
         <File Source="$(var.PublishDir)\Zilo.Agent.dll" />
         <File Source="$(var.PublishDir)\Zilo.Agent.deps.json" />
@@ -42,7 +46,6 @@
         <File Source="$(var.PublishDir)\Zilo.Security.dll" />
         <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLFOLDER" On="uninstall" />
         <RemoveFolder Id="RemoveProgramsFolder" Directory="ProgramsFolder" On="uninstall" />
-        <RemoveRegistryKey Root="HKCU" Key="Software\Zilo" Action="removeOnUninstall" />
       </Component>
     </ComponentGroup>
 

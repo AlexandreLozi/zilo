@@ -1,0 +1,60 @@
+commit base: f30645ea1162fa4ea82f553304721822e2c59c6e + working tree (T03 fix r1)
+10.0.403
+--- Zilo.Agent.csproj RuntimeIdentifiers
+    <RuntimeIdentifiers>linux-x64;win-x64;osx-x64;osx-arm64</RuntimeIdentifiers>
+--- lock file RID graphs
+"net10.0"
+"net10.0/linux-x64"
+"net10.0/osx-arm64"
+"net10.0/osx-x64"
+"net10.0/win-x64"
+--- dotnet restore --locked-mode, solution
+  Restored <repo>/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 74 ms).
+  Restored <repo>/backend/src/Zilo.Core/Zilo.Core.csproj (in 70 ms).
+  Restored <repo>/backend/src/Zilo.Security/Zilo.Security.csproj (in 74 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 74 ms).
+  Restored <repo>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 137 ms).
+  Restored <repo>/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj (in 155 ms).
+  Restored <repo>/backend/tests/Zilo.Scaffold.Tests/Zilo.Scaffold.Tests.csproj (in 155 ms).
+exit 0
+--- linux-x64: locked restore (isolated artifacts path) + publish -r linux-x64 --no-restore
+  Restored <repo>/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 70 ms).
+  Restored <repo>/backend/src/Zilo.Core/Zilo.Core.csproj (in 63 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 70 ms).
+  Restored <repo>/backend/src/Zilo.Security/Zilo.Security.csproj (in 70 ms).
+  Restored <repo>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 133 ms).
+restore exit 0
+assets target net10.0/linux-x64 present
+publish errors: 0
+--- win-x64: locked restore (isolated artifacts path) + publish -r win-x64 --no-restore
+  Restored <repo>/backend/src/Zilo.Core/Zilo.Core.csproj (in 60 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 66 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 66 ms).
+  Restored <repo>/backend/src/Zilo.Security/Zilo.Security.csproj (in 66 ms).
+  Restored <repo>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 122 ms).
+restore exit 0
+assets target net10.0/win-x64 present
+publish errors: 0
+--- osx-x64: locked restore (isolated artifacts path) + publish -r osx-x64 --no-restore
+  Restored <repo>/backend/src/Zilo.Security/Zilo.Security.csproj (in 66 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 66 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 66 ms).
+  Restored <repo>/backend/src/Zilo.Core/Zilo.Core.csproj (in 59 ms).
+  Restored <repo>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 122 ms).
+restore exit 0
+assets target net10.0/osx-x64 present
+publish errors: 0
+--- osx-arm64: locked restore (isolated artifacts path) + publish -r osx-arm64 --no-restore
+  Restored <repo>/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 72 ms).
+  Restored <repo>/backend/src/Zilo.Core/Zilo.Core.csproj (in 65 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 72 ms).
+  Restored <repo>/backend/src/Zilo.Security/Zilo.Security.csproj (in 72 ms).
+  Restored <repo>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 139 ms).
+restore exit 0
+assets target net10.0/osx-arm64 present
+publish errors: 0
+--- negative control: -r on restore pushes the RID onto RID-agnostic references (why publish.sh restores without -r)
+NU1004 errors: 5
+--- linux apphost runs (local .NET 10 runtime)
+Zilo.Agent scaffold: scanning is not implemented.
+exit 0
