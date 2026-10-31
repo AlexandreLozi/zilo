@@ -1,22 +1,29 @@
-# T12-proto Linux acceptance  2026-10-31T19:04:46Z
-HEAD: 834613230442cb363154330049763d45e3ae4a63
+# T12-proto Linux acceptance (fix r1)  2026-10-31T20:48:31Z
+HEAD: 42ec1c685c0df73a0b3b85dcea0f0825e204625d
 OS: Ubuntu 24.04.5 LTS, kernel 6.18.54.1-microsoft-standard-WSL2, x86_64
-SDK archive: dotnet-sdk-10.0.403-linux-x64.tar.gz, sha512 b7b3d846...3dc7b9c5 verified (sha512sum -c) against releases.json
-env: DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 RestoreLockedMode=true, fresh task-private NUGET_PACKAGES and DOTNET_CLI_HOME
+SDK: task-private linux-x64 SDK at /tmp/opencode/zilo-t02-dotnet/sdk; version verified below (10.0.403), archive not re-hashed in this run; global.json rollForward=disable
+Red first (worktree, Debug, at review commit dd9a1eb before the fix): Failed 4, Passed 146, Total 150 (the 4 ReviewR1RegressionTests)
+env: DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1, locked restore, fresh task-private NUGET_PACKAGES and DOTNET_CLI_HOME, fresh clone at HEAD
 $ dotnet --version
 10.0.403
 $ dotnet restore spikes/virtual-pages --locked-mode
   Determining projects to restore...
-  Restored <clone>/spikes/virtual-pages/src/Zilo.VirtualPages/Zilo.VirtualPages.csproj (in 447 ms).
-  Restored <clone>/spikes/virtual-pages/tests/Zilo.VirtualPages.Tests/Zilo.VirtualPages.Tests.csproj (in 450 ms).
+  Restored <clone>/spikes/virtual-pages/src/Zilo.VirtualPages/Zilo.VirtualPages.csproj (in 4.26 sec).
+  Restored <clone>/spikes/virtual-pages/tests/Zilo.VirtualPages.Tests/Zilo.VirtualPages.Tests.csproj (in 4.26 sec).
 exit 0
-$ dotnet test spikes/virtual-pages --no-restore
+$ dotnet test spikes/virtual-pages -c Debug --no-restore
   Zilo.VirtualPages -> <clone>/spikes/virtual-pages/src/Zilo.VirtualPages/bin/Debug/net10.0/Zilo.VirtualPages.dll
   Zilo.VirtualPages.Tests -> <clone>/spikes/virtual-pages/tests/Zilo.VirtualPages.Tests/bin/Debug/net10.0/Zilo.VirtualPages.Tests.dll
 Test run for <clone>/spikes/virtual-pages/tests/Zilo.VirtualPages.Tests/bin/Debug/net10.0/Zilo.VirtualPages.Tests.dll (.NETCoreApp,Version=v10.0)
 A total of 1 test files matched the specified pattern.
-
-Passed!  - Failed:     0, Passed:   146, Skipped:     0, Total:   146, Duration: 10 s - Zilo.VirtualPages.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   183, Skipped:     0, Total:   183, Duration: 8 s - Zilo.VirtualPages.Tests.dll (net10.0)
+exit 0
+$ dotnet test spikes/virtual-pages -c Release --no-restore
+  Zilo.VirtualPages -> <clone>/spikes/virtual-pages/src/Zilo.VirtualPages/bin/Release/net10.0/Zilo.VirtualPages.dll
+  Zilo.VirtualPages.Tests -> <clone>/spikes/virtual-pages/tests/Zilo.VirtualPages.Tests/bin/Release/net10.0/Zilo.VirtualPages.Tests.dll
+Test run for <clone>/spikes/virtual-pages/tests/Zilo.VirtualPages.Tests/bin/Release/net10.0/Zilo.VirtualPages.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Passed!  - Failed:     0, Passed:   183, Skipped:     0, Total:   183, Duration: 2 s - Zilo.VirtualPages.Tests.dll (net10.0)
 exit 0
 $ git status --porcelain (tracked changes after run)
 (end)
