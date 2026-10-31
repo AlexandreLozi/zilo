@@ -1,0 +1,57 @@
+$ packaging/signing/test-sign-smoke.sh <scratch>/final/publish-win <scratch>/final/zilo-agent_0.0.1-1_amd64.deb <scratch>/final/zilo-agent-0.0.1-1.x86_64.rpm <scratch>/final/sign
+
+=== tool versions
+OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+osslsigncode 2.8, using:
+0.103
+gpg (GnuPG) 2.4.4
+RPM version 4.18.2
+
+=== throwaway Authenticode PKI (self-signed root + code-signing leaf)
+subject=CN = Zilo THROWAWAY Test Code Signing
+issuer=CN = Zilo THROWAWAY Test Root
+X509v3 Extended Key Usage: critical
+    Code Signing
+
+=== sign + verify every PE in the Windows publish (agent exe and all Zilo DLLs)
+Zilo.Agent.exe: Signature verification: ok
+Zilo.Agent.dll: Signature verification: ok
+Zilo.Core.dll: Signature verification: ok
+Zilo.Drivers.Naps2.dll: Signature verification: ok
+Zilo.Drivers.Virtual.dll: Signature verification: ok
+Zilo.Security.dll: Signature verification: ok
+
+=== negative controls
+unsigned Zilo.Agent.exe: verification fails (expected)
+tampered signed exe: verification fails (expected)
+signed exe against an unrelated root: verification fails (expected)
+
+=== MSI: build a signing-smoke MSI with wixl, sign it, verify
+smoke.msi: Signature verification: ok
+
+=== throwaway GPG key
+gpg: checking the trustdb
+gpg: marginals needed: 3  completes needed: 1  trust model: pgp
+gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+gpg: next trustdb check due at 2026-11-02
+key: BDF1AB7A0A3D48A9AF61BD33A9C24E58AFD55706
+
+=== rpm: rpmsign --addsign, verify with rpmkeys -K against a scratch keyring
+warning: Could not set GPG_TTY to stdin: Inappropriate ioctl for device
+<scratch>/final/sign/signed.rpm:
+    Header V4 EdDSA/SHA512 Signature, key ID afd55706: OK
+    Header SHA256 digest: OK
+    Header SHA1 digest: OK
+    Payload SHA256 digest: OK
+    MD5 digest: OK
+signed rpm without the key imported: not OK (expected)
+
+=== deb: signed apt repository metadata (InRelease), verify with gpgv
+gpgv: Signature made Sat Oct 31 16:13:27 2026 -03
+gpgv:                using EDDSA key BDF1AB7A0A3D48A9AF61BD33A9C24E58AFD55706
+gpgv: Good signature from "Zilo THROWAWAY packaging test key <test@zilo.invalid>"
+InRelease -> Packages -> .deb hash chain: ok
+tampered InRelease: BAD signature (expected)
+
+TEST-SIGN SMOKE PASS (throwaway keys; does NOT satisfy SAC / D-011)
+exit=0

@@ -1,0 +1,17 @@
+$ bash -c cd <scratch>/final && sha256sum *.deb *.rpm sign/smoke-signed.msi sign/signed-win/*
+edc3374d8aaf82877db7c3207eda20bbcad876ad0fe784ed88ed7bcb09083de0  zilo-agent_0.0.1-1_amd64.deb
+4ac62582d04ad5fa3f76708b4fd22db7d233559ea8d48f19c18b7e287df6faa6  zilo-agent-0.0.1-1.x86_64.rpm
+8ab1d0354dba446d4db1cc28b86aae627f3eee676338b24c460e4f319a7a0044  sign/smoke-signed.msi
+ea090bcfee29ef03a3d21826d43f6b283e78a505ab28b1524b2ac1bb50e82d37  sign/signed-win/Zilo.Agent.dll
+4aa4db7b3c3eeed67088844c7e55c175e1608016c13f1e58a12f878120e10b92  sign/signed-win/Zilo.Agent.dll.verify.txt
+b1756505045d75b8fa1bb87d7e4c268c1db8ff1668cd24969135f687509a2d57  sign/signed-win/Zilo.Agent.exe
+c47a358e0e2c2517ed80daa76ff66bd2c696720410fac1250fd67b88cb86c715  sign/signed-win/Zilo.Agent.exe.verify.txt
+0f62726ef4842530d78cb3cc3de60c3c9588f7d64862325edfdc99182d82723b  sign/signed-win/Zilo.Core.dll
+c62ccde3e88755315c91b1108e19fcecf50f213dfe7ed42e8fc03b334f17078f  sign/signed-win/Zilo.Core.dll.verify.txt
+91adddebf3409c0379c70e866bc1d0e954c6736838070028d7f035c9e5e2cac2  sign/signed-win/Zilo.Drivers.Naps2.dll
+de36cf9f56942d18c7fcbea49b1ad68908c4606d912c6a5b87f04baae4bbe99e  sign/signed-win/Zilo.Drivers.Naps2.dll.verify.txt
+861c64d74bb53c42b881983e8a04198bbb908f57a7a8e1666711903badb493ce  sign/signed-win/Zilo.Drivers.Virtual.dll
+5ffabc4ed008aa2ef7f49ca5c3561bf5b00b6a26e08395746823bc9c9d8aa9c9  sign/signed-win/Zilo.Drivers.Virtual.dll.verify.txt
+058bc0c7c72385a766265bb8f0aa5f6cacd109731b886ebd44aed1352f8f8cd1  sign/signed-win/Zilo.Security.dll
+0ff2909073cd2a70f29b992af959075c281aac8eb374df2992455d72f3db7af3  sign/signed-win/Zilo.Security.dll.verify.txt
+exit=0

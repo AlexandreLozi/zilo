@@ -1,0 +1,30 @@
+$ packaging/publish.sh osx <scratch>/final/publish-osx
+  Determining projects to restore...
+  Restored <worktree>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 136 ms).
+  4 of 5 projects are up-to-date for restore.
+  Zilo.Core -> <worktree>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> <worktree>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> <worktree>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Security -> <worktree>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Agent -> <worktree>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent -> <scratch>/final/publish-osx/
+  Determining projects to restore...
+  Restored <worktree>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 133 ms).
+  4 of 5 projects are up-to-date for restore.
+  Zilo.Core -> <worktree>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> <worktree>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> <worktree>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Security -> <worktree>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Agent -> <worktree>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent -> <scratch>/final/publish-osx.x64/
+lipo not available: osx apphost left arm64-only (build the pkg on macOS)
+total 112
+-rwxr-xr-x 1 <user> <user> 78192 Oct 31 16:12 Zilo.Agent
+-rw-r--r-- 1 <user> <user>  2030 Oct 31 16:13 Zilo.Agent.deps.json
+-rw-r--r-- 1 <user> <user>  4608 Oct 31 16:12 Zilo.Agent.dll
+-rw-r--r-- 1 <user> <user>   330 Oct 31 16:13 Zilo.Agent.runtimeconfig.json
+-rw-r--r-- 1 <user> <user>  3584 Oct 31 16:12 Zilo.Core.dll
+-rw-r--r-- 1 <user> <user>  3584 Oct 31 16:12 Zilo.Drivers.Naps2.dll
+-rw-r--r-- 1 <user> <user>  3584 Oct 31 16:12 Zilo.Drivers.Virtual.dll
+-rw-r--r-- 1 <user> <user>  3584 Oct 31 16:12 Zilo.Security.dll
+exit=0
