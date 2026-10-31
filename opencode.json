@@ -13,7 +13,7 @@
       "models": {
         "gpt-6.1-sol": {
           "options": {
-            "reasoningEffort": "high"
+            "reasoningEffort": "medium"
           }
         }
       }
@@ -22,11 +22,11 @@
   "agent": {
     "orchestrator": {
       "model": "openai/gpt-6.1-sol",
-      "variant": "high"
+      "variant": "medium"
     },
     "build": {
       "model": "openai/gpt-6.1-sol",
-      "variant": "high"
+      "variant": "medium"
     }
   }
 }
