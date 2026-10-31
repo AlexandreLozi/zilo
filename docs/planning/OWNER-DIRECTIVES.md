@@ -91,6 +91,60 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
   - Cancel superseded runs (`concurrency: cancel-in-progress` is welcome).
 - Secrets: none in the repo, ever. Signing test keys are generated during CI.
 
+## OD-8 Safari required; front-end framework (2026-10-31 ~17:55)
+- **Safari on macOS is required for v1.** The T25 Safari path, S2 bridge or better, is
+  release-blocking. "Safari unsupported" can no longer be the shipped outcome; it is only an
+  interim test state.
+- **Framework:** the owner delegated this choice; React with TSX is the owner's default.
+  Resolution:
+  - The SDK core stays framework-agnostic TypeScript.
+  - The UI stays framework-agnostic Web Components, so any app can use it (OD-9).
+  - **React (TSX) is the first-class wrapper and the reference integration.**
+  - The demo app is a **React + TS (Vite)** app.
+  - Angular and Vue wrappers are later, thin, optional extras.
+- Owner questions now live in `docs/planning/OWNER-QUESTIONS.md`.
+
+## OD-9 Product goal: open source, wide compatibility, fast and reliable
+- Zilo is meant to become an **open-source alternative to Dynamic Web TWAIN for anyone**, not only
+  the owner's app. Consequences:
+  - **Wide compatibility is a first-class requirement.** That means every driver route (TWAIN
+    x86/x64, WIA, ICA, SANE, eSCL/AirScan, WSD where feasible), the browser matrix including
+    Safari, Win/macOS/Linux on x64 and arm64, and both per-user and admin installs.
+  - **`@zilo/dwt-compat` covers the commonly used public DWT API**, prioritized by the owner's
+    answers (OWNER-QUESTIONS.md). It is clean-room: no Dynamsoft code, assets or docs are copied,
+    and API names come only from public documentation.
+  - **Performance budgets.** The masters add measurable budgets to PLAN.md, with tests that
+    enforce them. At minimum:
+    - agent cold start;
+    - detection time in the SDK;
+    - time to first page;
+    - ADF throughput (pages per minute, virtual and real);
+    - memory per page;
+    - export time for an N-page PDF.
+  - **Reliability.** Required:
+    - crash and kill recovery of the agent and the x86 worker;
+    - long soak runs (for example 500 pages through the virtual ADF);
+    - reconnect after sleep and resume;
+    - clean behaviour on unplug or paper jam;
+    - no leaked temp files.
+
+    Add these as acceptance criteria to the relevant tasks (T20, T23, T30–T33, T24).
+  - **Open-source hygiene before the first public release:**
+    - a licence choice (masters propose; owner decides);
+    - CONTRIBUTING, a security policy, DCO or CLA, a NOTICE file from T53;
+    - a **clean public history without the agent planning material**.
+
+    Development stays in the private repo for now.
+- **Agent files stay tracked in the private repo** (CLAUDE.md, .claude/settings.json,
+  opencode.json, .opencode/, docs/planning, docs/tasks, docs/reviews):
+  - Orca worktrees are created from committed `main`. If these files were gitignored, workers
+    would start without instructions, permissions, model pins or task specs.
+  - The public release is cut later as a clean export or filtered history. It excludes those paths
+    and keeps the product docs (api/, docs/design, docs/spikes findings, user and contributor
+    docs).
+  - Per the owner's pc-setup default, `CLAUDE.md` stays the single source of truth. No duplicate
+    AGENTS.md.
+
 ## OD-5 Reporting
 - The owner talks only to the liaison terminal. Masters send owner-facing questions to the liaison,
   which relays them.
