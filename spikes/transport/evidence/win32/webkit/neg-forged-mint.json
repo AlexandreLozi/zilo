@@ -1,0 +1,25 @@
+{
+  "scenario": "neg-forged-mint",
+  "outcome": "pass",
+  "expectation": "agent refuses a mint whose browser-set Origin is not the bridge origin (403)",
+  "observed": {
+    "grant": "not grantable: browserContext.grantPermissions: Unknown permission: local-network-access",
+    "forged": {
+      "ok": false,
+      "error": "TypeError",
+      "message": "Load failed",
+      "timedOut": false,
+      "ms": 3
+    },
+    "audit": []
+  },
+  "console": [
+    "warning: [blocked] The page at https://app.zilo.test:8443/ requested insecure content from http://127.0.0.1:47613/zilo/v1/bridge/session. This content was blocked and must\n",
+    "error: Not allowed to request resource"
+  ],
+  "project": "webkit",
+  "os": "win32",
+  "browserVersion": "27.2",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:22:23.465Z"
+}

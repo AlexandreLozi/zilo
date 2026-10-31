@@ -1,0 +1,95 @@
+{
+  "scenario": "s2-bridge",
+  "outcome": "pass",
+  "expectation": "handshake ok without any LNA permission; hello relayed; 1 MiB ArrayBuffer transferred; 5 SSE ticks relayed; oversize refused (too-large); arbitrary op refused",
+  "observed": {
+    "bridge": {
+      "ok": true,
+      "steps": [
+        {
+          "s": "opened",
+          "ms": 37,
+          "closedImmediately": false
+        },
+        {
+          "s": "ready",
+          "ms": 67
+        },
+        {
+          "s": "welcome",
+          "ms": 113,
+          "sessionId": "d6a9a0c79ba0b590"
+        },
+        {
+          "s": "op-hello",
+          "ms": 145,
+          "ok": true
+        },
+        {
+          "s": "op-blob",
+          "ms": 176,
+          "ok": true
+        },
+        {
+          "s": "op-blob-oversize",
+          "ms": 192,
+          "code": "too-large"
+        },
+        {
+          "s": "op-events",
+          "ms": 1243,
+          "ticks": 5
+        }
+      ],
+      "coopHeader": null,
+      "nonce": "0e57d4a7ed50d705fc6e679c6a82a70c",
+      "sessionId": "d6a9a0c79ba0b590",
+      "hello": {
+        "ok": true,
+        "product": "zilo-spike-agent"
+      },
+      "blob": {
+        "ok": true,
+        "bytes": 1048576,
+        "ms": 31
+      },
+      "oversize": {
+        "code": "too-large"
+      },
+      "events": {
+        "ticks": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "unknownOp": {
+        "code": "unknown-op"
+      }
+    },
+    "rejections": [],
+    "popupState": {
+      "url": "http://127.0.0.1:47613/bridge",
+      "status": "bound",
+      "rejections": [],
+      "hasOpener": true
+    },
+    "mintStatuses": [
+      [
+        201,
+        "bridge-session-minted",
+        "https://app.zilo.test:8443"
+      ]
+    ]
+  },
+  "console": [
+    "error: Unable to post message to http://app.zilo.test:8080. Recipient has origin https://app.zilo.test:8443.\n"
+  ],
+  "project": "webkit",
+  "os": "win32",
+  "browserVersion": "27.2",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:21:55.743Z"
+}

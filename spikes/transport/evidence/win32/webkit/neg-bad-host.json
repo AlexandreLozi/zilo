@@ -1,0 +1,23 @@
+{
+  "scenario": "neg-bad-host",
+  "outcome": "pass",
+  "expectation": "agent refuses Host rebind.zilo.test:<port> with 403 host-denied",
+  "observed": {
+    "status": 403,
+    "audit": [
+      [
+        "GET",
+        "/zilo/v1/hello",
+        "rebind.zilo.test:47613",
+        403,
+        "host-denied"
+      ]
+    ]
+  },
+  "console": [],
+  "project": "webkit",
+  "os": "win32",
+  "browserVersion": "27.2",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:22:22.600Z"
+}

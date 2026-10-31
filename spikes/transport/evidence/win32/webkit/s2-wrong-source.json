@@ -1,0 +1,22 @@
+{
+  "scenario": "s2-wrong-source",
+  "outcome": "pass",
+  "expectation": "forged ready (source = app window) rejected as wrong-source; real handshake still completes",
+  "observed": {
+    "rejections": [
+      {
+        "at": "ready",
+        "code": "wrong-source"
+      }
+    ],
+    "bridgeOk": true
+  },
+  "console": [
+    "error: Unable to post message to http://app.zilo.test:8080. Recipient has origin https://app.zilo.test:8443.\n"
+  ],
+  "project": "webkit",
+  "os": "win32",
+  "browserVersion": "27.2",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:22:08.416Z"
+}
