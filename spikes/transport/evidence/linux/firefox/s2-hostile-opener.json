@@ -1,0 +1,41 @@
+{
+  "scenario": "s2-hostile-opener",
+  "outcome": "pass",
+  "expectation": "no bridge-ready reaches the hostile opener; forced hello rejected (origin-not-allowed); no mint request",
+  "observed": {
+    "bridge": {
+      "ok": false,
+      "steps": [
+        {
+          "s": "opened",
+          "ms": 106,
+          "closedImmediately": false
+        },
+        {
+          "s": "ready-timeout",
+          "ms": 5107
+        }
+      ],
+      "coopHeader": null,
+      "nonce": "43b74d0083112ef477d7ca1e8adb80a7",
+      "code": "no-ready-then-timeout"
+    },
+    "popupState": {
+      "url": "http://127.0.0.1:47613/bridge",
+      "status": "rejected: origin-not-allowed",
+      "rejections": [
+        {
+          "code": "origin-not-allowed",
+          "detail": "https://evil.zilo.test:8443"
+        }
+      ],
+      "hasOpener": true
+    },
+    "minted": 0
+  },
+  "project": "firefox",
+  "os": "linux",
+  "browserVersion": "157.0",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:04:56.152Z"
+}

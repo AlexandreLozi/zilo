@@ -1,0 +1,25 @@
+{
+  "scenario": "neg-http-control",
+  "outcome": "pass",
+  "expectation": "LNA permission cannot be granted to an insecure context; loopback fetch blocked",
+  "observed": {
+    "grant": "not grantable: browserContext.grantPermissions: Protocol error (Browser.grantPermissions): Permission can't be granted in current context.",
+    "isSecureContext": false,
+    "permissions": {
+      "loopback-network": "denied",
+      "local-network": "denied"
+    },
+    "hello": {
+      "ok": false,
+      "error": "TypeError",
+      "message": "Failed to fetch",
+      "timedOut": false,
+      "ms": 12
+    }
+  },
+  "project": "chromium",
+  "os": "linux",
+  "browserVersion": "156.0.8078.4",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:04:41.534Z"
+}

@@ -1,0 +1,26 @@
+{
+  "scenario": "neg-forged-mint",
+  "outcome": "pass",
+  "expectation": "agent refuses a mint whose browser-set Origin is not the bridge origin (403)",
+  "observed": {
+    "grant": "granted",
+    "forged": {
+      "ok": false,
+      "status": 403,
+      "code": "mint-requires-bridge-origin",
+      "ms": 5
+    },
+    "audit": [
+      [
+        403,
+        "mint-requires-bridge-origin",
+        "https://app.zilo.test:8443"
+      ]
+    ]
+  },
+  "project": "firefox",
+  "os": "linux",
+  "browserVersion": "157.0",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:05:21.741Z"
+}

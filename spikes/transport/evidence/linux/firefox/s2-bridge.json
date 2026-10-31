@@ -1,0 +1,92 @@
+{
+  "scenario": "s2-bridge",
+  "outcome": "pass",
+  "expectation": "handshake ok without any LNA permission; hello relayed; 1 MiB ArrayBuffer transferred; 5 SSE ticks relayed; oversize refused (too-large); arbitrary op refused",
+  "observed": {
+    "bridge": {
+      "ok": true,
+      "steps": [
+        {
+          "s": "opened",
+          "ms": 110,
+          "closedImmediately": false
+        },
+        {
+          "s": "ready",
+          "ms": 154
+        },
+        {
+          "s": "welcome",
+          "ms": 158,
+          "sessionId": "d63876baf82d6591"
+        },
+        {
+          "s": "op-hello",
+          "ms": 162,
+          "ok": true
+        },
+        {
+          "s": "op-blob",
+          "ms": 171,
+          "ok": true
+        },
+        {
+          "s": "op-blob-oversize",
+          "ms": 171,
+          "code": "too-large"
+        },
+        {
+          "s": "op-events",
+          "ms": 1178,
+          "ticks": 5
+        }
+      ],
+      "coopHeader": null,
+      "nonce": "e02335511df82f83db7df6981a2a32e8",
+      "sessionId": "d63876baf82d6591",
+      "hello": {
+        "ok": true,
+        "product": "zilo-spike-agent"
+      },
+      "blob": {
+        "ok": true,
+        "bytes": 1048576,
+        "ms": 9
+      },
+      "oversize": {
+        "code": "too-large"
+      },
+      "events": {
+        "ticks": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "unknownOp": {
+        "code": "unknown-op"
+      }
+    },
+    "rejections": [],
+    "popupState": {
+      "url": "http://127.0.0.1:47613/bridge",
+      "status": "bound",
+      "rejections": [],
+      "hasOpener": true
+    },
+    "mintStatuses": [
+      [
+        201,
+        "bridge-session-minted",
+        "https://app.zilo.test:8443"
+      ]
+    ]
+  },
+  "project": "firefox",
+  "os": "linux",
+  "browserVersion": "157.0",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:04:45.101Z"
+}

@@ -1,0 +1,14 @@
+{
+  "scenario": "s2-closure",
+  "outcome": "pass",
+  "expectation": "app detects bridge window closure explicitly",
+  "observed": {
+    "detected": true,
+    "ms": 1249
+  },
+  "project": "chromium",
+  "os": "linux",
+  "browserVersion": "156.0.8078.4",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:04:08.353Z"
+}

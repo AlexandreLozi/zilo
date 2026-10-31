@@ -1,0 +1,27 @@
+{
+  "scenario": "perm-prompt",
+  "outcome": "pass",
+  "expectation": "request is held (prompt) or refused, never silently allowed",
+  "observed": {
+    "before": {
+      "loopback-network": "prompt",
+      "local-network": "prompt"
+    },
+    "hello": {
+      "ok": false,
+      "error": "AbortError",
+      "message": "The operation was aborted. ",
+      "timedOut": true,
+      "ms": 6162
+    },
+    "after": {
+      "loopback-network": "prompt",
+      "local-network": "prompt"
+    }
+  },
+  "project": "firefox",
+  "os": "linux",
+  "browserVersion": "157.0",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:05:16.651Z"
+}

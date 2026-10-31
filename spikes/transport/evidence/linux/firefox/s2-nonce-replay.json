@@ -1,0 +1,42 @@
+{
+  "scenario": "s2-nonce-replay",
+  "outcome": "pass",
+  "expectation": "reloading the bridge and replaying the nonce yields bridge-error:nonce-replayed (agent 409)",
+  "observed": {
+    "first": {
+      "ok": true
+    },
+    "second": {
+      "ok": false,
+      "steps": [
+        {
+          "s": "opened",
+          "ms": 2,
+          "closedImmediately": false
+        },
+        {
+          "s": "ready",
+          "ms": 19
+        }
+      ],
+      "coopHeader": null,
+      "nonce": "9990e8e9b25c08c8b3a0ce844e8c126a",
+      "code": "bridge-error:nonce-replayed"
+    },
+    "mintStatuses": [
+      [
+        201,
+        "bridge-session-minted"
+      ],
+      [
+        409,
+        "nonce-replayed"
+      ]
+    ]
+  },
+  "project": "firefox",
+  "os": "linux",
+  "browserVersion": "157.0",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:05:09.723Z"
+}

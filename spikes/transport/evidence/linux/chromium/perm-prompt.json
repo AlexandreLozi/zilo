@@ -1,0 +1,27 @@
+{
+  "scenario": "perm-prompt",
+  "outcome": "pass",
+  "expectation": "request is held (prompt) or refused, never silently allowed",
+  "observed": {
+    "before": {
+      "loopback-network": "prompt",
+      "local-network": "prompt"
+    },
+    "hello": {
+      "ok": false,
+      "error": "TypeError",
+      "message": "Failed to fetch",
+      "timedOut": false,
+      "ms": 13
+    },
+    "after": {
+      "loopback-network": "denied",
+      "local-network": "prompt"
+    }
+  },
+  "project": "chromium",
+  "os": "linux",
+  "browserVersion": "156.0.8078.4",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:04:32.534Z"
+}
