@@ -100,6 +100,7 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T04a | Web scaffold: pnpm workspace `packages/{sdk,ui,dwt-compat}`, `apps/demo` (Vite + TS), TS strict, Vitest, Playwright config, lint and format | FE | C | G | — | `package.json`, `pnpm-*.yaml`, `packages/**`, `apps/**`, `tsconfig*`, lint configs, `.github/workflows/ci-web.yml` | `pnpm -r build test lint` green in `ci-web` |
 | T04b | Backend scaffold: `backend/` .NET 10 solution (`Zilo.Agent`, `Zilo.Core`, `Zilo.Drivers.Naps2` (empty), `Zilo.Drivers.Virtual` (empty), `Zilo.Security`, test projects), production `global.json`, `Directory.Packages.props`, locked restore | BE | G | C | — | `backend/**`, `global.json`, `Directory.*.props`, `.github/workflows/ci-backend.yml` | `dotnet test` green in `ci-backend` on Windows, macOS and Linux runners, in locked mode |
 | T05 | UX and visual design spec: Scan dialog; Install, Permission-help (per browser), Update and Safari-state dialogs; tray consent prompt and revocation UI; tokens; copy per error code and detection state; a11y spec | FE | C | G | — | `docs/design/**`, `design/prototypes/**` (static HTML, no build integration) | Spec with annotated static prototypes; copy table covering every D-008 state and every contract error code (finalized after T10) |
+| T04b-V (Claude, OD-2) | running | t04b-v-claude on q/t04b@7284a3b | task_aece2a6c9536 / ctx_1c7e1d2ebf1e (claude medium) | n/a (evidence) | | |
 | T03 | **SP-4a** unsigned packaging dry runs (MSI or MSIX, `.pkg`, `.deb`/`.rpm`) of the T04b hello agent; signing smoke with **test keys only** | BE | G | C | T04b | `packaging/**`, `.github/workflows/packaging-dryrun.yml`, `docs/spikes/SP-4a.md` | Artifacts built on 3 OS runners; install/uninstall smoke on Linux and Windows runners; test-key signature verifies |
 | T06 | Reconcile T02's verified NAPS2 graph into production packages and locks; retires T04b's no-NAPS2 scaffold guard. **Blocked** until the joint ICA/worker/image-backend strategy is in force | BE | G | C | T02, T04b, joint strategy | `Directory.Packages.props`, locks, `backend/src/Zilo.Drivers.Naps2/*.csproj`, `.github/workflows/ci-backend.yml` (ownership transferred from merged T04b) | `ci-backend` locked restore green; licence gate wired into `ci-backend` |
 
@@ -163,7 +164,7 @@ Tracked in VALIDATION.md.
 |---|---|---|---|---|---|---|
 | T01 | authoring | t01-transport-spike | task_7ad475b61ca4 / ctx_3e1242a839cb (claude opus-5-5 xhigh) | | | |
 | T04a | in review r1 | t04a-web-scaffold @1842f4e | task_87c003f8c96a / ctx_af0edf2dc598 (retained) | task_cc19d0403fad / ctx_6f602d7fa893 (opencode GPT-6.1 Sol high, branch t04a-review-r1) | | |
-| T05 | authoring | t05-design-spec | task_d61d82f04b49 / ctx_dff3213d1716 (claude opus-5-5 high) | | | |
+| T05 | authored @d667952; GPT review queued for GPT resume (OD-1) | t05-design-spec | task_d61d82f04b49 / ctx_dff3213d1716 (retained) | | | |
 
 ## 4b. BE lane status (GPT edits)
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
