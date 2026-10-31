@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SP-4a dry-run MSI for the T04b hello agent. WiX Toolset 5.0.2 (MS-RL), see .config/dotnet-tools.json.
+  Per-user install (D-008): no elevation, files under %LOCALAPPDATA%\Programs\Zilo,
+  autostart via the HKCU Run key, zilo:// registered under HKCU\Software\Classes.
+  Every resource lives in components that Windows Installer removes on uninstall.
+
+  Build:  packaging/windows/build-msi.sh <publish-dir> <out.msi>   (or the CI job)
+  Signing: D-011 requires every PE in PublishDir (agent exe, every DLL) to be Authenticode-signed
+  BEFORE this build, and the MSI itself after it. The dry run is unsigned.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Zilo Agent"
+           Manufacturer="Zilo (placeholder)"
+           Version="$(var.ProductVersion)"
+           UpgradeCode="6f1c6a5e-2b0d-4f0e-9a7e-5d2c0b8e4a11"
+           Scope="perUser"
+           Compressed="yes"
+           InstallerVersion="500">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Zilo Agent is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="ProgramsFolder" Name="Programs">
+        <Directory Id="INSTALLFOLDER" Name="Zilo" />
+      </Directory>
+    </StandardDirectory>
+
+    <!-- Payload: separate, replaceable assemblies (D-002); no single-file bundle. -->
+    <ComponentGroup Id="AgentPayload" Directory="INSTALLFOLDER">
+      <Component Id="AgentFiles" Guid="3a0f3e2c-8d7b-4c1e-9f55-0b6f2d1c7a01">
+        <!-- Per-user components need an HKCU key path (ICE38). -->
+        <RegistryValue Root="HKCU" Key="Software\Zilo\Agent" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+        <File Id="AgentExe" Source="$(var.PublishDir)\Zilo.Agent.exe" />
+        <File Source="$(var.PublishDir)\Zilo.Agent.dll" />
+        <File Source="$(var.PublishDir)\Zilo.Agent.deps.json" />
+        <File Source="$(var.PublishDir)\Zilo.Agent.runtimeconfig.json" />
+        <File Source="$(var.PublishDir)\Zilo.Core.dll" />
+        <File Source="$(var.PublishDir)\Zilo.Drivers.Naps2.dll" />
+        <File Source="$(var.PublishDir)\Zilo.Drivers.Virtual.dll" />
+        <File Source="$(var.PublishDir)\Zilo.Security.dll" />
+        <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLFOLDER" On="uninstall" />
+        <RemoveFolder Id="RemoveProgramsFolder" Directory="ProgramsFolder" On="uninstall" />
+        <RemoveRegistryKey Root="HKCU" Key="Software\Zilo" Action="removeOnUninstall" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Autostart at logon (D-008: Run key or scheduled task; the Run key needs no elevation). -->
+    <ComponentGroup Id="AgentAutostart" Directory="INSTALLFOLDER">
+      <Component Id="RunAtLogon" Guid="9b4d2f61-5e3a-4a8c-b1d7-2c6e0f9a3b02">
+        <RegistryValue Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Run"
+                       Name="ZiloAgent" Type="string" Value="&quot;[INSTALLFOLDER]Zilo.Agent.exe&quot;"
+                       KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- zilo:// per-user protocol registration (convenience only; never a security boundary). -->
+    <ComponentGroup Id="AgentProtocol" Directory="INSTALLFOLDER">
+      <Component Id="ZiloProtocol" Guid="c2e8a4b7-1f6d-4e93-8a0c-7d5b3e1f9c03">
+        <RegistryKey Root="HKCU" Key="Software\Classes\zilo" ForceDeleteOnUninstall="yes">
+          <RegistryValue Type="string" Value="URL:Zilo Protocol" KeyPath="yes" />
+          <RegistryValue Name="URL Protocol" Type="string" Value="" />
+          <RegistryValue Key="DefaultIcon" Type="string" Value="&quot;[INSTALLFOLDER]Zilo.Agent.exe&quot;,0" />
+          <RegistryValue Key="shell\open\command" Type="string"
+                         Value="&quot;[INSTALLFOLDER]Zilo.Agent.exe&quot; &quot;%1&quot;" />
+        </RegistryKey>
+      </Component>
+    </ComponentGroup>
+
+    <Feature Id="Main" Title="Zilo Agent" Level="1">
+      <ComponentGroupRef Id="AgentPayload" />
+      <ComponentGroupRef Id="AgentAutostart" />
+      <ComponentGroupRef Id="AgentProtocol" />
+    </Feature>
+  </Package>
+</Wix>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Signing-smoke MSI ONLY (SP-4a step 2). Built on Linux with wixl (msitools, WiX v3 schema) so
+  that osslsigncode has a real MSI to test-sign and verify. It is NOT the product MSI: that is
+  packaging/windows/Zilo.Agent.wxs, built with the pinned WiX tool on Windows.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="Zilo Agent signing smoke" Manufacturer="Zilo (placeholder)"
+           Version="0.0.1" Language="1033" UpgradeCode="0d6a5b8e-7c41-4f2a-9b3e-1a2c3d4e5f60">
+    <Package InstallerVersion="500" Compressed="yes" InstallScope="perUser" />
+    <Media Id="1" Cabinet="smoke.cab" EmbedCab="yes" />
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="LocalAppDataFolder">
+        <Directory Id="INSTALLFOLDER" Name="ZiloSigningSmoke">
+          <Component Id="AgentExe" Guid="5e2f8c1a-3b7d-4e6f-a9c0-2d4b6f8a0c11">
+            <File Id="AgentExe" Source="$(var.PublishDir)/Zilo.Agent.exe" KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+    </Directory>
+    <Feature Id="Main" Level="1">
+      <ComponentRef Id="AgentExe" />
+    </Feature>
+  </Product>
+</Wix>
