@@ -1,0 +1,79 @@
+$ env RPM=rpm packaging/linux/inspect.sh <scratch>/final/zilo-agent_0.0.1-1_amd64.deb <scratch>/final/zilo-agent-0.0.1-1.x86_64.rpm <scratch>/final/inspect
+=== deb: control
+ new Debian package, version 2.0.
+ size 40104 bytes: control archive=1376 bytes.
+     487 bytes,    13 lines      control
+     683 bytes,    10 lines      md5sums
+     450 bytes,    10 lines   *  postinst             #!/bin/sh
+     737 bytes,    19 lines   *  prerm                #!/bin/sh
+ Package: zilo-agent
+ Version: 0.0.1-1
+ Section: utils
+ Priority: optional
+ Architecture: amd64
+ Maintainer: Zilo packaging (placeholder) <packaging@zilo.invalid>
+ Installed-Size: 97
+ Depends: dotnet-runtime-10.0, libsane1
+ Recommends: sane-airscan
+ Homepage: https://zilo.invalid/
+ Description: Zilo local scanning agent (SP-4a packaging dry run).
+  Per-user agent started by systemd --user; registers the zilo:// URL scheme.
+  This dry-run build is the T04b scaffold: it prints a notice and exits.
+=== deb: contents
+drwxr-xr-x root/root         0 2026-10-31 16:12 ./usr/
+drwxr-xr-x root/root         0 2026-10-31 16:12 ./usr/bin/
+l--------- root/root         0 2026-10-31 16:12 ./usr/bin/zilo-agent -> /usr/lib/zilo/Zilo.Agent
+drwxr-xr-x root/root         0 2026-10-31 16:12 ./usr/lib/
+drwxr-xr-x root/root         0 2026-10-31 16:12 ./usr/lib/systemd/
+drwxr-xr-x root/root         0 2026-10-31 16:12 ./usr/lib/systemd/user/
+-rw-r--r-- root/root       248 2026-10-31 15:58 ./usr/lib/systemd/user/zilo-agent.service
+drwxr-xr-x root/root         0 2026-10-31 16:12 ./usr/lib/zilo/
+-rwxr-xr-x root/root     78192 2026-10-31 16:12 ./usr/lib/zilo/Zilo.Agent
+-rw-r--r-- root/root      2030 2026-10-31 16:12 ./usr/lib/zilo/Zilo.Agent.deps.json
+-rw-r--r-- root/root      4608 2026-10-31 16:12 ./usr/lib/zilo/Zilo.Agent.dll
+-rw-r--r-- root/root       330 2026-10-31 16:12 ./usr/lib/zilo/Zilo.Agent.runtimeconfig.json
+-rw-r--r-- root/root      3584 2026-10-31 16:12 ./usr/lib/zilo/Zilo.Core.dll
+-rw-r--r-- root/root      3584 2026-10-31 16:12 ./usr/lib/zilo/Zilo.Drivers.Naps2.dll
+-rw-r--r-- root/root      3584 2026-10-31 16:12 ./usr/lib/zilo/Zilo.Drivers.Virtual.dll
+-rw-r--r-- root/root      3584 2026-10-31 16:12 ./usr/lib/zilo/Zilo.Security.dll
+drwxr-xr-x root/root         0 2026-10-31 16:12 ./usr/share/
+drwxr-xr-x root/root         0 2026-10-31 16:12 ./usr/share/applications/
+-rw-r--r-- root/root       205 2026-10-31 15:58 ./usr/share/applications/zilo-agent.desktop
+deb file list: as expected (11 files, assemblies separate, no single-file bundle)
+=== rpm: header
+Name: zilo-agent
+Version: 0.0.1-1
+Arch: x86_64
+Requires: dotnet-runtime-10.0
+Requires: sane-backends
+Requires: rpmlib(CompressedFileNames)
+Requires: rpmlib(FileDigests)
+Requires: rpmlib(PayloadFilesHavePrefix)
+Recommends: sane-airscan
+=== rpm: contents
+l--------- root/root /usr/bin/zilo-agent
+-rw-r--r-- root/root /usr/lib/systemd/user/zilo-agent.service
+drwxr-xr-x root/root /usr/lib/zilo
+-rwxr-xr-x root/root /usr/lib/zilo/Zilo.Agent
+-rw-r--r-- root/root /usr/lib/zilo/Zilo.Agent.deps.json
+-rw-r--r-- root/root /usr/lib/zilo/Zilo.Agent.dll
+-rw-r--r-- root/root /usr/lib/zilo/Zilo.Agent.runtimeconfig.json
+-rw-r--r-- root/root /usr/lib/zilo/Zilo.Core.dll
+-rw-r--r-- root/root /usr/lib/zilo/Zilo.Drivers.Naps2.dll
+-rw-r--r-- root/root /usr/lib/zilo/Zilo.Drivers.Virtual.dll
+-rw-r--r-- root/root /usr/lib/zilo/Zilo.Security.dll
+-rw-r--r-- root/root /usr/share/applications/zilo-agent.desktop
+rpm file list: as expected
+=== rpm: scriptlets
+PREIN:(none)
+POSTIN:#!/bin/sh
+PREUN:#!/bin/sh
+POSTUN:(none)
+=== no network in maintainer scripts
+postinst/prerm: no network commands
+=== unit file (host systemd-analyze, against the extracted payload)
+systemd 255 (255.4-1ubuntu8.18)
+systemd-analyze verify (payload unit, ExecStart re-pointed): exit 0
+desktop-file-validate: not on this host (runs in the smoke)
+INSPECT PASS
+exit=0
