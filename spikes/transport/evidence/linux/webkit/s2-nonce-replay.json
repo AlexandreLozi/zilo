@@ -1,0 +1,46 @@
+{
+  "scenario": "s2-nonce-replay",
+  "outcome": "pass",
+  "expectation": "reloading the bridge and replaying the nonce yields bridge-error:nonce-replayed (agent 409)",
+  "observed": {
+    "first": {
+      "ok": true
+    },
+    "second": {
+      "ok": false,
+      "steps": [
+        {
+          "s": "opened",
+          "ms": 2,
+          "closedImmediately": false
+        },
+        {
+          "s": "ready",
+          "ms": 10
+        }
+      ],
+      "coopHeader": null,
+      "nonce": "0b4de60c616a367e60b3ab7dfb28ddce",
+      "code": "bridge-error:nonce-replayed"
+    },
+    "mintStatuses": [
+      [
+        201,
+        "bridge-session-minted"
+      ],
+      [
+        409,
+        "nonce-replayed"
+      ]
+    ]
+  },
+  "console": [
+    "error: Unable to post message to http://app.zilo.test:8080. Recipient has origin https://app.zilo.test:8443.\n",
+    "error: Unable to post message to http://app.zilo.test:8080. Recipient has origin https://app.zilo.test:8443.\n"
+  ],
+  "project": "webkit",
+  "os": "linux",
+  "browserVersion": "27.2",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:16:30.563Z"
+}

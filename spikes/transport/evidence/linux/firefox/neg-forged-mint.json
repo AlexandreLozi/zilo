@@ -18,9 +18,10 @@
       ]
     ]
   },
+  "console": [],
   "project": "firefox",
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:05:21.741Z"
+  "recordedAt": "2026-10-31T16:16:02.936Z"
 }

@@ -1,0 +1,27 @@
+{
+  "scenario": "perm-prompt",
+  "outcome": "n/a",
+  "expectation": "WebKit exposes no LNA permission; see fetch rows for what it does with no prompt",
+  "observed": {
+    "before": {
+      "loopback-network": "prompt",
+      "local-network": "prompt"
+    },
+    "hello": {
+      "ok": false,
+      "error": "TypeError",
+      "message": "Load failed",
+      "timedOut": false,
+      "ms": 0
+    },
+    "after": {
+      "loopback-network": "prompt",
+      "local-network": "prompt"
+    }
+  },
+  "project": "webkit",
+  "os": "linux",
+  "browserVersion": "27.2",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:16:31.168Z"
+}

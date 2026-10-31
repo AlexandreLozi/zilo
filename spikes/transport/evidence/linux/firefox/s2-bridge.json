@@ -8,42 +8,42 @@
       "steps": [
         {
           "s": "opened",
-          "ms": 110,
+          "ms": 178,
           "closedImmediately": false
         },
         {
           "s": "ready",
-          "ms": 154
+          "ms": 228
         },
         {
           "s": "welcome",
-          "ms": 158,
-          "sessionId": "d63876baf82d6591"
+          "ms": 233,
+          "sessionId": "461ade95ac31baa6"
         },
         {
           "s": "op-hello",
-          "ms": 162,
+          "ms": 235,
           "ok": true
         },
         {
           "s": "op-blob",
-          "ms": 171,
+          "ms": 247,
           "ok": true
         },
         {
           "s": "op-blob-oversize",
-          "ms": 171,
+          "ms": 247,
           "code": "too-large"
         },
         {
           "s": "op-events",
-          "ms": 1178,
+          "ms": 1252,
           "ticks": 5
         }
       ],
       "coopHeader": null,
-      "nonce": "e02335511df82f83db7df6981a2a32e8",
-      "sessionId": "d63876baf82d6591",
+      "nonce": "d24e22f5fc011bb86b149b5e1f6d8490",
+      "sessionId": "461ade95ac31baa6",
       "hello": {
         "ok": true,
         "product": "zilo-spike-agent"
@@ -51,7 +51,7 @@
       "blob": {
         "ok": true,
         "bytes": 1048576,
-        "ms": 9
+        "ms": 12
       },
       "oversize": {
         "code": "too-large"
@@ -84,9 +84,10 @@
       ]
     ]
   },
+  "console": [],
   "project": "firefox",
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:04:45.101Z"
+  "recordedAt": "2026-10-31T16:15:26.100Z"
 }

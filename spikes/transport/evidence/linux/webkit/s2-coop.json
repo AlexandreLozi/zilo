@@ -1,0 +1,35 @@
+{
+  "scenario": "s2-coop",
+  "outcome": "pass",
+  "expectation": "app reports coop-severed (COOP header detected, opener severed); bridge shows no-opener; no capability minted",
+  "observed": {
+    "bridge": {
+      "ok": false,
+      "steps": [
+        {
+          "s": "opened",
+          "ms": 38,
+          "closedImmediately": false
+        }
+      ],
+      "coopHeader": "same-origin",
+      "nonce": "9bed4c2388a84ddeacfcf602ed2de874",
+      "code": "coop-severed",
+      "readyFail": "popup-closed",
+      "popupClosed": true
+    },
+    "popupState": {
+      "url": "http://127.0.0.1:47613/bridge",
+      "status": "error: no-opener",
+      "rejections": [],
+      "hasOpener": false
+    },
+    "minted": 0
+  },
+  "console": [],
+  "project": "webkit",
+  "os": "linux",
+  "browserVersion": "27.2",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:16:06.955Z"
+}

@@ -8,12 +8,12 @@
       "steps": [
         {
           "s": "opened",
-          "ms": 100,
+          "ms": 102,
           "closedImmediately": false
         }
       ],
       "coopHeader": "same-origin",
-      "nonce": "091b2bfc755e84080cd59b73e6e824b9",
+      "nonce": "86d9d176629287f39268840f9a10fa2c",
       "code": "coop-severed",
       "readyFail": "popup-closed",
       "popupClosed": true
@@ -26,9 +26,10 @@
     },
     "minted": 0
   },
+  "console": [],
   "project": "firefox",
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:04:45.686Z"
+  "recordedAt": "2026-10-31T16:15:26.665Z"
 }

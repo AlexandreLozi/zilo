@@ -9,14 +9,14 @@
       "error": "TypeError",
       "message": "NetworkError when attempting to fetch resource.",
       "timedOut": false,
-      "ms": 2
+      "ms": 3
     },
     "blob": {
       "ok": false,
       "error": "TypeError",
       "message": "NetworkError when attempting to fetch resource.",
       "timedOut": false,
-      "ms": 4
+      "ms": 3
     },
     "audit": [
       [
@@ -33,9 +33,14 @@
       ]
     ]
   },
+  "console": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://127.0.0.1:47613/zilo/v1/hello. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 403.\"]",
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://127.0.0.1:47613/zilo/v1/blob?size=1048576. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 403.\"]",
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://127.0.0.1:47613/zilo/v1/blob?size=1048576. (Reason: CORS request did not succeed). Status code: (null).\"]"
+  ],
   "project": "firefox",
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:05:20.195Z"
+  "recordedAt": "2026-10-31T16:16:01.239Z"
 }

@@ -24,17 +24,21 @@ test.describe('negative controls', () => {
     const hello = await run(page, 'hello-tas', 'hello-tas');
     const blob = await run(page, 'blob', 'blob');
     const seen = auditSince(mark).filter((e) => e.origin === EVIL_ORIGIN);
-    const strict = verified(browserName);
     const serverDenied = seen.length > 0 && seen.every((e) => e.decision === 'deny' && e.reason === 'origin-denied');
+    // WebKit blocks http://127.0.0.1 from any HTTPS page before sending, so the agent's own
+    // Origin check is not exercised there (stub-http.spec.ts covers it directly).
+    const browserBlocked = browserName === 'webkit' && seen.length === 0;
     await saveEvidence(info, page, browser, {
       scenario: 'neg-hostile-origin',
-      outcome: !hello.ok && !blob.ok && (serverDenied || (!strict && seen.length === 0)) ? 'pass' : 'fail',
-      expectation: 'agent answers 403 origin-denied without CORS headers; page cannot read anything',
+      outcome: !hello.ok && !blob.ok && (serverDenied || browserBlocked) ? 'pass' : 'fail',
+      expectation: browserName === 'webkit'
+        ? 'page cannot read anything (WebKit blocks before the request is sent)'
+        : 'agent answers 403 origin-denied without CORS headers; page cannot read anything',
       observed: { grant, hello, blob, audit: seen.map((e) => [e.method, e.path, e.status, e.reason]) },
     });
     expect(hello.ok).toBe(false);
     expect(blob.ok).toBe(false);
-    if (strict) expect(serverDenied).toBe(true);
+    if (verified(browserName)) expect(serverDenied || browserBlocked).toBe(true);
     for (const e of seen) expect(e.reason).toBe('origin-denied');
   });
 
@@ -73,6 +77,9 @@ test.describe('negative controls', () => {
     } else if (browserName === 'firefox') {
       expectation = 'Firefox 157 lets an insecure page reach loopback once the permission is granted (finding, not a requirement)';
       outcome = grant === 'granted' && hello.ok ? 'pass' : 'fail';
+    } else if (verified(browserName)) {
+      expectation = 'Playwright WebKit: HTTP page reaches loopback with no prompt (no LNA, no mixed content) (finding)';
+      outcome = hello.ok ? 'pass' : 'fail';
     }
     await saveEvidence(info, page, browser, { scenario: 'neg-http-control', outcome, expectation, observed });
     expect(env.isSecureContext).toBe(false);
@@ -85,6 +92,7 @@ test.describe('negative controls', () => {
       expect(grant).toBe('granted');
       expect(hello.ok).toBe(true);
     }
+    if (browserName === 'webkit' && verified(browserName)) expect(hello.ok).toBe(true);
   });
 
   test('forged bridge mint from the public page is refused', async ({ page, context, browser, browserName }, info) => {

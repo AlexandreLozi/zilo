@@ -17,33 +17,33 @@
         },
         {
           "s": "welcome",
-          "ms": 49,
-          "sessionId": "f25bdae43709811c"
+          "ms": 48,
+          "sessionId": "3f753e2d1be10114"
         },
         {
           "s": "op-hello",
-          "ms": 51,
+          "ms": 50,
           "ok": true
         },
         {
           "s": "op-blob",
-          "ms": 61,
+          "ms": 63,
           "ok": true
         },
         {
           "s": "op-blob-oversize",
-          "ms": 65,
+          "ms": 68,
           "code": "too-large"
         },
         {
           "s": "op-events",
-          "ms": 1069,
+          "ms": 1074,
           "ticks": 5
         }
       ],
       "coopHeader": null,
-      "nonce": "aa73d37c9bccac319c70227803114cab",
-      "sessionId": "f25bdae43709811c",
+      "nonce": "d27137d26003b8e8240331793ec40fd8",
+      "sessionId": "3f753e2d1be10114",
       "hello": {
         "ok": true,
         "product": "zilo-spike-agent"
@@ -51,7 +51,7 @@
       "blob": {
         "ok": true,
         "bytes": 1048576,
-        "ms": 10
+        "ms": 13
       },
       "oversize": {
         "code": "too-large"
@@ -84,9 +84,12 @@
       ]
     ]
   },
+  "console": [
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
   "project": "chromium",
   "os": "linux",
   "browserVersion": "156.0.8078.4",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:04:08.330Z"
+  "recordedAt": "2026-10-31T16:14:49.303Z"
 }

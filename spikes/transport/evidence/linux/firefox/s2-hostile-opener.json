@@ -8,16 +8,16 @@
       "steps": [
         {
           "s": "opened",
-          "ms": 106,
+          "ms": 98,
           "closedImmediately": false
         },
         {
           "s": "ready-timeout",
-          "ms": 5107
+          "ms": 5099
         }
       ],
       "coopHeader": null,
-      "nonce": "43b74d0083112ef477d7ca1e8adb80a7",
+      "nonce": "b44a1a9841ed8c91e2c6ee2d97f5e6f0",
       "code": "no-ready-then-timeout"
     },
     "popupState": {
@@ -33,9 +33,10 @@
     },
     "minted": 0
   },
+  "console": [],
   "project": "firefox",
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:04:56.152Z"
+  "recordedAt": "2026-10-31T16:15:37.083Z"
 }

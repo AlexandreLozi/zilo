@@ -4,11 +4,14 @@
   "expectation": "app detects bridge window closure explicitly",
   "observed": {
     "detected": true,
-    "ms": 1249
+    "ms": 1248
   },
+  "console": [
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
   "project": "chromium",
   "os": "linux",
   "browserVersion": "156.0.8078.4",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:04:08.353Z"
+  "recordedAt": "2026-10-31T16:14:49.325Z"
 }
