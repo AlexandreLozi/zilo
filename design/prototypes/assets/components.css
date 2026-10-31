@@ -1,0 +1,274 @@
+/*
+ * Zilo component styles for the static prototypes (T05). Only resolved --z-* tokens are used here.
+ * These are reference styles for T15 (UI foundation) and T22 (Scan dialog), not production CSS.
+ */
+
+.zilo {
+  font-family: var(--z-font-sans);
+  font-size: var(--z-text-md);
+  line-height: var(--z-leading-normal);
+  color: var(--z-text);
+  -webkit-font-smoothing: antialiased;
+}
+.zilo *,
+.zilo *::before,
+.zilo *::after { box-sizing: border-box; }
+.zilo :where(h1, h2, h3, h4, p, ul, ol, dl, dd, figure, fieldset) { margin: 0; padding: 0; }
+.zilo :where(ul, ol) { list-style: none; }
+.zilo :where(fieldset) { border: 0; min-width: 0; }
+.zilo :where(button, input, select, textarea) { font: inherit; color: inherit; }
+.zilo :where(a) { color: var(--z-accent); text-underline-offset: 2px; }
+.zilo :where(a:hover) { color: var(--z-accent-hover); }
+.zilo svg.z-icon { width: 1.125rem; height: 1.125rem; flex: none; fill: none; stroke: currentColor;
+  stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.zilo svg.z-icon--sm { width: 1rem; height: 1rem; }
+.zilo svg.z-icon--lg { width: 1.5rem; height: 1.5rem; }
+.zilo svg.z-icon--xl { width: 2.5rem; height: 2.5rem; stroke-width: 1.5; }
+
+.z-visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- Focus ---------- */
+.zilo :focus-visible {
+  outline: 2px solid var(--z-focus);
+  outline-offset: 2px;
+  border-radius: var(--z-radius-sm);
+}
+.zilo :focus:not(:focus-visible) { outline: none; }
+
+/* ---------- Buttons ---------- */
+.z-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--z-space-2);
+  min-height: var(--z-control-height); padding: 0 var(--z-space-4);
+  border: 1px solid var(--z-border-strong); border-radius: var(--z-radius-md);
+  background: var(--z-bg); color: var(--z-text);
+  font-weight: var(--z-weight-medium); line-height: 1; white-space: nowrap; cursor: pointer;
+  transition: background-color var(--z-duration-fast) var(--z-ease-standard),
+              border-color var(--z-duration-fast) var(--z-ease-standard);
+}
+.z-btn:hover { background: color-mix(in srgb, var(--z-text) 5%, var(--z-bg)); }
+.z-btn:active { background: color-mix(in srgb, var(--z-text) 10%, var(--z-bg)); }
+.z-btn--primary { background: var(--z-accent); border-color: var(--z-accent); color: var(--z-on-accent); }
+.z-btn--primary:hover { background: var(--z-accent-hover); border-color: var(--z-accent-hover); }
+.z-btn--primary:active { background: var(--z-accent-pressed); }
+.z-btn--ghost { border-color: transparent; background: transparent; }
+.z-btn--ghost:hover { background: var(--z-hover); }
+.z-btn--danger { color: var(--z-danger); }
+.z-btn--icon { width: var(--z-control-height); padding: 0; }
+.z-btn--sm { min-height: var(--z-control-height-sm); padding: 0 var(--z-space-2); font-size: var(--z-text-sm); }
+.z-btn--sm.z-btn--icon { width: var(--z-control-height-sm); }
+.z-btn[aria-disabled="true"],
+.z-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.z-btn[aria-busy="true"] { cursor: progress; }
+.z-btn--block { width: 100%; }
+
+/* ---------- Form controls ---------- */
+.z-field { display: grid; gap: var(--z-space-1); }
+.z-label, .z-legend {
+  font-size: var(--z-text-sm); font-weight: var(--z-weight-semibold); color: var(--z-text);
+}
+.z-legend { margin-bottom: var(--z-space-1); }
+.z-hint { font-size: var(--z-text-sm); color: var(--z-text-muted); }
+.z-select {
+  appearance: none; min-height: var(--z-control-height); width: 100%;
+  padding: 0 var(--z-space-8) 0 var(--z-space-3);
+  border: 1px solid var(--z-border-strong); border-radius: var(--z-radius-md);
+  background-color: var(--z-bg);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--z-text-muted) 50%),
+    linear-gradient(135deg, var(--z-text-muted) 50%, transparent 50%);
+  background-position: right 17px center, right 12px center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+.z-select:disabled { opacity: 0.55; }
+
+.z-segmented {
+  display: flex; padding: 2px; gap: 2px;
+  border: 1px solid var(--z-border-strong); border-radius: var(--z-radius-md);
+  background: var(--z-surface-sunken);
+}
+.z-segmented label { flex: 1; position: relative; }
+.z-segmented input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.z-segmented span {
+  display: flex; align-items: center; justify-content: center; gap: var(--z-space-1);
+  min-height: calc(var(--z-control-height) - 6px); padding: 0 var(--z-space-2);
+  border-radius: calc(var(--z-radius-md) - 2px); font-size: var(--z-text-sm);
+  font-weight: var(--z-weight-medium); color: var(--z-text-muted); text-align: center;
+}
+.z-segmented input:checked + span {
+  background: var(--z-bg); color: var(--z-text); box-shadow: var(--z-shadow-1);
+  outline: 1px solid var(--z-border-strong);
+}
+.z-segmented input:focus-visible + span { outline: 2px solid var(--z-focus); outline-offset: 1px; }
+.z-segmented input:disabled + span { opacity: 0.5; }
+
+.z-check { display: flex; align-items: flex-start; gap: var(--z-space-2); cursor: pointer; }
+.z-check input { width: 1rem; height: 1rem; margin: 0.15rem 0 0; accent-color: var(--z-accent); flex: none; }
+
+/* ---------- Badges ---------- */
+.z-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 6px; border-radius: var(--z-radius-sm);
+  border: 1px solid var(--z-border-strong);
+  font-family: var(--z-font-mono); font-size: var(--z-text-xs); font-weight: var(--z-weight-medium);
+  letter-spacing: 0.02em; color: var(--z-text-muted); background: var(--z-bg); line-height: 1.4;
+}
+.z-badge--virtual { border-style: dashed; color: var(--z-accent); border-color: var(--z-accent); }
+.z-badge--status-ok { color: var(--z-success); border-color: currentColor; }
+.z-badge--status-busy { color: var(--z-warning); border-color: currentColor; }
+
+/* ---------- Dialog shell ---------- */
+.z-backdrop {
+  position: fixed; inset: 0; background: var(--z-scrim); z-index: var(--z-z-dialog);
+  display: grid; place-items: center; padding: var(--z-space-4);
+}
+.z-dialog {
+  position: relative; display: flex; flex-direction: column;
+  width: min(100%, var(--z-dialog-width, 30rem)); max-height: min(100%, 46rem);
+  background: var(--z-bg); color: var(--z-text);
+  border: 1px solid var(--z-border); border-radius: var(--z-radius-lg); box-shadow: var(--z-shadow-3);
+  overflow: hidden;
+  animation: z-dialog-in var(--z-duration-base) var(--z-ease-enter);
+}
+.z-dialog--wide { --z-dialog-width: 64rem; height: min(100%, 44rem); }
+.z-dialog__header {
+  display: flex; align-items: center; gap: var(--z-space-3);
+  padding: var(--z-space-4) var(--z-space-4) var(--z-space-3) var(--z-space-6);
+  border-bottom: 1px solid var(--z-border);
+}
+.z-dialog__title { font-size: var(--z-text-xl); font-weight: var(--z-weight-semibold); line-height: var(--z-leading-tight); flex: 1; }
+.z-dialog__body { padding: var(--z-space-6); overflow: auto; flex: 1; min-height: 0; }
+.z-dialog__footer {
+  display: flex; align-items: center; gap: var(--z-space-2); flex-wrap: wrap;
+  padding: var(--z-space-3) var(--z-space-6) var(--z-space-4);
+  border-top: 1px solid var(--z-border); background: var(--z-bg);
+}
+.z-dialog__footer .z-spacer { flex: 1; }
+.z-dialog__lede { color: var(--z-text); margin-bottom: var(--z-space-4); }
+.z-dialog__icon {
+  display: grid; place-items: center; width: 3rem; height: 3rem; margin-bottom: var(--z-space-4);
+  border-radius: var(--z-radius-pill); background: var(--z-accent-subtle); color: var(--z-accent);
+}
+.z-dialog__icon--warning { background: var(--z-warning-subtle); color: var(--z-warning); }
+.z-dialog__icon--danger { background: var(--z-danger-subtle); color: var(--z-danger); }
+.z-dialog__icon--info { background: var(--z-info-subtle); color: var(--z-info); }
+.z-dialog__heading { font-size: var(--z-text-xl); font-weight: var(--z-weight-semibold); line-height: var(--z-leading-tight); margin-bottom: var(--z-space-2); }
+
+@keyframes z-dialog-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .z-dialog { animation-name: z-fade-in; }
+}
+@keyframes z-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- Banner (inline messages) ---------- */
+.z-banner {
+  display: grid; grid-template-columns: auto 1fr; gap: var(--z-space-1) var(--z-space-3);
+  padding: var(--z-space-3) var(--z-space-4);
+  border: 1px solid currentColor; border-left-width: 4px; border-radius: var(--z-radius-md);
+  color: var(--z-info); background: var(--z-info-subtle);
+}
+.z-banner > svg { grid-row: span 3; margin-top: 2px; }
+.z-banner__title { font-weight: var(--z-weight-semibold); color: var(--z-text); }
+.z-banner__body { color: var(--z-text); }
+.z-banner__actions { display: flex; flex-wrap: wrap; gap: var(--z-space-2); margin-top: var(--z-space-2); }
+.z-banner--danger { color: var(--z-danger); background: var(--z-danger-subtle); }
+.z-banner--warning { color: var(--z-warning); background: var(--z-warning-subtle); }
+.z-banner--success { color: var(--z-success); background: var(--z-success-subtle); }
+
+/* ---------- Progress ---------- */
+.z-progress {
+  position: relative; height: 6px; border-radius: var(--z-radius-pill);
+  background: color-mix(in srgb, var(--z-accent) 18%, var(--z-bg)); overflow: hidden;
+}
+.z-progress__bar {
+  position: absolute; inset: 0 auto 0 0; width: var(--value, 0%); background: var(--z-accent);
+  border-radius: inherit; transition: width var(--z-duration-base) var(--z-ease-standard);
+}
+.z-progress--indeterminate .z-progress__bar { width: 35%; animation: z-indeterminate 1.4s var(--z-ease-standard) infinite; }
+@keyframes z-indeterminate { from { left: -35%; } to { left: 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  .z-progress--indeterminate .z-progress__bar {
+    width: 100%; left: 0; animation: z-pulse 2s ease-in-out infinite;
+  }
+}
+@keyframes z-pulse { 50% { opacity: 0.45; } }
+
+.z-spinner {
+  width: 1rem; height: 1rem; flex: none; border-radius: 50%;
+  border: 2px solid color-mix(in srgb, currentColor 25%, transparent); border-top-color: currentColor;
+  animation: z-spin 0.8s linear infinite;
+}
+.z-spinner--lg { width: 2rem; height: 2rem; border-width: 3px; }
+@keyframes z-spin { to { transform: rotate(1turn); } }
+@media (prefers-reduced-motion: reduce) {
+  .z-spinner { animation: z-pulse 2s ease-in-out infinite; border-top-color: color-mix(in srgb, currentColor 25%, transparent); }
+}
+
+.z-skeleton {
+  border-radius: var(--z-radius-sm);
+  background: linear-gradient(90deg, var(--z-surface-sunken) 0%, color-mix(in srgb, var(--z-surface-sunken) 60%, var(--z-border)) 50%, var(--z-surface-sunken) 100%);
+  background-size: 200% 100%; animation: z-shimmer 1.6s linear infinite;
+}
+@keyframes z-shimmer { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .z-skeleton { animation: none; } }
+
+/* ---------- Disclosure, tabs ---------- */
+.z-disclosure { border-top: 1px solid var(--z-border); padding-top: var(--z-space-3); margin-top: var(--z-space-4); }
+.z-disclosure > summary {
+  cursor: pointer; font-weight: var(--z-weight-medium); color: var(--z-text);
+  list-style-position: outside; margin-left: 1rem; padding: var(--z-space-1) 0;
+}
+.z-disclosure[open] > summary { margin-bottom: var(--z-space-2); }
+
+.z-tabs { display: flex; gap: var(--z-space-1); border-bottom: 1px solid var(--z-border); margin-bottom: var(--z-space-4); }
+.z-tab {
+  appearance: none; border: 0; background: none; cursor: pointer;
+  padding: var(--z-space-2) var(--z-space-3); margin-bottom: -1px;
+  border-bottom: 2px solid transparent; color: var(--z-text-muted); font-weight: var(--z-weight-medium);
+}
+.z-tab[aria-selected="true"] { color: var(--z-text); border-bottom-color: var(--z-accent); }
+.z-tab:hover { color: var(--z-text); }
+
+.z-steps { counter-reset: step; display: grid; gap: var(--z-space-3); }
+.z-steps > li { counter-increment: step; display: grid; grid-template-columns: 1.5rem 1fr; gap: var(--z-space-2); }
+.z-steps > li::before {
+  content: counter(step); display: grid; place-items: center; width: 1.5rem; height: 1.5rem;
+  border-radius: 50%; background: var(--z-surface-sunken); border: 1px solid var(--z-border-strong);
+  font-size: var(--z-text-xs); font-weight: var(--z-weight-semibold);
+}
+.z-ui-term {
+  font-weight: var(--z-weight-semibold); white-space: nowrap;
+  padding: 0 4px; border-radius: var(--z-radius-sm); background: var(--z-surface-sunken);
+  border: 1px solid var(--z-border);
+}
+.z-kbd {
+  font-family: var(--z-font-mono); font-size: var(--z-text-xs); padding: 1px 5px;
+  border: 1px solid var(--z-border-strong); border-bottom-width: 2px; border-radius: var(--z-radius-sm);
+  background: var(--z-bg);
+}
+.z-status-line { display: flex; align-items: center; gap: var(--z-space-2); color: var(--z-text-muted); font-size: var(--z-text-sm); }
+.z-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--z-accent); flex: none; }
+.z-dot--live { animation: z-pulse 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .z-dot--live { animation: none; } }
+.z-muted { color: var(--z-text-muted); }
+.z-small { font-size: var(--z-text-sm); }
+.z-stack { display: grid; gap: var(--z-space-3); }
+.z-row { display: flex; align-items: center; gap: var(--z-space-2); flex-wrap: wrap; }
+
+/* ---------- Toast (undo) ---------- */
+.z-toast {
+  position: absolute; left: 50%; bottom: 5rem; transform: translateX(-50%);
+  display: flex; align-items: center; gap: var(--z-space-3);
+  padding: var(--z-space-2) var(--z-space-2) var(--z-space-2) var(--z-space-4);
+  border-radius: var(--z-radius-md); background: var(--z-text); color: var(--z-bg);
+  box-shadow: var(--z-shadow-2); font-size: var(--z-text-sm);
+}
+.z-toast .z-btn { color: var(--z-bg); border-color: transparent; background: transparent; text-decoration: underline; }
+.z-toast .z-btn:hover { background: color-mix(in srgb, var(--z-bg) 15%, transparent); }
+.z-toast .z-btn:focus-visible { outline-color: var(--z-bg); }
