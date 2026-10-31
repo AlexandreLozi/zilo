@@ -140,7 +140,7 @@
   const wbr = (s) => esc(s).replace(/\./g, ".<wbr>");
   const originText = (o) => o.scheme + o.sub + o.reg + o.port;
   function originBox(o, warn) {
-    return `<div class="origin ${warn ? "origin--warn" : ""}" aria-label="Website address: ${esc(originText(o))}" role="group">
+    return `<div class="origin ${warn ? "origin--warn" : ""}" aria-label="Website address: ${esc(originText(o))}" role="group" tabindex="0">
       <span class="origin__label" aria-hidden="true">Website</span>
       <span aria-hidden="true"><span class="origin__scheme">${esc(o.scheme)}</span><span class="origin__sub">${wbr(o.sub)}</span><span class="origin__reg">${wbr(o.reg)}</span><span class="origin__port">${esc(o.port)}</span></span>
     </div>`;

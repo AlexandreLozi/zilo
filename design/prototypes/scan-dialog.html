@@ -66,7 +66,7 @@
   }
   .pages-head h3 { font-size: var(--z-text-sm); font-weight: var(--z-weight-semibold); flex: 1; }
   .pages-head .z-segmented { min-width: 14rem; }
-  .pages-body { flex: 1; overflow: auto; padding: 0 var(--z-space-6) var(--z-space-6); display: grid; align-content: start; gap: var(--z-space-4); }
+  .pages-body { flex: 1; overflow: auto; padding: 0 var(--z-space-6) var(--z-space-6); display: grid; align-content: start; gap: var(--z-space-4); scroll-padding-bottom: 4.5rem; }
   .pages {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: var(--z-space-4);
   }
@@ -463,7 +463,7 @@
     renderFooter(v.state);
     renderToast(v.state);
     renderConfirm(v.state);
-    if (v.state === "error") Z.announce(C(v.code, { device: "Canon DR-C225 II", count: 2, format: "PDF", trayArea: "notification area" }).title, "assertive");
+    // Errors are announced by the banner's role="alert"; no extra live-region write (accessibility.md §4).
     if (v.state === "scanning") Z.announce(C("scan.page-received", { n: 3 }).title, "polite");
   }
 
@@ -532,10 +532,13 @@
   }
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && model.state !== "discard") {
-      const p = new URLSearchParams(location.search);
-      if (model.pages.length) { p.set("state", "discard"); history.replaceState(null, "", "?" + p); Z.rerender(); }
-    }
+    if (e.key !== "Escape" || model.state === "discard") return;
+    // Esc during a scan cancels it first (pages kept); with unsaved pages it asks before discarding.
+    const p = new URLSearchParams(location.search);
+    if (model.state === "scanning") p.set("state", "pages");
+    else if (model.pages.length) p.set("state", "discard");
+    else return;
+    history.replaceState(null, "", "?" + p); Z.rerender();
   });
 })();
 </script>
