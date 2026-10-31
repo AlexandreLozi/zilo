@@ -6,5 +6,27 @@
     "webfetch": "allow",
     "external_directory": "allow",
     "doom_loop": "allow"
+  },
+  "model": "openai/gpt-6.1-sol",
+  "provider": {
+    "openai": {
+      "models": {
+        "gpt-6.1-sol": {
+          "options": {
+            "reasoningEffort": "high"
+          }
+        }
+      }
+    }
+  },
+  "agent": {
+    "orchestrator": {
+      "model": "openai/gpt-6.1-sol",
+      "variant": "high"
+    },
+    "build": {
+      "model": "openai/gpt-6.1-sol",
+      "variant": "high"
+    }
   }
 }
