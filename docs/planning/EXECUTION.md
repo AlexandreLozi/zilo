@@ -1,141 +1,182 @@
 # Zilo execution strategy
 
-**Status:** DRAFT v1 by [Opus], 2026-10-31. Phase 2. It implements PLAN.md (v2), so it changes if
-PLAN or DECISIONS do. Both masters sign it off at the bottom.
+**Status:** DRAFT v2 by [Opus], 2026-10-31. Phase 2. Reconciled with GPT's EXECUTION v1 review, all
+seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 
 ## 1. Orca mechanics
 
 - **Two Runs, one inbox each.** Orca `check` consumes a Run's FIFO inbox, so two masters sharing one
   Run would steal each other's deliveries.
-  - The Opus master creates Run **`zilo-fe`**: front end, design, SDK, demo, E2E, and overall tracking.
-  - The GPT master creates Run **`zilo-be`**: agent, drivers, virtual scanner, packaging, security.
-  - Each master records its Run ID in `docs/planning/AGENTS.md`.
-- **Overall tracking is held by the Opus master**, who reads both Runs (`worker-list --run <id>`)
-  and keeps the status table in section 4 current. The GPT master reports back-end status changes by
-  terminal message, and edits section 4 rows itself.
-- **Worktrees:** one isolated Orca worktree per task, on branch `t<NN>-<slug>` based on `main`.
+  - The Opus master runs **`zilo-fe`**: front end, design, SDK, demo, E2E, plus overall tracking and
+    the merge queue.
+  - The GPT master runs **`zilo-be`**: agent, drivers, virtual scanner, packaging, security.
+  - Run IDs are recorded in `docs/planning/AGENTS.md`.
+- **Overall tracking:** the Opus master reads both Runs (`worker-list --run <id>`) and owns the merge
+  queue (§2.4).
+  - Each lane edits only its own status table (§4a FE, §4b BE). That keeps edits append-safe.
+  - Results go to VALIDATION.md as evidenced, failed or pending.
+- **Worktrees:** one isolated Orca worktree per dispatch, on branch `t<NN>-<slug>`. It is created
+  from the **latest committed `main` after the task's dependencies have merged**.
 - **Claude workers:**
   `worker-start --task <id> --worktree new-top-level --name t<NN>-<slug> --agent claude --model claude-opus-5-5 --effort high`.
-  Use effort `xhigh` only for tasks marked ★ (security- or contract-critical).
-- **GPT workers:** `--agent opencode` in a new worktree, **without `--model`**. Orca refuses an OpenCode
-  model override when creating a new worktree, and the committed `opencode.json` already pins
-  `openai/gpt-6.1-sol`, reasoning `high`. The GPT master checks `launch.effective` in each receipt.
-- **Task specs** follow the Orca contract (Target, Change, Constraints, Ownership, Observable
-  acceptance). Each spec cites the decision IDs it implements and links PLAN and CONTRACT sections.
-- **Escalation:** a worker that hits an architecture question sends `ask` to its own master. The
-  master answers alone if the question is inside an in-force decision; otherwise it goes to
-  DISCUSSION.md and both masters decide.
+  Use effort `xhigh` for tasks marked ★.
+- **GPT workers:** `--agent opencode` in a new worktree, without `--model`. Orca refuses an OpenCode
+  model override when creating a new worktree, and the committed `opencode.json` pins
+  `openai/gpt-6.1-sol`, reasoning `high`. The dispatching master still checks `launch.effective` in
+  every receipt. If the effective model is wrong, the dispatch is stopped and relaunched in an
+  existing worktree with an explicit `--model`.
+- **Every dispatch spec carries:**
+  - Target, Change, Constraints, Ownership and Observable acceptance (the Orca contract);
+  - the in-force decision IDs it implements, with links to the relevant PLAN and CONTRACT sections;
+  - an **allowed file set** (globs). Writes outside it are a review failure.
+- **Escalation:** workers `ask` their own master. The master answers alone if the question falls
+  within an in-force decision; otherwise it goes to DISCUSSION.md and both masters decide.
 
-## 2. Branches, review and integration
+## 2. Author, review, fix and merge cycle
 
-1. The **author** works on its task branch and commits often. It runs the task's tests, then sends
-   `worker_done`.
-2. The **lane master** — the master who dispatched the author — starts a **reviewer of the other
-   model family** in its own Run, pointed at the same branch. The reviewer may comment and add failing
-   tests but does not fix code. Pairing rule: Claude-authored work gets a GPT (opencode) reviewer, and
-   GPT-authored work gets a Claude reviewer. No exceptions, including docs and plans.
-3. **Fixes** go back to the author, reusing the author's terminal when it is still live. The review
-   repeats until the reviewer reports pass.
-4. **Merge:** the lane master rebases the branch on `main`, re-runs CI, and fast-forward merges only
-   when CI is green and review has passed. Each merge is recorded in VALIDATION.md (task, reviewer
-   model, CI run link).
-5. **Shared-file rule:**
-   - `api/openapi.yaml`, `api/CONTRACT.md` and `.github/workflows/*` change only through a task that
-     names them, with both masters' approval in the review record.
-   - `Directory.Packages.props` and the lock files belong to the GPT lane. `pnpm-lock.yaml` belongs to
-     the Opus lane.
-6. **Planning docs:** once both masters sign off, Phase 1 and Phase 2 docs are committed to `main`
-   directly, as the owner did for the brief, so every worktree inherits them. That is fine because
-   both masters reviewed them cross-model. Later edits to the planning docs go in through small
-   commits by the editing master.
+1. **Author** works on the task branch and commits often. It runs the observable acceptance and sends
+   `worker_done` with the outcome. The lane master validates the report.
+2. **Settlement decision**, made immediately and before the ack. The lane master either:
+   - **retains** the author terminal (`worker-retain`) with the next owner recorded as "fix dispatch
+     for T<NN> after review", or
+   - **releases** it (`worker-release`); a later fix gets a fresh author dispatch.
+
+   A settled worker is never left without a retain, release or reuse decision.
+3. **Review:** the lane master dispatches a **reviewer of the other model family** in its own Run, on
+   the same branch, as a new Task.
+   - The reviewer's allowed files are its review report (`docs/reviews/T<NN>-r<k>.md`) plus **new
+     failing test files only**. It commits those and sends `worker_done` before any author fix
+     starts, so there are never simultaneous writes.
+   - Pairing: Claude-authored work gets a GPT (opencode) reviewer; GPT-authored work gets a Claude
+     reviewer. No exceptions, including docs.
+   - The review spec is bounded: the diff, the stated acceptance, the in-force decisions it must
+     honour, a checklist (correctness, security, tests, scope), and a verdict of `pass` or `changes`
+     with numbered findings.
+4. **Fix:** a **new Dispatch** (new Task: "T<NN> fix r<k>") goes to the retained author terminal
+   (`worker-start --task <fix> --terminal <handle>`) or to a fresh author. Settled task and dispatch IDs
+   are never reused. The review → fix cycle repeats until the verdict is `pass`. After 3 rounds, both
+   masters are escalated.
+5. **Merge queue (serialized):** the Opus master owns the critical section on `main`. One merge at a
+   time, in queue order.
+   - Either lane enqueues a branch by sending its master's message to the Opus master. The message
+     carries the branch, head SHA, review report path with verdict `pass`, and CI run link.
+   - The Opus master rebases onto `main` and verifies the **resulting tree**: CI is green on the
+     rebased SHA. If the rebase needed conflict resolution that changed code, the changed hunks go
+     back for re-review by the same reviewer family.
+   - The Opus master then fast-forwards `main` and records the merge in VALIDATION.md (task, author
+     model, reviewer model, review report, CI link).
+   - **Merge slot:** the Opus master may grant the GPT master a bounded merge slot (one named branch,
+     announced by terminal message, released by message after the push). The same verification rules
+     apply.
+6. **Shared files:**
+   - `api/openapi.yaml` and `api/CONTRACT.md` change only through tasks that name them. Those tasks
+     need both masters' approval in the review record.
+   - Each CI workflow file has exactly one owning task: `ci-web.yml` (T04a), `ci-backend.yml` (T04b),
+     `spike-naps2.yml` (T02), `spike-transport.yml` (T01), `packaging-dryrun.yml` (T03).
+   - Production `global.json`, `Directory.Packages.props` and the NuGet lock files belong to T04b, and
+     afterwards to BE lane tasks only. `pnpm-lock.yaml` belongs to T04a, and afterwards to FE lane tasks
+     only.
+7. **Planning docs** are committed to `main` by the editing master in small commits. The Phase 1 docs
+   are already on `main` (b5526f4).
 
 ## 3. Task DAG
 
-Legend:
+**Legend:**
 - **Lane:** FE = Opus master, BE = GPT master.
-- **Author:** C = Claude worker (claude-opus-5-5), G = GPT worker (gpt-6.1-sol).
-- **Reviewer:** always the other model family.
-- ★ marks high-risk tasks (Claude effort `xhigh`; GPT reviewers are told to focus on security).
+- **Author / reviewer:** C = Claude worker, G = GPT worker. The reviewer is always the other family.
+- **Deps** means *merged on `main`*.
+- ★ marks high-risk tasks: Claude effort `xhigh`; GPT reviewers get a security-focused checklist.
+- **Files** lists the allowed write set.
 
-### Wave 0 — M0a feasibility + scaffolding (all parallel)
-| ID | Task | Lane | Author | Reviewer | Deps | Acceptance |
-|---|---|---|---|---|---|---|
-| T01 | **SP-1a** transport stub + browser harness: loopback HTTP stub with Host/Origin checks, HTTPS test page, Playwright runs in Chromium, Firefox and WebKit covering fetch with `targetAddressSpace`, fetch-stream SSE, permission states, and the S2 bridge handshake prototype; plus a real-Safari manual script | FE | C | G | — | Results matrix in `docs/spikes/SP-1a.md`, with evidence (logs and screenshots) per browser and the real-Safari rows marked pending |
-| T02 | **SP-2a** NAPS2.Sdk 1.6.0 on net10: locked restore per RID (win-x64, win-arm64, osx-arm64, osx-x64, linux-x64), package and native payload inventory, default-deny licence gate script, minimal device-list against an independent eSCL/SANE fixture (not T12); an empty physical list is not a failure | BE | G | C | — | `docs/spikes/SP-2a.md`; licence gate runs in CI and fails on a seeded bad package |
-| T03 | **SP-4a** unsigned packaging dry runs (MSI or MSIX, `.pkg`, `.deb`/`.rpm`) for a hello-world agent, in CI | BE | G | C | T04b | Artifacts built on 3 OS runners; install and uninstall smoke on Linux |
-| T04a | Web scaffold: pnpm workspace `packages/{sdk,ui,dwt-compat}`, `apps/demo` (Vite + TS), TS strict, Vitest, Playwright config, lint and format, CI web job | FE | C | G | — | `pnpm -r build test` green in CI |
-| T04b | Backend scaffold: `backend/` .NET 10 solution (`Zilo.Agent`, `Zilo.Core`, `Zilo.Drivers.Naps2`, `Zilo.Drivers.Virtual`, `Zilo.Security`, tests), `global.json`, central packages, locked restore, CI on 3 OSes | BE | G | C | — | `dotnet test` green on Windows, macOS and Linux CI |
-| T05 | UX + visual design spec: Scan dialog, Install, Permission-help (per browser), Update, Safari-unsupported state, tray consent prompt, revocation UI; tokens; error copy for each code; a11y spec | FE | C | G | — | `docs/design/` spec with annotated mockups (HTML prototypes in `apps/demo/design/`), copy table |
+### Wave 0 — five tasks start at once; T03 follows T04b
+| ID | Task | Lane | A | R | Deps | Files | Observable acceptance |
+|---|---|---|---|---|---|---|---|
+| T01 | **SP-1a** transport spike: loopback HTTP stub with Host/Origin checks, HTTPS test page served from a non-loopback test origin (never on localhost), Playwright in Chromium, Firefox and WebKit: fetch with `targetAddressSpace`, fetch-stream SSE, permission states, S2 handshake prototype; real-Safari manual script | FE | C | G | — | `spikes/transport/**`, `.github/workflows/spike-transport.yml`, `docs/spikes/SP-1a.md` | Matrix in `SP-1a.md` with logs and screenshots per browser; real-Safari rows marked pending |
+| T02 | **SP-2a** NAPS2 spike, isolated: own `spikes/naps2/` project, own `global.json` and locks there, NAPS2.Sdk 1.6.0 on net10 with locked restore per RID, package and native payload inventory, default-deny licence gate tool, device-list against an independent eSCL/SANE fixture (not T12; an empty physical list is not a failure) | BE | G | C | — | `spikes/naps2/**`, `tools/license-gate/**`, `.github/workflows/spike-naps2.yml`, `docs/spikes/SP-2a.md` | Inventory per RID in `SP-2a.md`; gate fails on a seeded disallowed package in CI and passes on the real graph |
+| T04a | Web scaffold: pnpm workspace `packages/{sdk,ui,dwt-compat}`, `apps/demo` (Vite + TS), TS strict, Vitest, Playwright config, lint and format | FE | C | G | — | `package.json`, `pnpm-*.yaml`, `packages/**`, `apps/**`, `tsconfig*`, lint configs, `.github/workflows/ci-web.yml` | `pnpm -r build test lint` green in `ci-web` |
+| T04b | Backend scaffold: `backend/` .NET 10 solution (`Zilo.Agent`, `Zilo.Core`, `Zilo.Drivers.Naps2` (empty), `Zilo.Drivers.Virtual` (empty), `Zilo.Security`, test projects), production `global.json`, `Directory.Packages.props`, locked restore | BE | G | C | — | `backend/**`, `global.json`, `Directory.*.props`, `.github/workflows/ci-backend.yml` | `dotnet test` green in `ci-backend` on Windows, macOS and Linux runners, in locked mode |
+| T05 | UX and visual design spec: Scan dialog; Install, Permission-help (per browser), Update and Safari-state dialogs; tray consent prompt and revocation UI; tokens; copy per error code and detection state; a11y spec | FE | C | G | — | `docs/design/**`, `design/prototypes/**` (static HTML, no build integration) | Spec with annotated static prototypes; copy table covering every D-008 state and every contract error code (finalized after T10) |
+| T03 | **SP-4a** unsigned packaging dry runs (MSI or MSIX, `.pkg`, `.deb`/`.rpm`) of the T04b hello agent; signing smoke with **test keys only** | BE | G | C | T04b | `packaging/**`, `.github/workflows/packaging-dryrun.yml`, `docs/spikes/SP-4a.md` | Artifacts built on 3 OS runners; install/uninstall smoke on Linux and Windows runners; test-key signature verifies |
+| T06 | Reconcile T02's verified NAPS2 graph into production packages and locks | BE | G | C | T02, T04b | `Directory.Packages.props`, locks, `backend/src/Zilo.Drivers.Naps2/*.csproj` | `ci-backend` locked restore green; licence gate wired into `ci-backend` |
 
 ### Wave 1 — M1 contract + skeletons
-| ID | Task | Lane | Author | Reviewer | Deps | Acceptance |
+| ID | Task | Lane | A | R | Deps | Observable acceptance |
 |---|---|---|---|---|---|---|
-| T10 ★ | Full contract `api/openapi.yaml` + `api/CONTRACT.md` (PLAN section 4) | BE | G | C | T01 (transport findings) | Both masters approve in the review record; schema lint passes; generated TS types compile |
-| T11 ★ | Agent skeleton: `hello`, `devices`, `caps`; Host and Origin checks; consent hook (headless stub); tokens (issue, expire, revoke); bounded resources | BE | G | C | T04b, T10 | Contract tests pass; security unit tests for Host, Origin and token |
-| T12 | Virtual driver (D-007 layer 1): deterministic pages with a QR metadata code, flatbed, ADF, duplex, failure variants; control endpoint compiled out of release | BE | G | C | T04b | Golden-image tests; failure-variant tests |
-| T13 | SDK core: discovery state machine (D-008 states), permission query, HTTP transport, typed errors, devices and caps, unknown-field tolerance | FE | C | G | T04a, T10 | Unit tests against a mock server generated from OpenAPI |
-| T14 | Demo app skeleton consuming the SDK; device list | FE | C | G | T04a, T13 | Lists "Zilo Virtual Scanner" against the T11+T12 agent on Linux CI (M1 exit) |
-| T15 | UI foundation: Web Components base, design tokens, dialog primitive (focus trap, ARIA), themes, React wrapper | FE | C | G | T04a, T05 | Storybook-style catalog in the demo; axe checks pass |
+| T10 ★ | Full contract `api/openapi.yaml` + `api/CONTRACT.md` (PLAN §4). Uses T01 findings only as a **reviewed handoff note** (`docs/spikes/SP-1a-interim.md`, reviewed by G), never an unmerged branch | BE | G | C | T04b, T01-interim note | Both masters approve in the review record; schema lint passes; TS types generated in a scratch dir compile |
+| T11 ★ | Agent skeleton: `hello`, `devices`, `caps`; Host/Origin checks; headless consent hook; tokens (issue, expire, revoke, scope); resource bounds | BE | G | C | T10, T06 | Contract tests for these endpoints; security unit tests for Host, Origin, token expiry and revocation |
+| T12 | Virtual driver (D-007 layer 1) against the T10 neutral model. A standalone page-generator prototype may start earlier under `spikes/` | BE | G | C | T10, T04b | Golden-image tests (decoded pixels, QR payload); failure-variant tests |
+| T13 | SDK core: D-008 detection state machine, permission query, HTTP transport, typed errors, devices/caps, unknown-field tolerance with redacted debug logs | FE | C | G | T04a, T10 | Unit tests against an OpenAPI-generated mock server |
+| T14 | Demo app device list, integrated with the real agent | FE | C | G | T13, T11, T12 | Linux CI job starts the agent and the demo lists "Zilo Virtual Scanner" over real HTTP (M1 exit) |
+| T15 | UI foundation: Web Components base, tokens, dialog primitive (focus trap, ARIA), themes, React wrapper | FE | C | G | T04a, T05 | Component catalog page; axe checks pass in Playwright |
 
 ### Wave 2 — M2 virtual end-to-end
-| ID | Task | Lane | Author | Reviewer | Deps | Acceptance |
+| ID | Task | Lane | A | R | Deps | Observable acceptance |
 |---|---|---|---|---|---|---|
-| T20 ★ | Agent jobs: state machine, SSE with `seq` and replay, pages, export (PDF, TIFF, JPEG, PNG) with retry, cancel, dispose, TTL, user-private temp | BE | G | C | T11, T12 | Contract tests; export golden tests |
-| T21 | SDK jobs, events (reconnect), pages, export, Blob/File outputs | FE | C | G | T13, T10 | Unit tests against the mock server, then against the real agent |
-| T22 | Scan dialog v1 (device list with driver badges, settings bound to caps, live thumbnails, rotate, reorder, delete, export) | FE | C | G | T15, T21, T05 | Component tests + a11y |
-| T23 | **SP-3** E2E: Playwright on Chromium, Firefox and WebKit; demo scans 3 pages duplex and exports a PDF; asserts order from the QR codes | FE | C | G | T20, T22, T14 | Green on Linux and Windows CI (M2 exit) |
-| T24 ★ | Security suite: hostile origin, bad Host, replayed pairing challenges, expired and revoked tokens (valid bearer reuse is allowed), cross-origin job access, GET safety, resource bounds | BE | G | C | T20 | Suite in CI; every case red-then-green proven |
-| T25 ★ | Safari path, per the SP-1a result: S2 bridge (agent capability minting = BE; bridge page + SDK relay = FE) **or** S1 trust tooling **or** the explicit unsupported state | FE+BE | C+G | G+C | T01, T20, T21 | S2 hostile-opener, forged-origin, wrong-nonce and stale-session tests; COOP detection |
+| T20 ★ | Agent jobs: state machine, SSE with `seq`/replay, pages, export (PDF, TIFF, JPEG, PNG) with retry, cancel, dispose, TTL, user-private temp | BE | G | C | T11, T12 | Contract tests for every job endpoint and transition; export golden tests; temp-permission tests on Linux and Windows |
+| T21 | SDK jobs/events/pages/export. **Two gates:** (a) unit tests on the mock; (b) a real-agent integration test, enabled only once T20 has merged | FE | C | G | T13 (a), T20 (b) | (a) mock suite green; (b) integration suite green in `ci-web` against the agent |
+| T22 | Scan dialog v1 (device list with driver badges, settings bound to caps, live thumbnails, rotate/reorder/delete, export) | FE | C | G | T15, T21a, T05 | Component tests + axe |
+| T24 ★ | Security suite: hostile origin, bad Host, replayed pairing challenges, expired and revoked tokens (valid bearer reuse allowed), cross-origin job access, GET safety, resource bounds | BE | G | C | T20 | Suite in `ci-backend`; each case shown failing against a deliberately weakened build, then passing |
+| T25-BE ★ | Safari path, agent side, per the SP-1a result. **S2:** bridge capability minting bound to the verified app-origin handshake and pairing, plus session lifecycle and bridge page serving with CSP and no framing. **S1:** trust tooling, rotation, uninstall. **Neither:** an explicit capability flag | BE | G | C | T01, T20 | Hostile-opener, forged-origin, wrong-nonce and stale-session tests (S2); unrelated-hostname, rotation and uninstall tests (S1) |
+| T25-FE ★ | Safari path, SDK and UI side: S2 relay (typed ops, bounded binary, exact `targetOrigin`, COOP, popup-blocker and closure handling) or the explicit Safari-unsupported state | FE | C | G | T21a, T25-BE | Playwright WebKit tests of handshake failures and the unsupported state |
+| T23 | **SP-3** E2E: Chromium and Firefox scan 3 pages duplex to PDF, with order asserted from the QR codes. WebKit runs **the production path chosen in T25**: S2 success if implemented, otherwise the explicit unsupported state as a **negative test**, never counted as a WebKit or Safari pass. Test page on a non-loopback HTTPS origin | FE | C | G | T20, T21b, T22, T14, T25-FE | Green in CI on Linux and Windows (M2 exit for Chromium and Firefox); WebKit result recorded honestly in VALIDATION.md |
 
 ### Wave 3 — M3 real drivers (BE), parallel with Wave 4 FE work
-| ID | Task | Lane | Author | Reviewer | Deps |
+| ID | Task | A | R | Deps | Observable acceptance |
 |---|---|---|---|---|---|
-| T30 | NAPS2 WIA + TWAIN driver with the x86 worker, caps mapping, effective settings | BE | G | C | T20, T02 |
-| T31 | NAPS2 ICA driver (macOS) | BE | G | C | T20, T02 |
-| T32 | NAPS2 SANE (+sane-airscan) and eSCL drivers | BE | G | C | T20, T02 |
-| T33 | Virtual eSCL device (D-007 layer 2) + CI exercising the eSCL path | BE | G | C | T12, T32 |
-| T34 | Owner hardware checklist (TWAIN, WIA, ICA, SANE, eSCL, WSD routes; real-Safari script) | FE | C | G | T23 |
+| T30 | NAPS2 WIA + TWAIN with the x86 worker, caps mapping, effective settings | G | C | T20, T06 | Windows runner: driver unit tests with NAPS2 fakes; x86 worker starts, recovers from a killed worker, and cancels; the TWAIN WG sample source fixture (if its licence clears) completes one scan; hardware rows pending |
+| T31 | NAPS2 ICA driver | G | C | T20, T06 | macOS runner: builds and enumerates without crashing (empty list OK); caps-mapping unit tests; hardware rows pending |
+| T32 | NAPS2 SANE (+sane-airscan) and eSCL drivers | G | C | T20, T06 | Linux runner: SANE `test` backend scan of 2 pages through Zilo; eSCL against the T33 device |
+| T33 | Virtual eSCL device (D-007 layer 2) | G | C | T12, T06 | Linux CI: Zilo's eSCL driver scans 3 pages duplex from it; PDF order asserted |
+| T34 | Owner hardware checklist + real-Safari script (FE lane) | C | G | T23 | Checklist covers each driver route, the WSD routes, Safari, and install/update flows, with pass/fail fields |
 
 ### Wave 4 — M4 install and lifecycle
-| ID | Task | Lane | Author | Reviewer | Deps |
-|---|---|---|---|---|---|
-| T40 | Windows installer, autostart, `zilo://` | BE | G | C | T03, T30 |
-| T41 | macOS `.pkg`, login item, URL scheme, hardened runtime | BE | G | C | T03, T31 |
-| T42 | Linux `.deb`/`.rpm`, `systemd --user`, XDG handler | BE | G | C | T03, T32 |
-| T43 ★ | Signed `latest.json`, updater (verify, anti-downgrade, atomic, recovery) | BE | G | C | T11 |
-| T44 | Tray/menu-bar shells: consent prompt, revocation, status, logs (built to the T05 design) | BE | G | C | T11, T05 |
-| T45 | SDK + UI: Install, Permission-help, Update and Safari-state dialogs; bounded polling; `zilo://start` | FE | C | G | T22, T43 |
-| T46 | Download page consuming `latest.json` | FE | C | G | T43 |
+| ID | Task | Lane | A | R | Deps | Observable acceptance |
+|---|---|---|---|---|---|---|
+| T40 | Windows installer, autostart, `zilo://` | BE | G | C | T03, T30 | Windows runner: install, start at logon (scheduled-task check), `zilo://start` registration, upgrade over the previous build, clean uninstall (no files, keys or tokens left) |
+| T41 | macOS `.pkg`, login item, URL scheme, hardened runtime | BE | G | C | T03, T31 | macOS runner: install, `SMAppService` status, URL scheme registered, uninstall script clean; test-key signature verifies; notarization pending (M6) |
+| T42 | Linux `.deb`/`.rpm`, `systemd --user`, XDG handler | BE | G | C | T03, T32 | Container installs on Ubuntu LTS and Fedora: dependencies resolve, the user unit starts, `xdg-mime` query, purge is clean |
+| T43 ★ | Signed `latest.json` + updater | BE | G | C | T11 | Tests: tampered manifest rejected, hash mismatch rejected, downgrade rejected, interrupted update rolls back, success path updates atomically (test keys) |
+| T44 | Tray/menu-bar shells: consent prompt, revocation, status, logs (to the T05 design) | BE | G | C | T11, T05 | Per-OS UI automation or a scripted harness shows prompt → allow/deny → token issued/denied, and revocation invalidates tokens |
+| T45 | Install, Permission-help, Update and Safari-state dialogs; bounded polling; `zilo://start` | FE | C | G | T22, T43, T25-FE | Playwright: each D-008 state renders the right dialog; polling stops on dismiss and navigation; a11y passes |
+| T46 | Download page consuming `latest.json` | FE | C | G | T43 | Picks OS/arch correctly in the browser matrix; rejects a manifest with a bad signature (SDK verification) |
 
 ### Wave 5 — M5 compat + hardening
-| ID | Task | Lane | Author | Reviewer | Deps |
-|---|---|---|---|---|---|
-| T50 | `@zilo/dwt-compat` from the owner's call inventory (**blocked on owner**) | FE | C | G | T21, owner code |
-| T51 | Diagnostics endpoint + support bundle (no document data) | BE | G | C | T20 |
-| T52 ★ | Threat-model review of the whole system | joint | C and G independently | cross | T24, T25, T43 |
-| T53 | Licence and NOTICE inventory for the final installers; legal review package | BE | G | C | T40–T42 |
+| ID | Task | Lane | A | R | Deps | Observable acceptance |
+|---|---|---|---|---|---|---|
+| T50 | `@zilo/dwt-compat` from the owner's call inventory (**blocked on owner**) | FE | C | G | T21b, owner code | Contract tests replaying each owner call sequence |
+| T51 | Diagnostics endpoint + support bundle | BE | G | C | T20 | Test asserts no page data, tokens or file paths outside the allowlist appear in the bundle |
+| T52-C ★ | Threat-model review, Claude-authored, independent | joint | C | — | T24, T25-*, T43 | `docs/reviews/T52-claude.md` |
+| T52-G ★ | Threat-model review, GPT-authored, independent (does not read T52-C before finishing) | joint | G | — | T24, T25-*, T43 | `docs/reviews/T52-gpt.md` |
+| T52-R | Reconciliation gate: both masters merge the findings into fix tasks; each fix is reviewed by the other family as usual | joint | masters | — | T52-C, T52-G | `docs/reviews/T52-reconciled.md` signed by both masters |
+| T53 | Licence/NOTICE inventory for the final installers; legal review package | BE | G | C | T40–T42 | Gate green on every installer; NOTICE complete; package ready for counsel |
 
 ### M6 release readiness (owner-assisted; pending ≠ pass)
-SP-1b real Safari 26, SP-4b signing and notarization, the hardware matrix, legal sign-off. Tracked in
-VALIDATION.md.
+SP-1b real Safari 26, SP-4b production signing and notarization, the hardware matrix, legal sign-off.
+Tracked in VALIDATION.md.
 
-## 4. Status (kept current by both masters)
-| ID | State | Branch | Author dispatch | Reviewer | Merged |
-|---|---|---|---|---|---|
-| T01 | not started | | | | |
-| T02 | not started | | | | |
-| T03 | not started | | | | |
-| T04a | not started | | | | |
-| T04b | not started | | | | |
-| T05 | not started | | | | |
+## 4a. FE lane status (Opus edits)
+| ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
+|---|---|---|---|---|---|---|
+| T01 | not started | | | | | |
+| T04a | not started | | | | | |
+| T05 | not started | | | | | |
 
-## 5. Concurrency and pacing
-- At most **4 live workers per lane** at a time: 8 in total, plus reviewers.
-- Wave 0 starts all 6 tasks at once.
-- A task is dispatched when its dependencies are merged, not merely done.
-- T10 may start from T01's interim findings: the transport choice affects only the Safari section of
-  the contract.
+## 4b. BE lane status (GPT edits)
+| ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
+|---|---|---|---|---|---|---|
+| T02 | not started | | | | | |
+| T04b | not started | | | | | |
+| T03 | not started | | | | | |
+| T06 | not started | | | | | |
+
+## 5. Concurrency bounds
+- **Per lane at once:** at most 4 live authors, 2 live reviewers, and 1 fix dispatch per task.
+- **Overall cap:** 10 live workers. When a lane is at its cap, new dispatches queue.
+- **Dispatch timing:** a task is dispatched only when its dependencies have merged. For T21 and T23,
+  the per-gate dependencies apply.
+- **Stalls:** if a worker has no heartbeat after 3 empty waits, follow the Orca recovery reference.
+  Absence alone never authorizes stop, abandon or retry.
 
 ## Sign-off
-- Opus: pending (draft)
+- Opus: approved (2026-10-31)
 - GPT: pending
