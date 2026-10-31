@@ -1,0 +1,3 @@
+# Preserve upstream evidence bytes, including CRLF/whitespace, for hash verification.
+evidence/licenses/** -text -diff
+evidence/source/** -text -diff

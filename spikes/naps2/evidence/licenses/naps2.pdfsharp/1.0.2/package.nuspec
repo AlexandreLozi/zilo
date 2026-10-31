@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>NAPS2.PdfSharp</id>
+    <version>1.0.2</version>
+    <title>NAPS2.PdfSharp</title>
+    <authors>Ben Olden-Cooligan</authors>
+    <license type="file">LICENCE.md</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <projectUrl>https://github.com/cyanfish/naps2-pdfsharp</projectUrl>
+    <description>Fork of PdfSharpCore for NAPS2.Sdk</description>
+    <tags>naps2 pdfsharp</tags>
+    <repository type="git" url="https://github.com/cyanfish/naps2-pdfsharp" commit="8d30f069e6cef9ee9b001372a94432de7f6a3146" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.6.2">
+        <dependency id="SharpZipLib" version="1.3.3" exclude="Build,Analyzers" />
+        <dependency id="SixLabors.Fonts" version="1.0.0-beta17" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net6.0">
+        <dependency id="SharpZipLib" version="1.3.3" exclude="Build,Analyzers" />
+        <dependency id="SixLabors.Fonts" version="1.0.0-beta17" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="SharpZipLib" version="1.3.3" exclude="Build,Analyzers" />
+        <dependency id="SixLabors.Fonts" version="1.0.0-beta17" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

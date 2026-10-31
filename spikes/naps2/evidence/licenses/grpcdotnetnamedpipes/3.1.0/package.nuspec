@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>GrpcDotNetNamedPipes</id>
+    <version>3.1.0</version>
+    <title>GrpcDotNetNamedPipes</title>
+    <authors>Ben Olden-Cooligan</authors>
+    <license type="file">LICENSE</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/cyanfish/grpc-dotnet-namedpipes</projectUrl>
+    <description>Unofficial windows named pipe transport for gRPC</description>
+    <copyright>Copyright 2020 Google LLC</copyright>
+    <tags>grpc namedpipe namedpipes named pipe pipes</tags>
+    <repository type="git" url="https://github.com/cyanfish/grpc-dotnet-namedpipes" commit="da307b551a9d56b62f5780e91a2d95a699f32430" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.6.2">
+        <dependency id="Google.Protobuf" version="3.29.3" exclude="Build,Analyzers" />
+        <dependency id="Grpc.Core.Api" version="2.67.0" exclude="Build,Analyzers" />
+        <dependency id="System.Memory" version="4.6.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net6.0">
+        <dependency id="Google.Protobuf" version="3.29.3" exclude="Build,Analyzers" />
+        <dependency id="Grpc.Core.Api" version="2.67.0" exclude="Build,Analyzers" />
+        <dependency id="System.Memory" version="4.6.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net8.0">
+        <dependency id="Google.Protobuf" version="3.29.3" exclude="Build,Analyzers" />
+        <dependency id="Grpc.Core.Api" version="2.67.0" exclude="Build,Analyzers" />
+        <dependency id="System.Memory" version="4.6.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Google.Protobuf" version="3.29.3" exclude="Build,Analyzers" />
+        <dependency id="Grpc.Core.Api" version="2.67.0" exclude="Build,Analyzers" />
+        <dependency id="System.Memory" version="4.6.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>NAPS2.Sdk</id>
+    <version>1.6.0</version>
+    <title>NAPS2.Sdk</title>
+    <authors>Ben Olden-Cooligan</authors>
+    <license type="file">LICENSE</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <readme>README.md</readme>
+    <projectUrl>https://www.naps2.com/sdk</projectUrl>
+    <description>NAPS2.Sdk is a fully-featured scanning library, supporting WIA, TWAIN, SANE, and ESCL scanners on Windows, Mac, and Linux.</description>
+    <copyright>Copyright 2009-2026 NAPS2 Contributors</copyright>
+    <tags>naps2 sdk scanner wia twain sane escl</tags>
+    <repository type="git" url="https://github.com/cyanfish/naps2" commit="f914a4ec2af090aca4fa55eb3242ec91641482c3" />
+    <dependencies>
+      <group targetFramework="net10.0">
+        <dependency id="NAPS2.Escl" version="1.6.0" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.Images" version="1.6.0" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.Internals" version="1.6.0" exclude="Build,Analyzers" />
+        <dependency id="GrpcDotNetNamedPipes" version="3.1.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.NTwain" version="1.0.1" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.PdfSharp" version="1.0.2" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.Wia" version="2.0.3" exclude="Build,Analyzers" />
+        <dependency id="SharpZipLib" version="1.4.2" exclude="Build,Analyzers" />
+        <dependency id="SixLabors.Fonts" version="1.0.1" exclude="Build,Analyzers" />
+        <dependency id="System.Resources.Extensions" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="ZXing.Net" version="0.16.11" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETFramework4.6.2">
+        <dependency id="NAPS2.Escl" version="1.6.0" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.Images" version="1.6.0" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.Internals" version="1.6.0" exclude="Build,Analyzers" />
+        <dependency id="GrpcDotNetNamedPipes" version="3.1.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.NTwain" version="1.0.1" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.PdfSharp" version="1.0.2" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.Wia" version="2.0.3" exclude="Build,Analyzers" />
+        <dependency id="SharpZipLib" version="1.4.2" exclude="Build,Analyzers" />
+        <dependency id="SixLabors.Fonts" version="1.0.1" exclude="Build,Analyzers" />
+        <dependency id="System.Collections.Immutable" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="System.Resources.Extensions" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="System.Threading.Tasks.Dataflow" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="ZXing.Net" version="0.16.11" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net8.0">
+        <dependency id="NAPS2.Escl" version="1.6.0" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.Images" version="1.6.0" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.Internals" version="1.6.0" exclude="Build,Analyzers" />
+        <dependency id="GrpcDotNetNamedPipes" version="3.1.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.NTwain" version="1.0.1" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.PdfSharp" version="1.0.2" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.Wia" version="2.0.3" exclude="Build,Analyzers" />
+        <dependency id="SharpZipLib" version="1.4.2" exclude="Build,Analyzers" />
+        <dependency id="SixLabors.Fonts" version="1.0.1" exclude="Build,Analyzers" />
+        <dependency id="System.Collections.Immutable" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="System.Resources.Extensions" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="System.Threading.Tasks.Dataflow" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="ZXing.Net" version="0.16.11" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

@@ -1,0 +1,9 @@
+<Project>
+  <!-- Deliberately stops discovery of production Directory.Build.props. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreSources>https://api.nuget.org/v3/index.json</RestoreSources>
+    <NuGetAudit>true</NuGetAudit>
+  </PropertyGroup>
+</Project>
