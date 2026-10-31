@@ -6,6 +6,7 @@
 - Which front-end framework the app uses (React/Angular/Vue/other), and whether scanning runs inside a cross-origin iframe (needs `allow="loopback-network"`).
 - Which Dynamic Web TWAIN version is deployed (18.5–19.2 return blank images on Chrome 142+).
 - Is Safari on macOS a must-have for v1? Do customer fleets have MDM/GPO (lets us pre-grant browser local-access permission)?
+- **CI hosting:** the repo has no git remote, so there are no cross-OS CI runners. May we create a **private** GitHub repo (for example `AlexandreLozi/zilo`, or one under a company org you name) and push `main` plus the task branches to run GitHub Actions on Windows, macOS and Linux? Until then, CI evidence is local only: Linux (WSL) and native Windows (the WSL host). macOS CI stays pending.
 
 ## Log (append-only)
 
@@ -191,3 +192,36 @@ These are execution-safety corrections, not changes to the approved product dire
 
 I've signed. If you sign, I'll create `zilo-fe` and launch T01, T04a and T05; you launch T02 and T04b
 in `zilo-be`.
+
+### [Opus] Dev-integration policy without a remote, plus the Win32 worker — 2026-10-31
+
+**No remote or CI host exists.** `gh` is authenticated as the owner, but creating a hosted repo
+publishes company code, so I'm asking the owner (added to Owner questions) rather than doing it
+unilaterally. Interim policy, proposed for both approvals:
+- **Merge-queue evidence:** a review verdict of `pass`, plus **local CI-equivalent runs on the rebased
+  SHA**:
+  - Linux, natively in WSL;
+  - **Windows, natively on the WSL host** (`powershell.exe`/`cmd.exe` interop works here: Windows NT
+    10.0.26300, x64), running the workflow's own steps in a Windows checkout of the branch;
+  - macOS: **pending**, never counted as a pass.
+- **VALIDATION.md:** each merge row records "local-linux: pass, local-windows: pass|n/a, macos:
+  pending, hosted CI: pending" with the log paths (`docs/validation/logs/<task>/<os>.log`, committed).
+- **Workflow files** are still authored and checked locally with `actionlint` (or by parsing them), so
+  they run unchanged once a remote exists. At that point we re-run CI on `main` and backfill the
+  hosted rows.
+- Merging under this policy is reversible: nothing is published, and hosted CI can later fail a
+  merged SHA, which creates a fix task.
+
+**Worker.Win32 (T02 finding): I challenge "conflicts with D-002".** D-002's
+replaceable-DLL rule protects *our* proprietary work that links the LGPL library: users must be able
+to swap the LGPL parts out of our combined work. The upstream worker exe contains **no Zilo code**.
+It is NAPS2's own LGPL program, plus the MIT .NET runtime, bundled by its author. Redistributing it
+unmodified, as a separate executable we talk to over IPC, with its licence and a source offer for the
+exact version, is ordinary LGPL redistribution of a separate program and not a combined work.
+Proposal: add a reviewed, version-specific D-002 exception for "upstream NAPS2.Sdk.Worker.Win32
+1.6.0, unmodified, separate process". Still verify its bundle contents in the inventory: anything
+non-LGPL/MIT inside it goes through the normal gate. Rebuilding from source stays the fallback if
+counsel disagrees.
+- **win-arm64:** the package targets exclude arm64. TWAIN data sources on Windows on ARM are x86/x64
+  drivers running under emulation anyway, so ship the **x86** worker on arm64 too (copy it
+  explicitly) and test it under emulation. Agreed this is gated, not passed.
