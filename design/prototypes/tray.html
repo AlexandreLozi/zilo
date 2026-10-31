@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zilo prototype: Tray and menu-bar agent</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<link rel="stylesheet" href="assets/proto.css">
+<style>
+  /* ---- Native agent UI mocks (spec: docs/design/tray-agent.md) ----
+     These approximate native windows. Production shells use each OS's native controls (T44). */
+  .desk { position: absolute; inset: 0; display: flex; flex-direction: column; background: linear-gradient(160deg, #5d6b7a, #2f3944); }
+  html[data-proto-theme="dark"] .desk { background: linear-gradient(160deg, #1f262d, #0d1013); }
+  .desk__area { flex: 1; position: relative; display: grid; place-items: center; padding: 24px; }
+  .bar { display: flex; align-items: center; gap: 10px; padding: 0 10px; font-size: 13px; color: #f3f4f6; background: rgb(18 20 24 / 0.82); }
+  .bar--top { height: 28px; order: -1; }
+  .bar--bottom { height: 44px; }
+  .bar__spacer { flex: 1; }
+  .bar__tray {
+    display: grid; place-items: center; width: 28px; height: 24px; border-radius: 4px; color: #f3f4f6;
+    background: none; border: 0; padding: 0; cursor: pointer;
+  }
+  .bar__tray[aria-expanded="true"] { background: rgb(255 255 255 / 0.18); }
+  .bar__tray:focus-visible { outline: 2px solid #8db3ff; outline-offset: 1px; }
+  .tray-glyph { position: relative; }
+  .tray-glyph__badge { position: absolute; right: -3px; top: -2px; width: 7px; height: 7px; border-radius: 50%; background: #f2bb55; box-shadow: 0 0 0 1.5px rgb(18 20 24); }
+
+  /* Window chrome */
+  .win {
+    width: min(100%, 28rem); background: var(--z-bg); color: var(--z-text); border-radius: 8px; overflow: hidden;
+    box-shadow: var(--z-shadow-3); border: 1px solid var(--z-border);
+  }
+  .win--sites { width: min(100%, 36rem); }
+  .win__title { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 0 0 12px; font-size: 12px; background: var(--z-surface-sunken); border-bottom: 1px solid var(--z-border); }
+  .win__title span { flex: 1; }
+  .win__title .win__x { width: 44px; height: 32px; display: grid; place-items: center; color: var(--z-text-muted); }
+  .os-macos .win { border-radius: 12px; }
+  .os-macos .win__title { justify-content: flex-start; padding-left: 12px; }
+  .os-macos .win__title .win__x { display: none; }
+  .os-linux .win { border-radius: 14px; }
+  .os-linux .win__title { justify-content: center; font-weight: 700; padding: 0 8px; height: 44px; background: var(--z-bg); border-bottom: 0; }
+  .os-linux .win__title span { text-align: center; }
+  .lights { display: none; gap: 7px; }
+  .lights i { width: 12px; height: 12px; border-radius: 50%; background: #c8ccd2; display: block; }
+  .os-macos .lights { display: flex; }
+  .win__body { padding: 20px 24px; display: grid; gap: 14px; }
+  .win__buttons { display: flex; gap: 8px; padding: 0 24px 20px; justify-content: flex-end; }
+  .os-linux .win__buttons { justify-content: stretch; }
+  .os-linux .win__buttons .z-btn { flex: 1; }
+  .os-macos .consent { text-align: left; }
+  .app-mark { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 10px; background: var(--z-accent); color: var(--z-on-accent); }
+  .os-linux .consent__head { justify-items: center; text-align: center; }
+  .consent__head { display: grid; gap: 10px; }
+  .consent__title { font-size: var(--z-text-lg); font-weight: var(--z-weight-semibold); line-height: 1.3; }
+
+  /* Origin display: the spoof-resistant part */
+  .origin {
+    padding: 12px 14px; border-radius: var(--z-radius-md); border: 1px solid var(--z-border-strong);
+    background: var(--z-surface-sunken); font-family: var(--z-font-mono); font-size: var(--z-text-lg); line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .origin__scheme, .origin__sub, .origin__port { color: var(--z-text-muted); }
+  .origin__reg { color: var(--z-text); font-weight: 700; }
+  .origin__label { font-size: var(--z-text-xs); font-family: var(--z-font-sans); color: var(--z-text-muted); display: block; margin-bottom: 4px; letter-spacing: 0.02em; }
+  .origin--warn { border-color: var(--z-warning); }
+  .warn-note { display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: var(--z-text-sm); color: var(--z-text); }
+  .warn-note svg { color: var(--z-warning); margin-top: 2px; }
+  .warn-note strong { display: block; }
+
+  /* Menu */
+  .menu {
+    position: absolute; width: 18rem; padding: 6px; border-radius: 8px; background: var(--z-surface-raised);
+    color: var(--z-text); border: 1px solid var(--z-border); box-shadow: var(--z-shadow-3); font-size: var(--z-text-md);
+  }
+  .os-windows .menu { right: 72px; bottom: 8px; }
+  .os-macos .menu, .os-linux .menu { right: 64px; top: 4px; }
+  .menu__status { padding: 8px 10px 10px; border-bottom: 1px solid var(--z-border); margin-bottom: 4px; }
+  .menu__status strong { display: flex; align-items: center; gap: 8px; }
+  .menu__status span { display: block; font-size: var(--z-text-sm); color: var(--z-text-muted); margin-left: 16px; }
+  .menu [role="menuitem"], .menu [role="menuitemcheckbox"] {
+    display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 10px; border-radius: 5px;
+    border: 0; background: none; text-align: left; cursor: default;
+  }
+  .menu [role="menuitem"]:hover, .menu [role="menuitemcheckbox"]:hover, .menu :focus-visible { background: var(--z-accent); color: var(--z-on-accent); outline: none; }
+  .menu [role="separator"] { height: 1px; background: var(--z-border); margin: 4px 6px; }
+  .menu__check { width: 16px; display: inline-grid; place-items: center; }
+  .menu__accel { margin-left: auto; font-size: var(--z-text-xs); opacity: 0.75; }
+
+  /* Sites list */
+  .sites { display: grid; border: 1px solid var(--z-border); border-radius: var(--z-radius-md); overflow: hidden; }
+  .site { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 10px 12px; border-top: 1px solid var(--z-border); }
+  .site:first-child { border-top: 0; }
+  .site__origin { font-family: var(--z-font-mono); overflow-wrap: anywhere; }
+  .site__meta { grid-column: 1; font-size: var(--z-text-sm); color: var(--z-text-muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .site .z-btn { grid-row: 1 / span 2; grid-column: 2; }
+  .sec-h { font-size: var(--z-text-sm); font-weight: var(--z-weight-semibold); margin-top: 6px; }
+  .empty { padding: 24px; text-align: center; color: var(--z-text-muted); border: 1px dashed var(--z-border-strong); border-radius: var(--z-radius-md); }
+  .empty strong { display: block; color: var(--z-text); margin-bottom: 4px; }
+  .main-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: var(--z-text-sm); }
+  .main-grid dt { color: var(--z-text-muted); }
+</style>
+</head>
+<body class="proto">
+<main class="proto-stage" aria-label="Prototype stage" id="stage"></main>
+
+<script src="assets/copy.js"></script>
+<script src="assets/proto.js"></script>
+<script>
+(function () {
+  const { icon, esc } = Z;
+
+  const VIEWS = [
+    ["consent", "Consent prompt"], ["consent-long", "Consent: long origin"], ["consent-idn", "Consent: IDN origin"],
+    ["consent-insecure", "Consent: http origin (dev)"], ["menu", "Tray menu"], ["menu-scanning", "Tray menu: scanning"],
+    ["menu-update", "Tray menu: update ready"], ["sites", "Allowed sites"], ["sites-empty", "Allowed sites: empty"],
+    ["remove-confirm", "Remove access confirm"], ["quit-confirm", "Quit while scanning"], ["main-window", "Main window (no tray / relaunch)"],
+  ];
+  const OSES = [["windows", "Windows"], ["macos", "macOS"], ["linux", "Linux (GNOME)"]];
+
+  window.PROTO = {
+    title: "Tray and menu-bar agent",
+    controls: [{ name: "view", label: "View", options: VIEWS }, { name: "os", label: "OS", options: OSES }],
+    matrix() {
+      const out = [];
+      for (const [v] of VIEWS) for (const [o] of OSES) out.push({ view: v, os: o });
+      return out;
+    },
+    render,
+  };
+
+  /* Origins. `reg` is the registrable domain (eTLD+1 from the Public Suffix List), emphasised. */
+  const ORIGINS = {
+    consent: { scheme: "https://", sub: "", reg: "app.example.com", port: "" },
+    "consent-long": { scheme: "https://", sub: "secure-login.accounts.verify-session.records-portal.", reg: "example-health.co.uk", port: ":8443" },
+    "consent-idn": { scheme: "https://", sub: "", reg: "xn--exmple-records-wtl.com", port: "", unicode: "exаmple-records.com" },
+    "consent-insecure": { scheme: "http://", sub: "", reg: "localhost", port: ":5173" },
+  };
+  /* Line breaks are allowed only after a dot, so labels stay whole; very long single labels still wrap. */
+  const wbr = (s) => esc(s).replace(/\./g, ".<wbr>");
+  const originText = (o) => o.scheme + o.sub + o.reg + o.port;
+  function originBox(o, warn) {
+    return `<div class="origin ${warn ? "origin--warn" : ""}" aria-label="Website address: ${esc(originText(o))}" role="group">
+      <span class="origin__label" aria-hidden="true">Website</span>
+      <span aria-hidden="true"><span class="origin__scheme">${esc(o.scheme)}</span><span class="origin__sub">${wbr(o.sub)}</span><span class="origin__reg">${wbr(o.reg)}</span><span class="origin__port">${esc(o.port)}</span></span>
+    </div>`;
+  }
+
+  function chrome(os, title, body, buttons, opts) {
+    opts = opts || {};
+    return `<div class="zilo win ${opts.cls || ""}" role="${opts.role || "dialog"}" aria-labelledby="${opts.labelledby || "win-t"}" ${opts.describedby ? `aria-describedby="${opts.describedby}"` : ""}>
+      <div class="win__title" aria-hidden="true"><span class="lights"><i></i><i></i><i></i></span><span>${title}</span><span class="win__x">${icon("close", "z-icon--sm")}</span></div>
+      <div class="win__body">${body}</div>
+      ${buttons ? `<div class="win__buttons">${buttons}</div>` : ""}
+    </div>`;
+  }
+
+  /* Button order follows each platform: Windows puts the affirmative action first; macOS and GNOME put it last.
+     Neither button is the default: Enter does nothing until the user picks one (anti-keyjacking). */
+  function consentButtons(os) {
+    const c = ziloCopy("tray.consent");
+    const allow = `<button class="z-btn" type="button">${c.primary}</button>`;
+    const deny = `<button class="z-btn" type="button" data-autofocus>${c.secondary}</button>`;
+    return os === "windows" ? allow + deny : deny + allow;
+  }
+
+  function consent(view, os) {
+    const o = ORIGINS[view];
+    const c = ziloCopy("tray.consent");
+    let notes = "";
+    if (view === "consent-idn") {
+      const n = ziloCopy("tray.consent.idn", { ascii: o.reg });
+      notes = `<div class="warn-note">${icon("alert-triangle", "z-icon--sm")}<p><strong>${n.title}</strong>${esc(n.body)} It may look like <span class="origin__reg" style="font-family:var(--z-font-mono)">${esc(o.unicode)}</span> in your browser.</p></div>`;
+    }
+    if (view === "consent-insecure") {
+      const n = ziloCopy("tray.consent.insecure");
+      notes = `<div class="warn-note">${icon("alert-triangle", "z-icon--sm")}<p><strong>${n.title}</strong>${n.body}</p></div>`;
+    }
+    const body = `<div class="consent">
+        <div class="consent__head">
+          <span class="app-mark" aria-hidden="true">${icon("scanner", "z-icon--lg")}</span>
+          <h2 class="consent__title" id="win-t">${c.title}</h2>
+        </div>
+      </div>
+      ${originBox(o, view === "consent-idn" || view === "consent-insecure")}
+      ${notes}
+      <p class="z-small" id="win-d">${c.body}</p>`;
+    return center(chrome(os, "Zilo", body, consentButtons(os), { describedby: "win-d" }));
+  }
+
+  function center(html) { return `<div class="desk__area">${html}</div>`; }
+
+  function trayButton(os, expanded, badge) {
+    return `<button class="bar__tray" type="button" aria-label="Zilo${badge ? ", update available" : ""}" aria-haspopup="menu" aria-expanded="${expanded}" ${expanded ? "" : "data-autofocus"}>
+      <span class="tray-glyph">${icon("scanner", "z-icon--sm")}${badge ? '<span class="tray-glyph__badge"></span>' : ""}</span></button>`;
+  }
+
+  function bar(os, expanded, badge) {
+    const clock = '<span aria-hidden="true">10:42</span>';
+    if (os === "windows") return `<div class="bar bar--bottom"><span aria-hidden="true">${icon("window", "z-icon--sm")}</span><span class="bar__spacer"></span>${trayButton(os, expanded, badge)}${clock}</div>`;
+    if (os === "macos") return `<div class="bar bar--top"><span aria-hidden="true" style="font-weight:600">Finder</span><span class="bar__spacer"></span>${trayButton(os, expanded, badge)}${clock}</div>`;
+    return `<div class="bar bar--top"><span aria-hidden="true">Activities</span><span class="bar__spacer"></span>${clock}<span class="bar__spacer"></span>${trayButton(os, expanded, badge)}</div>`;
+  }
+
+  function menu(view, os) {
+    const st = view === "menu-scanning" ? ziloCopy("tray.status.scanning", { origin: "app.example.com", n: 3 })
+      : view === "menu-update" ? ziloCopy("tray.status.update", { latest: "1.4.3" })
+      : ziloCopy("tray.status.running", { version: "1.4.2", count: 3 });
+    const dot = view === "menu-update" ? "var(--z-warning)" : "var(--z-success)";
+    const accel = (k) => (os === "macos" ? `<span class="menu__accel" aria-hidden="true">⌘${k}</span>` : "");
+    return `<div class="zilo menu" role="menu" aria-label="Zilo">
+      <div class="menu__status" role="none"><strong><span class="z-dot" style="background:${dot}" aria-hidden="true"></span>${st.title}</strong><span>${st.body}</span></div>
+      ${view === "menu-update" ? `<button role="menuitem" type="button" tabindex="-1">${icon("download", "z-icon--sm")}${st.primary}</button><div role="separator"></div>` : ""}
+      <button role="menuitem" type="button" tabindex="0" data-autofocus>${icon("globe", "z-icon--sm")}Allowed sites…${accel(",")}</button>
+      <button role="menuitem" type="button" tabindex="-1">${icon("folder", "z-icon--sm")}Open logs folder</button>
+      ${view === "menu-update" ? "" : `<button role="menuitem" type="button" tabindex="-1">${icon("refresh", "z-icon--sm")}Check for updates</button>`}
+      <button role="menuitemcheckbox" type="button" aria-checked="true" tabindex="-1"><span class="menu__check" aria-hidden="true">${icon("check", "z-icon--sm")}</span>Start Zilo at login</button>
+      <button role="menuitem" type="button" tabindex="-1">${icon("info", "z-icon--sm")}About Zilo</button>
+      <div role="separator"></div>
+      <button role="menuitem" type="button" tabindex="-1">${icon("power", "z-icon--sm")}Quit Zilo${accel("Q")}</button>
+    </div>`;
+  }
+
+  const SITES = [
+    { origin: "https://app.example.com", allowed: "Allowed 3 Oct 2026", used: "Last used today", managed: true },
+    { origin: "https://records.example-health.org", allowed: "Allowed 12 Sep 2026", used: "Last used 2 weeks ago" },
+    { origin: "https://staging.app.example.com:8443", allowed: "Allowed 1 Aug 2026", used: "Not used for 3 months" },
+  ];
+
+  function sites(view, os) {
+    const c = ziloCopy("tray.sites");
+    const m = ziloCopy("tray.sites.managed");
+    let list;
+    if (view === "sites-empty") {
+      const e = ziloCopy("tray.sites.empty");
+      list = `<div class="empty"><strong>${e.title}</strong>${e.body}</div>`;
+    } else {
+      list = `<ul class="sites" aria-labelledby="win-t">${SITES.map((s, i) => `
+        <li class="site">
+          <span class="site__origin">${esc(s.origin)}</span>
+          <span class="site__meta">${s.managed ? `<span class="z-badge" title="${m.title}">Managed</span>` : ""}${s.allowed} · ${s.used}</span>
+          <button class="z-btn z-btn--sm ${s.managed ? "" : "z-btn--danger"}" type="button" aria-label="${s.managed ? m.primary : "Remove"} for ${esc(s.origin)}" ${i === 0 ? "data-autofocus" : ""}>${s.managed ? m.primary : "Remove"}</button>
+        </li>`).join("")}</ul>
+        <p class="z-small z-muted">${m.title}: ${m.body}</p>
+        <h3 class="sec-h">Recently denied</h3>
+        <ul class="sites" aria-label="Recently denied">
+          <li class="site"><span class="site__origin">https://scan-helper.example.net</span><span class="site__meta">Denied today · won't ask again for 10 minutes</span>
+          <button class="z-btn z-btn--sm" type="button" aria-label="Forget denial for https://scan-helper.example.net">Forget</button></li>
+        </ul>`;
+    }
+    const body = `<h2 class="consent__title" id="win-t">${c.title}</h2><p class="z-small z-muted">${c.body}</p>${list}`;
+    return center(chrome(os, "Zilo — Allowed sites", body, `<button class="z-btn" type="button">Close</button>`, { cls: "win--sites" }));
+  }
+
+  function confirmWin(key, vars, os, danger) {
+    const c = ziloCopy(key, vars);
+    const safe = `<button class="z-btn" type="button" data-autofocus>${key === "tray.quit-confirm" ? c.primary : c.secondary}</button>`;
+    const act = `<button class="z-btn ${danger ? "z-btn--danger" : ""}" type="button">${key === "tray.quit-confirm" ? c.secondary : c.primary}</button>`;
+    const body = `<h2 class="consent__title" id="win-t">${esc(c.title)}</h2><p id="win-d">${esc(c.body)}</p>`;
+    return center(chrome(os, "Zilo", body, os === "windows" ? act + safe : safe + act, { role: "alertdialog", describedby: "win-d" }));
+  }
+
+  function mainWindow(os) {
+    const st = ziloCopy("tray.status.running", { version: "1.4.2", count: 3 });
+    const body = `<div class="consent__head" style="grid-template-columns:auto 1fr;align-items:center">
+        <span class="app-mark" aria-hidden="true">${icon("scanner", "z-icon--lg")}</span>
+        <div><h2 class="consent__title" id="win-t">${st.title}</h2><p class="z-small z-muted">${st.body}</p></div>
+      </div>
+      <dl class="main-grid"><dt>Port</dt><dd>127.0.0.1:47210</dd><dt>Allowed sites</dt><dd>3</dd><dt>Start at login</dt><dd>On</dd></dl>
+      ${os === "linux" ? `<div class="z-banner">${icon("info")}<p class="z-banner__title">No system tray found</p><p class="z-banner__body z-small">Zilo keeps running in the background. Open this window from your app list to manage it.</p></div>` : ""}`;
+    const buttons = `<button class="z-btn" type="button" data-autofocus>Allowed sites…</button><button class="z-btn" type="button">Open logs folder</button><button class="z-btn" type="button">Quit Zilo</button>`;
+    return center(chrome(os, "Zilo", body, buttons));
+  }
+
+  function render(v) {
+    const stage = document.getElementById("stage");
+    let area;
+    const expanded = v.view.startsWith("menu");
+    if (v.view.startsWith("consent")) area = consent(v.view, v.os);
+    else if (expanded) area = `<div class="desk__area">${menu(v.view, v.os)}</div>`;
+    else if (v.view.startsWith("sites")) area = sites(v.view, v.os);
+    else if (v.view === "remove-confirm") area = confirmWin("tray.sites.remove", { origin: "https://records.example-health.org" }, v.os, true);
+    else if (v.view === "quit-confirm") area = confirmWin("tray.quit-confirm", { origin: "app.example.com" }, v.os, true);
+    else area = mainWindow(v.os);
+    stage.innerHTML = `<div class="zilo desk os-${v.os}">${area}${bar(v.os, expanded, v.view === "menu-update")}</div>`;
+  }
+})();
+</script>
+</body>
+</html>
