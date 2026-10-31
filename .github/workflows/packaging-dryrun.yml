@@ -1,0 +1,164 @@
+name: Packaging dry run (SP-4a)
+
+# Unsigned packaging dry runs of the T04b hello agent on every OS (T03 / SP-4a).
+# Test-key signing only; nothing here satisfies D-011 production signing or Smart App Control.
+
+on:
+  push:
+    paths:
+      - 'packaging/**'
+      - 'backend/**'
+      - 'global.json'
+      - 'Directory.*.props'
+      - '.github/workflows/packaging-dryrun.yml'
+  pull_request:
+    paths:
+      - 'packaging/**'
+      - 'backend/**'
+      - 'global.json'
+      - 'Directory.*.props'
+      - '.github/workflows/packaging-dryrun.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+  ZILO_VERSION: '0.0.1'
+  NFPM_VERSION: '2.48.0'
+  NFPM_SHA256: '6d7f9a28b2f397934403950fcbba83f598b08d02edbe79a0815b3b4897341750'
+
+jobs:
+  linux-build:
+    name: Linux deb/rpm build, inspection, test-key signing
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Install pinned nfpm (checksum verified)
+        run: |
+          curl -fsSL -o nfpm.tgz "https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_Linux_x86_64.tar.gz"
+          echo "${NFPM_SHA256}  nfpm.tgz" | sha256sum -c
+          mkdir -p "$RUNNER_TEMP/nfpm" && tar -xzf nfpm.tgz -C "$RUNNER_TEMP/nfpm"
+          echo "$RUNNER_TEMP/nfpm" >> "$GITHUB_PATH"
+      - name: Install inspection and signing tools (Ubuntu archive)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq osslsigncode wixl rpm desktop-file-utils apt-utils
+      - name: Build .deb and .rpm
+        run: |
+          mkdir -p artifacts/logs
+          packaging/linux/build.sh artifacts 2>&1 | tee artifacts/logs/linux-build.log
+      - name: Inspect packages
+        run: |
+          packaging/linux/inspect.sh artifacts/zilo-agent_${ZILO_VERSION}-1_amd64.deb \
+            artifacts/zilo-agent-${ZILO_VERSION}-1.x86_64.rpm "$RUNNER_TEMP/inspect" \
+            2>&1 | tee artifacts/logs/inspect.log
+      - name: Test-key signing smoke (throwaway keys, generated at runtime)
+        run: |
+          packaging/publish.sh win "$RUNNER_TEMP/publish-win"
+          packaging/signing/test-sign-smoke.sh "$RUNNER_TEMP/publish-win" \
+            artifacts/zilo-agent_${ZILO_VERSION}-1_amd64.deb \
+            artifacts/zilo-agent-${ZILO_VERSION}-1.x86_64.rpm "$RUNNER_TEMP/sign" \
+            2>&1 | tee artifacts/logs/test-sign.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linux-packages
+          path: |
+            artifacts/*.deb
+            artifacts/*.rpm
+            artifacts/logs/
+          if-no-files-found: warn
+
+  deb-smoke:
+    name: deb install/purge smoke (Ubuntu 24.04 container)
+    needs: linux-build
+    runs-on: ubuntu-24.04
+    container: ubuntu:24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-packages
+          path: artifacts
+      - name: Install, verify, purge
+        run: sh packaging/linux/smoke/deb-smoke.sh artifacts/zilo-agent_${ZILO_VERSION}-1_amd64.deb
+
+  rpm-smoke:
+    name: rpm install/erase smoke (Fedora 43 container)
+    needs: linux-build
+    runs-on: ubuntu-24.04
+    container: fedora:43
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-packages
+          path: artifacts
+      - name: Install, verify, erase
+        run: sh packaging/linux/smoke/rpm-smoke.sh artifacts/zilo-agent-${ZILO_VERSION}-1.x86_64.rpm
+
+  windows-msi:
+    name: Windows MSI build and install smoke (hosted runner; no SAC there)
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Publish (framework-dependent, win-x64 apphost)
+        shell: bash
+        run: packaging/publish.sh win artifacts/publish-win
+      - name: Build MSI (pinned WiX 5.0.2)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/logs | Out-Null
+          pwsh packaging/windows/build-msi.ps1 -PublishDir artifacts/publish-win `
+            -Out "$PWD/artifacts/zilo-agent-$env:ZILO_VERSION-x64.msi" -Version $env:ZILO_VERSION 2>&1 |
+            Tee-Object artifacts/logs/msi-build.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Install / verify / uninstall smoke
+        shell: pwsh
+        run: |
+          pwsh packaging/windows/install-smoke.ps1 -Msi "artifacts/zilo-agent-$env:ZILO_VERSION-x64.msi" `
+            -LogDir artifacts/logs 2>&1 | Tee-Object artifacts/logs/msi-smoke.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-msi
+          path: |
+            artifacts/*.msi
+            artifacts/logs/
+          if-no-files-found: warn
+
+  macos-pkg:
+    name: macOS universal pkg build (unsigned; notarization pending M6)
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Build pkg
+        run: |
+          mkdir -p artifacts/logs
+          packaging/macos/build-pkg.sh artifacts "$ZILO_VERSION" 2>&1 | tee artifacts/logs/pkg-build.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-pkg
+          path: |
+            artifacts/*.pkg
+            artifacts/logs/
+          if-no-files-found: warn
