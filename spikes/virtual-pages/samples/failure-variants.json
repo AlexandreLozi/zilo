@@ -1,0 +1,53 @@
+[
+  {
+    "deviceId": "virtual",
+    "deviceName": "Zilo Virtual Scanner",
+    "kind": "none"
+  },
+  {
+    "deviceId": "virtual-feeder-empty",
+    "deviceName": "Zilo Virtual Scanner (feeder empty)",
+    "kind": "feeder-empty",
+    "errorCode": "feeder-empty",
+    "afterPages": 0
+  },
+  {
+    "deviceId": "virtual-feeder-3",
+    "deviceName": "Zilo Virtual Scanner (feeder holds 3 pages)",
+    "kind": "feeder-empty",
+    "afterPages": 3
+  },
+  {
+    "deviceId": "virtual-paper-jam",
+    "deviceName": "Zilo Virtual Scanner (paper jam at page 2)",
+    "kind": "paper-jam",
+    "errorCode": "paper-jam",
+    "atPage": 2
+  },
+  {
+    "deviceId": "virtual-cover-open",
+    "deviceName": "Zilo Virtual Scanner (cover open)",
+    "kind": "cover-open",
+    "errorCode": "cover-open"
+  },
+  {
+    "deviceId": "virtual-timeout",
+    "deviceName": "Zilo Virtual Scanner (timeout at page 2)",
+    "kind": "timeout",
+    "errorCode": "timeout",
+    "atPage": 2
+  },
+  {
+    "deviceId": "virtual-disconnect",
+    "deviceName": "Zilo Virtual Scanner (disconnect at page 2)",
+    "kind": "disconnect",
+    "errorCode": "disconnected",
+    "atPage": 2
+  },
+  {
+    "deviceId": "virtual-slow",
+    "deviceName": "Zilo Virtual Scanner (slow, 1500 ms per page)",
+    "kind": "slow",
+    "delayMs": 1500
+  }
+]
