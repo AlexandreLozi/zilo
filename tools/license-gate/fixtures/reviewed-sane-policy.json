@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "allowedExpressions": [],
+  "packages": [
+    {
+      "id": "Example.Sane",
+      "version": "0.0.0-synthetic",
+      "sha512": "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg==",
+      "licenseExpression": "GPL-2.0-or-later WITH SANE-exception"
+    }
+  ],
+  "exceptions": [
+    {
+      "id": "Example.Sane",
+      "version": "0.0.0-synthetic",
+      "sha512": "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg==",
+      "licenseExpression": "GPL-2.0-or-later WITH SANE-exception",
+      "review": {
+        "reviewer": "Synthetic fixture reviewer (NOT a legal approval)",
+        "date": "2000-01-01",
+        "reference": "docs/legal/exceptions.md#synthetic-example-sane-not-an-approval"
+      },
+      "obligations": [
+        "SYNTHETIC ONLY: retain example license and linking-exception text",
+        "SYNTHETIC ONLY: provide example notices and corresponding source obligations"
+      ],
+      "provenance": [
+        "SYNTHETIC ONLY: https://example.invalid/sane/review-not-an-approval"
+      ]
+    }
+  ],
+  "reviewedPayloads": [
+    {
+      "rid": "linux-x64",
+      "path": "synthetic/libexample-sane.so",
+      "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "kind": "native",
+      "packageId": "Example.Sane",
+      "packageVersion": "0.0.0-synthetic",
+      "licenseExpression": "GPL-2.0-or-later WITH SANE-exception",
+      "review": {
+        "reviewer": "Synthetic fixture reviewer (NOT a legal approval)",
+        "date": "2000-01-01",
+        "reference": "docs/legal/exceptions.md#synthetic-example-sane-not-an-approval"
+      },
+      "obligations": [
+        "SYNTHETIC ONLY: retain example license and linking-exception text",
+        "SYNTHETIC ONLY: provide example notices and corresponding source obligations"
+      ],
+      "provenance": [
+        "SYNTHETIC ONLY: https://example.invalid/sane/native-payload-not-an-approval"
+      ]
+    }
+  ]
+}

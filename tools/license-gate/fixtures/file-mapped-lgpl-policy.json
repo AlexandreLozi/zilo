@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "allowedExpressions": ["LGPL-2.1-or-later"],
+  "packages": [
+    {
+      "id": "Example.FileMappedLgpl",
+      "version": "0.0.0-synthetic",
+      "sha512": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "licenseExpression": "LGPL-2.1-or-later",
+      "licenseFile": "synthetic/LICENSE.txt",
+      "licenseFileSha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "source": "https://example.invalid/synthetic-file-mapped-lgpl/0.0.0-synthetic",
+      "review": {
+        "reviewer": "Synthetic self-authored interpretation, pending Claude review; NOT legal clearance",
+        "date": "2000-01-01",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice",
+        "source-offer",
+        "replaceable-dll"
+      ],
+      "provenance": [
+        "SYNTHETIC ONLY: https://example.invalid/synthetic-file-mapped-lgpl/license-evidence-not-an-approval"
+      ]
+    }
+  ],
+  "exceptions": [],
+  "reviewedPayloads": []
+}

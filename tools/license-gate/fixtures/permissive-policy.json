@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "allowedExpressions": ["MIT", "Apache-2.0"],
+  "packages": [
+    {
+      "id": "Example.Permissive",
+      "version": "0.0.0-synthetic",
+      "sha512": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "licenseExpression": "MIT"
+    },
+    {
+      "id": "Example.Restricted",
+      "version": "0.0.0-synthetic",
+      "sha512": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==",
+      "licenseExpression": "GPL-3.0-only"
+    }
+  ],
+  "exceptions": [],
+  "reviewedPayloads": []
+}

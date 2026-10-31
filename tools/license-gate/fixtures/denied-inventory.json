@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "rid": "linux-x64",
+  "packages": [
+    {
+      "id": "Example.Restricted",
+      "version": "0.0.0-synthetic",
+      "sha512": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==",
+      "licenseExpression": "GPL-3.0-only",
+      "licenseFile": "SYNTHETIC LICENSE: https://example.invalid/restricted/COPYING",
+      "source": "SYNTHETIC PACKAGE: https://example.invalid/restricted/0.0.0-synthetic"
+    }
+  ],
+  "payloads": [
+    {
+      "path": "synthetic/Example.Restricted.dll",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "kind": "managed",
+      "packageId": "Example.Restricted",
+      "packageVersion": "0.0.0-synthetic"
+    }
+  ]
+}
