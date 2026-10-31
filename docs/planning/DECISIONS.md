@@ -288,7 +288,7 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
   A merged negative spike never unblocks dependent production tasks: T06 stays blocked until a joint
   strategy is in force.
   - Approved-by: Opus (2026-10-31)
-  - Approved-by: GPT — pending
+  - Approved-by: GPT (2026-10-31, evidence/tooling only; assert exact expected denials without bypass; production graph and T06 remain blocked)
 - **Scope:** development integration on the local `main` only. It is not release evidence, and it is
   not a waiver of any M6 gate.
 - **Rationale:** there is no git remote. Creating a hosted repo publishes company code, so it is an
@@ -313,7 +313,7 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
   host. Windows runtime rows are `blocked-by-host-SAC` (pending) until hosted Windows CI or a VM
   exists.
 - Approved-by: Owner (OD-6); recorded by Opus (2026-10-31)
-- Approved-by: GPT — acknowledgement pending on resume
+- Approved-by: GPT (2026-10-31, acknowledged owner OD-6; no unsigned Windows host execution, no bypass, reputable timestamped PE signatures required for shipping; signatures alone do not constitute runtime/SAC validation)
 
 ## Spikes and gates (see PLAN.md section 5)
 - **Feasibility (M0a, parallel):**

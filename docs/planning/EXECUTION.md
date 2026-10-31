@@ -95,7 +95,7 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 ### Wave 0 — five tasks start at once; T03 follows T04b
 | ID | Task | Lane | A | R | Deps | Files | Observable acceptance |
 |---|---|---|---|---|---|---|---|
-| T01 | authored @b4e14e1 (retained); GPT review queued for resume | t01-transport-spike | task_7ad475b61ca4 / ctx_3e1242a839cb | | | |
+| T01 | authored @b4e14e1; GPT review r1 running ctx_06fe211b88a3 (t01-review-r1) | t01-transport-spike | task_7ad475b61ca4 / ctx_3e1242a839cb | | | |
 | T02 | **SP-2a** NAPS2 spike, isolated: own `spikes/naps2/` project, own `global.json` and locks there, NAPS2.Sdk 1.6.0 on net10 with locked restore per RID, package and native payload inventory, default-deny licence gate tool, device-list against an independent eSCL/SANE fixture (not T12; an empty physical list is not a failure) | BE | G | C | — | `spikes/naps2/**`, `tools/license-gate/**`, `.github/workflows/spike-naps2.yml`, `docs/spikes/SP-2a.md` | Inventory per RID in `SP-2a.md`; gate fails on a seeded disallowed package in CI and passes on the real graph |
 | T04a | Web scaffold: pnpm workspace `packages/{sdk,ui,dwt-compat}`, `apps/demo` (Vite + TS), TS strict, Vitest, Playwright config, lint and format | FE | C | G | — | `package.json`, `pnpm-*.yaml`, `packages/**`, `apps/**`, `tsconfig*`, lint configs, `.github/workflows/ci-web.yml` | `pnpm -r build test lint` green in `ci-web` |
 | T04b | merged 9e43bf7 (by Opus queue, during GPT outage; see VALIDATION.md) | BE | G | C | — | `backend/**`, `global.json`, `Directory.*.props`, `.github/workflows/ci-backend.yml` | `dotnet test` green in `ci-backend` on Windows, macOS and Linux runners, in locked mode |
@@ -166,7 +166,7 @@ Tracked in VALIDATION.md.
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
 |---|---|---|---|---|---|---|
 | T01 | authoring | t01-transport-spike | task_7ad475b61ca4 / ctx_3e1242a839cb (claude opus-5-5 xhigh) | | | |
-| T04a | in review r1 | t04a-web-scaffold @1842f4e | task_87c003f8c96a / ctx_af0edf2dc598 (retained) | task_cc19d0403fad / ctx_6f602d7fa893 (opencode GPT-6.1 Sol high, branch t04a-review-r1) | | |
+| T04a | in review r1 (re-dispatched ctx_4cd437852043 after outage) | t04a-web-scaffold @1842f4e | task_87c003f8c96a / ctx_af0edf2dc598 (retained) | task_cc19d0403fad / ctx_6f602d7fa893 (opencode GPT-6.1 Sol high, branch t04a-review-r1) | | |
 | T05 | authored @d667952; GPT review queued for GPT resume (OD-1) | t05-design-spec | task_d61d82f04b49 / ctx_dff3213d1716 (retained) | | | |
 
 ## 4b. BE lane status (GPT edits)
