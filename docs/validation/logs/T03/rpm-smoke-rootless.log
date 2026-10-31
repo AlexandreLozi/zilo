@@ -13,27 +13,27 @@ Package "findutils-1:4.10.0-6.fc43.x86_64" is already installed.
 [ 4/19] Installing libseccomp-0:2.6.1-2 100% | 107.4 MiB/s | 220.0 KiB |  00m00s
 [ 5/19] Installing systemd-shared-0:258 100% | 414.7 MiB/s |   5.0 MiB |  00m00s
 [ 6/19] Installing expat-0:2.9.0-1.fc43 100% |  12.8 MiB/s | 339.6 KiB |  00m00s
->>> Running sysusers scriptlet: dbus-common-1:1.16.2-1.fc43.noarch              
->>> Finished sysusers scriptlet: dbus-common-1:1.16.2-1.fc43.noarch             
->>> Scriptlet output:                                                           
->>> Creating group 'dbus' with GID 81.                                          
->>> Creating user 'dbus' (System Message Bus) with UID 81 and GID 81.           
->>>                                                                             
+>>> Running sysusers scriptlet: dbus-common-1:1.16.2-1.fc43.noarch
+>>> Finished sysusers scriptlet: dbus-common-1:1.16.2-1.fc43.noarch
+>>> Scriptlet output:
+>>> Creating group 'dbus' with GID 81.
+>>> Creating user 'dbus' (System Message Bus) with UID 81 and GID 81.
+>>>
 [ 7/19] Installing dbus-common-1:1.16.2 100% |   1.2 MiB/s |  13.6 KiB |  00m00s
 [ 8/19] Installing dbus-broker-0:37-2.f 100% |  23.8 MiB/s | 389.8 KiB |  00m00s
 [ 9/19] Installing dbus-1:1.16.2-1.fc43 100% |  60.5 KiB/s | 124.0   B |  00m00s
 [10/19] Installing libfdisk-0:2.41.6-1. 100% |  12.4 MiB/s | 381.4 KiB |  00m00s
->>> Running sysusers scriptlet: systemd-0:258.11-1.fc43.x86_64                  
->>> Finished sysusers scriptlet: systemd-0:258.11-1.fc43.x86_64                 
->>> Scriptlet output:                                                           
->>> Creating group 'systemd-journal' with GID 190.                              
->>>                                                                             
->>> Running sysusers scriptlet: systemd-0:258.11-1.fc43.x86_64                  
->>> Finished sysusers scriptlet: systemd-0:258.11-1.fc43.x86_64                 
->>> Scriptlet output:                                                           
->>> Creating group 'systemd-oom' with GID 999.                                  
->>> Creating user 'systemd-oom' (systemd Userspace OOM Killer) with UID 999 and 
->>>                                                                             
+>>> Running sysusers scriptlet: systemd-0:258.11-1.fc43.x86_64
+>>> Finished sysusers scriptlet: systemd-0:258.11-1.fc43.x86_64
+>>> Scriptlet output:
+>>> Creating group 'systemd-journal' with GID 190.
+>>>
+>>> Running sysusers scriptlet: systemd-0:258.11-1.fc43.x86_64
+>>> Finished sysusers scriptlet: systemd-0:258.11-1.fc43.x86_64
+>>> Scriptlet output:
+>>> Creating group 'systemd-oom' with GID 999.
+>>> Creating user 'systemd-oom' (systemd Userspace OOM Killer) with UID 999 and
+>>>
 [11/19] Installing systemd-0:258.11-1.f 100% | 119.3 MiB/s |  12.9 MiB |  00m00s
 [12/19] Installing systemd-pam-0:258.11 100% | 234.0 MiB/s |   1.2 MiB |  00m00s
 [13/19] Installing device-mapper-0:1.02 100% |  31.1 MiB/s | 350.2 KiB |  00m00s
@@ -144,24 +144,24 @@ Running transaction
 [19/30] Installing pkgconf-pkg-config-0 100% | 177.3 KiB/s |   1.8 KiB |  00m00s
 [20/30] Installing kmod-0:34.2-2.fc43.x 100% |  22.5 MiB/s | 253.1 KiB |  00m00s
 [21/30] Installing kmod-libs-0:34.2-2.f 100% |   3.7 MiB/s | 136.2 KiB |  00m00s
->>> Running sysusers scriptlet: systemd-udev-0:258.11-1.fc43.x86_64             
->>> Finished sysusers scriptlet: systemd-udev-0:258.11-1.fc43.x86_64            
->>> Scriptlet output:                                                           
->>> Creating group 'systemd-coredump' with GID 998.                             
->>> Creating user 'systemd-coredump' (systemd Core Dumper) with UID 998 and GID 
->>>                                                                             
->>> Running sysusers scriptlet: systemd-udev-0:258.11-1.fc43.x86_64             
->>> Finished sysusers scriptlet: systemd-udev-0:258.11-1.fc43.x86_64            
->>> Scriptlet output:                                                           
->>> Creating group 'systemd-timesync' with GID 997.                             
+>>> Running sysusers scriptlet: systemd-udev-0:258.11-1.fc43.x86_64
+>>> Finished sysusers scriptlet: systemd-udev-0:258.11-1.fc43.x86_64
+>>> Scriptlet output:
+>>> Creating group 'systemd-coredump' with GID 998.
+>>> Creating user 'systemd-coredump' (systemd Core Dumper) with UID 998 and GID
+>>>
+>>> Running sysusers scriptlet: systemd-udev-0:258.11-1.fc43.x86_64
+>>> Finished sysusers scriptlet: systemd-udev-0:258.11-1.fc43.x86_64
+>>> Scriptlet output:
+>>> Creating group 'systemd-timesync' with GID 997.
 >>> Creating user 'systemd-timesync' (systemd Time Synchronization) with UID 997
->>>                                                                             
+>>>
 [22/30] Installing systemd-udev-0:258.1 100% |  47.9 MiB/s |  13.2 MiB |  00m00s
->>> Running %post scriptlet: systemd-udev-0:258.11-1.fc43.x86_64                
->>> Finished %post scriptlet: systemd-udev-0:258.11-1.fc43.x86_64               
->>> Scriptlet output:                                                           
+>>> Running %post scriptlet: systemd-udev-0:258.11-1.fc43.x86_64
+>>> Finished %post scriptlet: systemd-udev-0:258.11-1.fc43.x86_64
+>>> Scriptlet output:
 >>> Failed to preset unit: Unit system-systemdx2dcryptsetup.slice does not exist
->>>                                                                             
+>>>
 [23/30] Installing dotnet-host-0:11.0.0 100% |  22.4 MiB/s | 275.1 KiB |  00m00s
 [24/30] Installing dotnet-hostfxr-10.0- 100% | 101.2 MiB/s | 310.9 KiB |  00m00s
 [25/30] Installing sane-backends-libs-0 100% |  45.4 MiB/s |  92.9 KiB |  00m00s
