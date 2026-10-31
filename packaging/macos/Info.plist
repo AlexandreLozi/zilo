@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- SP-4a dry run. Bundle identifier dev.zilo.agent is a PLACEHOLDER pending an owned domain. -->
+<plist version="1.0">
+<dict>
+  <key>CFBundleIdentifier</key>
+  <string>dev.zilo.agent</string>
+  <key>CFBundleName</key>
+  <string>Zilo Agent</string>
+  <key>CFBundleDisplayName</key>
+  <string>Zilo Agent</string>
+  <key>CFBundleExecutable</key>
+  <string>Zilo.Agent</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleShortVersionString</key>
+  <string>@VERSION@</string>
+  <key>CFBundleVersion</key>
+  <string>@VERSION@</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>LSMinimumSystemVersion</key>
+  <string>13.0</string>
+  <!-- Menu-bar agent: no Dock icon. -->
+  <key>LSUIElement</key>
+  <true/>
+  <!-- zilo:// (D-008: convenience only, never a security boundary, carries no secrets). -->
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key>
+      <string>dev.zilo.agent.url</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>zilo</string>
+      </array>
+    </dict>
+  </array>
+</dict>
+</plist>

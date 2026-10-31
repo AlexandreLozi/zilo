@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- productbuild distribution for the SP-4a dry-run pkg. Universal (arm64 + x86_64). -->
+<installer-gui-script minSpecVersion="2">
+  <title>Zilo Agent</title>
+  <options customize="never" require-scripts="false" hostArchitectures="arm64,x86_64" />
+  <domains enable_anywhere="false" enable_currentUserHome="false" enable_localSystem="true" />
+  <volume-check>
+    <allowed-os-versions><os-version min="13.0" /></allowed-os-versions>
+  </volume-check>
+  <choices-outline>
+    <line choice="default"><line choice="dev.zilo.agent" /></line>
+  </choices-outline>
+  <choice id="default" />
+  <choice id="dev.zilo.agent" visible="false">
+    <pkg-ref id="dev.zilo.agent" />
+  </choice>
+  <pkg-ref id="dev.zilo.agent" version="@VERSION@" onConclusion="none">zilo-agent-component.pkg</pkg-ref>
+</installer-gui-script>

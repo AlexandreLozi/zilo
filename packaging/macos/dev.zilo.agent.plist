@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- LaunchAgent: starts the agent in every user's GUI session at login (D-008).
+     T41 replaces this with an SMAppService login item registered by the app itself. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>dev.zilo.agent</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Applications/Zilo Agent.app/Contents/MacOS/Zilo.Agent</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>LimitLoadToSessionType</key>
+  <string>Aqua</string>
+  <key>ProcessType</key>
+  <string>Interactive</string>
+</dict>
+</plist>
