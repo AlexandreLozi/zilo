@@ -1,0 +1,48 @@
+# T01 spike-transport local Windows run (native, via WSL interop). code SHA: c921bd2 (strict WebKit expectations).
+# Final-SHA (d17a78e) Windows re-run NOT done: script quoting error, then usage limit. Tests added after c921bd2: COOP allow-popups, headful gating (Chromium-only).
+[WebServer] [agent-stub] listening on http://127.0.0.1:47613 (audit: %USERPROFILE%\zilo-t01\spikes\transport\artifacts/agent-audit.jsonl)
+[WebServer] [app] https on 127.0.0.1:8443 for app.zilo.test:8443, evil.zilo.test:8443
+[WebServer] [app] http control on 127.0.0.1:8080
+[WebServer] [resolver-proxy] on 127.0.0.1:8899
+
+Running 20 tests using 1 worker
+
+  ok  1 [stub] ΓÇ║ tests\stub-http.spec.ts:36:3 ΓÇ║ agent stub rules ΓÇ║ Host allowlist is exact (32ms)
+  ok  2 [stub] ΓÇ║ tests\stub-http.spec.ts:47:3 ΓÇ║ agent stub rules ΓÇ║ Origin allowlist is exact; CORS reflects only allowed origins, never * (12ms)
+  ok  3 [stub] ΓÇ║ tests\stub-http.spec.ts:66:3 ΓÇ║ agent stub rules ΓÇ║ bearer required on everything except hello; tokens are bound to their origin (8ms)
+  ok  4 [stub] ΓÇ║ tests\stub-http.spec.ts:79:3 ΓÇ║ agent stub rules ΓÇ║ bridge page: restrictive CSP, no framing, no-store, never served as a subresource (7ms)
+  ok  5 [stub] ΓÇ║ tests\stub-http.spec.ts:90:3 ΓÇ║ agent stub rules ΓÇ║ bridge mint: bridge origin only, allowlisted app origin, valid token, single-use nonce; re-mint makes the old session stale (16ms)
+[evidence] webkit/win32 s2-bridge: pass :: {"bridge":{"ok":true,"steps":[{"s":"opened","ms":37,"closedImmediately":false},{"s":"ready","ms":67},{"s":"welcome","ms":113,"sessionId":"d6a9a0c79ba0b590"},{"s":"op-hello","ms":145,"ok":true},{"s":"op-blob","ms":176,"ok":true},{"s":"op-blob-oversize","ms":192,"code":"too-large"},{"s":"op-events","ms":1243,"ticks":5}],"coopHeader":null,"nonce":"0e57d4a7ed50d705fc6e679c6a82a70c","sessionId":"d6a9a0c79ba0b590","hello":{"ok":true,"product":"zilo-spike-agent"},"blob":{"ok":true,"bytes":1048576,"ms":31},"oversize":{"code":"too-large"},"events":{"ticks":[1,2,3,4,5]},"unknownOp":{"code":"unknown-op"}},"rejections":[],"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"bound","rejections":[],"hasOpener":true},"mintStatuses":[[201,"bridge-session-minted","https://app.zilo.test:8443"]]}
+[evidence] webkit/win32 s2-closure: pass :: {"detected":true,"ms":1540}
+  ok  6 [webkit] ΓÇ║ tests\bridge.spec.ts:35:3 ΓÇ║ S2 popup bridge ΓÇ║ handshake, typed hello relay, bounded ArrayBuffer transfer, SSE relay, closure detection (2.0s)
+[evidence] webkit/win32 s2-coop: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":40,"closedImmediately":false}],"coopHeader":"same-origin","nonce":"474edb05c1f86b6f09feb5ef38405cb2","code":"coop-severed","readyFail":"popup-closed","popupClosed":true},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"error: no-opener","rejections":[],"hasOpener":false},"minted":0}
+  ok  7 [webkit] ΓÇ║ tests\bridge.spec.ts:75:3 ΓÇ║ S2 popup bridge ΓÇ║ COOP same-origin on the app page: failure is explicit (coop-severed), nothing minted (627ms)
+[evidence] webkit/win32 s2-hostile-opener: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":34,"closedImmediately":false},{"s":"ready-timeout","ms":5034}],"coopHeader":null,"nonce":"6d637cad9475fed265490d89966a1bc1","code":"no-ready-then-timeout"},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"rejected: origin-not-allowed","rejections":[{"code":"origin-not-allowed","detail":"https://evil.zilo.test:8443"}],"hasOpener":true},"minted":0}
+  ok  8 [webkit] ΓÇ║ tests\bridge.spec.ts:93:3 ΓÇ║ S2 popup bridge ΓÇ║ hostile opener: bridge never announces itself, rejects a forced hello, mints nothing (10.4s)
+[evidence] webkit/win32 s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ok  9 [webkit] ΓÇ║ tests\bridge.spec.ts:110:3 ΓÇ║ S2 popup bridge ΓÇ║ wrong event.source: a forged bridge-ready from another window is ignored (1.6s)
+[evidence] webkit/win32 s2-nonce-replay: pass :: {"first":{"ok":true},"second":{"ok":false,"steps":[{"s":"opened","ms":9,"closedImmediately":false},{"s":"ready","ms":37}],"coopHeader":null,"nonce":"9d746f169b874d3b509bcc04c372183c","code":"bridge-error:nonce-replayed"},"mintStatuses":[[201,"bridge-session-minted"],[409,"nonce-replayed"]]}
+  ok 10 [webkit] ΓÇ║ tests\bridge.spec.ts:125:3 ΓÇ║ S2 popup bridge ΓÇ║ nonce replay: a second handshake reusing a nonce is refused by the agent (11.6s)
+[evidence] webkit/win32 env: pass :: {"origin":"https://app.zilo.test:8443","isSecureContext":true,"ua":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15","tas":"ignored","variant":"plain"}
+  ok 11 [webkit] ΓÇ║ tests\fetch.spec.ts:12:3 ΓÇ║ loopback fetch from an HTTPS public origin ΓÇ║ page is a secure context on a non-loopback public origin (217ms)
+[evidence] webkit/win32 perm-prompt: n/a :: {"before":{"loopback-network":"prompt","local-network":"prompt"},"hello":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":8},"after":{"loopback-network":"prompt","local-network":"prompt"}}
+  ok 12 [webkit] ΓÇ║ tests\fetch.spec.ts:26:3 ΓÇ║ loopback fetch from an HTTPS public origin ΓÇ║ default permission state (prompt): never silently allowed (625ms)
+  -  13 [webkit] ΓÇ║ tests\fetch.spec.ts:61:3 ΓÇ║ loopback fetch from an HTTPS public origin ΓÇ║ default permission state, headful Chromium: request held on a real prompt
+[evidence] webkit/win32 hello-tas: fail :: {"result":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":3},"permissions":{"loopback-network":"prompt","local-network":"prompt"},"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","targetAddressSpace":"ignored","requestsSeenByAgent":0}
+[evidence] webkit/win32 hello-plain: fail :: {"result":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":0},"permissions":{"loopback-network":"prompt","local-network":"prompt"},"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","targetAddressSpace":"ignored","requestsSeenByAgent":0}
+[evidence] webkit/win32 sse-fetch-stream: fail :: {"result":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":5},"permissions":{"loopback-network":"prompt","local-network":"prompt"},"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","targetAddressSpace":"ignored","requestsSeenByAgent":0}
+[evidence] webkit/win32 blob: fail :: {"result":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":6},"permissions":{"loopback-network":"prompt","local-network":"prompt"},"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","targetAddressSpace":"ignored","requestsSeenByAgent":0}
+  ok 14 [webkit] ΓÇ║ tests\fetch.spec.ts:82:3 ΓÇ║ loopback fetch from an HTTPS public origin ΓÇ║ granted: hello with/without targetAddressSpace, SSE over fetch streaming, 1 MiB blob (954ms)
+  -  15 [webkit] ΓÇ║ tests\fetch.spec.ts:136:3 ΓÇ║ loopback fetch from an HTTPS public origin ΓÇ║ denied: request refused immediately
+[evidence] webkit/win32 neg-hostile-origin: pass :: {"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","hello":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":6},"blob":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":8},"audit":[]}
+  ok 16 [webkit] ΓÇ║ tests\negative.spec.ts:20:3 ΓÇ║ negative controls ΓÇ║ hostile HTTPS origin is denied by the agent (even with LNA granted) (466ms)
+[evidence] webkit/win32 neg-bad-host: pass :: {"status":403,"audit":[["GET","/zilo/v1/hello","rebind.zilo.test:47613",403,"host-denied"]]}
+  ok 17 [webkit] ΓÇ║ tests\negative.spec.ts:45:3 ΓÇ║ negative controls ΓÇ║ bad Host (DNS rebinding name -> 127.0.0.1) is denied by the agent (192ms)
+[evidence] webkit/win32 neg-http-control: pass :: {"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","isSecureContext":false,"permissions":{"loopback-network":"prompt","local-network":"prompt"},"hello":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":9}}
+  ok 18 [webkit] ΓÇ║ tests\negative.spec.ts:64:3 ΓÇ║ negative controls ΓÇ║ HTTP (insecure) page as a control (489ms)
+[evidence] webkit/win32 neg-forged-mint: pass :: {"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","forged":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":3},"audit":[]}
+  ok 19 [webkit] ΓÇ║ tests\negative.spec.ts:98:3 ΓÇ║ negative controls ΓÇ║ forged bridge mint from the public page is refused (341ms)
+  -  20 [webkit] ΓÇ║ tests\negative.spec.ts:119:3 ΓÇ║ negative controls ΓÇ║ methodology control: without the public address-space override, LNA does not apply
+
+  3 skipped
+  17 passed (32.6s)

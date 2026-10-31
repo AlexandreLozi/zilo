@@ -11,16 +11,16 @@
       "steps": [
         {
           "s": "opened",
-          "ms": 3,
+          "ms": 1,
           "closedImmediately": false
         },
         {
           "s": "ready",
-          "ms": 15
+          "ms": 25
         }
       ],
       "coopHeader": null,
-      "nonce": "e2b1ca5fc6080cb517bd1c2ecfade76d",
+      "nonce": "da791225eb87f6d8537c9a1933d22896",
       "code": "bridge-error:nonce-replayed"
     },
     "mintStatuses": [
@@ -39,5 +39,5 @@
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:15:50.080Z"
+  "recordedAt": "2026-10-31T16:27:17.866Z"
 }

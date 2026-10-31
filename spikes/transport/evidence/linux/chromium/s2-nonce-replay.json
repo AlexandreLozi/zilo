@@ -16,11 +16,11 @@
         },
         {
           "s": "ready",
-          "ms": 24
+          "ms": 28
         }
       ],
       "coopHeader": null,
-      "nonce": "2eb0178cc6520764ab9c8574fc402701",
+      "nonce": "a6bb0bc60a1f992f69f69681ce494061",
       "code": "bridge-error:nonce-replayed"
     },
     "mintStatuses": [
@@ -39,5 +39,5 @@
   "os": "linux",
   "browserVersion": "156.0.8078.4",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:15:12.586Z"
+  "recordedAt": "2026-10-31T16:26:37.650Z"
 }

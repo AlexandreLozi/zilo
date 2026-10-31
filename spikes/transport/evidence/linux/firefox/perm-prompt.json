@@ -12,7 +12,7 @@
       "error": "AbortError",
       "message": "The operation was aborted. ",
       "timedOut": true,
-      "ms": 6113
+      "ms": 6063
     },
     "after": {
       "loopback-network": "prompt",
@@ -24,5 +24,5 @@
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:15:57.503Z"
+  "recordedAt": "2026-10-31T16:27:24.795Z"
 }

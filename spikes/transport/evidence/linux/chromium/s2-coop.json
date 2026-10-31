@@ -8,12 +8,12 @@
       "steps": [
         {
           "s": "opened",
-          "ms": 34,
+          "ms": 30,
           "closedImmediately": false
         }
       ],
       "coopHeader": "same-origin",
-      "nonce": "ca6fea8063f7311bac64bcd443d229c1",
+      "nonce": "e8f4cfd8e6f8509b62e918e9e5157113",
       "code": "coop-severed",
       "readyFail": "popup-closed",
       "popupClosed": true
@@ -26,12 +26,10 @@
     },
     "minted": 0
   },
-  "console": [
-    "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
-  ],
+  "console": [],
   "project": "chromium",
   "os": "linux",
   "browserVersion": "156.0.8078.4",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:24:36.993Z"
+  "recordedAt": "2026-10-31T16:26:12.598Z"
 }
