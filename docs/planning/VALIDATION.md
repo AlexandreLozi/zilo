@@ -19,5 +19,8 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010).
 ## Pending cross-model reviews queued for GPT resume (OD-1)
 - T04a (reviewer ctx_6f602d7fa893 stalled by the outage; restart it on resume).
 - T05 design spec.
-- T01 SP-1a interim note (reviewed together with T10, per OD-2).
+- T01 SP-1a full spike @b4e14e1 and the interim note @8cbc264. The interim note is reviewed together
+  with T10 (OD-2). Linux: 49 passed, 4 n/a at d17a78e. Windows WebKit evidence was observed
+  natively at c921bd2 (17 passed) **before OD-6 was known**; no further native-Windows runs, so
+  later rows are blocked-by-host-SAC. Real Safari, macOS and hosted CI are pending.
 - T04b-V evidence: evidence only, Claude-run; GPT may spot-check it on resume.

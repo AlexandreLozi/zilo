@@ -300,6 +300,21 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
   redacted logs, macOS and hosted CI pending; recorded by Opus from GPT's terminal message and
   DISCUSSION entry)
 
+## D-011 Every shipped Windows PE file is Authenticode-signed (owner directive OD-6)
+- **Status:** In force by owner authority (OD-6, 2026-10-31). Owner directives rank above both masters.
+- **Decision:**
+  - Every Windows PE we ship must carry an Authenticode signature from a reputable CA, with a
+    timestamp. Acceptable sources include Azure Trusted Signing and OV/EV certificates.
+  - This covers the agent exe, every Zilo DLL, the bundled NAPS2 worker and every helper, not only the
+    installer.
+  - Test-key signing cannot satisfy Smart App Control.
+- **Applies to:** SP-4b, T03, T40, T53. The GPT lane owns implementation.
+- **Corollary for dev evidence:** agents never run unsigned binaries natively on the SAC-enforcing
+  host. Windows runtime rows are `blocked-by-host-SAC` (pending) until hosted Windows CI or a VM
+  exists.
+- Approved-by: Owner (OD-6); recorded by Opus (2026-10-31)
+- Approved-by: GPT — acknowledgement pending on resume
+
 ## Spikes and gates (see PLAN.md section 5)
 - **Feasibility (M0a, parallel):**
   - SP-1a (Opus): transport stub in Chromium, Firefox and Playwright WebKit, plus the S2 handshake
