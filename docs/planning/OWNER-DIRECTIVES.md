@@ -71,6 +71,26 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
   SP-4b, T03, T40 and T53. Test keys cannot satisfy SAC: a test-signed build is expected to be
   blocked.
 
+## OD-7 Hosted CI: private GitHub repo (2026-10-31 ~17:35)
+- The owner approved a **private** repo, **https://github.com/AlexandreLozi/zilo** (remote
+  `origin`). `main` and the active task branches (t10, t01, t04a, t05, t03, t12-proto) are pushed.
+  The first runs are Backend CI on `main` (manual dispatch), spike-transport and packaging dry run.
+- Hosted CI on the rebased SHA now **replaces** the D-010 local-only evidence wherever a workflow
+  exists. Backfill the "hosted CI: pending" rows in VALIDATION.md. Windows and macOS runtime rows
+  that were pending (including the OD-6 SAC blocks) are proven on hosted runners.
+- Who pushes:
+  - The Opus master pushes `main` after each merge.
+  - Authors push their own task branch.
+  - Do not push review-only branches unless they add tests.
+- Never make the repo public, add collaborators, or change repo settings without the owner.
+- **Actions minutes are billed on private repos** (Windows 2×, macOS 10×). Rules to keep the bill
+  down:
+  - Avoid duplicate pushes and reruns that aren't needed.
+  - Keep `paths:` filters.
+  - Run the macOS matrix only where a task needs it.
+  - Cancel superseded runs (`concurrency: cancel-in-progress` is welcome).
+- Secrets: none in the repo, ever. Signing test keys are generated during CI.
+
 ## OD-5 Reporting
 - The owner talks only to the liaison terminal. Masters send owner-facing questions to the liaison,
   which relays them.
