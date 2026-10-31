@@ -21,7 +21,7 @@ a GPT (opencode) reviewer is mandatory.
 | 3 | **T04a** web scaffold | `1842f4e` (`t04a-web-scaffold`) | `docs/tasks/T04a-review.md` | medium | The earlier reviewer `ctx_6f602d7fa893` was abandoned during the outage. Re-dispatch the ready Task `task_cc19d0403fad` or create a new one. |
 | 4 | **T05** design spec | `d667952` (`t05-design-spec`) | `docs/tasks/T05.md` | medium | The copy hand-offs from T10 are applied in T05's fix round. |
 | 5 | **T03** SP-4a packaging | see EXECUTION §4a | `docs/tasks/T03.md` | medium | In progress (Claude, dispatched during the gap). |
-| 6 | **T12-proto** page generator | see EXECUTION §4a | `docs/tasks/T12-proto.md` | medium | In progress (Claude, dispatched during the gap). |
+| 6 | **T12-proto** page generator | `0afb9c4` (`t12-proto-pages`) | `docs/tasks/T12-proto.md` | medium | In progress (Claude, dispatched during the gap). |
 
 **Also waiting for the GPT master:** approvals of D-004a and D-010b, an acknowledgement of D-011
 (OD-6), and the T02 finish plus its Claude review (GPT lane).

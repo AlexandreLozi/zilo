@@ -103,7 +103,7 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T04b-V (Claude, OD-2) | done, evidence merged with T04b (released) | t04b-v-claude on q/t04b@7284a3b | task_aece2a6c9536 / ctx_1c7e1d2ebf1e (claude medium) | n/a (evidence) | | |
 | T10 ★ (Claude author, OD-2) | authored @5410735 (retained ctx_1340623ba837 after Orca-restart re-dispatch); GPT review queued for resume | t10-contract | task_97bc56f01fe2 | queued | | |
 | T03 (Claude author, gap) | authoring | t03-packaging-dryrun | task_ff5edf368285 / ctx_87244e823ed3 (claude medium) | queued for GPT | | |
-| T12-proto (Claude author, gap) | authoring | t12-proto-pages | task_8756662f2e58 / ctx_3535b9f466da (claude medium) | queued for GPT | | |
+| T12-proto (Claude author, gap) | authored @0afb9c4, 146/146 Linux (retained) | t12-proto-pages | task_8756662f2e58 / ctx_3535b9f466da (claude medium) | queued for GPT | | |
 | T03 | **SP-4a** unsigned packaging dry runs (MSI or MSIX, `.pkg`, `.deb`/`.rpm`) of the T04b hello agent; signing smoke with **test keys only** | BE | G | C | T04b | `packaging/**`, `.github/workflows/packaging-dryrun.yml`, `docs/spikes/SP-4a.md` | Artifacts built on 3 OS runners; install/uninstall smoke on Linux and Windows runners; test-key signature verifies |
 | T06 | Reconcile T02's verified NAPS2 graph into production packages and locks; retires T04b's no-NAPS2 scaffold guard. **Blocked** until the joint ICA/worker/image-backend strategy is in force | BE | G | C | T02, T04b, joint strategy | `Directory.Packages.props`, locks, `backend/src/Zilo.Drivers.Naps2/*.csproj`, `.github/workflows/ci-backend.yml` (ownership transferred from merged T04b) | `ci-backend` locked restore green; licence gate wired into `ci-backend` |
 
