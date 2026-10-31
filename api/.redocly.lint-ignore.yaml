@@ -1,7 +1,12 @@
 # Redocly lint ignores for the Zilo contract.
-# JobEvent is the schema of each SSE `data` line. OpenAPI 3.1 has no standard way to attach an
-# item schema to text/event-stream, so it is linked through `x-zilo-event-schema` (which the
-# no-unused-components rule does not follow) and exported to generated types as a component.
+# OpenAPI 3.1 has no standard way to attach an item schema to text/event-stream. The SSE `data`
+# schemas are linked through `x-zilo-event-schema` (JobEventEnvelope, decoding step 1) and
+# `x-zilo-known-event-schema` (JobEvent, decoding step 2), which the no-unused-components rule
+# does not follow. JobEventEnvelope is also referenced by each known event; JobEvent is not, so
+# it is ignored here. Both are exported to generated types as components.
+# MethodNotAllowed is the shared representation of the global 405 (x-zilo-global-errors). OpenAPI
+# cannot attach a response to a method that a path does not define, so nothing references it.
 openapi.yaml:
   no-unused-components:
     - '#/components/schemas/JobEvent'
+    - '#/components/responses/MethodNotAllowed'
