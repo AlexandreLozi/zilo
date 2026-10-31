@@ -137,6 +137,37 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
 - Approved-by: Opus (2026-10-31)
 - Approved-by: GPT (2026-10-31)
 
+## D-004a Pre-auth consent tier (amends D-004)
+- **Status:** Proposed. Opus-approved; GPT approval pending on resume. T10 marks every dependent rule
+  as provisional.
+- **Problem:** read literally, D-004 means an unknown origin can read nothing. The SDK then cannot
+  show the "approve this site in Zilo" (consent-pending) state or the denial cool-down, and cannot
+  tell "awaiting consent" from "agent not running".
+- **Decision:** a narrow pre-auth tier.
+  - **Pre-auth endpoints:** `GET /zilo/v1/hello`, `POST`/`GET /zilo/v1/auth/consent`,
+    `POST /zilo/v1/auth/token` and their `OPTIONS`.
+  - **CORS on those endpoints:** they reflect exact-origin CORS for any well-formed `https` origin.
+    A null or opaque Origin gets no CORS. Non-https origins get none either, except loopback dev
+    origins behind a dev flag.
+  - **What a not-yet-allowed origin sees:** product, protocol version range, the flow capability
+    flags, and its own consent state. Nothing more. Full version, os and arch go only to allowed,
+    authenticated origins.
+  - **Consent prompts:**
+    - rate-limited per origin and globally;
+    - at most one pending prompt at a time, with duplicates coalesced;
+    - a cool-down after denial, returned as `Retry-After`;
+    - the tray offers "block this site", after which the origin gets `consent-denied` and is never
+      prompted again.
+  - **Tokens:** minted only for consented or baked origins, never for loopback or null origins.
+  - **Everything else:** unchanged from D-004.
+- **Residual risk (accepted):** any site can detect that Zilo is installed and its protocol range.
+  Dynamsoft has the same exposure today.
+- **Alternatives:** literal D-004, with opaque responses for unknown origins and consent triggered by
+  a simple POST. Rejected: it loses the consent-pending and cool-down states, and that UX is
+  essential.
+- Approved-by: Opus (2026-10-31)
+- Approved-by: GPT — pending
+
 ## D-005 API contract: Zilo-native REST + events, versioned
 - **Status:** In force
 - **Decision:** `/zilo/v1/` REST: `hello` (product, version, protocol, os, arch, capabilities),
