@@ -257,7 +257,7 @@ class GateTests(unittest.TestCase):
         self.invoke()
 
     def test_forbidden_packages_never_cleared(self):
-        for package_id in ["Dynamsoft", "Company.DYNAMSOFT.Binary", "NAPS2.Images.ImageSharp",
+        for package_id in ["Dynamsoft", "Company.DYNAMSOFT.Binary", "NAPS2.Images.ImageSharp", "SixLabors.ImageSharp", "SixLabors.ImageSharp.Drawing",
                            "NAPS2", "NAPS2.App", "NAPS2.Application", "NAPS2.Console", "NAPS2.Desktop"]:
             with self.subTest(package=package_id):
                 self.inventory["packages"][0]["id"] = package_id

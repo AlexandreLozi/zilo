@@ -300,7 +300,7 @@ def payload_key(payload, rid):
 
 def forbidden_identity(value):
     lowered = value.casefold()
-    if "dynamsoft" in lowered or "naps2.images.imagesharp" in lowered:
+    if any(banned in lowered for banned in ("dynamsoft", "naps2.images.imagesharp", "sixlabors.imagesharp")):
         return True
     # Detect application identities in paths/source strings as well as IDs.
     tokens = re.split(r"[/\\:#?=&\s]+", lowered)

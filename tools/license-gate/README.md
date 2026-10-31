@@ -157,7 +157,8 @@ GPL-with-`SANE-exception` case with a reviewed reference, not arbitrary unowned
 LGPL or other restricted material.
 
 NAPS2 application code (`application-code` with a NAPS2 owner), Dynamsoft
-artifacts, and `NAPS2.Images.ImageSharp` are always denied, even if an exception
+artifacts, `NAPS2.Images.ImageSharp`, and `SixLabors.ImageSharp` (including its
+extension packages) are always denied, even if an exception
 is supplied. An exception cannot override these D-002 prohibitions.
 
 ## Design and trust boundary

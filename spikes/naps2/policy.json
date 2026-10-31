@@ -1,0 +1,715 @@
+{
+  "schemaVersion": 1,
+  "allowedExpressions": [
+    "MIT",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "0BSD",
+    "Zlib",
+    "LGPL-2.1-or-later"
+  ],
+  "packages": [
+    {
+      "id": "Eto.Forms",
+      "version": "2.11.0",
+      "sha512": "zAWXLvZYY4MvoR8rsX/Y45IlOiPP9bxseTkLjAi5YNnqMojHa8D+tfgY56KeEVOnum8iyTh8xBiQJyhxDksYuw==",
+      "licenseExpression": "BSD-3-Clause",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/eto.forms/2.11.0/eto.forms.2.11.0.nupkg",
+        "NuGet lock contentHash: zAWXLvZYY4MvoR8rsX/Y45IlOiPP9bxseTkLjAi5YNnqMojHa8D+tfgY56KeEVOnum8iyTh8xBiQJyhxDksYuw==",
+        "Actual license bytes SHA256: d4778843a4d44eaaaf02acc84c362e00b3c7d638f001be928f13d082988be742",
+        "licenses/eto.forms/2.11.0/Eto-LICENSE.txt"
+      ],
+      "licenseFile": "Eto-LICENSE.txt",
+      "licenseFileSha256": "d4778843a4d44eaaaf02acc84c362e00b3c7d638f001be928f13d082988be742",
+      "source": "https://api.nuget.org/v3-flatcontainer/eto.forms/2.11.0/eto.forms.2.11.0.nupkg"
+    },
+    {
+      "id": "Eto.Platform.Mac64",
+      "version": "2.11.0",
+      "sha512": "4M7MkB05iCvSmu/Juisv+45dWQXDHV5DEvccO1aYmkYtKafFt4+xdmrEhNa6S8pGf5re7MPLnfC++i6yAqSTug==",
+      "licenseExpression": "BSD-3-Clause",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice",
+        "Include MonoMac-LICENSE.txt; exercise its MIT option for MonoMac.dll in addition to Eto BSD3 notices"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/eto.platform.mac64/2.11.0/eto.platform.mac64.2.11.0.nupkg",
+        "NuGet lock contentHash: 4M7MkB05iCvSmu/Juisv+45dWQXDHV5DEvccO1aYmkYtKafFt4+xdmrEhNa6S8pGf5re7MPLnfC++i6yAqSTug==",
+        "Actual license bytes SHA256: d4778843a4d44eaaaf02acc84c362e00b3c7d638f001be928f13d082988be742",
+        "licenses/eto.platform.mac64/2.11.0/Eto-LICENSE.txt",
+        "Exact nupkg includes MonoMac-LICENSE.txt: MIT OR Apache2; primary package license file applies to Eto, not a claim that MonoMac is BSD3"
+      ],
+      "licenseFile": "Eto-LICENSE.txt",
+      "licenseFileSha256": "d4778843a4d44eaaaf02acc84c362e00b3c7d638f001be928f13d082988be742",
+      "source": "https://api.nuget.org/v3-flatcontainer/eto.platform.mac64/2.11.0/eto.platform.mac64.2.11.0.nupkg"
+    },
+    {
+      "id": "Google.Protobuf",
+      "version": "3.29.3",
+      "sha512": "t7nZFFUFwigCwZ+nIXHDLweXvwIpsOXi+P7J7smPT/QjI3EKxnCzTQOhBqyEh6XEzc/pNH+bCFOOSjatrPt6Tw==",
+      "licenseExpression": "BSD-3-Clause",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/google.protobuf/3.29.3/google.protobuf.3.29.3.nupkg",
+        "NuGet lock contentHash: t7nZFFUFwigCwZ+nIXHDLweXvwIpsOXi+P7J7smPT/QjI3EKxnCzTQOhBqyEh6XEzc/pNH+bCFOOSjatrPt6Tw=="
+      ]
+    },
+    {
+      "id": "Grpc.Core.Api",
+      "version": "2.67.0",
+      "sha512": "cL1/2f8kc8lsAGNdfCU25deedXVehhLA6GXKLLN4hAWx16XN7BmjYn3gFU+FBpir5yJynvDTHEypr3Tl0j7x/Q==",
+      "licenseExpression": "Apache-2.0",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/grpc.core.api/2.67.0/grpc.core.api.2.67.0.nupkg",
+        "NuGet lock contentHash: cL1/2f8kc8lsAGNdfCU25deedXVehhLA6GXKLLN4hAWx16XN7BmjYn3gFU+FBpir5yJynvDTHEypr3Tl0j7x/Q=="
+      ]
+    },
+    {
+      "id": "GrpcDotNetNamedPipes",
+      "version": "3.1.0",
+      "sha512": "IEbpody7yYtL+oTNGRJspbK+Xne2fWzhiAOmJxJ8zoS3knFv0jDxv0WgJxO2cOCpoItn1cv4X4dloxSbFPB3eA==",
+      "licenseExpression": "Apache-2.0",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/grpcdotnetnamedpipes/3.1.0/grpcdotnetnamedpipes.3.1.0.nupkg",
+        "NuGet lock contentHash: IEbpody7yYtL+oTNGRJspbK+Xne2fWzhiAOmJxJ8zoS3knFv0jDxv0WgJxO2cOCpoItn1cv4X4dloxSbFPB3eA==",
+        "Actual license bytes SHA256: 3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5",
+        "licenses/grpcdotnetnamedpipes/3.1.0/LICENSE"
+      ],
+      "licenseFile": "LICENSE",
+      "licenseFileSha256": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5",
+      "source": "https://api.nuget.org/v3-flatcontainer/grpcdotnetnamedpipes/3.1.0/grpcdotnetnamedpipes.3.1.0.nupkg"
+    },
+    {
+      "id": "Makaretu.Dns",
+      "version": "2.0.1",
+      "sha512": "qe/5w5Q/i2Xz2ZnCq3E49kLAtVFRuuBn40C1mQPWbLDwlHM0KVDzCkFqwxDedv7JgQis66Z9AZKyo1zCTRrdYA==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/makaretu.dns/2.0.1/makaretu.dns.2.0.1.nupkg",
+        "NuGet lock contentHash: qe/5w5Q/i2Xz2ZnCq3E49kLAtVFRuuBn40C1mQPWbLDwlHM0KVDzCkFqwxDedv7JgQis66Z9AZKyo1zCTRrdYA==",
+        "Actual license bytes SHA256: 37920e72b0c28aa74ad0eb9b37814a69d44614eb1991c0f1cd7e6caad735d7ad",
+        "https://raw.githubusercontent.com/richardschneider/net-dns/701463d2091e6d98d4cc4490abb0e0ead8ae2985/LICENSE",
+        "Repository commit declared by exact nupkg nuspec; MIT text at that commit."
+      ],
+      "licenseFile": "evidence/source/makaretu-LICENSE",
+      "licenseFileSha256": "37920e72b0c28aa74ad0eb9b37814a69d44614eb1991c0f1cd7e6caad735d7ad",
+      "source": "https://api.nuget.org/v3-flatcontainer/makaretu.dns/2.0.1/makaretu.dns.2.0.1.nupkg"
+    },
+    {
+      "id": "Microsoft.Bcl.AsyncInterfaces",
+      "version": "10.0.10",
+      "sha512": "TFI6OKYE1XZz4SGuTSH70c6SBdPpFktXsoa1gCxTr3mKrhmXirnvaS0tKz+J3ZWICEAmMpEGn59nO4ICtUpQXA==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/microsoft.bcl.asyncinterfaces/10.0.10/microsoft.bcl.asyncinterfaces.10.0.10.nupkg",
+        "NuGet lock contentHash: TFI6OKYE1XZz4SGuTSH70c6SBdPpFktXsoa1gCxTr3mKrhmXirnvaS0tKz+J3ZWICEAmMpEGn59nO4ICtUpQXA=="
+      ]
+    },
+    {
+      "id": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "10.0.10",
+      "sha512": "z/2xXlFw2aLGjHyEm6E0tQ+In6VfzQzTrtArbQ2c0TQE16ZbyDCMGPvaUT9I0s8rgy9sRWlU2P9waW37qV04qA==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/microsoft.extensions.dependencyinjection.abstractions/10.0.10/microsoft.extensions.dependencyinjection.abstractions.10.0.10.nupkg",
+        "NuGet lock contentHash: z/2xXlFw2aLGjHyEm6E0tQ+In6VfzQzTrtArbQ2c0TQE16ZbyDCMGPvaUT9I0s8rgy9sRWlU2P9waW37qV04qA=="
+      ]
+    },
+    {
+      "id": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "10.0.10",
+      "sha512": "zkFxGYUvdxAvIKTyXHrmW+Sux53D4SezD9dMyZ6hrwwzPQJNuwCRy1f5W7AvYTqacEGhWF2XderRQG1OvbV8og==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/microsoft.extensions.logging.abstractions/10.0.10/microsoft.extensions.logging.abstractions.10.0.10.nupkg",
+        "NuGet lock contentHash: zkFxGYUvdxAvIKTyXHrmW+Sux53D4SezD9dMyZ6hrwwzPQJNuwCRy1f5W7AvYTqacEGhWF2XderRQG1OvbV8og=="
+      ]
+    },
+    {
+      "id": "Microsoft.Win32.SystemEvents",
+      "version": "9.0.3",
+      "sha512": "Z0hIB2oeNqPOO0MYD0wkLpEe0LangoF3BSdMLLF5wft/rndYoXhLQvWni1OxymlWj+1adswAps2ZlrPmD9ZhBg==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/microsoft.win32.systemevents/9.0.3/microsoft.win32.systemevents.9.0.3.nupkg",
+        "NuGet lock contentHash: Z0hIB2oeNqPOO0MYD0wkLpEe0LangoF3BSdMLLF5wft/rndYoXhLQvWni1OxymlWj+1adswAps2ZlrPmD9ZhBg=="
+      ]
+    },
+    {
+      "id": "NAPS2.Escl",
+      "version": "1.6.0",
+      "sha512": "YHkOBzIt20pa0rqPP8wMYdLzbhwPBjIDKZwfqqMMdXnHDoIC/mjMyae2OHXra6NgLa/9CMIMmJXTWJu7KxbrGw==",
+      "licenseExpression": "LGPL-2.1-or-later",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice",
+        "source-offer",
+        "replaceable-dll"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/naps2.escl/1.6.0/naps2.escl.1.6.0.nupkg",
+        "NuGet lock contentHash: YHkOBzIt20pa0rqPP8wMYdLzbhwPBjIDKZwfqqMMdXnHDoIC/mjMyae2OHXra6NgLa/9CMIMmJXTWJu7KxbrGw==",
+        "Actual license bytes SHA256: 409fada115195905d7addbb5f18c477a553cfbe317870f78597eb882d3d361b8",
+        "licenses/naps2.escl/1.6.0/LICENSE"
+      ],
+      "licenseFile": "LICENSE",
+      "licenseFileSha256": "409fada115195905d7addbb5f18c477a553cfbe317870f78597eb882d3d361b8",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.escl/1.6.0/naps2.escl.1.6.0.nupkg"
+    },
+    {
+      "id": "NAPS2.Images",
+      "version": "1.6.0",
+      "sha512": "bqnneGjy6NJi+hKakNbm0Pv2um15lRV2jHgxs5174G18CKCgiBvooUwWdorvywoRhtJ7ewB0EEc7reLZ7FtIog==",
+      "licenseExpression": "LGPL-2.1-or-later",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice",
+        "source-offer",
+        "replaceable-dll"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/naps2.images/1.6.0/naps2.images.1.6.0.nupkg",
+        "NuGet lock contentHash: bqnneGjy6NJi+hKakNbm0Pv2um15lRV2jHgxs5174G18CKCgiBvooUwWdorvywoRhtJ7ewB0EEc7reLZ7FtIog==",
+        "Actual license bytes SHA256: 9837c5480f12bfa9505c7a58e29b251c9d38f33d4a3439c32b178c2fb914a30a",
+        "licenses/naps2.images/1.6.0/LICENSE"
+      ],
+      "licenseFile": "LICENSE",
+      "licenseFileSha256": "9837c5480f12bfa9505c7a58e29b251c9d38f33d4a3439c32b178c2fb914a30a",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.images/1.6.0/naps2.images.1.6.0.nupkg"
+    },
+    {
+      "id": "NAPS2.Images.Gdi",
+      "version": "1.6.0",
+      "sha512": "PYJeWwLa52nsSJF57fYgZE8tc0cO3UQl8ZybVRvq8A3u3v9C5ki+mqMjIKmrjmj6sEd4pEuRssj74ZKY/W+0pQ==",
+      "licenseExpression": "LGPL-2.1-or-later",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice",
+        "source-offer",
+        "replaceable-dll"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/naps2.images.gdi/1.6.0/naps2.images.gdi.1.6.0.nupkg",
+        "NuGet lock contentHash: PYJeWwLa52nsSJF57fYgZE8tc0cO3UQl8ZybVRvq8A3u3v9C5ki+mqMjIKmrjmj6sEd4pEuRssj74ZKY/W+0pQ==",
+        "Actual license bytes SHA256: 9837c5480f12bfa9505c7a58e29b251c9d38f33d4a3439c32b178c2fb914a30a",
+        "licenses/naps2.images.gdi/1.6.0/LICENSE"
+      ],
+      "licenseFile": "LICENSE",
+      "licenseFileSha256": "9837c5480f12bfa9505c7a58e29b251c9d38f33d4a3439c32b178c2fb914a30a",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.images.gdi/1.6.0/naps2.images.gdi.1.6.0.nupkg"
+    },
+    {
+      "id": "NAPS2.Images.Gtk",
+      "version": "1.6.0",
+      "sha512": "A/iRwWKZXWKQst+vMcHz9YNijqDWTvPQfGQQt8KukojwOJ6zgbQRRylSqEMKceu16JRe+2cAlFBGcWjyM9rp0Q==",
+      "licenseExpression": "LGPL-2.1-or-later",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice",
+        "source-offer",
+        "replaceable-dll"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/naps2.images.gtk/1.6.0/naps2.images.gtk.1.6.0.nupkg",
+        "NuGet lock contentHash: A/iRwWKZXWKQst+vMcHz9YNijqDWTvPQfGQQt8KukojwOJ6zgbQRRylSqEMKceu16JRe+2cAlFBGcWjyM9rp0Q==",
+        "Actual license bytes SHA256: 9837c5480f12bfa9505c7a58e29b251c9d38f33d4a3439c32b178c2fb914a30a",
+        "licenses/naps2.images.gtk/1.6.0/LICENSE"
+      ],
+      "licenseFile": "LICENSE",
+      "licenseFileSha256": "9837c5480f12bfa9505c7a58e29b251c9d38f33d4a3439c32b178c2fb914a30a",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.images.gtk/1.6.0/naps2.images.gtk.1.6.0.nupkg"
+    },
+    {
+      "id": "NAPS2.Images.Mac",
+      "version": "1.6.0",
+      "sha512": "13qbuaTkHLmtQpF3yckcJdYGw5CGSFfMCTsVjYSh6PQp0m0/uNd+L2IHp3prFDPWLlPD9WdPgBRDmSQUVIoGDQ==",
+      "licenseExpression": "LGPL-2.1-or-later",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice",
+        "source-offer",
+        "replaceable-dll"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/naps2.images.mac/1.6.0/naps2.images.mac.1.6.0.nupkg",
+        "NuGet lock contentHash: 13qbuaTkHLmtQpF3yckcJdYGw5CGSFfMCTsVjYSh6PQp0m0/uNd+L2IHp3prFDPWLlPD9WdPgBRDmSQUVIoGDQ==",
+        "Actual license bytes SHA256: 9837c5480f12bfa9505c7a58e29b251c9d38f33d4a3439c32b178c2fb914a30a",
+        "licenses/naps2.images.mac/1.6.0/LICENSE"
+      ],
+      "licenseFile": "LICENSE",
+      "licenseFileSha256": "9837c5480f12bfa9505c7a58e29b251c9d38f33d4a3439c32b178c2fb914a30a",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.images.mac/1.6.0/naps2.images.mac.1.6.0.nupkg"
+    },
+    {
+      "id": "NAPS2.Internals",
+      "version": "1.6.0",
+      "sha512": "mGRuoyIXs4OxBIAO0CH1S/JKWUBzErWJWTtPleVVKuCd8hoR640Q4v5QjxdSqZZvlefDNGOPaGPn5Op8ahbWdg==",
+      "licenseExpression": "LGPL-2.1-or-later",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice",
+        "source-offer",
+        "replaceable-dll"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/naps2.internals/1.6.0/naps2.internals.1.6.0.nupkg",
+        "NuGet lock contentHash: mGRuoyIXs4OxBIAO0CH1S/JKWUBzErWJWTtPleVVKuCd8hoR640Q4v5QjxdSqZZvlefDNGOPaGPn5Op8ahbWdg==",
+        "Actual license bytes SHA256: cd1f857214d83398dceb8ede90671201f43ba2340fd7bf18233e30e15602d900",
+        "licenses/naps2.internals/1.6.0/LICENSE"
+      ],
+      "licenseFile": "LICENSE",
+      "licenseFileSha256": "cd1f857214d83398dceb8ede90671201f43ba2340fd7bf18233e30e15602d900",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.internals/1.6.0/naps2.internals.1.6.0.nupkg"
+    },
+    {
+      "id": "NAPS2.Mdns",
+      "version": "1.0.1",
+      "sha512": "LQMEYKiSzvXtVVFgzBqBTRnoWa9lJRB7YEnD2m8/we9PfON6s+QGPSq7ZATVt1Cbuhr4FDRkJEjuLUeBkPK6Zw==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/naps2.mdns/1.0.1/naps2.mdns.1.0.1.nupkg",
+        "NuGet lock contentHash: LQMEYKiSzvXtVVFgzBqBTRnoWa9lJRB7YEnD2m8/we9PfON6s+QGPSq7ZATVt1Cbuhr4FDRkJEjuLUeBkPK6Zw=="
+      ]
+    },
+    {
+      "id": "NAPS2.NTwain",
+      "version": "1.0.1",
+      "sha512": "gTUekPpglFMgcCKQ6cOcXsnuOR/Y3hMp2dTo8jlrRRzBQ7ASregm262rkyDxD5KeZ7LxmjT5NXX1tg+JUUZg9A==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/naps2.ntwain/1.0.1/naps2.ntwain.1.0.1.nupkg",
+        "NuGet lock contentHash: gTUekPpglFMgcCKQ6cOcXsnuOR/Y3hMp2dTo8jlrRRzBQ7ASregm262rkyDxD5KeZ7LxmjT5NXX1tg+JUUZg9A=="
+      ]
+    },
+    {
+      "id": "NAPS2.PdfSharp",
+      "version": "1.0.2",
+      "sha512": "Eapb5d75M1NqAffpDq2uw6IBQu1yWcu87ClPvKoJwin5IwuvmV1Tkvrr67Di8C7fAldBko0hcpVTZ0vkFXaL2A==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/naps2.pdfsharp/1.0.2/naps2.pdfsharp.1.0.2.nupkg",
+        "NuGet lock contentHash: Eapb5d75M1NqAffpDq2uw6IBQu1yWcu87ClPvKoJwin5IwuvmV1Tkvrr67Di8C7fAldBko0hcpVTZ0vkFXaL2A==",
+        "Actual license bytes SHA256: 7090fa5e4a281f2263dfa88998d32ead0f945460936e3f9286805a8c7fecb54f",
+        "licenses/naps2.pdfsharp/1.0.2/LICENCE.md"
+      ],
+      "licenseFile": "LICENCE.md",
+      "licenseFileSha256": "7090fa5e4a281f2263dfa88998d32ead0f945460936e3f9286805a8c7fecb54f",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.pdfsharp/1.0.2/naps2.pdfsharp.1.0.2.nupkg"
+    },
+    {
+      "id": "NAPS2.Sdk",
+      "version": "1.6.0",
+      "sha512": "I1u+uTL8avIe3faCrTPWkWj8KEK9qnZI8E/9Bm7k0emCeFMsIVsQUn0d85aQJXmjtnpMh5b711v3u9863hCbTQ==",
+      "licenseExpression": "LGPL-2.1-or-later",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice",
+        "source-offer",
+        "replaceable-dll"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/naps2.sdk/1.6.0/naps2.sdk.1.6.0.nupkg",
+        "NuGet lock contentHash: I1u+uTL8avIe3faCrTPWkWj8KEK9qnZI8E/9Bm7k0emCeFMsIVsQUn0d85aQJXmjtnpMh5b711v3u9863hCbTQ==",
+        "Actual license bytes SHA256: 6286ef44042623306c1422f04cd6d92505f6dc0e6c94f80a7c19a1a7d8e20979",
+        "licenses/naps2.sdk/1.6.0/LICENSE"
+      ],
+      "licenseFile": "LICENSE",
+      "licenseFileSha256": "6286ef44042623306c1422f04cd6d92505f6dc0e6c94f80a7c19a1a7d8e20979",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.sdk/1.6.0/naps2.sdk.1.6.0.nupkg"
+    },
+    {
+      "id": "NAPS2.Sdk.Worker.Win32",
+      "version": "1.6.0",
+      "sha512": "c5elzapNU63cCm8V/S8R6lnSkXYK8bpBY1HJjF3N9YxiQCSEoX/qkVjvm6kZsWZlOQ9KTV3vmDrX84GaLcjk1A==",
+      "licenseExpression": "LGPL-2.1-or-later",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice",
+        "source-offer",
+        "replaceable-dll"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/naps2.sdk.worker.win32/1.6.0/naps2.sdk.worker.win32.1.6.0.nupkg",
+        "NuGet lock contentHash: c5elzapNU63cCm8V/S8R6lnSkXYK8bpBY1HJjF3N9YxiQCSEoX/qkVjvm6kZsWZlOQ9KTV3vmDrX84GaLcjk1A==",
+        "Actual license bytes SHA256: 99c0d6be5f616c9f6941951bdca50a64c16b43ea4e141264115068e11fe2089d",
+        "licenses/naps2.sdk.worker.win32/1.6.0/LICENSE"
+      ],
+      "licenseFile": "LICENSE",
+      "licenseFileSha256": "99c0d6be5f616c9f6941951bdca50a64c16b43ea4e141264115068e11fe2089d",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.sdk.worker.win32/1.6.0/naps2.sdk.worker.win32.1.6.0.nupkg"
+    },
+    {
+      "id": "NAPS2.Wia",
+      "version": "2.0.3",
+      "sha512": "Za/pkCCVuUxD3Q00pTsFd3FRAi1HTBlM8uzDXaPpULMZ6MoqYaJKcE5fJmOz+fqNfQaMxv9dQeJ1GZ9uVtBM8g==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/naps2.wia/2.0.3/naps2.wia.2.0.3.nupkg",
+        "NuGet lock contentHash: Za/pkCCVuUxD3Q00pTsFd3FRAi1HTBlM8uzDXaPpULMZ6MoqYaJKcE5fJmOz+fqNfQaMxv9dQeJ1GZ9uVtBM8g=="
+      ]
+    },
+    {
+      "id": "SharpZipLib",
+      "version": "1.4.2",
+      "sha512": "yjj+3zgz8zgXpiiC3ZdF/iyTBbz2fFvMxZFEBPUcwZjIvXOf37Ylm+K58hqMfIBt5JgU/Z2uoUS67JmTLe973A==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/sharpziplib/1.4.2/sharpziplib.1.4.2.nupkg",
+        "NuGet lock contentHash: yjj+3zgz8zgXpiiC3ZdF/iyTBbz2fFvMxZFEBPUcwZjIvXOf37Ylm+K58hqMfIBt5JgU/Z2uoUS67JmTLe973A=="
+      ]
+    },
+    {
+      "id": "SimpleBase",
+      "version": "1.3.1",
+      "sha512": "TqqQc+WFg3s10/PdnI2Dio0U7xEmVXhkf+ey4tOGZzjyd054rnNOLNVahJhMYmfBQdS7/jkVqC8xzLm/bkR3EA==",
+      "licenseExpression": "Apache-2.0",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/simplebase/1.3.1/simplebase.1.3.1.nupkg",
+        "NuGet lock contentHash: TqqQc+WFg3s10/PdnI2Dio0U7xEmVXhkf+ey4tOGZzjyd054rnNOLNVahJhMYmfBQdS7/jkVqC8xzLm/bkR3EA==",
+        "Actual license bytes SHA256: 00d7839fe77ff1e115765e6a473ff45a49e7c1607bc5fd9e2dda045ada997bc0",
+        "https://raw.githubusercontent.com/ssg/SimpleBase/72ecb1de90918faade31351ece771e67f52d4d4a/LICENSE.txt",
+        "Exact nupkg licenseUrl points to Apache; publication-era source LICENSE is Apache2 and AssemblyInfo.cs declares1.3.1. Source-to-package association corroborated, not reproducibly rebuilt."
+      ],
+      "licenseFile": "evidence/source/simplebase-LICENSE.txt",
+      "licenseFileSha256": "00d7839fe77ff1e115765e6a473ff45a49e7c1607bc5fd9e2dda045ada997bc0",
+      "source": "https://api.nuget.org/v3-flatcontainer/simplebase/1.3.1/simplebase.1.3.1.nupkg"
+    },
+    {
+      "id": "SixLabors.Fonts",
+      "version": "1.0.1",
+      "sha512": "ljezRHWc7N0azdQViib7Aa5v+DagRVkKI2/93kEbtjVczLs+yTkSq6gtGmvOcx4IqyNbO3GjLt7SAQTpLkySNw==",
+      "licenseExpression": "Apache-2.0",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/sixlabors.fonts/1.0.1/sixlabors.fonts.1.0.1.nupkg",
+        "NuGet lock contentHash: ljezRHWc7N0azdQViib7Aa5v+DagRVkKI2/93kEbtjVczLs+yTkSq6gtGmvOcx4IqyNbO3GjLt7SAQTpLkySNw=="
+      ]
+    },
+    {
+      "id": "StandardSocketsHttpHandler",
+      "version": "2.2.0.10",
+      "sha512": "tlnMfWuT043rvyVQTGCm9049SZcDpe9oeLwLTVWRLw0s5ijjCdNYdxfOCMejtsUBFdWQ00boZSJHcNB2GZKBCw==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/standardsocketshttphandler/2.2.0.10/standardsocketshttphandler.2.2.0.10.nupkg",
+        "NuGet lock contentHash: tlnMfWuT043rvyVQTGCm9049SZcDpe9oeLwLTVWRLw0s5ijjCdNYdxfOCMejtsUBFdWQ00boZSJHcNB2GZKBCw=="
+      ]
+    },
+    {
+      "id": "System.Drawing.Common",
+      "version": "9.0.3",
+      "sha512": "yDxzWfZGvOtk8zk5apWXP/tmro1Nghn7/4bWS5np5CtwIfiVCC74qCc1qvIsnywvXKzVqIbKXRk09wts+xGfeg==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/system.drawing.common/9.0.3/system.drawing.common.9.0.3.nupkg",
+        "NuGet lock contentHash: yDxzWfZGvOtk8zk5apWXP/tmro1Nghn7/4bWS5np5CtwIfiVCC74qCc1qvIsnywvXKzVqIbKXRk09wts+xGfeg=="
+      ]
+    },
+    {
+      "id": "System.Formats.Nrbf",
+      "version": "10.0.10",
+      "sha512": "gOcWB7GddeYRGZWA8lHi84MvuzTI3ugYISfLfCg5FTdZB3cDaoAj7yG7c2bBaO+hio1nZ5kz/BrwpzfLT1R8Bg==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/system.formats.nrbf/10.0.10/system.formats.nrbf.10.0.10.nupkg",
+        "NuGet lock contentHash: gOcWB7GddeYRGZWA8lHi84MvuzTI3ugYISfLfCg5FTdZB3cDaoAj7yG7c2bBaO+hio1nZ5kz/BrwpzfLT1R8Bg=="
+      ]
+    },
+    {
+      "id": "System.Resources.Extensions",
+      "version": "10.0.10",
+      "sha512": "xUBGLR+HPujL5k3LmHIJSS6xFsKECOGO52nurXMDADkLRFNVVUxCH4ng2WBD1YTxGHkE/s2kJs1I2B89DJJyLA==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/system.resources.extensions/10.0.10/system.resources.extensions.10.0.10.nupkg",
+        "NuGet lock contentHash: xUBGLR+HPujL5k3LmHIJSS6xFsKECOGO52nurXMDADkLRFNVVUxCH4ng2WBD1YTxGHkE/s2kJs1I2B89DJJyLA=="
+      ]
+    },
+    {
+      "id": "System.ValueTuple",
+      "version": "4.6.2",
+      "sha512": "yQgmjfFximrNm9LIV3mL6T5MzjeC+epeE5rl4hXxAlYmxby7RM1dPSkIKXk9HNkl6G54h2JHOmLD46+Pey+IRg==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/system.valuetuple/4.6.2/system.valuetuple.4.6.2.nupkg",
+        "NuGet lock contentHash: yQgmjfFximrNm9LIV3mL6T5MzjeC+epeE5rl4hXxAlYmxby7RM1dPSkIKXk9HNkl6G54h2JHOmLD46+Pey+IRg=="
+      ]
+    },
+    {
+      "id": "ZXing.Net",
+      "version": "0.16.11",
+      "sha512": "OZfAVu88hl87BffQ+rlWCj/vLvAhhCK4QnFaoveeF/MY8SjHNSYBQ3qyUEWlPKNgBQGh1syXhCDg10vUnCsqkg==",
+      "licenseExpression": "Apache-2.0",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "https://api.nuget.org/v3-flatcontainer/zxing.net/0.16.11/zxing.net.0.16.11.nupkg",
+        "NuGet lock contentHash: OZfAVu88hl87BffQ+rlWCj/vLvAhhCK4QnFaoveeF/MY8SjHNSYBQ3qyUEWlPKNgBQGh1syXhCDg10vUnCsqkg=="
+      ]
+    },
+    {
+      "id": "Zilo.Naps2Spike",
+      "version": "0.0.0",
+      "sha512": "gdxk+4d9ZEbTNppeUFL9/XNi3AWa/58VlMa3xaMcMcqWuDskNbAJk0oVcZJqDBrBSAggtUJAYYO8Za8j9RMwHg==",
+      "licenseExpression": "MIT",
+      "review": {
+        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
+        "date": "2026-10-31",
+        "reference": "docs/spikes/SP-2a.md#license-evidence"
+      },
+      "obligations": [
+        "license-text",
+        "notice"
+      ],
+      "provenance": [
+        "first-party:Zilo.Naps2Spike/Program.cs,Naps2Spike.csproj,LICENSE",
+        "NuGet lock contentHash: gdxk+4d9ZEbTNppeUFL9/XNi3AWa/58VlMa3xaMcMcqWuDskNbAJk0oVcZJqDBrBSAggtUJAYYO8Za8j9RMwHg=="
+      ]
+    }
+  ],
+  "exceptions": [],
+  "reviewedPayloads": []
+}

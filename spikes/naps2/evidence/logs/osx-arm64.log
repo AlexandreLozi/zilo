@@ -1,0 +1,8 @@
++ /tmp/opencode/zilo-t02-dotnet/sdk/dotnet restore Naps2Spike.csproj -p:RuntimeIdentifier=osx-arm64 --configfile NuGet.Config --locked-mode
+  Determining projects to restore...
+  Restored /home/alexandre/orca/workspaces/zilo/t02-naps2-spike/spikes/naps2/Naps2Spike.csproj (in 145 ms).
++ /tmp/opencode/zilo-t02-dotnet/sdk/dotnet publish Naps2Spike.csproj -p:RuntimeIdentifier=osx-arm64 -c Release --no-restore -o artifacts/publish/osx-arm64
+  Naps2Spike -> /home/alexandre/orca/workspaces/zilo/t02-naps2-spike/spikes/naps2/bin/Release/net10.0/osx-arm64/Naps2Spike.dll
+  Naps2Spike -> /home/alexandre/orca/workspaces/zilo/t02-naps2-spike/spikes/naps2/artifacts/publish/osx-arm64/
++ /home/alexandre/.pyenv/versions/3.12.0/bin/python3 inventory.py --rid osx-arm64 --assets obj/project.assets.json --lock locks/osx-arm64.packages.lock.json --publish artifacts/publish/osx-arm64 --output evidence/inventory/osx-arm64.json
+{"rid": "osx-arm64", "packages": 27, "payloads": 77, "native": 0, "unowned": 0}

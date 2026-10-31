@@ -7,6 +7,18 @@ import unittest
 
 
 class RuntimeTests(unittest.TestCase):
+    def test_generic_published_sdk_has_no_ica_backend(self):
+        rid = os.environ.get("SPIKE_RID", "linux-x64")
+        result = subprocess.run(
+            [os.environ.get("DOTNET", "dotnet"), f"bin/Release/net10.0/{rid}/Naps2Spike.dll", "inspect"],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+        data = json.loads(result.stdout)
+        self.assertFalse(data["hasAppleDriver"])
+        self.assertFalse(data["hasImageCaptureCoreReference"])
+        self.assertIn("NAPS2.Scan.Internal.Escl.EsclScanDriver", data["driverTypes"])
+
     def test_fonts_render_and_export(self):
         rid = os.environ.get("SPIKE_RID", "linux-x64")
         result = subprocess.run(

@@ -1,0 +1,23 @@
+test_missing_or_truncated_bundle_fails (test_bundle.BundleTests.test_missing_or_truncated_bundle_fails) ... ok
+test_records_bundled_assemblies_without_extracting_them (test_bundle.BundleTests.test_records_bundled_assemblies_without_extracting_them) ... ok
+test_additional_seeded_denial_is_not_hidden_by_known_blocker (test_expected_gate.ExpectedGateTests.test_additional_seeded_denial_is_not_hidden_by_known_blocker) ... ok
+test_all_five_actual_outcomes_are_expected (test_expected_gate.ExpectedGateTests.test_all_five_actual_outcomes_are_expected) ... ok
+test_malformed_metadata_is_not_a_license_denial (test_expected_gate.ExpectedGateTests.test_malformed_metadata_is_not_a_license_denial) ... ok
+test_rid_cannot_be_mislabeled (test_expected_gate.ExpectedGateTests.test_rid_cannot_be_mislabeled) ... ok
+test_unexpected_pass_is_not_accepted_as_expected_denial (test_expected_gate.ExpectedGateTests.test_unexpected_pass_is_not_accepted_as_expected_denial) ... ok
+test_real_naps2_escl_client_acquires_independent_page (test_fixture.FixtureTests.test_real_naps2_escl_client_acquires_independent_page) ... ok
+test_content_hash_is_checked_against_lock (test_inventory.InventoryTests.test_content_hash_is_checked_against_lock) ... ok
+test_gate_projection_preserves_every_package_and_payload (test_inventory.InventoryTests.test_gate_projection_preserves_every_package_and_payload) ... ok
+test_managed_pe_requires_clr_directory (test_inventory.InventoryTests.test_managed_pe_requires_clr_directory) ... ok
+test_native_binaries_are_not_trusted_by_extension (test_inventory.InventoryTests.test_native_binaries_are_not_trusted_by_extension) ... ok
+test_worker_bundle_never_claims_separate_replaceable_dlls (test_inventory.InventoryTests.test_worker_bundle_never_claims_separate_replaceable_dlls) ... ok
+test_actual_permissive_and_dynamic_lgpl_graph (test_real_gate.RealGraphGateTests.test_actual_permissive_and_dynamic_lgpl_graph) ... ok
+test_native_payload_cannot_piggyback_on_permissive_package (test_real_gate.RealGraphGateTests.test_native_payload_cannot_piggyback_on_permissive_package) ... ok
+test_seeded_disallowed_or_unknown_package_is_denied (test_real_gate.RealGraphGateTests.test_seeded_disallowed_or_unknown_package_is_denied) ... ok
+test_fonts_render_and_export (test_runtime.RuntimeTests.test_fonts_render_and_export) ... ok
+test_generic_published_sdk_has_no_ica_backend (test_runtime.RuntimeTests.test_generic_published_sdk_has_no_ica_backend) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 1.907s
+
+OK

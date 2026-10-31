@@ -1,0 +1,2106 @@
+{
+  "sha256": "9282bc3787eb3080a91008907d94394d0e19337377861372c357017942c046be",
+  "size": 22698919,
+  "format": "6.0",
+  "bundleId": "nUBylhp3V9Sc",
+  "flags": 0,
+  "entries": [
+    {
+      "path": "NAPS2.Worker.runtimeconfig.json",
+      "offset": 8570368,
+      "size": 1768,
+      "compressedSize": 0,
+      "bundleFileType": 4,
+      "sha256": "a2a111a75bc2a1d5edd0830b56d25155223b59fd164fb2ee2bad4ef9b2864a89"
+    },
+    {
+      "path": "de/PdfSharpCore.resources.dll",
+      "offset": 8572928,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "e82ebf5138ceec230fdede2ad43931f36d5ad75c8b712d87a1bb5e9bea18536a"
+    },
+    {
+      "path": "af/NAPS2.Sdk.resources.dll",
+      "offset": 8581120,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "09251c92540b64252a2b77f7e9aea4cedcf98c032f5c242fdc31bbbc0aba18ea"
+    },
+    {
+      "path": "ar/NAPS2.Sdk.resources.dll",
+      "offset": 8589312,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "526f7dc5381c6f25e941e09cb09414ff0d72082fc8b9b6d664f2d83a5c3a8dc6"
+    },
+    {
+      "path": "bg/NAPS2.Sdk.resources.dll",
+      "offset": 8597504,
+      "size": 7168,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "3812593c4bdaa063fd2d666b78350e55eb9a04ffe915c11b3b62b4ef330e0d21"
+    },
+    {
+      "path": "bn/NAPS2.Sdk.resources.dll",
+      "offset": 8605696,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "d03e84a3beb4d9631df803e197b750132bdc65a314b88f2ff2be229e168f4dcc"
+    },
+    {
+      "path": "bs/NAPS2.Sdk.resources.dll",
+      "offset": 8613888,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "94ebfd3900e98486f66287c0e61b20b3cca9d976f1fe7fd040c92f69aec33ae1"
+    },
+    {
+      "path": "ca/NAPS2.Sdk.resources.dll",
+      "offset": 8622080,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "a2774f10f7e55922913982dd004cf2a1be8ced30de19977ec8dd5da0a1a8ad1f"
+    },
+    {
+      "path": "cs/NAPS2.Sdk.resources.dll",
+      "offset": 8630272,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "a386dd004845ee2bd4f010d3c7816e382f5b2f3a2cbcc793572a1ec7f9a06f1b"
+    },
+    {
+      "path": "da/NAPS2.Sdk.resources.dll",
+      "offset": 8638464,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "17c2a6a7d81f7a7a6c732e4cc5cd20560a518a447ead2082d8d4fa637cff823a"
+    },
+    {
+      "path": "de/NAPS2.Sdk.resources.dll",
+      "offset": 8646656,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "27452efdaa647a226bddee156d08db9a570215a6a5fa46d8fa351518ebffaf62"
+    },
+    {
+      "path": "el/NAPS2.Sdk.resources.dll",
+      "offset": 8654848,
+      "size": 7168,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "eec319acbea0da5a359a8388c5465076d0b1ba7017bc970bfad295ca6e3a374b"
+    },
+    {
+      "path": "es/NAPS2.Sdk.resources.dll",
+      "offset": 8663040,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "67e06612eebdc3fabaa66861dc33624e9e30bd42c30e6adf80edf392a9afee39"
+    },
+    {
+      "path": "et/NAPS2.Sdk.resources.dll",
+      "offset": 8671232,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "121823f61506d6db0589fc5cde2e67fd7671aef6037413b2b8fb46d4a835282d"
+    },
+    {
+      "path": "fa/NAPS2.Sdk.resources.dll",
+      "offset": 8679424,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "0419107b573d0d9530c183c50bcb4c776154044282f5b340e865328d73ed01b8"
+    },
+    {
+      "path": "fi/NAPS2.Sdk.resources.dll",
+      "offset": 8687616,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "b7e536a1a51529929536e72bc3552d48e81e91634f4ce1f8e3845b7d7c372bbf"
+    },
+    {
+      "path": "fr/NAPS2.Sdk.resources.dll",
+      "offset": 8695808,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "fc63f2ec3600f24c7143b89caeadd45ccce24d83ecb4e5604d2d1c1017900b38"
+    },
+    {
+      "path": "he/NAPS2.Sdk.resources.dll",
+      "offset": 8704000,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "a5533523fc901b02bc61eb5f9720a2161a99c12d3d816c0d39a27c050022bc28"
+    },
+    {
+      "path": "hi/NAPS2.Sdk.resources.dll",
+      "offset": 8712192,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "02644d28cd6fd5dadb370d3341bbb6c59897cb2ec3e72b5fc071bb4b36051d66"
+    },
+    {
+      "path": "hr/NAPS2.Sdk.resources.dll",
+      "offset": 8720384,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "7c34186149ee2aa3f644e69632f5c5f14a32204cb736759a5799c3835d8fec6a"
+    },
+    {
+      "path": "hu/NAPS2.Sdk.resources.dll",
+      "offset": 8728576,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "5017e92a2ec8232d2f4df07bf33763544fd951d66f3ecb246d0adaefe214d204"
+    },
+    {
+      "path": "id/NAPS2.Sdk.resources.dll",
+      "offset": 8736768,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "277b2cdde5f19f9a20c937c01cf5750ea1d4675ffde343ce42796433702b885c"
+    },
+    {
+      "path": "it/NAPS2.Sdk.resources.dll",
+      "offset": 8744960,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "2a7847bc83536a4b750cb4b5b5d50a9c1db37aad2475a3198598507b5b52153c"
+    },
+    {
+      "path": "ja/NAPS2.Sdk.resources.dll",
+      "offset": 8753152,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "fb587f1f87917c650670e117840c4794bf545190028ac3ea4c793af3619d907e"
+    },
+    {
+      "path": "ko/NAPS2.Sdk.resources.dll",
+      "offset": 8761344,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "c2c09e8c1fef62cca21beb435d4d74cc95a020de27027fd9160cfad6c2a12034"
+    },
+    {
+      "path": "lt/NAPS2.Sdk.resources.dll",
+      "offset": 8769536,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "46644bce4293d1711cf726f87917d4ed7f600d86b5bbaf26970fc2016e251cac"
+    },
+    {
+      "path": "lv/NAPS2.Sdk.resources.dll",
+      "offset": 8777728,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "c76e9e3de823d92ed96ffa0d7797520cf27d7d45e866bc088b3173e4596828f1"
+    },
+    {
+      "path": "nb/NAPS2.Sdk.resources.dll",
+      "offset": 8785920,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "ff9157003664ed6ef14c13869bc6e9759d398588dc25342176b85b5aa6d5c29f"
+    },
+    {
+      "path": "nl/NAPS2.Sdk.resources.dll",
+      "offset": 8794112,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "9766dbc31909774ff6f5b0e80b3ff01fc44116f399bc6879eaa6a61cec8c1021"
+    },
+    {
+      "path": "nn/NAPS2.Sdk.resources.dll",
+      "offset": 8802304,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "c7be8d46be660262f16eed01083be945227f8c4e5b1c2ffdc627cdeb98472fa1"
+    },
+    {
+      "path": "pl/NAPS2.Sdk.resources.dll",
+      "offset": 8810496,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "d0bd6a493a6f8f7304e5f7a6541b4a5d80f792d8800d25ed6adcc225949088e5"
+    },
+    {
+      "path": "pt-BR/NAPS2.Sdk.resources.dll",
+      "offset": 8818688,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "4c526ac957262972f5a8a08b32e68c569bb7cc2cac10162455cb6c38b0334393"
+    },
+    {
+      "path": "pt-PT/NAPS2.Sdk.resources.dll",
+      "offset": 8826880,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "6c3920d8486619a2e027c3df845989f965dfa913b494bdb6b78779e755f8ac4a"
+    },
+    {
+      "path": "ro/NAPS2.Sdk.resources.dll",
+      "offset": 8835072,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "2e543adc8324e1c4e096b8119e721f7155e4e370a750babcd260b3d7d00c52fd"
+    },
+    {
+      "path": "ru/NAPS2.Sdk.resources.dll",
+      "offset": 8843264,
+      "size": 7168,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "cc64abb242f1efc01d0d36c8d486376104ad819336ae5d902461f615e22650b0"
+    },
+    {
+      "path": "si/NAPS2.Sdk.resources.dll",
+      "offset": 8851456,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "62f8784e22b5b9ca19cf0a6614116e066861dd1b24983b5ed0b4e2234e7b3c17"
+    },
+    {
+      "path": "sk/NAPS2.Sdk.resources.dll",
+      "offset": 8859648,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "022f75697eeb35d180cbecb97ae8052372e3751b406159d55cc16e52c6dc768c"
+    },
+    {
+      "path": "sl/NAPS2.Sdk.resources.dll",
+      "offset": 8867840,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "0aaab6ffa7d7f7f1968d24de0490e667c3ead6c5b5d6c2a996bb30be1bfd2188"
+    },
+    {
+      "path": "sq/NAPS2.Sdk.resources.dll",
+      "offset": 8876032,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "3994b5a72645069081c5e7b5dae40df36d8f64e658b5390966e07dfbc10fe009"
+    },
+    {
+      "path": "sr/NAPS2.Sdk.resources.dll",
+      "offset": 8884224,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "4eec822ceea1fdd7b4c220f9ac5ece1eab9661649bf8394af77d3c4497c6367c"
+    },
+    {
+      "path": "sr-CS/NAPS2.Sdk.resources.dll",
+      "offset": 8892416,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "763f7fc674cef83dd38043094bfe2e5051109f3e1d6e7aca2ea2dec281cbe6a2"
+    },
+    {
+      "path": "sv/NAPS2.Sdk.resources.dll",
+      "offset": 8900608,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "2f6b4a10d1c41f122bd757f13b1e8322a409c7cf57473fe10d6fbe107faa97be"
+    },
+    {
+      "path": "th/NAPS2.Sdk.resources.dll",
+      "offset": 8908800,
+      "size": 7680,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "eaa93c555c8d2ebdf8a3964d148abdea257d657cc52f796f03e28652bdd9c1cf"
+    },
+    {
+      "path": "tr/NAPS2.Sdk.resources.dll",
+      "offset": 8916992,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "d49d59db0aa55be241e5ab19eee05811f599b07e7266d0c3d07b720ac84386cd"
+    },
+    {
+      "path": "uk/NAPS2.Sdk.resources.dll",
+      "offset": 8925184,
+      "size": 7168,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "e8168ecba93feb1ddb437c8f286dd24570d44afc5828a74018f8494c5aa9ba1b"
+    },
+    {
+      "path": "vi/NAPS2.Sdk.resources.dll",
+      "offset": 8933376,
+      "size": 6656,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "65362186468407dca31fe99b9b9244b55c0f739f6ee6f2ffa6e5cb584ee886b1"
+    },
+    {
+      "path": "zh-CN/NAPS2.Sdk.resources.dll",
+      "offset": 8941568,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "1371150800e5a89701902bbed6abc87ad28922d297921a76be78da49d44a063c"
+    },
+    {
+      "path": "zh-TW/NAPS2.Sdk.resources.dll",
+      "offset": 8949760,
+      "size": 6144,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "759aa21cb770828f394f839d05b75233eb133a37e5027ce9eca36f3f7efd92a0"
+    },
+    {
+      "path": "Google.Protobuf.dll",
+      "offset": 8957952,
+      "size": 329728,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "c5b1c65c1dce1c8220be3195c62b45bfe26375c58d14ea7fa906a95a7c02351d"
+    },
+    {
+      "path": "Grpc.Core.Api.dll",
+      "offset": 9289728,
+      "size": 70240,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "cdcbf756b9630548591855c0bea7f3f11e1ec4f3133534b4dc6b4ebf06d1e19d"
+    },
+    {
+      "path": "GrpcDotNetNamedPipes.dll",
+      "offset": 9363456,
+      "size": 76288,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "6e52773a19c16dc5860ce9600ead3f869b7ca9b841d706c7ffe64b0b7857d90e"
+    },
+    {
+      "path": "Makaretu.Dns.dll",
+      "offset": 9441280,
+      "size": 91648,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "a5060d45f711f01fe1dff20568aabdc1014c5b843be15383ee40ccd4f88e147a"
+    },
+    {
+      "path": "Microsoft.Extensions.Logging.Abstractions.dll",
+      "offset": 9535488,
+      "size": 16384,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "1bb4e02746024bc0e691fcf87ea31c9616ab6e4cd6080c93dc51f3d17b68b194"
+    },
+    {
+      "path": "Microsoft.Win32.SystemEvents.dll",
+      "offset": 9551872,
+      "size": 23552,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "b043581ddfc0f46a02c3244ee687c70d992f163fc90720b5f5c352169233f019"
+    },
+    {
+      "path": "Makaretu.Dns.Multicast.New.dll",
+      "offset": 9576448,
+      "size": 37888,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "cd422c682a759d78cdf6a05337b2e74976e510d6293a7ed980f407e7258d10a3"
+    },
+    {
+      "path": "NTwain.dll",
+      "offset": 9617408,
+      "size": 205312,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "74dabd79841474a779e7d233f4c6c2082e81d4f4d9fb30c23f227471f30627de"
+    },
+    {
+      "path": "PdfSharpCore.dll",
+      "offset": 9826304,
+      "size": 523776,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "29ef1ab49b6b24d9bc9e072eff029c7ea74e46e989d9f3edea083a41a0fba160"
+    },
+    {
+      "path": "NAPS2.Wia.dll",
+      "offset": 10350592,
+      "size": 45568,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "fe18007f4ffd46c4587a35e6b5dd05df4a6d1a7247c7830fd4b82b8edae9e7f4"
+    },
+    {
+      "path": "ICSharpCode.SharpZipLib.dll",
+      "offset": 10399744,
+      "size": 45568,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "6b166e76a9e88b4902af67b154f555d19e83de83ceac4505dfd3a89784459bd0"
+    },
+    {
+      "path": "SimpleBase.dll",
+      "offset": 10448896,
+      "size": 12800,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "72b1b02ee7ac700a212216ff5261f1ee5b04cabd5ed56b4e620579c9d7075e10"
+    },
+    {
+      "path": "SixLabors.Fonts.dll",
+      "offset": 10465280,
+      "size": 1135616,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "36e2e4c0af507538b1e98babeb475699e2e8908defae586cc519b4b5aedb2e36"
+    },
+    {
+      "path": "StandardSocketsHttpHandler.dll",
+      "offset": 11603968,
+      "size": 377856,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "98b6dd570bf1f632c013764c0879271f9633ad010b6cb4e6d9bcb085dd7b8784"
+    },
+    {
+      "path": "System.Drawing.Common.dll",
+      "offset": 11984896,
+      "size": 485672,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "fd3e7302478a8ba558853dc40a2825bca0eab638e530e267fd258c69b0aeabbd"
+    },
+    {
+      "path": "System.Private.Windows.Core.dll",
+      "offset": 12472320,
+      "size": 854800,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "e9f1e866fb6fb7a6227b3a53707f5d2efb132d6f201318c98ec4bd1b64ac04af"
+    },
+    {
+      "path": "System.Formats.Nrbf.dll",
+      "offset": 13328384,
+      "size": 48128,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "3857f6850b75d691bc675ea5eec78ed8992558dfe878307ebec3fe9fe0f03fcd"
+    },
+    {
+      "path": "zxing.dll",
+      "offset": 13377536,
+      "size": 516096,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "2d9a1a3276fa21f5e20c0e8afa4ea33ca18fd6f984bd5b32ad457279e2709d73"
+    },
+    {
+      "path": "NAPS2.Escl.dll",
+      "offset": 13893632,
+      "size": 111104,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "8acf45d032960291c470da10ca8a25e3670c2dc0b484b7420f5aed143e5eadff"
+    },
+    {
+      "path": "NAPS2.Images.dll",
+      "offset": 14008320,
+      "size": 159232,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "618f2ca30a9b5070fa86ba6f0fd2ce2a3c907cbe3d30e9e59b1205ea21d45207"
+    },
+    {
+      "path": "NAPS2.Images.Gdi.dll",
+      "offset": 14168064,
+      "size": 18944,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "79243efd5ad8c4a28fde90cb197e78adf82987c991fe52005c5afa0fa95ba84e"
+    },
+    {
+      "path": "NAPS2.Internals.dll",
+      "offset": 14188544,
+      "size": 103936,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "1afece326ba614d9099369f939f6ba759b4d5b6fb0777f0f13a62e7668b23798"
+    },
+    {
+      "path": "NAPS2.Sdk.dll",
+      "offset": 14295040,
+      "size": 630272,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "f238f6dc1f1bbfca72a7d4ae3e7a510c5cfee42a9125ecf5fe47a0681f00d2e2"
+    },
+    {
+      "path": "NAPS2.Worker.dll",
+      "offset": 14925824,
+      "size": 5632,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "baf87ad813fabb2e5f0292d71d698d7ab43c1d7a8c17e647aa7d7a0d4f91b577"
+    },
+    {
+      "path": "Microsoft.Win32.Primitives.dll",
+      "offset": 14934016,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "97badf935a8521a4f5e8ada8eacaebf6ae2e02bbc0d59071a69ce793cd3bc2db"
+    },
+    {
+      "path": "Microsoft.Win32.Registry.dll",
+      "offset": 14942208,
+      "size": 22528,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "f3d0f47232c81e506957868b49b4de9215c38a2f43806347c6fd8097aa1d49fc"
+    },
+    {
+      "path": "System.Buffers.dll",
+      "offset": 14966784,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "915fd9700e19ec049329f5a22c17c3e25725a4a1defb72a2a33edec260ed8caf"
+    },
+    {
+      "path": "System.Collections.Concurrent.dll",
+      "offset": 14974976,
+      "size": 43008,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "4a3ba5c892d567ec2ad59b36569046d75ce95bdff7812cb7259c6ff55324590b"
+    },
+    {
+      "path": "System.Collections.Immutable.dll",
+      "offset": 15020032,
+      "size": 48128,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "4304452c2994b60754c51df4a3649be4a85187e7010542f63504bb2a19233bb5"
+    },
+    {
+      "path": "System.Collections.NonGeneric.dll",
+      "offset": 15069184,
+      "size": 21504,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "bae08c81b41c4369894bcb41ab29443a449782e4845beefb30a39bdfda1c99b6"
+    },
+    {
+      "path": "System.Collections.Specialized.dll",
+      "offset": 15093760,
+      "size": 14848,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "8f1de1327bc444ffaabf83e30018064d3b69c12ced234bda0d2c846ac0f7b0bd"
+    },
+    {
+      "path": "System.Collections.dll",
+      "offset": 15110144,
+      "size": 22016,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "5ce8e2318533070da9038e3dc6ed50a63b123e9b4132c76158797a32537c04e8"
+    },
+    {
+      "path": "System.ComponentModel.EventBasedAsync.dll",
+      "offset": 15134720,
+      "size": 7168,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "8debf1ad13847a9fb07216276e8589ce458637f851886d61b52f13b52c2ef878"
+    },
+    {
+      "path": "System.ComponentModel.Primitives.dll",
+      "offset": 15142912,
+      "size": 17408,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "5486a2662a482cd4c3b7c81c32c429be84827b4b3deb44bcca38abc1958dc5d0"
+    },
+    {
+      "path": "System.ComponentModel.TypeConverter.dll",
+      "offset": 15163392,
+      "size": 131072,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "324da90baad869afeb8cc17ae4d257aacc72cf80bb6590ed2b4d29c59927e849"
+    },
+    {
+      "path": "System.ComponentModel.dll",
+      "offset": 15294464,
+      "size": 5632,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "83bfa6b3d3bd0e7a389c838da5638dfc29cbe2f0e55917fc8a47d7155853e962"
+    },
+    {
+      "path": "System.Console.dll",
+      "offset": 15302656,
+      "size": 35328,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "3ce7e4170fc1d56c41602ab4ec64c852c245f81fd62e2365d71acd6ce257ffff"
+    },
+    {
+      "path": "System.Diagnostics.Debug.dll",
+      "offset": 15339520,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "d90766cbb09e473f081c4734aa7f7d7a2c1dbc1777b97bd1849f6342e5ee7937"
+    },
+    {
+      "path": "System.Diagnostics.DiagnosticSource.dll",
+      "offset": 15347712,
+      "size": 169984,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "5506763288721d29776f237f268b7814ee66712bb12fcb56713a58a85e9f53e6"
+    },
+    {
+      "path": "System.Diagnostics.FileVersionInfo.dll",
+      "offset": 15519744,
+      "size": 13312,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "fc3c5d32e63f9414d250259db895ef8b986585dc54e7ccb73eb1112de80126e7"
+    },
+    {
+      "path": "System.Diagnostics.Process.dll",
+      "offset": 15536128,
+      "size": 94720,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "e9dcc84ca976881e6092d141b52a43cccd82a10c030b896c22b1e55857e70b86"
+    },
+    {
+      "path": "System.Diagnostics.StackTrace.dll",
+      "offset": 15634432,
+      "size": 9216,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "eae48f6d5b1df532ab32cd875b06c5404006f2560c47a2ce0489b4274935ce52"
+    },
+    {
+      "path": "System.Diagnostics.Tools.dll",
+      "offset": 15646720,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "52d1d3297536e4d4dcad1e7eccc74b1b5d0e4f25a1256c11ff2625ef1e07b6ad"
+    },
+    {
+      "path": "System.Diagnostics.TraceSource.dll",
+      "offset": 15654912,
+      "size": 14336,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "d10f51ec155c5b7956e913d783f0b7447cd86426c85d2226f6573d4027d2e0c8"
+    },
+    {
+      "path": "System.Drawing.Primitives.dll",
+      "offset": 15671296,
+      "size": 44544,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "252c37f0fd5cf50649de4a9c2b5e5b8635823eb3fa7c132951c415d23a9d742b"
+    },
+    {
+      "path": "System.Drawing.dll",
+      "offset": 15716352,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "af2c74eec7008e2c579d4485c497f625090864ee97bf908245f70eb31b8de4f0"
+    },
+    {
+      "path": "System.Formats.Asn1.dll",
+      "offset": 15724544,
+      "size": 61440,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "74016ff27ea3e6bf9c15ad944f70cefc0a144d576baa3f9e5ab965169785bb40"
+    },
+    {
+      "path": "System.IO.Compression.Brotli.dll",
+      "offset": 15785984,
+      "size": 26624,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "f210bbe1e46bdb651ac19f7bd7d93f0d0383c983eb31f7fb2fefe7995b4cb183"
+    },
+    {
+      "path": "System.IO.Compression.ZipFile.dll",
+      "offset": 15814656,
+      "size": 8704,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "13113587e1803fc3674d570b72d7122617665a98a14966ff78c607eae34cd2f7"
+    },
+    {
+      "path": "System.IO.Compression.dll",
+      "offset": 15826944,
+      "size": 128000,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "5b3487d615d6012d6405e2ce770b6bad8a6f2b2560fc9eed3dc8b19b545206c6"
+    },
+    {
+      "path": "System.IO.FileSystem.dll",
+      "offset": 15958016,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "30a77db01cc10f777b91faa07a762ef1cc61376cb38a70719658a77b182707ec"
+    },
+    {
+      "path": "System.IO.MemoryMappedFiles.dll",
+      "offset": 15966208,
+      "size": 26112,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "29aee953aae04c0606423eccb89de84216290f37a2f380fe2bcb970bcc15abc3"
+    },
+    {
+      "path": "System.IO.Pipes.AccessControl.dll",
+      "offset": 15994880,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "95aa351257cf582809ebb12305625d1519d4a75d2a591b653339933ae92e1f38"
+    },
+    {
+      "path": "System.IO.Pipes.dll",
+      "offset": 16003072,
+      "size": 53760,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "6fce539af655e29100ac4f5e99b969fa166bfdda67d40975eecd95bd5904a85e"
+    },
+    {
+      "path": "System.Linq.dll",
+      "offset": 16060416,
+      "size": 107008,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "e3a8d561a5f117c66d18c41a41ff635230ab3a61853bc664b17dcb52a7f5e18d"
+    },
+    {
+      "path": "System.Memory.dll",
+      "offset": 16171008,
+      "size": 23552,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "380918d4d9f524f913956d3a13b7be7329fa9d2fc408e3adbd8d571fab2b7428"
+    },
+    {
+      "path": "System.Net.Http.dll",
+      "offset": 16195584,
+      "size": 514560,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "293ef226b60ce05a3d25e84cf514649ec526320efa3ba5c3253b41314e06d2d6"
+    },
+    {
+      "path": "System.Net.NameResolution.dll",
+      "offset": 16711680,
+      "size": 41472,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "8f12cf41c3be93a6316211489cd48b3e8069e9566d8192dc1e9f0775f49b53f9"
+    },
+    {
+      "path": "System.Net.NetworkInformation.dll",
+      "offset": 16756736,
+      "size": 32256,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "f0379c4e1bab52ce3aec76da3bb30bce9dd9010bdf62e8a07429f9af81a34039"
+    },
+    {
+      "path": "System.Net.Primitives.dll",
+      "offset": 16789504,
+      "size": 75264,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "3938400bf9548fbfc415360cac31afbb37ee28855f93f00716335a4d34cfd1ac"
+    },
+    {
+      "path": "System.Net.Security.dll",
+      "offset": 16867328,
+      "size": 212992,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "aeeafd909e2b9bee1d82f70cfe7a001edb6e2cd795645fbe8aa0715fa8dec2b4"
+    },
+    {
+      "path": "System.Net.Sockets.dll",
+      "offset": 17080320,
+      "size": 118272,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "2b8942595ff2d6be7edacddcba75fb4a76ec32701cb5dffd15cd2a841c9365ea"
+    },
+    {
+      "path": "System.Net.WebClient.dll",
+      "offset": 17199104,
+      "size": 8704,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "0c0134159e40a63a309beedd6e7fd590ff486640b5b5c91284e9ff3b0b9dcc04"
+    },
+    {
+      "path": "System.Numerics.Vectors.dll",
+      "offset": 17211392,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "f6ade950b7c7375c26b6aecbedf5afc6e54420dccb24146ac5fe5bce7b87d91d"
+    },
+    {
+      "path": "System.ObjectModel.dll",
+      "offset": 17219584,
+      "size": 9216,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "51011406fa52f0bc0b868878db707e6b8aaef85fc16b167fe0a72182fa87a03c"
+    },
+    {
+      "path": "System.Private.CoreLib.dll",
+      "offset": 17231872,
+      "size": 3200000,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "35990a71611fe792a877e95f0c606acdb8aca746703cce477b05114444b19167"
+    },
+    {
+      "path": "System.Private.Uri.dll",
+      "offset": 20434944,
+      "size": 80896,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "d9f408305b7fdcbf69ebc8823000914f1ebd51a520e121c1976412d5d12bea9a"
+    },
+    {
+      "path": "System.Private.Xml.Linq.dll",
+      "offset": 20516864,
+      "size": 44032,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "a70db9a9f57aa3d33c7038494f5124cc03cf890a0fbe3cc42fa522486fb45b5b"
+    },
+    {
+      "path": "System.Private.Xml.dll",
+      "offset": 20561920,
+      "size": 756224,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "9ce143e621545e54bb8a7c9a7691164cdd841f047a50c0aa5a26efe817cf3dfa"
+    },
+    {
+      "path": "System.Reflection.Metadata.dll",
+      "offset": 21319680,
+      "size": 129536,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "74f7e02776f1fef0a516c7ddc5d1dee4918176f4ce88b59b77a4521780283f55"
+    },
+    {
+      "path": "System.Resources.ResourceManager.dll",
+      "offset": 21450752,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "a10a6c9ccb1e7b94d468983b84ee029bf4838053a1bf65a1362c5d0edd319686"
+    },
+    {
+      "path": "System.Runtime.CompilerServices.Unsafe.dll",
+      "offset": 21458944,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "de4fcb05f086fcbe9652cd6bcf90924b883968d949876deddeb298fc3be3976d"
+    },
+    {
+      "path": "System.Runtime.Extensions.dll",
+      "offset": 21467136,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "52cecfa33556db39738bf7ccbff3aad1a9e1056ada5db19d575d8258dc2e95c5"
+    },
+    {
+      "path": "System.Runtime.InteropServices.RuntimeInformation.dll",
+      "offset": 21475328,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "7256f60d49b0565351d025eba3163c998f94825cde134ea11f94e9f3aa5e8719"
+    },
+    {
+      "path": "System.Runtime.InteropServices.dll",
+      "offset": 21483520,
+      "size": 17408,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "4052a358ff7cbff18d9f4583a453de80f8f0c5bc2cdba680401a9f3a445066d3"
+    },
+    {
+      "path": "System.Runtime.Numerics.dll",
+      "offset": 21504000,
+      "size": 96256,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "bdd07c58f8c3e57b1d04a707b33368b2f224675428745a66acc16fa40799dab8"
+    },
+    {
+      "path": "System.Runtime.Serialization.Formatters.dll",
+      "offset": 21602304,
+      "size": 15872,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "42025afba9b4fa4dc48fd7f5c9ff0f92a79ea064d07c2318fbe55fcbf46b211a"
+    },
+    {
+      "path": "System.Runtime.dll",
+      "offset": 21618688,
+      "size": 17408,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "c86d5a2f8a8250b7d245bd459ff9ba589eebfbf8a984f37920874964815e1ac2"
+    },
+    {
+      "path": "System.Security.AccessControl.dll",
+      "offset": 21639168,
+      "size": 62976,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "7c98dcfbaad28c567ccefc111e12a6dfe47704ce3679bb4e7a7b8f5190969831"
+    },
+    {
+      "path": "System.Security.Claims.dll",
+      "offset": 21704704,
+      "size": 13824,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "d673b10ac458f2a0d4f9768a48328a87455e39ad2f246d33dbf2c151e1d15bb5"
+    },
+    {
+      "path": "System.Security.Cryptography.Algorithms.dll",
+      "offset": 21721088,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "b090d792bb1422b80025281a57b568dc71e52d0eacecd543e1870e3a10946478"
+    },
+    {
+      "path": "System.Security.Cryptography.Primitives.dll",
+      "offset": 21729280,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "0fa7b80d08514ac31355868b6982f84a1d45d26c3b5a764846b01001f5ab6cb1"
+    },
+    {
+      "path": "System.Security.Cryptography.dll",
+      "offset": 21737472,
+      "size": 287744,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "b17e98504c54a34034a7bf30ea301ec35586409f19774f2ac018b1d34b1bde12"
+    },
+    {
+      "path": "System.Security.Principal.Windows.dll",
+      "offset": 22028288,
+      "size": 56832,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "605fea4111c58793d2ae5d59f64f71f8c9209aacea96e9f4aad4cc59797ab908"
+    },
+    {
+      "path": "System.Text.Encoding.Extensions.dll",
+      "offset": 22085632,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "66c94c25bc563949b239d598f0f6b3ec1d6ce818d8b5153b511267538c8e021a"
+    },
+    {
+      "path": "System.Text.RegularExpressions.dll",
+      "offset": 22093824,
+      "size": 348160,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "da94114200562893e06a328a97149bbbc7b990740fa945560c50d34a9c231a3a"
+    },
+    {
+      "path": "System.Threading.Channels.dll",
+      "offset": 22441984,
+      "size": 28672,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "3be929ee0ecea7f637d7a570dea113357feb1c8ccd527cf198f1f4242c4ce92f"
+    },
+    {
+      "path": "System.Threading.Tasks.Dataflow.dll",
+      "offset": 22470656,
+      "size": 72704,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "f6d56774fab091bce262d32a570fc181d20dc2e7a75ae7f06c713eab2a94f586"
+    },
+    {
+      "path": "System.Threading.Tasks.Parallel.dll",
+      "offset": 22544384,
+      "size": 24064,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "75f77e21f49c0d6852ed27ac5ce9037b6c464ce518dd0ec84ac6df65847dcdd0"
+    },
+    {
+      "path": "System.Threading.Thread.dll",
+      "offset": 22568960,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "19ea3165bf821023778e74a980603347626566dd7dca831fbc6a38d0311a68d0"
+    },
+    {
+      "path": "System.Threading.ThreadPool.dll",
+      "offset": 22577152,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "efe6202d8df63b900795ef4a4052ea18dfcc4098dd902f0f1b83d76a5d754dd5"
+    },
+    {
+      "path": "System.Threading.dll",
+      "offset": 22585344,
+      "size": 18944,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "93bd7d1409d3073e5bdfe789de01829afb5191f5420266a4642726a07e0f0b66"
+    },
+    {
+      "path": "System.Xml.Linq.dll",
+      "offset": 22605824,
+      "size": 4608,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "58415570c4bde2fd4129ccbe7d56635d0a3b240e9e32868719ede0cfd71ee003"
+    },
+    {
+      "path": "System.Xml.ReaderWriter.dll",
+      "offset": 22614016,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "d19106829fc96bef6a3ebc8c16f82df270194795764325f3d191208668dbbebc"
+    },
+    {
+      "path": "System.Xml.XDocument.dll",
+      "offset": 22622208,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "437b6a9d73fe69b74b1ccfd53d6ee04e0cf9ca5e573aa34222af332bfe31d0c5"
+    },
+    {
+      "path": "System.Xml.XmlSerializer.dll",
+      "offset": 22630400,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "f399bfd3ecf63075eab0841b8fbf0043631968ee9850e2e76d728fc1e00c10df"
+    },
+    {
+      "path": "System.dll",
+      "offset": 22638592,
+      "size": 5120,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "49a4137ee9fd388373614704b5e7e5d610371106c0595a8dbd37d414891a1bf7"
+    },
+    {
+      "path": "netstandard.dll",
+      "offset": 22646784,
+      "size": 14336,
+      "compressedSize": 0,
+      "bundleFileType": 1,
+      "sha256": "2c18d27a2d5be7f353d51f0af5355dc9df6cec5c57330a4e512cbd6f85ea80e3"
+    },
+    {
+      "path": "NAPS2.Worker.deps.json",
+      "offset": 22661120,
+      "size": 29987,
+      "compressedSize": 0,
+      "bundleFileType": 3,
+      "sha256": "13361d0ac08eb08a895fca7c2d27088576f1b4e5017409dcec5af86100e67698"
+    }
+  ],
+  "embeddedJson": {
+    "NAPS2.Worker.runtimeconfig.json": {
+      "runtimeOptions": {
+        "tfm": "net10.0",
+        "includedFrameworks": [
+          {
+            "name": "Microsoft.NETCore.App",
+            "version": "10.0.9"
+          }
+        ],
+        "configProperties": {
+          "Microsoft.Extensions.DependencyInjection.VerifyOpenGenericServiceTrimmability": true,
+          "System.ComponentModel.DefaultValueAttribute.IsSupported": false,
+          "System.ComponentModel.Design.IDesignerHost.IsSupported": false,
+          "System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization": false,
+          "System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported": false,
+          "System.Data.DataSet.XmlSerializationIsSupported": false,
+          "System.Net.SocketsHttpHandler.Http3Support": false,
+          "System.Reflection.Metadata.MetadataUpdater.IsSupported": false,
+          "System.Resources.ResourceManager.AllowCustomResourceTypes": false,
+          "System.Resources.UseSystemResourceKeys": false,
+          "System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported": true,
+          "System.Runtime.InteropServices.BuiltInComInterop.IsSupported": false,
+          "System.Runtime.InteropServices.EnableConsumingManagedCodeFromNativeHosting": false,
+          "System.Runtime.InteropServices.EnableCppCLIHostActivation": false,
+          "System.Runtime.InteropServices.Marshalling.EnableGeneratedComInterfaceComImportInterop": false,
+          "System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": false,
+          "System.StartupHookProvider.IsSupported": false,
+          "System.Text.Encoding.EnableUnsafeUTF7Encoding": false,
+          "System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault": false,
+          "System.Threading.Thread.EnableAutoreleasePool": false
+        }
+      }
+    },
+    "NAPS2.Worker.deps.json": {
+      "runtimeTarget": {
+        "name": ".NETCoreApp,Version=v10.0/win-x86",
+        "signature": ""
+      },
+      "compilationOptions": {},
+      "targets": {
+        ".NETCoreApp,Version=v10.0": {},
+        ".NETCoreApp,Version=v10.0/win-x86": {
+          "NAPS2.Worker/8.6.0": {
+            "dependencies": {
+              "NAPS2.Images.Gdi": "1.6.0",
+              "NAPS2.Sdk": "1.6.0",
+              "runtimepack.Microsoft.NETCore.App.Runtime.win-x86": "10.0.9"
+            },
+            "runtime": {
+              "NAPS2.Worker.dll": {}
+            }
+          },
+          "runtimepack.Microsoft.NETCore.App.Runtime.win-x86/10.0.9": {
+            "runtime": {
+              "Microsoft.Win32.Primitives.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "Microsoft.Win32.Registry.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Buffers.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Collections.Concurrent.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Collections.Immutable.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Collections.NonGeneric.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Collections.Specialized.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Collections.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.ComponentModel.EventBasedAsync.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.ComponentModel.Primitives.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.ComponentModel.TypeConverter.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.ComponentModel.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Console.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Diagnostics.Debug.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Diagnostics.DiagnosticSource.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Diagnostics.FileVersionInfo.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Diagnostics.Process.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Diagnostics.StackTrace.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Diagnostics.Tools.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Diagnostics.TraceSource.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Drawing.Primitives.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Drawing.dll": {
+                "assemblyVersion": "4.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Formats.Asn1.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.IO.Compression.Brotli.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.IO.Compression.ZipFile.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.IO.Compression.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.IO.FileSystem.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.IO.MemoryMappedFiles.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.IO.Pipes.AccessControl.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.IO.Pipes.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Linq.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Memory.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Net.Http.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Net.NameResolution.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Net.NetworkInformation.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Net.Primitives.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Net.Security.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Net.Sockets.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Net.WebClient.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Numerics.Vectors.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.ObjectModel.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Private.CoreLib.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Private.Uri.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Private.Xml.Linq.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Private.Xml.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Reflection.Metadata.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Resources.ResourceManager.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Runtime.CompilerServices.Unsafe.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Runtime.Extensions.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Runtime.InteropServices.RuntimeInformation.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Runtime.InteropServices.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Runtime.Numerics.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Runtime.Serialization.Formatters.dll": {
+                "assemblyVersion": "8.1.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Runtime.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Security.AccessControl.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Security.Claims.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Security.Cryptography.Algorithms.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Security.Cryptography.Primitives.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Security.Cryptography.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Security.Principal.Windows.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Text.Encoding.Extensions.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Text.RegularExpressions.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Threading.Channels.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Threading.Tasks.Dataflow.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Threading.Tasks.Parallel.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Threading.Thread.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Threading.ThreadPool.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Threading.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Xml.Linq.dll": {
+                "assemblyVersion": "4.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Xml.ReaderWriter.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Xml.XDocument.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.Xml.XmlSerializer.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "System.dll": {
+                "assemblyVersion": "4.0.0.0",
+                "fileVersion": "10.0.926.27113"
+              },
+              "netstandard.dll": {
+                "assemblyVersion": "2.1.0.0",
+                "fileVersion": "10.0.926.27113"
+              }
+            }
+          },
+          "Google.Protobuf/3.29.3": {
+            "runtime": {
+              "lib/net5.0/Google.Protobuf.dll": {
+                "assemblyVersion": "3.29.3.0",
+                "fileVersion": "3.29.3.0",
+                "localPath": "Google.Protobuf.dll"
+              }
+            }
+          },
+          "Grpc.Core.Api/2.67.0": {
+            "runtime": {
+              "lib/netstandard2.1/Grpc.Core.Api.dll": {
+                "assemblyVersion": "2.0.0.0",
+                "fileVersion": "2.67.0.0",
+                "localPath": "Grpc.Core.Api.dll"
+              }
+            }
+          },
+          "GrpcDotNetNamedPipes/3.1.0": {
+            "dependencies": {
+              "Google.Protobuf": "3.29.3",
+              "Grpc.Core.Api": "2.67.0"
+            },
+            "runtime": {
+              "lib/net8.0/GrpcDotNetNamedPipes.dll": {
+                "assemblyVersion": "2.0.0.0",
+                "fileVersion": "2.0.0.0",
+                "localPath": "GrpcDotNetNamedPipes.dll"
+              }
+            }
+          },
+          "Makaretu.Dns/2.0.1": {
+            "dependencies": {
+              "SimpleBase": "1.3.1"
+            },
+            "runtime": {
+              "lib/netstandard2.0/Makaretu.Dns.dll": {
+                "assemblyVersion": "2.0.1.0",
+                "fileVersion": "2.0.1.0",
+                "localPath": "Makaretu.Dns.dll"
+              }
+            }
+          },
+          "Microsoft.Extensions.Logging.Abstractions/10.0.10": {
+            "runtime": {
+              "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.1026.32716",
+                "localPath": "Microsoft.Extensions.Logging.Abstractions.dll"
+              }
+            }
+          },
+          "Microsoft.Win32.SystemEvents/9.0.3": {
+            "runtime": {
+              "runtimes/win/lib/net9.0/Microsoft.Win32.SystemEvents.dll": {
+                "assemblyVersion": "9.0.0.0",
+                "fileVersion": "9.0.325.11113",
+                "localPath": "Microsoft.Win32.SystemEvents.dll"
+              }
+            }
+          },
+          "NAPS2.Mdns/1.0.1": {
+            "dependencies": {
+              "Makaretu.Dns": "2.0.1"
+            },
+            "runtime": {
+              "lib/net6.0/Makaretu.Dns.Multicast.New.dll": {
+                "assemblyVersion": "1.0.0.0",
+                "fileVersion": "1.0.0.0",
+                "localPath": "Makaretu.Dns.Multicast.New.dll"
+              }
+            }
+          },
+          "NAPS2.NTwain/1.0.1": {
+            "runtime": {
+              "lib/net6.0/NTwain.dll": {
+                "assemblyVersion": "1.0.0.0",
+                "fileVersion": "1.0.0.0",
+                "localPath": "NTwain.dll"
+              }
+            }
+          },
+          "NAPS2.PdfSharp/1.0.2": {
+            "dependencies": {
+              "SharpZipLib": "1.4.2",
+              "SixLabors.Fonts": "1.0.1"
+            },
+            "runtime": {
+              "lib/net6.0/PdfSharpCore.dll": {
+                "assemblyVersion": "1.0.0.0",
+                "fileVersion": "1.0.0.0",
+                "localPath": "PdfSharpCore.dll"
+              }
+            },
+            "resources": {
+              "lib/net6.0/de/PdfSharpCore.resources.dll": {
+                "locale": "de",
+                "localPath": "de/PdfSharpCore.resources.dll"
+              }
+            }
+          },
+          "NAPS2.Wia/2.0.3": {
+            "runtime": {
+              "lib/net6.0/NAPS2.Wia.dll": {
+                "assemblyVersion": "2.0.0.0",
+                "fileVersion": "2.0.0.0",
+                "localPath": "NAPS2.Wia.dll"
+              }
+            }
+          },
+          "SharpZipLib/1.4.2": {
+            "runtime": {
+              "lib/net6.0/ICSharpCode.SharpZipLib.dll": {
+                "assemblyVersion": "1.4.2.13",
+                "fileVersion": "1.4.2.13",
+                "localPath": "ICSharpCode.SharpZipLib.dll"
+              }
+            }
+          },
+          "SimpleBase/1.3.1": {
+            "runtime": {
+              "lib/netstandard1.3/SimpleBase.dll": {
+                "assemblyVersion": "1.3.1.0",
+                "fileVersion": "1.3.1.0",
+                "localPath": "SimpleBase.dll"
+              }
+            }
+          },
+          "SixLabors.Fonts/1.0.1": {
+            "runtime": {
+              "lib/netcoreapp3.1/SixLabors.Fonts.dll": {
+                "assemblyVersion": "1.0.0.0",
+                "fileVersion": "1.0.1.0",
+                "localPath": "SixLabors.Fonts.dll"
+              }
+            }
+          },
+          "StandardSocketsHttpHandler/2.2.0.10": {
+            "runtime": {
+              "lib/netstandard2.1/StandardSocketsHttpHandler.dll": {
+                "assemblyVersion": "2.2.0.10",
+                "fileVersion": "2.2.0.10",
+                "localPath": "StandardSocketsHttpHandler.dll"
+              }
+            }
+          },
+          "System.Drawing.Common/9.0.3": {
+            "dependencies": {
+              "Microsoft.Win32.SystemEvents": "9.0.3"
+            },
+            "runtime": {
+              "lib/net9.0/System.Drawing.Common.dll": {
+                "assemblyVersion": "9.0.0.0",
+                "fileVersion": "9.0.325.11202",
+                "localPath": "System.Drawing.Common.dll"
+              },
+              "lib/net9.0/System.Private.Windows.Core.dll": {
+                "assemblyVersion": "9.0.0.0",
+                "fileVersion": "9.0.325.11202",
+                "localPath": "System.Private.Windows.Core.dll"
+              }
+            }
+          },
+          "System.Formats.Nrbf/10.0.10": {
+            "runtime": {
+              "lib/net10.0/System.Formats.Nrbf.dll": {
+                "assemblyVersion": "10.0.0.0",
+                "fileVersion": "10.0.1026.32716",
+                "localPath": "System.Formats.Nrbf.dll"
+              }
+            }
+          },
+          "System.Resources.Extensions/10.0.10": {
+            "dependencies": {
+              "System.Formats.Nrbf": "10.0.10"
+            }
+          },
+          "ZXing.Net/0.16.11": {
+            "runtime": {
+              "lib/net9.0/zxing.dll": {
+                "assemblyVersion": "0.16.11.0",
+                "fileVersion": "0.16.11.0",
+                "localPath": "zxing.dll"
+              }
+            }
+          },
+          "NAPS2.Escl/1.6.0": {
+            "dependencies": {
+              "Microsoft.Extensions.Logging.Abstractions": "10.0.10",
+              "NAPS2.Mdns": "1.0.1",
+              "StandardSocketsHttpHandler": "2.2.0.10"
+            },
+            "runtime": {
+              "NAPS2.Escl.dll": {
+                "assemblyVersion": "1.0.0.0",
+                "fileVersion": "1.0.0.0"
+              }
+            }
+          },
+          "NAPS2.Images/1.6.0": {
+            "dependencies": {
+              "NAPS2.Internals": "1.6.0",
+              "ZXing.Net": "0.16.11"
+            },
+            "runtime": {
+              "NAPS2.Images.dll": {
+                "assemblyVersion": "8.6.0.0",
+                "fileVersion": "8.6.0.0"
+              }
+            }
+          },
+          "NAPS2.Images.Gdi/1.6.0": {
+            "dependencies": {
+              "NAPS2.Images": "1.6.0",
+              "System.Drawing.Common": "9.0.3"
+            },
+            "runtime": {
+              "NAPS2.Images.Gdi.dll": {
+                "assemblyVersion": "8.6.0.0",
+                "fileVersion": "8.6.0.0"
+              }
+            }
+          },
+          "NAPS2.Internals/1.6.0": {
+            "runtime": {
+              "NAPS2.Internals.dll": {
+                "assemblyVersion": "8.6.0.0",
+                "fileVersion": "8.6.0.0"
+              }
+            }
+          },
+          "NAPS2.Sdk/1.6.0": {
+            "dependencies": {
+              "GrpcDotNetNamedPipes": "3.1.0",
+              "Microsoft.Extensions.Logging.Abstractions": "10.0.10",
+              "NAPS2.Escl": "1.6.0",
+              "NAPS2.Images": "1.6.0",
+              "NAPS2.Internals": "1.6.0",
+              "NAPS2.NTwain": "1.0.1",
+              "NAPS2.PdfSharp": "1.0.2",
+              "NAPS2.Wia": "2.0.3",
+              "SharpZipLib": "1.4.2",
+              "SixLabors.Fonts": "1.0.1",
+              "System.Resources.Extensions": "10.0.10",
+              "ZXing.Net": "0.16.11"
+            },
+            "runtime": {
+              "NAPS2.Sdk.dll": {
+                "assemblyVersion": "8.6.0.0",
+                "fileVersion": "8.6.0.0"
+              }
+            },
+            "resources": {
+              "af/NAPS2.Sdk.resources.dll": {
+                "locale": "af"
+              },
+              "ar/NAPS2.Sdk.resources.dll": {
+                "locale": "ar"
+              },
+              "bg/NAPS2.Sdk.resources.dll": {
+                "locale": "bg"
+              },
+              "bn/NAPS2.Sdk.resources.dll": {
+                "locale": "bn"
+              },
+              "bs/NAPS2.Sdk.resources.dll": {
+                "locale": "bs"
+              },
+              "ca/NAPS2.Sdk.resources.dll": {
+                "locale": "ca"
+              },
+              "cs/NAPS2.Sdk.resources.dll": {
+                "locale": "cs"
+              },
+              "da/NAPS2.Sdk.resources.dll": {
+                "locale": "da"
+              },
+              "de/NAPS2.Sdk.resources.dll": {
+                "locale": "de"
+              },
+              "el/NAPS2.Sdk.resources.dll": {
+                "locale": "el"
+              },
+              "es/NAPS2.Sdk.resources.dll": {
+                "locale": "es"
+              },
+              "et/NAPS2.Sdk.resources.dll": {
+                "locale": "et"
+              },
+              "fa/NAPS2.Sdk.resources.dll": {
+                "locale": "fa"
+              },
+              "fi/NAPS2.Sdk.resources.dll": {
+                "locale": "fi"
+              },
+              "fr/NAPS2.Sdk.resources.dll": {
+                "locale": "fr"
+              },
+              "he/NAPS2.Sdk.resources.dll": {
+                "locale": "he"
+              },
+              "hi/NAPS2.Sdk.resources.dll": {
+                "locale": "hi"
+              },
+              "hr/NAPS2.Sdk.resources.dll": {
+                "locale": "hr"
+              },
+              "hu/NAPS2.Sdk.resources.dll": {
+                "locale": "hu"
+              },
+              "id/NAPS2.Sdk.resources.dll": {
+                "locale": "id"
+              },
+              "it/NAPS2.Sdk.resources.dll": {
+                "locale": "it"
+              },
+              "ja/NAPS2.Sdk.resources.dll": {
+                "locale": "ja"
+              },
+              "ko/NAPS2.Sdk.resources.dll": {
+                "locale": "ko"
+              },
+              "lt/NAPS2.Sdk.resources.dll": {
+                "locale": "lt"
+              },
+              "lv/NAPS2.Sdk.resources.dll": {
+                "locale": "lv"
+              },
+              "nb/NAPS2.Sdk.resources.dll": {
+                "locale": "nb"
+              },
+              "nl/NAPS2.Sdk.resources.dll": {
+                "locale": "nl"
+              },
+              "nn/NAPS2.Sdk.resources.dll": {
+                "locale": "nn"
+              },
+              "pl/NAPS2.Sdk.resources.dll": {
+                "locale": "pl"
+              },
+              "pt-BR/NAPS2.Sdk.resources.dll": {
+                "locale": "pt-BR"
+              },
+              "pt-PT/NAPS2.Sdk.resources.dll": {
+                "locale": "pt-PT"
+              },
+              "ro/NAPS2.Sdk.resources.dll": {
+                "locale": "ro"
+              },
+              "ru/NAPS2.Sdk.resources.dll": {
+                "locale": "ru"
+              },
+              "si/NAPS2.Sdk.resources.dll": {
+                "locale": "si"
+              },
+              "sk/NAPS2.Sdk.resources.dll": {
+                "locale": "sk"
+              },
+              "sl/NAPS2.Sdk.resources.dll": {
+                "locale": "sl"
+              },
+              "sq/NAPS2.Sdk.resources.dll": {
+                "locale": "sq"
+              },
+              "sr/NAPS2.Sdk.resources.dll": {
+                "locale": "sr"
+              },
+              "sr-CS/NAPS2.Sdk.resources.dll": {
+                "locale": "sr-CS"
+              },
+              "sv/NAPS2.Sdk.resources.dll": {
+                "locale": "sv"
+              },
+              "th/NAPS2.Sdk.resources.dll": {
+                "locale": "th"
+              },
+              "tr/NAPS2.Sdk.resources.dll": {
+                "locale": "tr"
+              },
+              "uk/NAPS2.Sdk.resources.dll": {
+                "locale": "uk"
+              },
+              "vi/NAPS2.Sdk.resources.dll": {
+                "locale": "vi"
+              },
+              "zh-CN/NAPS2.Sdk.resources.dll": {
+                "locale": "zh-CN"
+              },
+              "zh-TW/NAPS2.Sdk.resources.dll": {
+                "locale": "zh-TW"
+              }
+            }
+          }
+        }
+      },
+      "libraries": {
+        "NAPS2.Worker/8.6.0": {
+          "type": "project",
+          "serviceable": false,
+          "sha512": ""
+        },
+        "runtimepack.Microsoft.NETCore.App.Runtime.win-x86/10.0.9": {
+          "type": "runtimepack",
+          "serviceable": false,
+          "sha512": ""
+        },
+        "Google.Protobuf/3.29.3": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-t7nZFFUFwigCwZ+nIXHDLweXvwIpsOXi+P7J7smPT/QjI3EKxnCzTQOhBqyEh6XEzc/pNH+bCFOOSjatrPt6Tw==",
+          "path": "google.protobuf/3.29.3",
+          "hashPath": "google.protobuf.3.29.3.nupkg.sha512"
+        },
+        "Grpc.Core.Api/2.67.0": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-cL1/2f8kc8lsAGNdfCU25deedXVehhLA6GXKLLN4hAWx16XN7BmjYn3gFU+FBpir5yJynvDTHEypr3Tl0j7x/Q==",
+          "path": "grpc.core.api/2.67.0",
+          "hashPath": "grpc.core.api.2.67.0.nupkg.sha512"
+        },
+        "GrpcDotNetNamedPipes/3.1.0": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-IEbpody7yYtL+oTNGRJspbK+Xne2fWzhiAOmJxJ8zoS3knFv0jDxv0WgJxO2cOCpoItn1cv4X4dloxSbFPB3eA==",
+          "path": "grpcdotnetnamedpipes/3.1.0",
+          "hashPath": "grpcdotnetnamedpipes.3.1.0.nupkg.sha512"
+        },
+        "Makaretu.Dns/2.0.1": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-qe/5w5Q/i2Xz2ZnCq3E49kLAtVFRuuBn40C1mQPWbLDwlHM0KVDzCkFqwxDedv7JgQis66Z9AZKyo1zCTRrdYA==",
+          "path": "makaretu.dns/2.0.1",
+          "hashPath": "makaretu.dns.2.0.1.nupkg.sha512"
+        },
+        "Microsoft.Extensions.Logging.Abstractions/10.0.10": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-zkFxGYUvdxAvIKTyXHrmW+Sux53D4SezD9dMyZ6hrwwzPQJNuwCRy1f5W7AvYTqacEGhWF2XderRQG1OvbV8og==",
+          "path": "microsoft.extensions.logging.abstractions/10.0.10",
+          "hashPath": "microsoft.extensions.logging.abstractions.10.0.10.nupkg.sha512"
+        },
+        "Microsoft.Win32.SystemEvents/9.0.3": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-Z0hIB2oeNqPOO0MYD0wkLpEe0LangoF3BSdMLLF5wft/rndYoXhLQvWni1OxymlWj+1adswAps2ZlrPmD9ZhBg==",
+          "path": "microsoft.win32.systemevents/9.0.3",
+          "hashPath": "microsoft.win32.systemevents.9.0.3.nupkg.sha512"
+        },
+        "NAPS2.Mdns/1.0.1": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-LQMEYKiSzvXtVVFgzBqBTRnoWa9lJRB7YEnD2m8/we9PfON6s+QGPSq7ZATVt1Cbuhr4FDRkJEjuLUeBkPK6Zw==",
+          "path": "naps2.mdns/1.0.1",
+          "hashPath": "naps2.mdns.1.0.1.nupkg.sha512"
+        },
+        "NAPS2.NTwain/1.0.1": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-gTUekPpglFMgcCKQ6cOcXsnuOR/Y3hMp2dTo8jlrRRzBQ7ASregm262rkyDxD5KeZ7LxmjT5NXX1tg+JUUZg9A==",
+          "path": "naps2.ntwain/1.0.1",
+          "hashPath": "naps2.ntwain.1.0.1.nupkg.sha512"
+        },
+        "NAPS2.PdfSharp/1.0.2": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-Eapb5d75M1NqAffpDq2uw6IBQu1yWcu87ClPvKoJwin5IwuvmV1Tkvrr67Di8C7fAldBko0hcpVTZ0vkFXaL2A==",
+          "path": "naps2.pdfsharp/1.0.2",
+          "hashPath": "naps2.pdfsharp.1.0.2.nupkg.sha512"
+        },
+        "NAPS2.Wia/2.0.3": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-Za/pkCCVuUxD3Q00pTsFd3FRAi1HTBlM8uzDXaPpULMZ6MoqYaJKcE5fJmOz+fqNfQaMxv9dQeJ1GZ9uVtBM8g==",
+          "path": "naps2.wia/2.0.3",
+          "hashPath": "naps2.wia.2.0.3.nupkg.sha512"
+        },
+        "SharpZipLib/1.4.2": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-yjj+3zgz8zgXpiiC3ZdF/iyTBbz2fFvMxZFEBPUcwZjIvXOf37Ylm+K58hqMfIBt5JgU/Z2uoUS67JmTLe973A==",
+          "path": "sharpziplib/1.4.2",
+          "hashPath": "sharpziplib.1.4.2.nupkg.sha512"
+        },
+        "SimpleBase/1.3.1": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-TqqQc+WFg3s10/PdnI2Dio0U7xEmVXhkf+ey4tOGZzjyd054rnNOLNVahJhMYmfBQdS7/jkVqC8xzLm/bkR3EA==",
+          "path": "simplebase/1.3.1",
+          "hashPath": "simplebase.1.3.1.nupkg.sha512"
+        },
+        "SixLabors.Fonts/1.0.1": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-ljezRHWc7N0azdQViib7Aa5v+DagRVkKI2/93kEbtjVczLs+yTkSq6gtGmvOcx4IqyNbO3GjLt7SAQTpLkySNw==",
+          "path": "sixlabors.fonts/1.0.1",
+          "hashPath": "sixlabors.fonts.1.0.1.nupkg.sha512"
+        },
+        "StandardSocketsHttpHandler/2.2.0.10": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-tlnMfWuT043rvyVQTGCm9049SZcDpe9oeLwLTVWRLw0s5ijjCdNYdxfOCMejtsUBFdWQ00boZSJHcNB2GZKBCw==",
+          "path": "standardsocketshttphandler/2.2.0.10",
+          "hashPath": "standardsocketshttphandler.2.2.0.10.nupkg.sha512"
+        },
+        "System.Drawing.Common/9.0.3": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-yDxzWfZGvOtk8zk5apWXP/tmro1Nghn7/4bWS5np5CtwIfiVCC74qCc1qvIsnywvXKzVqIbKXRk09wts+xGfeg==",
+          "path": "system.drawing.common/9.0.3",
+          "hashPath": "system.drawing.common.9.0.3.nupkg.sha512"
+        },
+        "System.Formats.Nrbf/10.0.10": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-gOcWB7GddeYRGZWA8lHi84MvuzTI3ugYISfLfCg5FTdZB3cDaoAj7yG7c2bBaO+hio1nZ5kz/BrwpzfLT1R8Bg==",
+          "path": "system.formats.nrbf/10.0.10",
+          "hashPath": "system.formats.nrbf.10.0.10.nupkg.sha512"
+        },
+        "System.Resources.Extensions/10.0.10": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-xUBGLR+HPujL5k3LmHIJSS6xFsKECOGO52nurXMDADkLRFNVVUxCH4ng2WBD1YTxGHkE/s2kJs1I2B89DJJyLA==",
+          "path": "system.resources.extensions/10.0.10",
+          "hashPath": "system.resources.extensions.10.0.10.nupkg.sha512"
+        },
+        "ZXing.Net/0.16.11": {
+          "type": "package",
+          "serviceable": true,
+          "sha512": "sha512-OZfAVu88hl87BffQ+rlWCj/vLvAhhCK4QnFaoveeF/MY8SjHNSYBQ3qyUEWlPKNgBQGh1syXhCDg10vUnCsqkg==",
+          "path": "zxing.net/0.16.11",
+          "hashPath": "zxing.net.0.16.11.nupkg.sha512"
+        },
+        "NAPS2.Escl/1.6.0": {
+          "type": "project",
+          "serviceable": false,
+          "sha512": ""
+        },
+        "NAPS2.Images/1.6.0": {
+          "type": "project",
+          "serviceable": false,
+          "sha512": ""
+        },
+        "NAPS2.Images.Gdi/1.6.0": {
+          "type": "project",
+          "serviceable": false,
+          "sha512": ""
+        },
+        "NAPS2.Internals/1.6.0": {
+          "type": "project",
+          "serviceable": false,
+          "sha512": ""
+        },
+        "NAPS2.Sdk/1.6.0": {
+          "type": "project",
+          "serviceable": false,
+          "sha512": ""
+        }
+      },
+      "runtimes": {
+        "win-x86": [
+          "win",
+          "any",
+          "base"
+        ]
+      }
+    }
+  },
+  "scope": "Bundle entries plus whole EXE hash; native host/runtime internals and per-assembly trimming not cleared."
+}
