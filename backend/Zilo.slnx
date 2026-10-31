@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Zilo.Agent/Zilo.Agent.csproj" />
+    <Project Path="src/Zilo.Core/Zilo.Core.csproj" />
+    <Project Path="src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj" />
+    <Project Path="src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj" />
+    <Project Path="src/Zilo.Security/Zilo.Security.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj" />
+    <Project Path="tests/Zilo.Scaffold.Tests/Zilo.Scaffold.Tests.csproj" />
+  </Folder>
+</Solution>

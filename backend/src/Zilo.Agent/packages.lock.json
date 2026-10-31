@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "zilo.core": {
+        "type": "Project"
+      },
+      "zilo.drivers.naps2": {
+        "type": "Project",
+        "dependencies": {
+          "Zilo.Core": "[1.0.0, )"
+        }
+      },
+      "zilo.drivers.virtual": {
+        "type": "Project",
+        "dependencies": {
+          "Zilo.Core": "[1.0.0, )"
+        }
+      },
+      "zilo.security": {
+        "type": "Project",
+        "dependencies": {
+          "Zilo.Core": "[1.0.0, )"
+        }
+      }
+    }
+  }
+}
