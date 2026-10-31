@@ -2,7 +2,8 @@
 #
 # What runs where:
 #   linux   (ubuntu-latest):  stub rules + Chromium + Firefox + Playwright WebKit (WPE). Chromium's
-#                             headful prompt test runs under xvfb-run. Expectations are asserted.
+#                             headful prompt test runs on the xvfb virtual display only (owner
+#                             directive OD-4: no visible windows). Expectations are asserted.
 #   windows (windows-latest): stub rules + Playwright WebKit (Windows port). Expectations asserted
 #                             (recorded locally on 2026-10-31, see docs/spikes/SP-1a.md).
 #   macos   (macos-latest):   stub rules + Playwright WebKit (macOS port). Observe-only until a
@@ -48,7 +49,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium firefox webkit
       - name: Playwright suite (xvfb for the headful Chromium prompt test)
-        run: xvfb-run -a npx playwright test
+        run: xvfb-run -a sh -c 'ZILO_HEADFUL_DISPLAY="$DISPLAY" npx playwright test'
       - if: always()
         uses: actions/upload-artifact@v4
         with:

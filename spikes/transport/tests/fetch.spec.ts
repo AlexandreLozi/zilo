@@ -60,8 +60,16 @@ test.describe('loopback fetch from an HTTPS public origin', () => {
 
   test('default permission state, headful Chromium: request held on a real prompt', async ({ playwright, browserName }, info) => {
     test.skip(browserName !== 'chromium', 'Chromium-specific: checks the headless auto-deny artifact');
-    test.skip(!process.env.DISPLAY, 'needs a display (CI wraps this in xvfb-run)');
-    const b = await playwright.chromium.launch({ channel: 'chromium', headless: false, args: chromiumArgs });
+    // Owner directive OD-4: no visible browser windows. Headful runs only on an explicit virtual
+    // display (xvfb-run sets it; see the workflow and README), with Wayland removed from the env.
+    const virtualDisplay = process.env.ZILO_HEADFUL_DISPLAY;
+    test.skip(!virtualDisplay, 'needs ZILO_HEADFUL_DISPLAY (a virtual X display from xvfb-run)');
+    const env: Record<string, string> = {};
+    for (const [k, v] of Object.entries(process.env)) if (v !== undefined && k !== 'WAYLAND_DISPLAY') env[k] = v;
+    env.DISPLAY = virtualDisplay!;
+    const b = await playwright.chromium.launch({
+      channel: 'chromium', headless: false, env, args: [...chromiumArgs, '--ozone-platform=x11'],
+    });
     const page = await (await b.newContext()).newPage();
     await openPage(page, `${APP_ORIGIN}/`, TOKEN);
     const before = await queryPermissions(page);
