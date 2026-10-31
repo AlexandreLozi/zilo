@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Zilo.Core/Zilo.Core.csproj" />
+    <ProjectReference Include="../Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj" />
+    <ProjectReference Include="../Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj" />
+    <ProjectReference Include="../Zilo.Security/Zilo.Security.csproj" />
+  </ItemGroup>
+</Project>

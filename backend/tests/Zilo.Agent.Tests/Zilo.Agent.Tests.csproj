@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3.mtp-off" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <ProjectReference Include="../../src/Zilo.Agent/Zilo.Agent.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <!-- Copy the real executable's complete output, not a test-host surrogate. -->
+  <Target Name="CopyAgentForStartupTests" AfterTargets="Build">
+    <MSBuild Projects="../../src/Zilo.Agent/Zilo.Agent.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)">
+      <Output TaskParameter="TargetOutputs" ItemName="_AgentTargetPath" />
+    </MSBuild>
+    <ItemGroup>
+      <_AgentRuntimeFile Include="%(_AgentTargetPath.RootDir)%(_AgentTargetPath.Directory)**/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_AgentRuntimeFile)" DestinationFiles="@(_AgentRuntimeFile->'$(OutDir)agent/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

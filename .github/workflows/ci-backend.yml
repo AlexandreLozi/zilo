@@ -1,0 +1,66 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - 'global.json'
+      - 'Directory.*.props'
+      - '.github/workflows/ci-backend.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'global.json'
+      - 'Directory.*.props'
+      - '.github/workflows/ci-backend.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-15-intel]
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      RestoreLockedMode: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare logs
+        run: New-Item -ItemType Directory -Force backend/artifacts/logs | Out-Null
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Locked restore
+        run: |
+          dotnet restore backend/Zilo.slnx --locked-mode 2>&1 | Tee-Object backend/artifacts/logs/restore.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Release build
+        run: |
+          dotnet build backend/Zilo.slnx --configuration Release --no-restore 2>&1 | Tee-Object backend/artifacts/logs/build.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Tests
+        run: |
+          dotnet test backend/Zilo.slnx --configuration Release --no-build --no-restore -p:RestoreLockedMode=true --logger trx --results-directory "$PWD/backend/artifacts/test-results" 2>&1 | Tee-Object backend/artifacts/logs/test.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Native agent smoke
+        run: |
+          dotnet backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll 2>&1 | Tee-Object backend/artifacts/logs/agent.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Upload logs and test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-${{ matrix.os }}
+          path: backend/artifacts/
+          if-no-files-found: warn
