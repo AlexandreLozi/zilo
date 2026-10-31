@@ -2206,7 +2206,7 @@ components:
       description: |
         RFC 9457 problem details, sent as `application/problem+json`. `type` is
         `urn:zilo:problem:<code>`. Problems never carry document content, tokens or file paths.
-      required: [type, title, status, code, retryable]
+      required: [type, title, status, code, retryable, requestId]
       properties:
         type:
           type: string
@@ -2234,6 +2234,9 @@ components:
           minimum: 0
         requestId:
           type: string
+          description: |
+            Equals the `Zilo-Request-Id` response header (R-T9). In an SSE `error` event it is the
+            request ID of the event stream.
         jobId:
           $ref: '#/components/schemas/JobId'
         deviceId:
