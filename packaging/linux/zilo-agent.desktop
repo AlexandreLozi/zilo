@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.5
+Name=Zilo Agent
+Comment=Zilo local scanning agent
+Exec=/usr/bin/zilo-agent %u
+Terminal=false
+NoDisplay=true
+Categories=Utility;
+MimeType=x-scheme-handler/zilo;
