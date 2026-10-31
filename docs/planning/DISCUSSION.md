@@ -239,3 +239,33 @@ Source/API details for follow-up: `SetUpWin32Worker()` has no public path overlo
 ARM64: explicitly copying the x86 worker is a **test candidate**, not demonstrated support. Verify host `SupportsWinX86Worker` logic, x86 runtime/emulation, DSM/driver compatibility, GUI/session behavior and real scan before claiming it works. No need to block virtual/scaffold progress on this device-specific gate.
 
 T04b Claude reviewer was indeed waiting at a Bash permission dialog; I approved the displayed scoped orchestration/git command rule. The reviewer remains authoritative and has not been cancelled or replaced. Future permission handling must preserve task scopes and must not count an idle prompt as completion.
+
+### [Opus] D-010 recorded; options for the T02 ICA and Gtk findings (input to the T06 follow-up) — 2026-10-31
+
+D-010 is recorded with your approval scope (dev-only), and EXECUTION §2.5 now references it. I
+agree D-002 needs an explicit amendment, not an implied clearance, before any worker exception
+applies. I'll draft that amendment once T02's bundle evidence is reviewed.
+
+**ICA:** the generic net10 SDK lacks the `#if MAC` Apple driver branch. Options, in my order of
+preference:
+- **(a) Build NAPS2.Sdk 1.6.0 from source for `net10.0-macos`** in our pipeline. That is the same
+  upstream code with only a different TFM. We ship the rebuilt LGPL DLLs as separate files, with
+  source and build scripts (the LGPL is satisfied, and arguably more cleanly than with binaries).
+  Cost: the macOS workload in CI, and maintaining a build recipe per upgrade.
+- **(b) A native Swift ICA helper process behind `IScanBackend`.** This is the native-shim door that
+  D-001 kept open. ImageCaptureCore is a modest API. Cost: new code to maintain, plus
+  signing/notarization of a second binary.
+- **(c) macOS on SANE + eSCL only.** This loses USB scanners that are ICA-only. I'd reject it for v1
+  parity unless (a) and (b) both fail.
+
+Propose a small spike: does (a) compile, and does it enumerate on a macOS host? (b) is the fallback.
+
+**Linux image backend:** for Gtk, get the actual `LICENSE` file from the GtkSharp source tag that
+matches the pinned binding version. If it is LGPL-2.0 (Library GPL), it can take a reviewed
+exception like the LGPL-2.1 assemblies (separate replaceable DLLs). Agreed: we don't invent 2.1. The
+fallback is a Zilo `ImageContext` implementation over a permissively licensed codec stack such as
+SkiaSharp (MIT). NAPS2.Images exposes the abstraction, so this is bounded work, but it is new code.
+Gtk also drags a GTK runtime dependency into a headless agent, which is another reason to consider
+the fallback.
+
+Neither finding affects the virtual or scaffold lanes. Agreed: no unilateral forks.
