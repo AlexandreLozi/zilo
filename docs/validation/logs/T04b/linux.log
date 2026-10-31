@@ -1,0 +1,88 @@
+### HEAD: 7284a3bc62d0f07141abeafdc47ca175c4fd934c
+### uname: Linux 6.18.54.1-microsoft-standard-WSL2 x86_64
+PRETTY_NAME="Ubuntu 24.04.5 LTS"
+
+### $ dotnet --info
+.NET SDK:
+ Version:           10.0.403
+ Commit:            5a2162bea6
+ Workload version:  10.0.400-manifests.a00bebb6
+ MSBuild version:   18.9.15+5a2162bea
+
+Runtime Environment:
+ OS Name:     ubuntu
+ OS Version:  24.04
+ OS Platform: Linux
+ RID:         linux-x64
+ Base Path:   <SCRATCH>/dotnet-linux/sdk/10.0.403/
+
+.NET workloads installed:
+There are no installed workloads to display.
+Configured to use workload sets when installing new manifests.
+No workload sets are installed. Run "dotnet workload restore" to install a workload set.
+
+Host:
+  Version:      10.0.14
+  Architecture: x64
+  Commit:       0427b9abbe
+
+.NET SDKs installed:
+  10.0.403 [<SCRATCH>/dotnet-linux/sdk]
+
+.NET runtimes installed:
+  Microsoft.AspNetCore.App 10.0.14 [<SCRATCH>/dotnet-linux/shared/Microsoft.AspNetCore.App]
+  Microsoft.NETCore.App 10.0.14 [<SCRATCH>/dotnet-linux/shared/Microsoft.NETCore.App]
+
+Other architectures found:
+  None
+
+Environment variables:
+  DOTNET_CLI_HOME                          [<SCRATCH>/dotnet-home]
+  DOTNET_CLI_TELEMETRY_OPTOUT              [1]
+  DOTNET_NOLOGO                            [1]
+  DOTNET_ROOT                              [<SCRATCH>/dotnet-linux]
+
+### $ dotnet restore backend/Zilo.slnx --locked-mode
+  Determining projects to restore...
+  Restored <SCRATCH>/clone-linux/backend/src/Zilo.Core/Zilo.Core.csproj (in 96 ms).
+  Restored <SCRATCH>/clone-linux/backend/src/Zilo.Security/Zilo.Security.csproj (in 102 ms).
+  Restored <SCRATCH>/clone-linux/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 102 ms).
+  Restored <SCRATCH>/clone-linux/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 102 ms).
+  Restored <SCRATCH>/clone-linux/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 102 ms).
+  Restored <SCRATCH>/clone-linux/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj (in 3.8 sec).
+  Restored <SCRATCH>/clone-linux/backend/tests/Zilo.Scaffold.Tests/Zilo.Scaffold.Tests.csproj (in 3.8 sec).
+### exit=0
+
+### $ dotnet build backend/Zilo.slnx --configuration Release --no-restore
+  Zilo.Core -> <SCRATCH>/clone-linux/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Security -> <SCRATCH>/clone-linux/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Naps2 -> <SCRATCH>/clone-linux/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> <SCRATCH>/clone-linux/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> <SCRATCH>/clone-linux/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Scaffold.Tests -> <SCRATCH>/clone-linux/backend/tests/Zilo.Scaffold.Tests/bin/Release/net10.0/Zilo.Scaffold.Tests.dll
+  Zilo.Agent.Tests -> <SCRATCH>/clone-linux/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.34
+### exit=0
+
+### $ dotnet test backend/Zilo.slnx --configuration Release --no-build --no-restore -p:RestoreLockedMode=true --logger trx --results-directory <SCRATCH>/clone-linux/backend/artifacts/test-results
+Test run for <SCRATCH>/clone-linux/backend/tests/Zilo.Scaffold.Tests/bin/Release/net10.0/Zilo.Scaffold.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for <SCRATCH>/clone-linux/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+Results File: <SCRATCH>/clone-linux/backend/artifacts/test-results/_<host>_2026-10-31_13_12_58_net10.0.trx
+
+Passed!  - Failed:     0, Passed:     5, Skipped:     0, Total:     5, Duration: 79 ms - Zilo.Scaffold.Tests.dll (net10.0)
+Results File: <SCRATCH>/clone-linux/backend/artifacts/test-results/_<host>_2026-10-31_13_12_58_net10.0[1].trx
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 77 ms - Zilo.Agent.Tests.dll (net10.0)
+### exit=0
+
+### $ dotnet backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+Zilo.Agent scaffold: scanning is not implemented.
+### exit=0
+### ALL STEPS PASSED
