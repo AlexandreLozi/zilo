@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zilo prototype: Scan dialog</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<link rel="stylesheet" href="assets/proto.css">
+<style>
+  /* ---- Scan dialog layout (spec: docs/design/scan-dialog.md) ---- */
+  .scan { container-type: inline-size; }
+  .scan__layout { display: grid; grid-template-columns: 19rem 1fr; flex: 1; min-height: 0; }
+  .scan__side {
+    display: flex; flex-direction: column; gap: var(--z-space-6); overflow: auto;
+    padding: var(--z-space-5) var(--z-space-5) var(--z-space-6) var(--z-space-6);
+    border-right: 1px solid var(--z-border); background: var(--z-bg);
+  }
+  .scan__main { display: flex; flex-direction: column; min-height: 0; background: var(--z-surface-sunken); position: relative; }
+  .scan__section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--z-space-2); }
+  .scan__h { font-size: var(--z-text-sm); font-weight: var(--z-weight-semibold); text-transform: none; }
+  .scan__settings { display: grid; gap: var(--z-space-4); }
+  .scan__settings[disabled] { opacity: 0.6; }
+  @container (max-width: 44rem) {
+    .scan__layout { grid-template-columns: 1fr; overflow: auto; }
+    .scan__side { border-right: 0; border-bottom: 1px solid var(--z-border); overflow: visible; }
+    .scan__main { min-height: 22rem; }
+  }
+
+  /* Device list */
+  .devices { display: grid; gap: 2px; }
+  .device {
+    position: relative; display: grid; grid-template-columns: auto 1fr; gap: var(--z-space-3); align-items: center;
+    padding: var(--z-space-2) var(--z-space-3); border-radius: var(--z-radius-md); cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .device:hover { background: var(--z-hover); }
+  .device:has(input:disabled) { cursor: default; opacity: 0.6; }
+  .device:has(input:disabled):hover { background: none; }
+  .device input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .device:has(input:checked) { background: var(--z-accent-subtle); border-color: var(--z-accent); }
+  .device:has(input:focus-visible) { outline: 2px solid var(--z-focus); outline-offset: 1px; }
+  .device__icon {
+    display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: var(--z-radius-md);
+    background: var(--z-surface-sunken); color: var(--z-text-muted);
+  }
+  .device:has(input:checked) .device__icon { background: var(--z-bg); color: var(--z-accent); }
+  .device__name { display: block; font-weight: var(--z-weight-medium); overflow-wrap: anywhere; }
+  .device__meta { display: flex; align-items: center; gap: var(--z-space-2); flex-wrap: wrap; font-size: var(--z-text-sm); color: var(--z-text-muted); }
+  .device--virtual { margin-top: var(--z-space-2); }
+  .device--virtual::before {
+    content: ""; position: absolute; left: var(--z-space-3); right: var(--z-space-3); top: calc(-1 * var(--z-space-1) - 1px);
+    border-top: 1px solid var(--z-border);
+  }
+  .devices__empty { display: grid; justify-items: start; gap: var(--z-space-2); padding: var(--z-space-4); border: 1px dashed var(--z-border-strong); border-radius: var(--z-radius-md); }
+  .devices__empty h4 { font-size: var(--z-text-md); font-weight: var(--z-weight-semibold); }
+  .device-skel { display: grid; grid-template-columns: 2rem 1fr; gap: var(--z-space-3); padding: var(--z-space-2) var(--z-space-3); }
+  .device-skel .z-skeleton:first-child { width: 2rem; height: 2rem; }
+  .device-skel div:last-child { display: grid; gap: 6px; align-content: center; }
+  .device-skel div:last-child .z-skeleton { height: 10px; }
+
+  /* Pages panel */
+  .pages-head {
+    display: flex; align-items: center; gap: var(--z-space-3); flex-wrap: wrap;
+    padding: var(--z-space-4) var(--z-space-6) var(--z-space-3);
+  }
+  .pages-head h3 { font-size: var(--z-text-sm); font-weight: var(--z-weight-semibold); flex: 1; }
+  .pages-head .z-segmented { min-width: 14rem; }
+  .pages-body { flex: 1; overflow: auto; padding: 0 var(--z-space-6) var(--z-space-6); display: grid; align-content: start; gap: var(--z-space-4); }
+  .pages {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: var(--z-space-4);
+  }
+  .page {
+    display: grid; gap: var(--z-space-2); padding: var(--z-space-2); border-radius: var(--z-radius-md);
+    background: var(--z-bg); border: 1px solid var(--z-border); box-shadow: var(--z-shadow-1);
+    animation: page-in var(--z-duration-slow) var(--z-ease-enter);
+  }
+  .page:focus-visible { outline: 2px solid var(--z-focus); outline-offset: 2px; }
+  .page[data-active="true"] { border-color: var(--z-border-strong); }
+  @keyframes page-in { from { opacity: 0; transform: translateY(6px); } }
+  @media (prefers-reduced-motion: reduce) { .page { animation: none; } }
+  .page__thumb { aspect-ratio: 8.5 / 11; display: grid; place-items: center; overflow: hidden; border-radius: var(--z-radius-sm); background: var(--z-surface-sunken); }
+  .paper {
+    width: 82%; aspect-ratio: 8.5 / 11; background: var(--z-page-paper); box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08);
+    padding: 10% 9%; display: grid; align-content: start; gap: 5%;
+    transform: rotate(var(--rot, 0deg)) scale(var(--scale, 1));
+    transition: transform var(--z-duration-base) var(--z-ease-standard);
+  }
+  .paper i { display: block; height: 3px; background: #c5cad1; border-radius: 2px; }
+  .paper i:first-child { width: 55%; height: 5px; background: #8a929c; }
+  .paper i:nth-child(3n) { width: 80%; }
+  .paper i:nth-child(4n) { width: 65%; }
+  .paper--gray i { background: #b9b9b9; }
+  .paper--gray i:first-child { background: #707070; }
+  .page--receiving .page__thumb { border: 1px dashed var(--z-border-strong); }
+  .page__bar { display: flex; align-items: center; gap: var(--z-space-2); min-width: 0; }
+  .page__num { font-weight: var(--z-weight-semibold); font-variant-numeric: tabular-nums; font-size: var(--z-text-sm); padding-left: var(--z-space-1); }
+  .page__actions { display: flex; justify-content: space-between; border-top: 1px solid var(--z-border); padding-top: var(--z-space-1); }
+  .page__actions .z-btn { color: var(--z-text-muted); }
+  .page__actions .z-btn:hover { color: var(--z-text); }
+  .pages-empty { display: grid; place-items: center; text-align: center; gap: var(--z-space-2); padding: var(--z-space-10) var(--z-space-6); color: var(--z-text-muted); }
+  .pages-empty svg { color: var(--z-border-strong); }
+  .pages-empty h4 { color: var(--z-text); font-size: var(--z-text-lg); font-weight: var(--z-weight-semibold); }
+  .kbd-help { font-size: var(--z-text-sm); color: var(--z-text-muted); }
+  .kbd-help summary { cursor: pointer; }
+  .kbd-help dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin-top: 8px; }
+  .kbd-help dd { margin: 0; }
+  .z-error-code { font-family: var(--z-font-mono); font-size: var(--z-text-xs); color: var(--z-text-muted); }
+
+  /* Footer */
+  .scan__status { display: flex; align-items: center; gap: var(--z-space-3); min-width: 14rem; flex: 1; }
+  .scan__status .z-progress { flex: 1; max-width: 14rem; }
+  .scan__status-text { font-size: var(--z-text-sm); color: var(--z-text-muted); font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body class="proto">
+<main class="proto-stage" aria-label="Prototype stage">
+  <div class="host-mock" aria-hidden="true" inert>
+    <div class="host-mock__nav">Example App <span>Documents</span><span>Settings</span></div>
+    <div class="host-mock__card"><p>Attach a document to this record.</p><button class="host-mock__btn" tabindex="-1">Scan</button></div>
+  </div>
+  <div class="z-backdrop">
+    <div class="zilo z-dialog z-dialog--wide scan" role="dialog" aria-modal="true" aria-labelledby="scan-title" id="scan">
+      <header class="z-dialog__header">
+        <h2 class="z-dialog__title" id="scan-title">Scan documents</h2>
+        <button class="z-btn z-btn--ghost z-btn--icon" type="button" aria-label="Close" data-action="close"><svg class="z-icon" aria-hidden="true"><use href="#i-close"/></svg></button>
+      </header>
+      <div class="scan__layout">
+        <div class="scan__side">
+          <section aria-labelledby="dev-h">
+            <div class="scan__section-head">
+              <h3 class="scan__h" id="dev-h">Scanner</h3>
+              <button class="z-btn z-btn--ghost z-btn--sm" type="button" id="refresh" aria-describedby="dev-h">
+                <svg class="z-icon z-icon--sm" aria-hidden="true"><use href="#i-refresh"/></svg>Refresh
+              </button>
+            </div>
+            <div id="devices"></div>
+          </section>
+          <fieldset class="scan__settings" id="settings">
+            <legend class="scan__h" style="margin-bottom: var(--z-space-3)">Settings</legend>
+            <div id="settings-body"></div>
+          </fieldset>
+        </div>
+        <section class="scan__main" aria-labelledby="pages-h">
+          <div class="pages-head">
+            <h3 id="pages-h">Pages</h3>
+            <div class="z-segmented" role="radiogroup" aria-label="Save as" id="format">
+              <label><input type="radio" name="format" value="pdf" checked><span>PDF</span></label>
+              <label><input type="radio" name="format" value="jpeg"><span>JPEG</span></label>
+              <label><input type="radio" name="format" value="png"><span>PNG</span></label>
+            </div>
+          </div>
+          <div class="pages-body" id="pages-body"></div>
+          <div id="toast-slot"></div>
+        </section>
+      </div>
+      <footer class="z-dialog__footer" id="footer"></footer>
+      <div class="z-visually-hidden" id="z-live-polite" aria-live="polite" aria-atomic="true"></div>
+      <div class="z-visually-hidden" id="z-live-assertive" aria-live="assertive" aria-atomic="true"></div>
+    </div>
+  </div>
+  <div id="confirm-slot"></div>
+</main>
+
+<script src="assets/copy.js"></script>
+<script src="assets/proto.js"></script>
+<script>
+(function () {
+  const { icon, esc } = Z;
+  const C = (k, v) => ziloCopy(k, v);
+
+  const DEVICES = {
+    windows: [
+      { id: "escl-1", name: "Brother ADS-2700W", driver: "eSCL", conn: "network", where: "Network", caps: "feeder-duplex" },
+      { id: "twain-1", name: "Canon DR-C225 II", driver: "TWAIN", conn: "usb", where: "USB", caps: "feeder-duplex" },
+      { id: "wia-1", name: "Canon DR-C225 II", driver: "WIA", conn: "usb", where: "USB", caps: "feeder" },
+      { id: "wia-2", name: "EPSON Perfection V39", driver: "WIA", conn: "usb", where: "USB", caps: "flatbed" },
+    ],
+    macos: [
+      { id: "escl-1", name: "Brother ADS-2700W", driver: "eSCL", conn: "network", where: "Network", caps: "feeder-duplex" },
+      { id: "ica-1", name: "Canon DR-C225 II", driver: "ICA", conn: "usb", where: "USB", caps: "feeder-duplex" },
+      { id: "ica-2", name: "EPSON Perfection V39", driver: "ICA", conn: "usb", where: "USB", caps: "flatbed" },
+    ],
+    linux: [
+      { id: "escl-1", name: "Brother ADS-2700W", driver: "eSCL", conn: "network", where: "Network", caps: "feeder-duplex" },
+      { id: "sane-1", name: "Canon DR-C225 II", driver: "SANE", conn: "usb", where: "USB", caps: "feeder-duplex" },
+      { id: "sane-2", name: "EPSON Perfection V39", driver: "SANE", conn: "usb", where: "USB", caps: "flatbed" },
+    ],
+  };
+  const VIRTUAL = { id: "virtual", name: "Zilo Virtual Scanner", driver: "Virtual", conn: "virtual", where: "Test pages", caps: "all" };
+
+  const ERROR_CODES = ZILO_COPY_REQUIRED.errorCodes.filter((c) => !["unauthorized-origin", "token-revoked"].includes(c));
+
+  window.PROTO = {
+    title: "Scan dialog",
+    controls: [
+      { name: "state", label: "State", options: [
+        ["ready", "Ready (no pages yet)"], ["loading", "Loading scanners"], ["empty", "No scanners"],
+        ["virtual-only", "Only virtual scanner"], ["caps-loading", "Reading capabilities"],
+        ["scanning", "Scanning (pages arriving)"], ["pages", "Pages scanned"], ["deleted", "Page deleted (undo)"],
+        ["exporting", "Exporting"], ["error", "Error"], ["discard", "Close with unsaved pages"],
+      ] },
+      { name: "code", label: "Error code", options: ERROR_CODES.map((c) => [c, c]) },
+      { name: "os", label: "OS", options: [["windows", "Windows"], ["macos", "macOS"], ["linux", "Linux"]] },
+    ],
+    render,
+  };
+
+  let model = { pages: [], active: 0, selected: null, state: "ready" };
+
+  function deviceIcon(d) {
+    return icon(d.conn === "network" ? "network" : d.conn === "virtual" ? "flask" : "usb");
+  }
+
+  function renderDevices(state, os) {
+    const el = document.getElementById("devices");
+    const list = document.getElementById("refresh");
+    if (state === "loading") {
+      el.setAttribute("aria-busy", "true");
+      el.innerHTML = `<p class="z-status-line" style="margin-bottom:8px"><span class="z-spinner" aria-hidden="true"></span>${C("scan.loading-devices").title}</p>
+        ${[1, 2, 3].map(() => `<div class="device-skel" aria-hidden="true"><div class="z-skeleton"></div><div><div class="z-skeleton" style="width:70%"></div><div class="z-skeleton" style="width:40%"></div></div></div>`).join("")}`;
+      list.setAttribute("aria-disabled", "true");
+      return;
+    }
+    el.removeAttribute("aria-busy");
+    list.removeAttribute("aria-disabled");
+    if (state === "empty") {
+      const c = C("scan.no-devices");
+      el.innerHTML = `<div class="devices__empty"><h4>${c.title}</h4><p class="z-small z-muted">${c.body}</p>
+        <button class="z-btn z-btn--sm" type="button" data-autofocus>${icon("refresh", "z-icon--sm")}${c.primary}</button></div>`;
+      return;
+    }
+    const devices = state === "virtual-only" ? [VIRTUAL] : [...DEVICES[os], VIRTUAL];
+    const sel = model.selected && devices.some((d) => d.id === model.selected) ? model.selected : devices[state === "virtual-only" ? 0 : 1].id;
+    model.selected = sel;
+    const note = state === "virtual-only"
+      ? `<div class="z-banner" style="margin-bottom:8px">${icon("info")}<p class="z-banner__title">${C("scan.virtual-only").title}</p><p class="z-banner__body z-small">${C("scan.virtual-only").body}</p></div>` : "";
+    el.innerHTML = note + `<div class="devices" role="radiogroup" aria-labelledby="dev-h">
+      ${devices.map((d) => `
+        <label class="device ${d.conn === "virtual" ? "device--virtual" : ""}">
+          <input type="radio" name="device" value="${d.id}" ${d.id === sel ? "checked data-autofocus" : ""} ${["scanning", "exporting"].includes(state) ? "disabled" : ""}>
+          <span class="device__icon" aria-hidden="true">${deviceIcon(d)}</span>
+          <span>
+            <span class="device__name">${esc(d.name)}</span>
+            <span class="device__meta">${d.where}
+              <span class="z-badge ${d.driver === "Virtual" ? "z-badge--virtual" : ""}"><span class="z-visually-hidden">, driver </span>${d.driver}</span>
+            </span>
+          </span>
+        </label>`).join("")}
+    </div>`;
+    el.querySelectorAll("input").forEach((i) => i.addEventListener("change", () => { model.selected = i.value; renderSettings(model.state, os); }));
+  }
+
+  function capsFor(os) {
+    const all = [...DEVICES[os], VIRTUAL];
+    const d = all.find((x) => x.id === model.selected) || all[0];
+    return d;
+  }
+
+  function renderSettings(state, os) {
+    const fs = document.getElementById("settings");
+    const body = document.getElementById("settings-body");
+    const locked = ["loading", "empty", "caps-loading", "scanning", "exporting"].includes(state);
+    fs.disabled = locked;
+    if (state === "empty" || state === "loading") {
+      body.innerHTML = `<p class="z-hint">Choose a scanner to see its settings.</p>`;
+      return;
+    }
+    if (state === "caps-loading") {
+      body.innerHTML = `<p class="z-status-line" aria-live="off"><span class="z-spinner" aria-hidden="true"></span>${C("scan.loading-caps").title}</p>`;
+      return;
+    }
+    const d = capsFor(os);
+    const feeder = d.caps !== "flatbed";
+    const flatbed = d.caps === "flatbed" || d.caps === "all";
+    const duplex = d.caps === "feeder-duplex" || d.caps === "all";
+    const source = feeder && flatbed
+      ? `<div class="z-segmented" role="radiogroup" aria-labelledby="src-l">
+           <label><input type="radio" name="source" value="feeder" checked><span>Document feeder</span></label>
+           <label><input type="radio" name="source" value="flatbed"><span>Flatbed</span></label>
+         </div>`
+      : `<p class="z-small">${feeder ? "Document feeder" : "Flatbed"} <span class="z-muted">(only option)</span></p>`;
+    body.innerHTML = `
+      <div class="scan__settings">
+        <div class="z-field">
+          <span class="z-label" id="src-l">Source</span>
+          ${source}
+          ${duplex ? `<label class="z-check" style="margin-top:6px"><input type="checkbox" name="duplex" checked><span>Scan both sides</span></label>` : ""}
+        </div>
+        <div class="z-field">
+          <label class="z-label" for="dpi">Resolution</label>
+          <select class="z-select" id="dpi">
+            <option>100 dpi</option><option>150 dpi</option><option selected>200 dpi</option><option>300 dpi</option><option>600 dpi</option>
+          </select>
+        </div>
+        <div class="z-field">
+          <span class="z-label" id="color-l">Colour</span>
+          <div class="z-segmented" role="radiogroup" aria-labelledby="color-l">
+            <label><input type="radio" name="color" value="color" checked><span>Colour</span></label>
+            <label><input type="radio" name="color" value="gray"><span>Grey</span></label>
+            <label><input type="radio" name="color" value="bw"><span>B&amp;W</span></label>
+          </div>
+        </div>
+        <div class="z-field">
+          <label class="z-label" for="paper">Paper size</label>
+          <select class="z-select" id="paper">
+            ${feeder ? "<option>Auto-detect</option>" : ""}<option selected>Letter</option><option>Legal</option><option>A4</option><option>A5</option><option>Full scan area</option>
+          </select>
+        </div>
+      </div>`;
+  }
+
+  function samplePages(n, opts) {
+    return Array.from({ length: n }, (_, i) => ({ id: i + 1, rot: 0, side: opts && opts.duplex ? (i % 2 ? "Back" : "Front") : null, gray: i === 3 }));
+  }
+
+  function pageCard(p, i, total) {
+    const n = i + 1;
+    const active = i === model.active;
+    const tab = active ? "0" : "-1";
+    const side = p.side ? `, ${p.side.toLowerCase()} side` : "";
+    const rotated = p.rot ? `, rotated ${((p.rot % 360) + 360) % 360} degrees` : "";
+    return `<li class="page" tabindex="${tab}" data-index="${i}" data-active="${active}"
+              aria-label="Page ${n} of ${total}${side}${rotated}" aria-describedby="kbd-help-text">
+      <div class="page__thumb" aria-hidden="true">
+        <div class="paper ${p.gray ? "paper--gray" : ""}" style="--rot:${p.rot}deg;--scale:${p.rot % 180 ? 0.78 : 1}">${"<i></i>".repeat(9)}</div>
+      </div>
+      <div class="page__bar">
+        <span class="page__num" aria-hidden="true">${n}</span>
+        ${p.side ? `<span class="z-badge" aria-hidden="true">${p.side}</span>` : ""}
+      </div>
+      <div class="page__actions">
+          <button class="z-btn z-btn--ghost z-btn--sm z-btn--icon" type="button" tabindex="${tab}" data-op="rotl" aria-label="Rotate page ${n} left">${icon("rotate-left", "z-icon--sm")}</button>
+          <button class="z-btn z-btn--ghost z-btn--sm z-btn--icon" type="button" tabindex="${tab}" data-op="rotr" aria-label="Rotate page ${n} right">${icon("rotate-right", "z-icon--sm")}</button>
+          <button class="z-btn z-btn--ghost z-btn--sm z-btn--icon" type="button" tabindex="${tab}" data-op="prev" aria-label="Move page ${n} earlier" ${i === 0 ? 'aria-disabled="true"' : ""}>${icon("arrow-left", "z-icon--sm")}</button>
+          <button class="z-btn z-btn--ghost z-btn--sm z-btn--icon" type="button" tabindex="${tab}" data-op="next" aria-label="Move page ${n} later" ${i === total - 1 ? 'aria-disabled="true"' : ""}>${icon("arrow-right", "z-icon--sm")}</button>
+          <button class="z-btn z-btn--ghost z-btn--sm z-btn--icon" type="button" tabindex="${tab}" data-op="del" aria-label="Delete page ${n}">${icon("trash", "z-icon--sm")}</button>
+      </div>
+    </li>`;
+  }
+
+  function receivingCard(n) {
+    return `<li class="page page--receiving" aria-label="Page ${n}, receiving">
+      <div class="page__thumb" aria-hidden="true"><span class="z-spinner"></span></div>
+      <div class="page__bar"><span class="page__num" aria-hidden="true">${n}</span><span class="z-small z-muted">Receiving…</span></div>
+    </li>`;
+  }
+
+  const KBD_HELP = `<details class="kbd-help">
+      <summary>Keyboard shortcuts</summary>
+      <dl id="kbd-help-text">
+        <dt><kbd class="z-kbd">←</kbd> <kbd class="z-kbd">→</kbd> <kbd class="z-kbd">↑</kbd> <kbd class="z-kbd">↓</kbd></dt><dd>Move between pages</dd>
+        <dt><kbd class="z-kbd">R</kbd> / <kbd class="z-kbd">Shift</kbd>+<kbd class="z-kbd">R</kbd></dt><dd>Rotate right / left</dd>
+        <dt><kbd class="z-kbd">Shift</kbd>+<kbd class="z-kbd">←</kbd> <kbd class="z-kbd">→</kbd></dt><dd>Move page earlier / later</dd>
+        <dt><kbd class="z-kbd">Delete</kbd></dt><dd>Delete page (undo with <kbd class="z-kbd">Ctrl</kbd>/<kbd class="z-kbd">⌘</kbd>+<kbd class="z-kbd">Z</kbd>)</dd>
+      </dl>
+    </details>`;
+
+  function renderPages(state, code) {
+    const body = document.getElementById("pages-body");
+    const head = document.getElementById("pages-h");
+    let banner = "";
+    if (state === "error") {
+      const vars = { device: "Canon DR-C225 II", count: 2, format: "PDF", trayArea: "notification area" };
+      const c = C(code, vars);
+      banner = `<div class="z-banner z-banner--danger" role="alert">
+        ${icon("alert-circle")}
+        <p class="z-banner__title">${c.title}</p>
+        <p class="z-banner__body">${c.body}</p>
+        <div class="z-banner__actions">
+          ${c.primary ? `<button class="z-btn z-btn--sm" type="button">${c.primary}</button>` : ""}
+          ${c.secondary ? `<button class="z-btn z-btn--sm z-btn--ghost" type="button">${c.secondary}</button>` : ""}
+          <span class="z-error-code" style="align-self:center;margin-left:auto">Code: ${code}</span>
+        </div>
+      </div>`;
+    }
+    const pagesKept = { "paper-jam": 2, "disconnected": 2, "export-failed": 4, "limits-exceeded": 3, "unknown": 0 };
+    if (state === "error") model.pages = samplePages(pagesKept[code] || 0, { duplex: false });
+    const pages = model.pages;
+    let grid = "";
+    if (["loading", "empty", "virtual-only", "ready", "caps-loading"].includes(state) || (state === "error" && !pages.length)) {
+      const c = C("scan.no-pages");
+      grid = state === "error" ? "" : `<div class="pages-empty">${icon("file", "z-icon--xl")}<h4>${c.title}</h4><p>${c.body}</p></div>`;
+    } else {
+      grid = `<ol class="pages" aria-label="Scanned pages">${pages.map((p, i) => pageCard(p, i, pages.length)).join("")}${state === "scanning" ? receivingCard(pages.length + 1) : ""}</ol>${pages.length ? KBD_HELP : ""}`;
+    }
+    let effective = "";
+    if (state === "pages") {
+      const c = C("scan.effective-settings", { actual: "300 dpi", requested: "400 dpi", device: "Canon DR-C225 II" });
+      effective = `<div class="z-banner">${icon("info")}<p class="z-banner__title">${c.title}</p><p class="z-banner__body z-small">${c.body}</p></div>`;
+    }
+    head.textContent = pages.length ? `Pages (${pages.length})` : "Pages";
+    body.innerHTML = banner + effective + grid;
+    bindPages();
+  }
+
+  function renderFooter(state) {
+    const f = document.getElementById("footer");
+    const n = model.pages.length;
+    const scanIcon = icon("scanner");
+    let status = "", actions = "";
+    if (state === "scanning") {
+      const text = C("scan.scanning", { n: n + 1 }).title;
+      status = `<div class="scan__status">
+        <div class="z-progress z-progress--indeterminate" role="progressbar" aria-label="Scan progress" aria-valuetext="${text}"><div class="z-progress__bar"></div></div>
+        <span class="scan__status-text">${text}</span></div>`;
+      actions = `<button class="z-btn" type="button" data-autofocus>Cancel scan</button>
+                 <button class="z-btn z-btn--primary" type="button" aria-disabled="true" aria-busy="true"><span class="z-spinner" aria-hidden="true"></span>Scanning…</button>`;
+    } else if (state === "exporting") {
+      const text = C("scan.exporting", { format: "PDF" }).title;
+      status = `<div class="scan__status"><div class="z-progress z-progress--indeterminate" role="progressbar" aria-label="Export progress" aria-valuetext="${text}"><div class="z-progress__bar"></div></div><span class="scan__status-text">${text}</span></div>`;
+      actions = `<button class="z-btn" type="button" aria-disabled="true">${scanIcon}Scan more</button>
+                 <button class="z-btn z-btn--primary" type="button" aria-disabled="true" aria-busy="true"><span class="z-spinner" aria-hidden="true"></span>Add ${n} pages</button>`;
+    } else if (n > 0) {
+      status = `<div class="scan__status"><span class="scan__status-text">${n} pages · PDF</span></div>`;
+      actions = `<button class="z-btn" type="button">${scanIcon}Scan more</button>
+                 <button class="z-btn z-btn--primary" type="button">Add ${n} pages</button>`;
+    } else {
+      const disabled = ["loading", "empty", "caps-loading"].includes(state);
+      status = `<div class="scan__status"></div>`;
+      actions = `<button class="z-btn" type="button" data-action="close">Cancel</button>
+                 <button class="z-btn z-btn--primary" type="button" ${disabled ? 'aria-disabled="true"' : ""}>${scanIcon}Scan</button>`;
+    }
+    f.innerHTML = status + `<span class="z-spacer"></span>` + actions;
+  }
+
+  function renderToast(state) {
+    const slot = document.getElementById("toast-slot");
+    if (state !== "deleted") { slot.innerHTML = ""; return; }
+    const c = C("scan.page-deleted", { n: 3 });
+    slot.innerHTML = `<div class="z-toast" role="status">${c.title}. <button class="z-btn z-btn--sm" type="button">${c.primary}</button></div>`;
+  }
+
+  function renderConfirm(state) {
+    const slot = document.getElementById("confirm-slot");
+    const scan = document.getElementById("scan");
+    if (state !== "discard") { slot.innerHTML = ""; scan.removeAttribute("inert"); return; }
+    const c = C("scan.discard-confirm", { count: model.pages.length });
+    scan.setAttribute("inert", "");
+    slot.innerHTML = `<div class="z-backdrop" style="background:transparent">
+      <div class="zilo z-dialog" role="alertdialog" aria-modal="true" aria-labelledby="cf-t" aria-describedby="cf-b" style="--z-dialog-width:26rem">
+        <div class="z-dialog__body">
+          <h2 class="z-dialog__heading" id="cf-t">${c.title}</h2>
+          <p id="cf-b">${c.body}</p>
+        </div>
+        <footer class="z-dialog__footer" style="border-top:0">
+          <span class="z-spacer"></span>
+          <button class="z-btn z-btn--danger" type="button">${c.secondary}</button>
+          <button class="z-btn z-btn--primary" type="button" data-autofocus>${c.primary}</button>
+        </footer>
+      </div></div>`;
+  }
+
+  function render(v) {
+    model.state = v.state;
+    const pageCounts = { scanning: 3, pages: 6, deleted: 5, exporting: 6, discard: 6 };
+    if (v.state !== "error") model.pages = samplePages(pageCounts[v.state] || 0, { duplex: true });
+    if (v.state === "deleted") model.pages = model.pages.filter((_, i) => i !== 2);
+    model.active = 0;
+    renderDevices(v.state, v.os);
+    renderSettings(v.state, v.os);
+    renderPages(v.state, v.code);
+    renderFooter(v.state);
+    renderToast(v.state);
+    renderConfirm(v.state);
+    if (v.state === "error") Z.announce(C(v.code, { device: "Canon DR-C225 II", count: 2, format: "PDF", trayArea: "notification area" }).title, "assertive");
+    if (v.state === "scanning") Z.announce(C("scan.page-received", { n: 3 }).title, "polite");
+  }
+
+  /* ---------- Page grid interaction: roving tabindex + shortcuts ---------- */
+  function setActive(i, focus) {
+    const cards = [...document.querySelectorAll(".page[data-index]")];
+    if (!cards.length) return;
+    i = Math.max(0, Math.min(cards.length - 1, i));
+    model.active = i;
+    cards.forEach((c, k) => {
+      const on = k === i;
+      c.tabIndex = on ? 0 : -1;
+      c.dataset.active = String(on);
+      c.querySelectorAll("button").forEach((b) => (b.tabIndex = on ? 0 : -1));
+    });
+    if (focus) cards[i].focus();
+  }
+
+  function columns() {
+    const cards = [...document.querySelectorAll(".page[data-index]")];
+    if (cards.length < 2) return 1;
+    const top = cards[0].offsetTop;
+    return cards.filter((c) => c.offsetTop === top).length;
+  }
+
+  function op(i, kind) {
+    const p = model.pages;
+    if (kind === "rotl") p[i].rot -= 90;
+    if (kind === "rotr") p[i].rot += 90;
+    if (kind === "prev" && i > 0) { [p[i - 1], p[i]] = [p[i], p[i - 1]]; i--; }
+    if (kind === "next" && i < p.length - 1) { [p[i + 1], p[i]] = [p[i], p[i + 1]]; i++; }
+    if (kind === "del") {
+      p.splice(i, 1);
+      Z.announce(C("scan.page-deleted", { n: i + 1 }).title, "polite");
+      i = Math.min(i, p.length - 1);
+    } else if (kind === "prev" || kind === "next") {
+      Z.announce(`Page moved to position ${i + 1}`, "polite");
+    } else {
+      Z.announce(`Page ${i + 1} rotated`, "polite");
+    }
+    renderPages(model.state, "");
+    renderFooter(model.state);
+    model.active = i;
+    setActive(i, true);
+  }
+
+  function bindPages() {
+    document.querySelectorAll(".page[data-index]").forEach((card) => {
+      const i = Number(card.dataset.index);
+      card.addEventListener("focusin", () => { if (model.active !== i) setActive(i, false); });
+      card.querySelectorAll("button[data-op]").forEach((b) =>
+        b.addEventListener("click", () => { if (b.getAttribute("aria-disabled") !== "true") op(i, b.dataset.op); }));
+      card.addEventListener("keydown", (e) => {
+        const cols = columns();
+        const map = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -cols, ArrowDown: cols };
+        if (e.key in map && e.shiftKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+          e.preventDefault(); op(i, e.key === "ArrowLeft" ? "prev" : "next");
+        } else if (e.key in map) {
+          e.preventDefault(); setActive(i + map[e.key], true);
+        } else if (e.key === "Home") { e.preventDefault(); setActive(0, true); }
+        else if (e.key === "End") { e.preventDefault(); setActive(model.pages.length - 1, true); }
+        else if (e.key.toLowerCase() === "r" && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); op(i, e.shiftKey ? "rotl" : "rotr"); }
+        else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); op(i, "del"); }
+      });
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && model.state !== "discard") {
+      const p = new URLSearchParams(location.search);
+      if (model.pages.length) { p.set("state", "discard"); history.replaceState(null, "", "?" + p); Z.rerender(); }
+    }
+  });
+})();
+</script>
+</body>
+</html>
