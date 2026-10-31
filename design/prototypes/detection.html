@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zilo prototype: Detection dialogs</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<link rel="stylesheet" href="assets/proto.css">
+<style>
+  /* ---- Detection dialogs (spec: docs/design/detection-dialogs.md) ---- */
+  .det { --z-dialog-width: 32rem; }
+  .det--wide { --z-dialog-width: 36rem; }
+  .det .z-dialog__body { padding-top: var(--z-space-8); }
+  .det__actions { display: grid; gap: var(--z-space-2); margin-top: var(--z-space-5); }
+  .det__actions .z-btn { min-height: 2.5rem; }
+  .det__center { display: grid; justify-items: center; text-align: center; gap: var(--z-space-3); padding: var(--z-space-4) 0; }
+  .det__center .z-dialog__heading { margin: 0; }
+  .det__close { position: absolute; top: var(--z-space-3); right: var(--z-space-3); }
+  .det__waiting { margin-top: var(--z-space-4); padding: var(--z-space-3) var(--z-space-4); border-radius: var(--z-radius-md); background: var(--z-surface-sunken); }
+  .det__hint { margin-top: var(--z-space-2); font-size: var(--z-text-sm); color: var(--z-text-muted); }
+  .det__picker { display: grid; gap: 2px; margin-top: var(--z-space-2); }
+  .det__picker a {
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--z-space-3);
+    padding: var(--z-space-2) var(--z-space-3); border-radius: var(--z-radius-md); color: var(--z-text); text-decoration: none;
+  }
+  .det__picker a:hover { background: var(--z-hover); color: var(--z-text); }
+  .det__picker small { color: var(--z-text-muted); font-size: var(--z-text-xs); }
+  .det__picker .z-badge { justify-self: end; }
+  .origin-chip {
+    display: inline-block; max-width: 100%; padding: 1px 6px; border-radius: var(--z-radius-sm);
+    background: var(--z-surface-sunken); border: 1px solid var(--z-border); font-family: var(--z-font-mono);
+    font-size: 0.95em; overflow-wrap: anywhere;
+  }
+  .addrbar {
+    display: flex; align-items: center; gap: var(--z-space-2); margin: var(--z-space-3) 0 var(--z-space-4);
+    padding: 6px 10px; border-radius: var(--z-radius-pill); background: var(--z-surface-sunken);
+    border: 1px solid var(--z-border); font-size: var(--z-text-sm); color: var(--z-text-muted);
+  }
+  .addrbar__icon {
+    display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%;
+    color: var(--z-text); outline: 2px solid var(--z-accent); outline-offset: 1px; background: var(--z-bg);
+  }
+  .addrbar__url { color: var(--z-text); }
+  .steps-panel { min-height: 9rem; }
+  .ver { font-variant-numeric: tabular-nums; }
+  .upd-meta { display: flex; justify-content: space-between; font-size: var(--z-text-sm); color: var(--z-text-muted); margin-top: var(--z-space-2); font-variant-numeric: tabular-nums; }
+
+  /* Bridge popup window mock (Safari S2) */
+  .os-window {
+    width: 26rem; border-radius: 10px; overflow: hidden; box-shadow: var(--z-shadow-3);
+    border: 1px solid rgb(0 0 0 / 0.2); background: var(--z-bg);
+  }
+  .os-window__bar {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--z-surface-sunken);
+    border-bottom: 1px solid var(--z-border); font-size: var(--z-text-xs); color: var(--z-text-muted);
+  }
+  .os-window__lights { display: flex; gap: 6px; }
+  .os-window__lights i { width: 12px; height: 12px; border-radius: 50%; background: #c8ccd2; display: block; }
+  .os-window__url { flex: 1; text-align: center; font-family: var(--z-font-mono); }
+  .bridge { padding: var(--z-space-6); display: grid; gap: var(--z-space-4); }
+  .wordmark { font-weight: 700; letter-spacing: -0.02em; font-size: var(--z-text-lg); display: flex; align-items: center; gap: 6px; }
+  .wordmark i { width: 14px; height: 14px; border-radius: 3px; background: var(--z-accent); display: block; }
+  .origin-box {
+    padding: var(--z-space-3); border-radius: var(--z-radius-md); border: 1px solid var(--z-border-strong);
+    background: var(--z-surface-sunken); font-family: var(--z-font-mono); font-size: var(--z-text-lg); overflow-wrap: anywhere;
+  }
+</style>
+</head>
+<body class="proto">
+<main class="proto-stage" aria-label="Prototype stage">
+  <div class="host-mock" aria-hidden="true" inert>
+    <div class="host-mock__nav">Example App <span>Documents</span><span>Settings</span></div>
+    <div class="host-mock__card"><p>Attach a document to this record.</p><button class="host-mock__btn" tabindex="-1">Scan</button></div>
+  </div>
+  <div class="z-backdrop" id="stage"></div>
+</main>
+
+<script src="assets/copy.js"></script>
+<script src="assets/proto.js"></script>
+<script>
+(function () {
+  const { icon, esc } = Z;
+  const ORIGIN = "https://app.example.com";
+
+  const STATES = [
+    ["checking", "Checking"], ["permission-prompt", "Checking, browser prompt open"],
+    ["denied", "Permission denied"], ["unreachable", "Unreachable or blocked (Install)"],
+    ["unreachable-hint", "Unreachable, troubleshooting open"], ["unreachable-stopped", "Unreachable, re-check stopped"],
+    ["awaiting-consent", "Waiting for consent in Zilo"], ["unauthorized-origin", "Site not allowed (denied in Zilo)"],
+    ["unauthorized-cooldown", "Site not allowed, cool-down"], ["token-revoked", "Access removed"],
+    ["outdated", "Outdated (Update)"], ["updating", "Updating"], ["update-failed", "Update failed"],
+    ["safari-bridge", "Safari: open Zilo window"], ["safari-bridge-blocked", "Safari: popup blocked"],
+    ["safari-bridge-closed", "Safari: window closed"], ["safari-bridge-unavailable", "Safari: page can't use window"],
+    ["safari-unsupported", "Safari not yet supported"], ["bridge-window", "Safari: the Zilo window itself"],
+  ];
+  const BROWSERS = [["chrome", "Chrome"], ["edge", "Edge"], ["firefox", "Firefox"]];
+  const OSES = [["windows-x64", "Windows x64"], ["windows-arm64", "Windows ARM64"], ["macos", "macOS"], ["linux", "Linux"]];
+
+  window.PROTO = {
+    title: "Detection dialogs",
+    controls: [
+      { name: "state", label: "State", options: STATES },
+      { name: "browser", label: "Detected browser", options: BROWSERS },
+      { name: "os", label: "Detected OS", options: OSES },
+    ],
+    matrix() {
+      return [
+        ...STATES.map(([s]) => ({ state: s })),
+        ...BROWSERS.slice(1).map(([b]) => ({ state: "denied", browser: b })),
+        ...OSES.slice(1).map(([o]) => ({ state: "unreachable", os: o })),
+      ];
+    },
+    render,
+  };
+
+  const C = (k, v) => ziloCopy(k, Object.assign({ origin: ORIGIN, version: "1.2.0", required: "1.4.0", minutes: 5 }, v));
+
+  function shell(opts) {
+    // opts: {titleId, body, footer, wide, role, describedBy, closeLabel}
+    return `<div class="zilo z-dialog det ${opts.wide ? "det--wide" : ""}" role="${opts.role || "dialog"}" aria-modal="true"
+        aria-labelledby="det-title" ${opts.describedBy ? `aria-describedby="${opts.describedBy}"` : ""}>
+      ${opts.noClose ? "" : `<button class="z-btn z-btn--ghost z-btn--icon det__close" type="button" aria-label="Close">${icon("close")}</button>`}
+      <div class="z-dialog__body">${opts.body}</div>
+      ${opts.footer ? `<footer class="z-dialog__footer">${opts.footer}</footer>` : ""}
+      <div class="z-visually-hidden" id="z-live-polite" aria-live="polite" aria-atomic="true"></div>
+      <div class="z-visually-hidden" id="z-live-assertive" aria-live="assertive" aria-atomic="true"></div>
+    </div>`;
+  }
+
+  function head(c, kind, iconName) {
+    return `<div class="z-dialog__icon ${kind ? "z-dialog__icon--" + kind : ""}" aria-hidden="true">${icon(iconName || "scanner", "z-icon--lg")}</div>
+      <h2 class="z-dialog__heading" id="det-title">${c.title}</h2>
+      <p class="z-dialog__lede" id="det-desc">${c.body}</p>`;
+  }
+
+  function footer(primary, secondary, opts) {
+    opts = opts || {};
+    return `<span class="z-spacer"></span>
+      ${secondary ? `<button class="z-btn" type="button" ${opts.secondaryFocus ? "data-autofocus" : ""}>${secondary}</button>` : ""}
+      ${primary ? `<button class="z-btn z-btn--primary" type="button" ${opts.primaryAttrs || ""} ${opts.secondaryFocus ? "" : "data-autofocus"}>${primary}</button>` : ""}`;
+  }
+
+  /* ---------- State renderers ---------- */
+  function checking(prompt) {
+    const c = C(prompt ? "state.permission-prompt" : "state.checking");
+    const body = `<div class="det__center">
+        ${prompt ? `<div class="z-dialog__icon z-dialog__icon--info" aria-hidden="true">${icon("shield", "z-icon--lg")}</div>` : `<span class="z-spinner z-spinner--lg" aria-hidden="true" style="color:var(--z-accent)"></span>`}
+        <h2 class="z-dialog__heading" id="det-title">${c.title}</h2>
+        <p id="det-desc">${c.body}</p>
+      </div>`;
+    Z.announce(c.title, "polite");
+    return shell({ body, describedBy: "det-desc", footer: footer("", c.secondary, { secondaryFocus: true }), noClose: true });
+  }
+
+  function denied(browser) {
+    const c = C("state.denied");
+    const admin = C("state.denied.admin");
+    const tabs = BROWSERS.map(([id, label]) =>
+      `<button class="z-tab" role="tab" type="button" id="tab-${id}" aria-controls="panel-${id}" aria-selected="${id === browser}" tabindex="${id === browser ? 0 : -1}">${label}</button>`).join("");
+    const panels = BROWSERS.map(([id]) => {
+      const s = C("state.denied." + id);
+      const steps = s.body.split(/(?<=\.)\s+/);
+      const term = id === "firefox" ? "Device apps and services" : "Apps on device";
+      const stepHtml = steps.map((t) => `<li><span>${t.replace(term, `<span class="z-ui-term">${term}</span>`)}</span></li>`).join("");
+      return `<div class="steps-panel" role="tabpanel" id="panel-${id}" aria-labelledby="tab-${id}" ${id === browser ? "" : "hidden"} tabindex="0">
+          <div class="addrbar" aria-hidden="true"><span class="addrbar__icon">${icon(id === "chrome" ? "settings" : "lock", "z-icon--sm")}</span><span class="addrbar__url">app.example.com</span></div>
+          <ol class="z-steps">${stepHtml}</ol>
+        </div>`;
+    }).join("");
+    const body = head(c, "warning", "shield") + `
+      <div class="z-tabs" role="tablist" aria-label="Browser">${tabs}</div>
+      ${panels}
+      <details class="z-disclosure"><summary>${admin.title}</summary><p class="z-small">${admin.body}</p></details>`;
+    return shell({ body, wide: true, describedBy: "det-desc", footer: footer(c.primary, c.secondary) });
+  }
+
+  const DOWNLOADS = [
+    { id: "windows-x64", label: "Windows", arch: "x64", file: ".msi", size: "38 MB" },
+    { id: "windows-arm64", label: "Windows", arch: "ARM64", file: ".msi", size: "37 MB" },
+    { id: "macos", label: "macOS", arch: "Apple silicon and Intel", file: ".pkg", size: "61 MB" },
+    { id: "linux-deb-x64", label: "Linux, Debian and Ubuntu", arch: "x64", file: ".deb", size: "33 MB" },
+    { id: "linux-rpm-x64", label: "Linux, Fedora and RHEL", arch: "x64", file: ".rpm", size: "33 MB" },
+    { id: "linux-deb-arm64", label: "Linux, Debian and Ubuntu", arch: "ARM64", file: ".deb", size: "32 MB" },
+    { id: "linux-rpm-arm64", label: "Linux, Fedora and RHEL", arch: "ARM64", file: ".rpm", size: "32 MB" },
+  ];
+
+  function unreachable(os, opts) {
+    opts = opts || {};
+    const osLabel = { "windows-x64": "Windows (x64)", "windows-arm64": "Windows (ARM64)", macos: "macOS", linux: "Linux" }[os];
+    const c = C(opts.stopped ? "state.unreachable-stopped" : "state.unreachable-or-blocked", { os: osLabel });
+    const hint = C("state.unreachable-or-blocked.blocked-hint");
+    const wait = C("state.unreachable-or-blocked.checking");
+    const start = `<a class="z-btn z-btn--block" href="zilo://start">${icon("play", "z-icon--sm")}${C("state.unreachable-or-blocked").secondary}</a>`;
+    const primary = os === "linux"
+      ? `<a class="z-btn z-btn--primary z-btn--block" href="#dl-linux-deb-x64" data-autofocus>${icon("download", "z-icon--sm")}Download .deb (Debian, Ubuntu)</a>
+         <a class="z-btn z-btn--block" href="#dl-linux-rpm-x64">${icon("download", "z-icon--sm")}Download .rpm (Fedora, RHEL)</a>`
+      : `<a class="z-btn z-btn--primary z-btn--block" href="#dl-${os}" data-autofocus>${icon("download", "z-icon--sm")}${C("state.unreachable-or-blocked", { os: osLabel }).primary}</a>`;
+    const picker = `<details class="z-disclosure"><summary>Other systems</summary>
+        <div class="det__picker">${DOWNLOADS.map((d) => `<a href="#dl-${d.id}">${icon("download", "z-icon--sm")}<span>${d.label}<br><small>${d.arch} · Zilo 1.4.0 · ${d.size}</small></span><span class="z-badge">${d.file}</span></a>`).join("")}</div>
+      </details>`;
+    const status = opts.stopped
+      ? `<div class="det__waiting z-status-line" role="status">${icon("info", "z-icon--sm")}<span>Not checking. Select Check again when Zilo is running.</span></div>`
+      : `<div class="det__waiting z-status-line" role="status"><span class="z-dot z-dot--live" aria-hidden="true"></span><span><strong>${wait.title}.</strong> ${wait.body}</span></div>`;
+    const body = head(c, "", "scanner") + `
+      <div class="det__actions">${opts.stopped ? `<button class="z-btn z-btn--primary z-btn--block" type="button" data-autofocus>${c.primary}</button>${start}` : primary + start}</div>
+      <p class="det__hint">Starting Zilo? Your browser may ask to open it. Choose Open.</p>
+      ${status}
+      ${picker}
+      <details class="z-disclosure" ${opts.hint ? "open" : ""}><summary>${hint.title}</summary><p class="z-small">${hint.body}</p>
+        <p style="margin-top:8px"><button class="z-btn z-btn--sm" type="button">${hint.primary}</button></p></details>`;
+    return shell({ body, describedBy: "det-desc" });
+  }
+
+  function simple(key, kind, iconName, opts) {
+    opts = opts || {};
+    const c = C(key, opts.vars);
+    if (c.announce !== "none" && opts.announce !== false) Z.announce(c.title, c.announce);
+    const body = head(c, kind, iconName) + (opts.extra || "");
+    return shell({ body, describedBy: "det-desc", role: opts.role, footer: footer(c.primary, c.secondary, opts) });
+  }
+
+  function outdated() {
+    const extra = `<dl class="z-small" style="display:grid;grid-template-columns:auto 1fr;gap:4px 16px">
+        <dt class="z-muted">Installed</dt><dd class="ver">Zilo 1.2.0</dd>
+        <dt class="z-muted">Needed</dt><dd class="ver">Zilo 1.4.0 or later</dd>
+        <dt class="z-muted">Latest</dt><dd class="ver">Zilo 1.4.2 · signed, 38 MB</dd></dl>`;
+    return simple("state.outdated", "info", "download", { extra });
+  }
+
+  function updating() {
+    const c = C("state.updating");
+    Z.announce(c.title, "polite");
+    const body = head(c, "info", "download") + `
+      <div class="z-progress" role="progressbar" aria-label="Update progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="62" aria-valuetext="Downloading, 18 of 29 MB" style="--value:62%"><div class="z-progress__bar"></div></div>
+      <div class="upd-meta"><span>Downloading Zilo 1.4.2</span><span>18 of 29 MB</span></div>`;
+    return shell({ body, describedBy: "det-desc", footer: footer("", c.secondary, { secondaryFocus: true }) });
+  }
+
+  function unauthorized(cooldown) {
+    const c = C("unauthorized-origin", { origin: ORIGIN });
+    Z.announce(c.title, "assertive");
+    const body = head({ title: c.title, body: c.body.replace(ORIGIN, `<span class="origin-chip">${esc(ORIGIN)}</span>`) }, "danger", "lock") +
+      (cooldown ? `<p class="det__hint" id="cooldown">You chose Deny recently. Zilo can ask again in 9 minutes.</p>` : "");
+    const primary = cooldown ? "Ask again in 9 min" : c.primary;
+    return shell({ body, describedBy: "det-desc", footer: footer(primary, c.secondary, cooldown ? { primaryAttrs: 'aria-disabled="true" aria-describedby="cooldown"', secondaryFocus: true } : {}) });
+  }
+
+  function awaiting() {
+    const c = C("state.awaiting-consent");
+    Z.announce(c.title, "polite");
+    const body = `<div class="z-dialog__icon" aria-hidden="true">${icon("window", "z-icon--lg")}</div>
+      <h2 class="z-dialog__heading" id="det-title">${c.title}</h2>
+      <p class="z-dialog__lede" id="det-desc">${c.body.replace(ORIGIN, `<span class="origin-chip">${esc(ORIGIN)}</span>`)}</p>
+      <div class="det__waiting z-status-line" role="status"><span class="z-dot z-dot--live" aria-hidden="true"></span>Waiting for your answer in Zilo…</div>
+      <p class="det__hint">Don't see it? Look for the Zilo icon in your taskbar, menu bar or system tray.</p>`;
+    return shell({ body, describedBy: "det-desc", footer: footer("", c.secondary, { secondaryFocus: true }) });
+  }
+
+  function bridgeWindow() {
+    const c = C("state.bridge-window");
+    return `<div class="zilo os-window" role="dialog" aria-modal="false" aria-labelledby="det-title">
+      <div class="os-window__bar" aria-hidden="true"><span class="os-window__lights"><i></i><i></i><i></i></span><span class="os-window__url">127.0.0.1:47210/bridge</span><span style="width:50px"></span></div>
+      <div class="bridge">
+        <p class="wordmark"><i aria-hidden="true"></i>Zilo</p>
+        <h2 class="z-dialog__heading" id="det-title" style="margin:0">${c.title.replace(ORIGIN, "").trim()}</h2>
+        <div class="origin-box">${esc(ORIGIN)}</div>
+        <p>${c.body}</p>
+        <p class="z-status-line"><span class="z-dot" aria-hidden="true"></span>Scanning page 2…</p>
+        <div><button class="z-btn" type="button" data-autofocus>${c.secondary}</button></div>
+      </div>
+    </div>`;
+  }
+
+  function render(v) {
+    const stage = document.getElementById("stage");
+    stage.style.background = v.state === "bridge-window" ? "transparent" : "";
+    const r = {
+      checking: () => checking(false),
+      "permission-prompt": () => checking(true),
+      denied: () => denied(v.browser),
+      unreachable: () => unreachable(v.os),
+      "unreachable-hint": () => unreachable(v.os, { hint: true }),
+      "unreachable-stopped": () => unreachable(v.os, { stopped: true }),
+      "awaiting-consent": awaiting,
+      "unauthorized-origin": () => unauthorized(false),
+      "unauthorized-cooldown": () => unauthorized(true),
+      "token-revoked": () => simple("token-revoked", "danger", "lock"),
+      outdated,
+      updating,
+      "update-failed": () => simple("state.update-failed", "danger", "alert-circle"),
+      "safari-bridge": () => simple("state.safari-bridge", "info", "window"),
+      "safari-bridge-blocked": () => simple("state.safari-bridge-blocked", "warning", "alert-triangle"),
+      "safari-bridge-closed": () => simple("state.safari-bridge-closed", "warning", "window"),
+      "safari-bridge-unavailable": () => simple("state.safari-bridge-unavailable", "warning", "alert-triangle", { extra: `<p class="det__hint">For the site's developers: the page is opened with a Cross-Origin-Opener-Policy that cuts the link to the Zilo window. See the Zilo integration guide.</p>` }),
+      "safari-unsupported": () => simple("state.safari-unsupported", "info", "globe", { extra: `<p class="det__hint">Page link: <span class="origin-chip">https://app.example.com/records/42</span></p>` }),
+      "bridge-window": bridgeWindow,
+    }[v.state];
+    stage.innerHTML = r();
+    bindTabs();
+  }
+
+  /* Tabs: arrow keys move between tabs (automatic activation), per WAI-ARIA APG. */
+  function bindTabs() {
+    const tabs = [...document.querySelectorAll('[role="tab"]')];
+    tabs.forEach((t, i) => {
+      const select = (j) => {
+        tabs.forEach((x, k) => {
+          x.setAttribute("aria-selected", String(k === j)); x.tabIndex = k === j ? 0 : -1;
+          document.getElementById(x.getAttribute("aria-controls")).hidden = k !== j;
+        });
+        tabs[j].focus();
+      };
+      t.addEventListener("click", () => select(i));
+      t.addEventListener("keydown", (e) => {
+        const n = tabs.length;
+        if (e.key === "ArrowRight") { e.preventDefault(); select((i + 1) % n); }
+        if (e.key === "ArrowLeft") { e.preventDefault(); select((i - 1 + n) % n); }
+        if (e.key === "Home") { e.preventDefault(); select(0); }
+        if (e.key === "End") { e.preventDefault(); select(n - 1); }
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

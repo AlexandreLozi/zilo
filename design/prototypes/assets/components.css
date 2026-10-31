@@ -44,7 +44,7 @@
   min-height: var(--z-control-height); padding: 0 var(--z-space-4);
   border: 1px solid var(--z-border-strong); border-radius: var(--z-radius-md);
   background: var(--z-bg); color: var(--z-text);
-  font-weight: var(--z-weight-medium); line-height: 1; white-space: nowrap; cursor: pointer;
+  font-weight: var(--z-weight-medium); line-height: 1; white-space: nowrap; cursor: pointer; text-decoration: none;
   transition: background-color var(--z-duration-fast) var(--z-ease-standard),
               border-color var(--z-duration-fast) var(--z-ease-standard);
 }
