@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Eto.Forms</id>
+    <version>2.11.0</version>
+    <title>Eto.Forms</title>
+    <authors>Eto</authors>
+    <license type="file">Eto-LICENSE.txt</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <projectUrl>https://github.com/picoe/Eto</projectUrl>
+    <description>Eto.Forms is a cross platform desktop user interface framework.
+
+This framework is built so that you can target multiple platforms with one UI codebase.
+
+The goal of this framework is to expose a common API that can be used to build functional applications that run across platforms using their native toolkit. This will make your applications look and work as if it were a native application on all platforms.
+
+For advanced scenarios, you can take advantage of each platform's capabilities by wrapping your common UI in a larger application, or even create your own high-level controls with a custom implementations per platform.
+
+This framework currently supports creating Desktop applications that work across Windows Forms, WPF, MonoMac, MacOS, and GTK#.
+
+In order to run your Eto.Forms based application, you must also install one (or more) of the following packages:
+
+- Eto.Platform.Wpf
+- Eto.Platform.Windows
+- Eto.Platform.Direct2D
+- Eto.Platform.Gtk
+- Eto.Platform.Mac64
+- Eto.Platform.MacOS
+
+To get more information about how to get started, read the wiki:
+
+https://github.com/picoe/Eto/wiki</description>
+    <copyright>(c) 2010-2025 by Curtis Wensley, 2012-2014 by Vivek Jhaveri and contributors</copyright>
+    <tags>cross platform gui ui framework desktop winforms wpf mac osx gtk eto.forms</tags>
+    <repository type="git" url="https://github.com/picoe/Eto.git" commit="73e42ec0b24e9e82162fb12a88b752a0a55fe5b8" />
+    <dependencies>
+      <group targetFramework="net6.0" />
+      <group targetFramework="net8.0" />
+      <group targetFramework="net10.0" />
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="System.ComponentModel.Annotations" version="5.0.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

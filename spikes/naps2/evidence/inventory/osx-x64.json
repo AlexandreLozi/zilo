@@ -1,0 +1,1355 @@
+{
+  "schemaVersion": 1,
+  "rid": "osx-x64",
+  "targetFramework": "net10.0",
+  "sdk": "10.0.403",
+  "deployment": {
+    "linkage": "dynamic",
+    "separateDll": true,
+    "replaceable": true,
+    "trimmed": false,
+    "merged": false,
+    "singleFile": false
+  },
+  "scope": "Framework-dependent publish; system libraries and SDK/download-only runtime packs not redistributed. Upstream Win32 worker bundle is NOT cleared by top-level deployment properties.",
+  "packages": [
+    {
+      "id": "Eto.Forms",
+      "version": "2.11.0",
+      "licenseExpression": null,
+      "licenseFile": "Eto-LICENSE.txt",
+      "licenseUrl": "https://aka.ms/deprecateLicenseUrl",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/picoe/Eto.git",
+        "commit": "73e42ec0b24e9e82162fb12a88b752a0a55fe5b8"
+      },
+      "sha512": "zAWXLvZYY4MvoR8rsX/Y45IlOiPP9bxseTkLjAi5YNnqMojHa8D+tfgY56KeEVOnum8iyTh8xBiQJyhxDksYuw==",
+      "archiveSha512": "8SyYY25BnkvtrbO1iqcYlGgEV7ZkW4lJJJxJ56c/r9HU3s4agyC3IESoFy2FGvUp5vvuCRtEvt/0MEPcLag6yA==",
+      "source": "https://api.nuget.org/v3-flatcontainer/eto.forms/2.11.0/eto.forms.2.11.0.nupkg",
+      "nuspecSha256": "b1a3950966e0e58f4809093077f823e9ce671f526501cd9c083ac48f64f7811e",
+      "declaredLicenseFile": "Eto-LICENSE.txt",
+      "licenseFileSha256": "d4778843a4d44eaaaf02acc84c362e00b3c7d638f001be928f13d082988be742",
+      "licenseEvidence": "licenses/eto.forms/2.11.0/Eto-LICENSE.txt"
+    },
+    {
+      "id": "Eto.Platform.Mac64",
+      "version": "2.11.0",
+      "licenseExpression": null,
+      "licenseFile": "Eto-LICENSE.txt",
+      "licenseUrl": "https://aka.ms/deprecateLicenseUrl",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/picoe/Eto.git",
+        "commit": "73e42ec0b24e9e82162fb12a88b752a0a55fe5b8"
+      },
+      "sha512": "4M7MkB05iCvSmu/Juisv+45dWQXDHV5DEvccO1aYmkYtKafFt4+xdmrEhNa6S8pGf5re7MPLnfC++i6yAqSTug==",
+      "archiveSha512": "+k8DtjfdYEKHf3/aA1ZJfXq9dM6cstIGYnguS8YKFSU/bZPDRdhd81JaPZyWeq6wQj3LIQ6yK9jwjx+OsIOKVA==",
+      "source": "https://api.nuget.org/v3-flatcontainer/eto.platform.mac64/2.11.0/eto.platform.mac64.2.11.0.nupkg",
+      "nuspecSha256": "776330d9f456c38a14ad0a011eebbb3670da0778066a7a8744bf208a7fc1b742",
+      "declaredLicenseFile": "Eto-LICENSE.txt",
+      "licenseFileSha256": "d4778843a4d44eaaaf02acc84c362e00b3c7d638f001be928f13d082988be742",
+      "licenseEvidence": "licenses/eto.platform.mac64/2.11.0/Eto-LICENSE.txt"
+    },
+    {
+      "id": "Google.Protobuf",
+      "version": "3.29.3",
+      "licenseExpression": "BSD-3-Clause",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/BSD-3-Clause",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/protocolbuffers/protobuf.git",
+        "commit": "b407e8416e3893036aee5af9a12bd9b6a0e2b2e6"
+      },
+      "sha512": "t7nZFFUFwigCwZ+nIXHDLweXvwIpsOXi+P7J7smPT/QjI3EKxnCzTQOhBqyEh6XEzc/pNH+bCFOOSjatrPt6Tw==",
+      "archiveSha512": "M6t0YsS6TrSoRWDVTGdWmOfDBMwdCs48iXuoAtwI5qdVI5YXk3NGYAEcQ4h1oA6ib4vPo/mf8JIrrAPu8dHT1w==",
+      "source": "https://api.nuget.org/v3-flatcontainer/google.protobuf/3.29.3/google.protobuf.3.29.3.nupkg",
+      "nuspecSha256": "5877e3c14d2bdd2dde9c2f60911e64a734bb8954c8cd04749cf429fb13a97068",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "Grpc.Core.Api",
+      "version": "2.67.0",
+      "licenseExpression": "Apache-2.0",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/Apache-2.0",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/grpc/grpc-dotnet.git",
+        "commit": "7c43ddb5d68008782dc0dba2d0feaa3ed91a9fb2"
+      },
+      "sha512": "cL1/2f8kc8lsAGNdfCU25deedXVehhLA6GXKLLN4hAWx16XN7BmjYn3gFU+FBpir5yJynvDTHEypr3Tl0j7x/Q==",
+      "archiveSha512": "O/ZyWgN/DWSMuZxPWeGRip4BOLlkp/0QE8F+Xjuzii/MMGJfcjV06Flok00jOulUWRtp869G0UlnsGFE8gYgDw==",
+      "source": "https://api.nuget.org/v3-flatcontainer/grpc.core.api/2.67.0/grpc.core.api.2.67.0.nupkg",
+      "nuspecSha256": "db3b53e29073d411e8dda8aa60c3e29ef23a5fac39e991ebbaada325f54048dd",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "GrpcDotNetNamedPipes",
+      "version": "3.1.0",
+      "licenseExpression": null,
+      "licenseFile": "LICENSE",
+      "licenseUrl": "https://aka.ms/deprecateLicenseUrl",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/cyanfish/grpc-dotnet-namedpipes",
+        "commit": "da307b551a9d56b62f5780e91a2d95a699f32430"
+      },
+      "sha512": "IEbpody7yYtL+oTNGRJspbK+Xne2fWzhiAOmJxJ8zoS3knFv0jDxv0WgJxO2cOCpoItn1cv4X4dloxSbFPB3eA==",
+      "archiveSha512": "6kvOgpUyiH4Swn2aNO2/fLrKRdklUic49NL8EfGue4wI4aUG6ccy7O1EmzT75wwDpaony9bA/yOQxOPkk+Ba/A==",
+      "source": "https://api.nuget.org/v3-flatcontainer/grpcdotnetnamedpipes/3.1.0/grpcdotnetnamedpipes.3.1.0.nupkg",
+      "nuspecSha256": "2818e7ca60053117a402ff13f5582657382eced0a6986c6de0c1133f77192e56",
+      "declaredLicenseFile": "LICENSE",
+      "licenseFileSha256": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5",
+      "licenseEvidence": "licenses/grpcdotnetnamedpipes/3.1.0/LICENSE"
+    },
+    {
+      "id": "Makaretu.Dns",
+      "version": "2.0.1",
+      "licenseExpression": null,
+      "licenseFile": null,
+      "licenseUrl": null,
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/richardschneider/net-dns.git",
+        "commit": "701463d2091e6d98d4cc4490abb0e0ead8ae2985"
+      },
+      "sha512": "qe/5w5Q/i2Xz2ZnCq3E49kLAtVFRuuBn40C1mQPWbLDwlHM0KVDzCkFqwxDedv7JgQis66Z9AZKyo1zCTRrdYA==",
+      "archiveSha512": "ammpQdO1MPZk+PDG8UlfWgMpSVof7CIL65xQKOyGd/d9NbKQXrq9Yz/4n3warlqnte1QjfURMrKKysC4WskA8Q==",
+      "source": "https://api.nuget.org/v3-flatcontainer/makaretu.dns/2.0.1/makaretu.dns.2.0.1.nupkg",
+      "nuspecSha256": "a13ed84b0a4ff02eda1367b358f5ff5def395a4884bac1cbbf18b056bffe4217",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "Microsoft.Bcl.AsyncInterfaces",
+      "version": "10.0.10",
+      "licenseExpression": "MIT",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/dotnet/dotnet",
+        "commit": "f7d90799ce4ef09a0bb257852a57248d2a8fb8dd"
+      },
+      "sha512": "TFI6OKYE1XZz4SGuTSH70c6SBdPpFktXsoa1gCxTr3mKrhmXirnvaS0tKz+J3ZWICEAmMpEGn59nO4ICtUpQXA==",
+      "archiveSha512": "8Mx8TUFWoK2gH35Cyr0ndO2l9j4XJzo1wsC6ufVD2nlFsVe5NXmbM+vEOILLhdANZKEgN+U8hkPrT1YQsSSBSA==",
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.bcl.asyncinterfaces/10.0.10/microsoft.bcl.asyncinterfaces.10.0.10.nupkg",
+      "nuspecSha256": "1d476336e1e1c20b4f08b5247a93f1504a7ba44e5ecdfd00922592894bc86817",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "10.0.10",
+      "licenseExpression": "MIT",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/dotnet/dotnet",
+        "commit": "f7d90799ce4ef09a0bb257852a57248d2a8fb8dd"
+      },
+      "sha512": "z/2xXlFw2aLGjHyEm6E0tQ+In6VfzQzTrtArbQ2c0TQE16ZbyDCMGPvaUT9I0s8rgy9sRWlU2P9waW37qV04qA==",
+      "archiveSha512": "xArycDUtAEn73bZAPrC1IG8LYxh2AUboCTqZcrKrll16UhOijkc3QnEuVPersojqt6RmWbQcdCbUVOzuSpMerA==",
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.extensions.dependencyinjection.abstractions/10.0.10/microsoft.extensions.dependencyinjection.abstractions.10.0.10.nupkg",
+      "nuspecSha256": "0c95e70ef7abddd0120b259dd80f5677c22b4f638fb8c5aa50846c03c65a7569",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "10.0.10",
+      "licenseExpression": "MIT",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/dotnet/dotnet",
+        "commit": "f7d90799ce4ef09a0bb257852a57248d2a8fb8dd"
+      },
+      "sha512": "zkFxGYUvdxAvIKTyXHrmW+Sux53D4SezD9dMyZ6hrwwzPQJNuwCRy1f5W7AvYTqacEGhWF2XderRQG1OvbV8og==",
+      "archiveSha512": "b8xabNM7zKc7R8B3G9GtnMBE6sU9OvQ8AXzGhJMvHxB5gcegMSkiwU5uKqm43x06cGVd0Kzc+bl9POl1/CHViA==",
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.extensions.logging.abstractions/10.0.10/microsoft.extensions.logging.abstractions.10.0.10.nupkg",
+      "nuspecSha256": "bedb09d9a04ea6d879e6566e886f200ae741a364d1d5b234e09376217a948e56",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "NAPS2.Escl",
+      "version": "1.6.0",
+      "licenseExpression": null,
+      "licenseFile": "LICENSE",
+      "licenseUrl": "https://aka.ms/deprecateLicenseUrl",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/cyanfish/naps2",
+        "commit": "f914a4ec2af090aca4fa55eb3242ec91641482c3"
+      },
+      "sha512": "YHkOBzIt20pa0rqPP8wMYdLzbhwPBjIDKZwfqqMMdXnHDoIC/mjMyae2OHXra6NgLa/9CMIMmJXTWJu7KxbrGw==",
+      "archiveSha512": "v/OgtAWQDLOkEoSOTIstIc52KT9e7oABlEiqQ9OM5VuRCLQf7/c85/QJ1f/zOAbrELgu6FFFdcsflbArNZfIYQ==",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.escl/1.6.0/naps2.escl.1.6.0.nupkg",
+      "nuspecSha256": "86ea407320a08004355b15a1fca7646f95778ba3b564bcc730befec49eea0a74",
+      "declaredLicenseFile": "LICENSE",
+      "licenseFileSha256": "409fada115195905d7addbb5f18c477a553cfbe317870f78597eb882d3d361b8",
+      "licenseEvidence": "licenses/naps2.escl/1.6.0/LICENSE"
+    },
+    {
+      "id": "NAPS2.Images.Mac",
+      "version": "1.6.0",
+      "licenseExpression": null,
+      "licenseFile": "LICENSE",
+      "licenseUrl": "https://aka.ms/deprecateLicenseUrl",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/cyanfish/naps2",
+        "commit": "f914a4ec2af090aca4fa55eb3242ec91641482c3"
+      },
+      "sha512": "13qbuaTkHLmtQpF3yckcJdYGw5CGSFfMCTsVjYSh6PQp0m0/uNd+L2IHp3prFDPWLlPD9WdPgBRDmSQUVIoGDQ==",
+      "archiveSha512": "H3aZy+Wwk9mFXQmYBikQTtH29558t9ly4DzvnM4sVuUs43Gp7ABUwQM1FQq1etLFwQdv1Tf7Icl/euPG/XEEMA==",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.images.mac/1.6.0/naps2.images.mac.1.6.0.nupkg",
+      "nuspecSha256": "1396ef69ba715ce3788620f18f706cb1d3591dc5ae6bd307780fbab7ccbd4620",
+      "declaredLicenseFile": "LICENSE",
+      "licenseFileSha256": "9837c5480f12bfa9505c7a58e29b251c9d38f33d4a3439c32b178c2fb914a30a",
+      "licenseEvidence": "licenses/naps2.images.mac/1.6.0/LICENSE"
+    },
+    {
+      "id": "NAPS2.Images",
+      "version": "1.6.0",
+      "licenseExpression": null,
+      "licenseFile": "LICENSE",
+      "licenseUrl": "https://aka.ms/deprecateLicenseUrl",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/cyanfish/naps2",
+        "commit": "f914a4ec2af090aca4fa55eb3242ec91641482c3"
+      },
+      "sha512": "bqnneGjy6NJi+hKakNbm0Pv2um15lRV2jHgxs5174G18CKCgiBvooUwWdorvywoRhtJ7ewB0EEc7reLZ7FtIog==",
+      "archiveSha512": "HxR0rqxDakdfAEO9GNfmDU6CbNWX4thMP1OPorVT+4uefroM3lN6sA1jf0VC6j6xL5KC1guOUdqxR5XQseAyDw==",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.images/1.6.0/naps2.images.1.6.0.nupkg",
+      "nuspecSha256": "47c26094d297c2e5bf3b819403d00852d879dd64757ff1b3c5627c3240587287",
+      "declaredLicenseFile": "LICENSE",
+      "licenseFileSha256": "9837c5480f12bfa9505c7a58e29b251c9d38f33d4a3439c32b178c2fb914a30a",
+      "licenseEvidence": "licenses/naps2.images/1.6.0/LICENSE"
+    },
+    {
+      "id": "NAPS2.Internals",
+      "version": "1.6.0",
+      "licenseExpression": null,
+      "licenseFile": "LICENSE",
+      "licenseUrl": "https://aka.ms/deprecateLicenseUrl",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/cyanfish/naps2",
+        "commit": "f914a4ec2af090aca4fa55eb3242ec91641482c3"
+      },
+      "sha512": "mGRuoyIXs4OxBIAO0CH1S/JKWUBzErWJWTtPleVVKuCd8hoR640Q4v5QjxdSqZZvlefDNGOPaGPn5Op8ahbWdg==",
+      "archiveSha512": "Kd8FdLwYURloUSkDL5GT5+tiZXhDhkc0evxPD3G22xXBSoB0nSEaXWG34EH7S2f2+/m5GTuSiywTKmhSqcYSUw==",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.internals/1.6.0/naps2.internals.1.6.0.nupkg",
+      "nuspecSha256": "2b3ee3c764a03ec8205104b009e26b52a64b17d62fbf9583f9f45f01f7a95dc7",
+      "declaredLicenseFile": "LICENSE",
+      "licenseFileSha256": "cd1f857214d83398dceb8ede90671201f43ba2340fd7bf18233e30e15602d900",
+      "licenseEvidence": "licenses/naps2.internals/1.6.0/LICENSE"
+    },
+    {
+      "id": "NAPS2.Mdns",
+      "version": "1.0.1",
+      "licenseExpression": "MIT",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/MIT",
+      "repository": {
+        "type": "git",
+        "commit": "9a1b989ff57738849ceda165de49cc76364e8ace"
+      },
+      "sha512": "LQMEYKiSzvXtVVFgzBqBTRnoWa9lJRB7YEnD2m8/we9PfON6s+QGPSq7ZATVt1Cbuhr4FDRkJEjuLUeBkPK6Zw==",
+      "archiveSha512": "BBXePYdYswHfk/iQGeoJb1VMfkdgZY84faXC4lyJX8ux2QXs24nuiUy6wZWAu3lIsL5XF0+YI8M41XJD2Pz2UA==",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.mdns/1.0.1/naps2.mdns.1.0.1.nupkg",
+      "nuspecSha256": "04c968fff81c2e89fa7b22c5c64b1046b9f634d89ede6b9731768f443d907dd9",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "NAPS2.NTwain",
+      "version": "1.0.1",
+      "licenseExpression": "MIT",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/MIT",
+      "repository": {
+        "type": "GIT",
+        "url": "https://github.com/cyanfish/ntwain",
+        "commit": "216c8c614d1514638cace41e5aa7e7ce48448d78"
+      },
+      "sha512": "gTUekPpglFMgcCKQ6cOcXsnuOR/Y3hMp2dTo8jlrRRzBQ7ASregm262rkyDxD5KeZ7LxmjT5NXX1tg+JUUZg9A==",
+      "archiveSha512": "LemJ2vHppN4dcQc4JcyZpUOI1OtUKvp5POM4e4V3ciqR0eDzswugDqMo3SBW2yrzh7hLQ3sjnDcQMnzoTSz7Pw==",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.ntwain/1.0.1/naps2.ntwain.1.0.1.nupkg",
+      "nuspecSha256": "68b7c1abed4f933f64c77afa68ca46a48938e512b99d7eaf738f935eb7952a6e",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "NAPS2.PdfSharp",
+      "version": "1.0.2",
+      "licenseExpression": null,
+      "licenseFile": "LICENCE.md",
+      "licenseUrl": "https://aka.ms/deprecateLicenseUrl",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/cyanfish/naps2-pdfsharp",
+        "commit": "8d30f069e6cef9ee9b001372a94432de7f6a3146"
+      },
+      "sha512": "Eapb5d75M1NqAffpDq2uw6IBQu1yWcu87ClPvKoJwin5IwuvmV1Tkvrr67Di8C7fAldBko0hcpVTZ0vkFXaL2A==",
+      "archiveSha512": "QX5b6BWYeqbsqYdIgtsCiP986fPrEA8nvhNO2L3H3zsLANdK2e5ltfvCWE9LEFTrOS2PYddzWeCYvU2maTxj5A==",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.pdfsharp/1.0.2/naps2.pdfsharp.1.0.2.nupkg",
+      "nuspecSha256": "d18ba89c6ebf9a6cc3a5480e47f5fcd9e70aee264db3cdc86b1ccee550136fa6",
+      "declaredLicenseFile": "LICENCE.md",
+      "licenseFileSha256": "7090fa5e4a281f2263dfa88998d32ead0f945460936e3f9286805a8c7fecb54f",
+      "licenseEvidence": "licenses/naps2.pdfsharp/1.0.2/LICENCE.md"
+    },
+    {
+      "id": "NAPS2.Sdk",
+      "version": "1.6.0",
+      "licenseExpression": null,
+      "licenseFile": "LICENSE",
+      "licenseUrl": "https://aka.ms/deprecateLicenseUrl",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/cyanfish/naps2",
+        "commit": "f914a4ec2af090aca4fa55eb3242ec91641482c3"
+      },
+      "sha512": "I1u+uTL8avIe3faCrTPWkWj8KEK9qnZI8E/9Bm7k0emCeFMsIVsQUn0d85aQJXmjtnpMh5b711v3u9863hCbTQ==",
+      "archiveSha512": "Ay7Vjl/+/KBls8Vvfg/NXd/bkdt/88SLmkQCuX1Wk/9IzjOdf2g47JreLPdYtAoAX3JG0orln8z1ot7d+HbdDg==",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.sdk/1.6.0/naps2.sdk.1.6.0.nupkg",
+      "nuspecSha256": "d5c4b0c37f91956bc25b88e99151984141896a33a3866678d114696b4a964401",
+      "declaredLicenseFile": "LICENSE",
+      "licenseFileSha256": "6286ef44042623306c1422f04cd6d92505f6dc0e6c94f80a7c19a1a7d8e20979",
+      "licenseEvidence": "licenses/naps2.sdk/1.6.0/LICENSE"
+    },
+    {
+      "id": "NAPS2.Wia",
+      "version": "2.0.3",
+      "licenseExpression": "MIT",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/cyanfish/naps2-wia"
+      },
+      "sha512": "Za/pkCCVuUxD3Q00pTsFd3FRAi1HTBlM8uzDXaPpULMZ6MoqYaJKcE5fJmOz+fqNfQaMxv9dQeJ1GZ9uVtBM8g==",
+      "archiveSha512": "Du3kpsV+dsh/1EqlasqBgeOeo/K854ICeuYWF4Het7fJsGCWajGm0iIC/HVkj3ROH6Cu+ieoVQ/BPQRFSpsHQw==",
+      "source": "https://api.nuget.org/v3-flatcontainer/naps2.wia/2.0.3/naps2.wia.2.0.3.nupkg",
+      "nuspecSha256": "bb812dc9bbfc91b4c8d96bbd486bc3c612c74f4fae2de06440a8f8787cce8b58",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "SharpZipLib",
+      "version": "1.4.2",
+      "licenseExpression": "MIT",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/icsharpcode/SharpZipLib",
+        "commit": "33f64eb0f28cdd2b084cb822fcc224c7c5aba553"
+      },
+      "sha512": "yjj+3zgz8zgXpiiC3ZdF/iyTBbz2fFvMxZFEBPUcwZjIvXOf37Ylm+K58hqMfIBt5JgU/Z2uoUS67JmTLe973A==",
+      "archiveSha512": "TggBlumyBCfRtaviOUPWR8NlYRJHz1cdPPJXWAi+cpS5lXBQrtV/o0Mm74llu7MU4DlEaTIWUC0OuZAlPfyU9A==",
+      "source": "https://api.nuget.org/v3-flatcontainer/sharpziplib/1.4.2/sharpziplib.1.4.2.nupkg",
+      "nuspecSha256": "bcbd41de9f4c1ea78144211b4b4a0a5adc1945c63caa9d6df76687d885f03628",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "SimpleBase",
+      "version": "1.3.1",
+      "licenseExpression": null,
+      "licenseFile": null,
+      "licenseUrl": "http://www.apache.org/licenses/",
+      "repository": null,
+      "sha512": "TqqQc+WFg3s10/PdnI2Dio0U7xEmVXhkf+ey4tOGZzjyd054rnNOLNVahJhMYmfBQdS7/jkVqC8xzLm/bkR3EA==",
+      "archiveSha512": "herNBiKvpGYnN3TVGQzDvSLSRQKRi0xhfhblw7V/zSMAwhz0OsWkdbgaKwwOGVVYsh4R/4GBOvA0TcPNg84QuA==",
+      "source": "https://api.nuget.org/v3-flatcontainer/simplebase/1.3.1/simplebase.1.3.1.nupkg",
+      "nuspecSha256": "9237da65f9c124c415de6147fdfb0a55c5d8dfd75b90a0599427477c77c2f3e6",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "SixLabors.Fonts",
+      "version": "1.0.1",
+      "licenseExpression": "Apache-2.0",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/Apache-2.0",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/SixLabors/Fonts",
+        "commit": "be8883caf13f364292508274d68c39c2455ec3e2"
+      },
+      "sha512": "ljezRHWc7N0azdQViib7Aa5v+DagRVkKI2/93kEbtjVczLs+yTkSq6gtGmvOcx4IqyNbO3GjLt7SAQTpLkySNw==",
+      "archiveSha512": "9tWiIWzy5yj/gG+/Ex4K7DIXXMkEgP8Vx5L+QB0PnpcomY9C9lGgWD0VB8p+lHGUY7pyndDfibmCZhxZAlcZDw==",
+      "source": "https://api.nuget.org/v3-flatcontainer/sixlabors.fonts/1.0.1/sixlabors.fonts.1.0.1.nupkg",
+      "nuspecSha256": "0b783fbbfed63e399ec10bad466fc035294e5c5e9cdf2a886bae50be19211ded",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "StandardSocketsHttpHandler",
+      "version": "2.2.0.10",
+      "licenseExpression": "MIT",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/TalAloni/StandardSocketsHttpHandler"
+      },
+      "sha512": "tlnMfWuT043rvyVQTGCm9049SZcDpe9oeLwLTVWRLw0s5ijjCdNYdxfOCMejtsUBFdWQ00boZSJHcNB2GZKBCw==",
+      "archiveSha512": "p+9er4Jv9G+iTJls6l3w6tH9eOEshCIjEtUPtvUIVHHIgT7/oatgW8G55P4B52JP8ThGteDzh//1Xi5o6bWXfQ==",
+      "source": "https://api.nuget.org/v3-flatcontainer/standardsocketshttphandler/2.2.0.10/standardsocketshttphandler.2.2.0.10.nupkg",
+      "nuspecSha256": "3dd4b13def95bf259e8205df02865d1c1e766ae14b13bbbbc87635eb6ef3bd5f",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "System.Formats.Nrbf",
+      "version": "10.0.10",
+      "licenseExpression": "MIT",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/dotnet/dotnet",
+        "commit": "f7d90799ce4ef09a0bb257852a57248d2a8fb8dd"
+      },
+      "sha512": "gOcWB7GddeYRGZWA8lHi84MvuzTI3ugYISfLfCg5FTdZB3cDaoAj7yG7c2bBaO+hio1nZ5kz/BrwpzfLT1R8Bg==",
+      "archiveSha512": "+o+Mf+QgHhnsqIVAxdn1Gsq12KqQ3MMk/PIFBwPtjQehTCxFBY+4Tjcvk0ZY2driIPZBaR5UjhDjTW9e39CQLg==",
+      "source": "https://api.nuget.org/v3-flatcontainer/system.formats.nrbf/10.0.10/system.formats.nrbf.10.0.10.nupkg",
+      "nuspecSha256": "1feb9fe35f617eb3cb3320e21bc8b4427d0d09e1871f9a4f0636c99931519efa",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "System.Resources.Extensions",
+      "version": "10.0.10",
+      "licenseExpression": "MIT",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/dotnet/dotnet",
+        "commit": "f7d90799ce4ef09a0bb257852a57248d2a8fb8dd"
+      },
+      "sha512": "xUBGLR+HPujL5k3LmHIJSS6xFsKECOGO52nurXMDADkLRFNVVUxCH4ng2WBD1YTxGHkE/s2kJs1I2B89DJJyLA==",
+      "archiveSha512": "mplZKM0SWxWMBWDdz2x76MLteC/9mcg8uWBphA7WG8D3Zhcztzd64b70qsWkb6TcZQHZCKHUmfGjYPkT+XyFzA==",
+      "source": "https://api.nuget.org/v3-flatcontainer/system.resources.extensions/10.0.10/system.resources.extensions.10.0.10.nupkg",
+      "nuspecSha256": "1b72907dc5fa09348f315a8d4d188a31096decfe3d0110a1cccc776513986f29",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "System.ValueTuple",
+      "version": "4.6.2",
+      "licenseExpression": "MIT",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/dotnet/maintenance-packages",
+        "commit": "84b081710c66cc560b77d4de38cee493c3a38e9d"
+      },
+      "sha512": "yQgmjfFximrNm9LIV3mL6T5MzjeC+epeE5rl4hXxAlYmxby7RM1dPSkIKXk9HNkl6G54h2JHOmLD46+Pey+IRg==",
+      "archiveSha512": "sMfnKIAepEOav44iCUQAECVXLA1/TVNC37g+mxo690/BFiHzbuHPFvdyJ6MdED4CL7iq6N7kllbMUVi5/nWJiA==",
+      "source": "https://api.nuget.org/v3-flatcontainer/system.valuetuple/4.6.2/system.valuetuple.4.6.2.nupkg",
+      "nuspecSha256": "ba39b250cb7bd7902bdc4958d99e801d69328485ebce6c848119ada18ef12bf6",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "ZXing.Net",
+      "version": "0.16.11",
+      "licenseExpression": "Apache-2.0",
+      "licenseFile": null,
+      "licenseUrl": "https://licenses.nuget.org/Apache-2.0",
+      "repository": null,
+      "sha512": "OZfAVu88hl87BffQ+rlWCj/vLvAhhCK4QnFaoveeF/MY8SjHNSYBQ3qyUEWlPKNgBQGh1syXhCDg10vUnCsqkg==",
+      "archiveSha512": "kHBBMH1ZKN4Y5IZY8Cq6iETXOr7k00ZrJ8Nbsow9QlTcJZvJVR26bX7VMR/oY1XOJuPzLyMu79WKdw+bKhechg==",
+      "source": "https://api.nuget.org/v3-flatcontainer/zxing.net/0.16.11/zxing.net.0.16.11.nupkg",
+      "nuspecSha256": "70cb5e9681ec7c21bb3ee027a031ea4b460a2afc35680c3121fc6ffe765ec58f",
+      "declaredLicenseFile": null,
+      "licenseFileSha256": null
+    },
+    {
+      "id": "Zilo.Naps2Spike",
+      "version": "0.0.0",
+      "type": "first-party-source",
+      "sha512": "Ei+0Fixzvr6vb97ctM+O6ZFYQE6O1mAW4pEB3rkJ2yBMoQYhO8nu0HFHL4ePB4O3+eVnhLjqWlAFqA9tfzKZPA==",
+      "licenseExpression": "MIT",
+      "licenseFile": "LICENSE",
+      "licenseFileSha256": "b948495c6839fa04b197595cd7fa039b55298907f6183aaeb07b4fbfd3edb99f",
+      "source": "spikes/naps2/Program.cs + Naps2Spike.csproj + LICENSE"
+    }
+  ],
+  "payloads": [
+    {
+      "path": "Eto.Mac64.dll",
+      "sha256": "06bc108a0d5d6772359c0b3fe134c96046216eadc8c69584ba8e57b272ff4b5c",
+      "size": 609280,
+      "kind": "managed",
+      "packageId": "Eto.Platform.Mac64",
+      "packageVersion": "2.11.0",
+      "packagePaths": [
+        "lib/net10.0/Eto.Mac64.dll"
+      ]
+    },
+    {
+      "path": "Eto.dll",
+      "sha256": "1e0b2ea1f7ca9f5c7833e75dbf13bf4c494832341fd091798b8436fd889de76b",
+      "size": 775168,
+      "kind": "managed",
+      "packageId": "Eto.Forms",
+      "packageVersion": "2.11.0",
+      "packagePaths": [
+        "lib/net10.0/Eto.dll"
+      ]
+    },
+    {
+      "path": "Google.Protobuf.dll",
+      "sha256": "f34a4d6564dd6a1c6038ffc2e9a9fe670b53985d9d4aea5fa4f28c45d19b96bd",
+      "size": 485472,
+      "kind": "managed",
+      "packageId": "Google.Protobuf",
+      "packageVersion": "3.29.3",
+      "packagePaths": [
+        "lib/net5.0/Google.Protobuf.dll"
+      ]
+    },
+    {
+      "path": "Grpc.Core.Api.dll",
+      "sha256": "cdcbf756b9630548591855c0bea7f3f11e1ec4f3133534b4dc6b4ebf06d1e19d",
+      "size": 70240,
+      "kind": "managed",
+      "packageId": "Grpc.Core.Api",
+      "packageVersion": "2.67.0",
+      "packagePaths": [
+        "lib/netstandard2.1/Grpc.Core.Api.dll"
+      ]
+    },
+    {
+      "path": "GrpcDotNetNamedPipes.dll",
+      "sha256": "6e52773a19c16dc5860ce9600ead3f869b7ca9b841d706c7ffe64b0b7857d90e",
+      "size": 76288,
+      "kind": "managed",
+      "packageId": "GrpcDotNetNamedPipes",
+      "packageVersion": "3.1.0",
+      "packagePaths": [
+        "lib/net8.0/GrpcDotNetNamedPipes.dll"
+      ]
+    },
+    {
+      "path": "ICSharpCode.SharpZipLib.dll",
+      "sha256": "32ea2d0ce3512e74f1c7ad82591fe67e6b8939d76a8a4ff9c93ead030131e71c",
+      "size": 258048,
+      "kind": "managed",
+      "packageId": "SharpZipLib",
+      "packageVersion": "1.4.2",
+      "packagePaths": [
+        "lib/net6.0/ICSharpCode.SharpZipLib.dll"
+      ]
+    },
+    {
+      "path": "Makaretu.Dns.Multicast.New.dll",
+      "sha256": "cd422c682a759d78cdf6a05337b2e74976e510d6293a7ed980f407e7258d10a3",
+      "size": 37888,
+      "kind": "managed",
+      "packageId": "NAPS2.Mdns",
+      "packageVersion": "1.0.1",
+      "packagePaths": [
+        "lib/net6.0/Makaretu.Dns.Multicast.New.dll"
+      ]
+    },
+    {
+      "path": "Makaretu.Dns.dll",
+      "sha256": "a5060d45f711f01fe1dff20568aabdc1014c5b843be15383ee40ccd4f88e147a",
+      "size": 91648,
+      "kind": "managed",
+      "packageId": "Makaretu.Dns",
+      "packageVersion": "2.0.1",
+      "packagePaths": [
+        "lib/netstandard2.0/Makaretu.Dns.dll"
+      ]
+    },
+    {
+      "path": "Microsoft.Bcl.AsyncInterfaces.dll",
+      "sha256": "e5c8c96fe1a2a7f09f161b75b973c33c24bb1386de2e4d210900738b13b18d8f",
+      "size": 20264,
+      "kind": "managed",
+      "packageId": "Microsoft.Bcl.AsyncInterfaces",
+      "packageVersion": "10.0.10",
+      "packagePaths": [
+        "lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll"
+      ]
+    },
+    {
+      "path": "Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+      "sha256": "592c33e4bc20e041d6125b79a4311293540f30332495429241c3d7c7286c8e16",
+      "size": 65832,
+      "kind": "managed",
+      "packageId": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "packageVersion": "10.0.10",
+      "packagePaths": [
+        "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll"
+      ]
+    },
+    {
+      "path": "Microsoft.Extensions.Logging.Abstractions.dll",
+      "sha256": "46826fd3b68bd23028b274ff73ecc161088b53e41b4a7436e759de4d78143a43",
+      "size": 66896,
+      "kind": "managed",
+      "packageId": "Microsoft.Extensions.Logging.Abstractions",
+      "packageVersion": "10.0.10",
+      "packagePaths": [
+        "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll"
+      ]
+    },
+    {
+      "path": "MonoMac.dll",
+      "sha256": "9edabb85f50b91c101bfbd5488b0184c48d09f7cfda49ea730fad050a91dc6f2",
+      "size": 5889536,
+      "kind": "managed",
+      "packageId": "Eto.Platform.Mac64",
+      "packageVersion": "2.11.0",
+      "packagePaths": [
+        "lib/net10.0/MonoMac.dll",
+        "lib/net6.0/MonoMac.dll",
+        "lib/net8.0/MonoMac.dll",
+        "lib/netstandard2.0/MonoMac.dll"
+      ]
+    },
+    {
+      "path": "NAPS2.Escl.dll",
+      "sha256": "8acf45d032960291c470da10ca8a25e3670c2dc0b484b7420f5aed143e5eadff",
+      "size": 111104,
+      "kind": "managed",
+      "packageId": "NAPS2.Escl",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/NAPS2.Escl.dll"
+      ]
+    },
+    {
+      "path": "NAPS2.Images.Mac.dll",
+      "sha256": "45ca80a919096c576072a5ab67b6e4703d4ae94b69aedbcc85c06b034fc271af",
+      "size": 18944,
+      "kind": "managed",
+      "packageId": "NAPS2.Images.Mac",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/NAPS2.Images.Mac.dll"
+      ]
+    },
+    {
+      "path": "NAPS2.Images.dll",
+      "sha256": "618f2ca30a9b5070fa86ba6f0fd2ce2a3c907cbe3d30e9e59b1205ea21d45207",
+      "size": 159232,
+      "kind": "managed",
+      "packageId": "NAPS2.Images",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/NAPS2.Images.dll"
+      ]
+    },
+    {
+      "path": "NAPS2.Internals.dll",
+      "sha256": "1afece326ba614d9099369f939f6ba759b4d5b6fb0777f0f13a62e7668b23798",
+      "size": 103936,
+      "kind": "managed",
+      "packageId": "NAPS2.Internals",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/NAPS2.Internals.dll"
+      ]
+    },
+    {
+      "path": "NAPS2.Sdk.dll",
+      "sha256": "f238f6dc1f1bbfca72a7d4ae3e7a510c5cfee42a9125ecf5fe47a0681f00d2e2",
+      "size": 630272,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/NAPS2.Sdk.dll"
+      ]
+    },
+    {
+      "path": "NAPS2.Wia.dll",
+      "sha256": "fe18007f4ffd46c4587a35e6b5dd05df4a6d1a7247c7830fd4b82b8edae9e7f4",
+      "size": 45568,
+      "kind": "managed",
+      "packageId": "NAPS2.Wia",
+      "packageVersion": "2.0.3",
+      "packagePaths": [
+        "lib/net6.0/NAPS2.Wia.dll"
+      ]
+    },
+    {
+      "path": "NTwain.dll",
+      "sha256": "74dabd79841474a779e7d233f4c6c2082e81d4f4d9fb30c23f227471f30627de",
+      "size": 205312,
+      "kind": "managed",
+      "packageId": "NAPS2.NTwain",
+      "packageVersion": "1.0.1",
+      "packagePaths": [
+        "lib/net6.0/NTwain.dll"
+      ]
+    },
+    {
+      "path": "Naps2Spike.deps.json",
+      "sha256": "547290b0ed688db12b9c034799c062fd0cb1b6b01a88da3cd65e7c3c5766dc47",
+      "size": 20165,
+      "kind": "data",
+      "packageId": "Zilo.Naps2Spike",
+      "packageVersion": "0.0.0",
+      "packagePaths": [
+        "first-party build output"
+      ]
+    },
+    {
+      "path": "Naps2Spike.dll",
+      "sha256": "c302c29f12e193981ce6c76be7a3931ca513193136cca5c24e438cff88c52801",
+      "size": 23040,
+      "kind": "managed",
+      "packageId": "Zilo.Naps2Spike",
+      "packageVersion": "0.0.0",
+      "packagePaths": [
+        "first-party build output"
+      ]
+    },
+    {
+      "path": "Naps2Spike.pdb",
+      "sha256": "a12141f9b3445a8bbd896557ad0756aefe8f770fb8f25e1643d3d44e5c82d106",
+      "size": 14856,
+      "kind": "data",
+      "packageId": "Zilo.Naps2Spike",
+      "packageVersion": "0.0.0",
+      "packagePaths": [
+        "first-party build output"
+      ]
+    },
+    {
+      "path": "Naps2Spike.runtimeconfig.json",
+      "sha256": "9950d4583cfc9a106857c0d5b8a75b53e8774852b57b80bc3823a74d44a4d87f",
+      "size": 330,
+      "kind": "data",
+      "packageId": "Zilo.Naps2Spike",
+      "packageVersion": "0.0.0",
+      "packagePaths": [
+        "first-party build output"
+      ]
+    },
+    {
+      "path": "PdfSharpCore.dll",
+      "sha256": "29ef1ab49b6b24d9bc9e072eff029c7ea74e46e989d9f3edea083a41a0fba160",
+      "size": 523776,
+      "kind": "managed",
+      "packageId": "NAPS2.PdfSharp",
+      "packageVersion": "1.0.2",
+      "packagePaths": [
+        "lib/net6.0/PdfSharpCore.dll"
+      ]
+    },
+    {
+      "path": "SimpleBase.dll",
+      "sha256": "72b1b02ee7ac700a212216ff5261f1ee5b04cabd5ed56b4e620579c9d7075e10",
+      "size": 12800,
+      "kind": "managed",
+      "packageId": "SimpleBase",
+      "packageVersion": "1.3.1",
+      "packagePaths": [
+        "lib/netstandard1.3/SimpleBase.dll"
+      ]
+    },
+    {
+      "path": "SixLabors.Fonts.dll",
+      "sha256": "36e2e4c0af507538b1e98babeb475699e2e8908defae586cc519b4b5aedb2e36",
+      "size": 1135616,
+      "kind": "managed",
+      "packageId": "SixLabors.Fonts",
+      "packageVersion": "1.0.1",
+      "packagePaths": [
+        "lib/netcoreapp3.1/SixLabors.Fonts.dll"
+      ]
+    },
+    {
+      "path": "StandardSocketsHttpHandler.dll",
+      "sha256": "98b6dd570bf1f632c013764c0879271f9633ad010b6cb4e6d9bcb085dd7b8784",
+      "size": 377856,
+      "kind": "managed",
+      "packageId": "StandardSocketsHttpHandler",
+      "packageVersion": "2.2.0.10",
+      "packagePaths": [
+        "lib/netstandard2.1/StandardSocketsHttpHandler.dll"
+      ]
+    },
+    {
+      "path": "System.Formats.Nrbf.dll",
+      "sha256": "11076529fbe9f7cd5ed66716acca12436bc135b9109ef6a8135105585eb652be",
+      "size": 66896,
+      "kind": "managed",
+      "packageId": "System.Formats.Nrbf",
+      "packageVersion": "10.0.10",
+      "packagePaths": [
+        "lib/net10.0/System.Formats.Nrbf.dll"
+      ]
+    },
+    {
+      "path": "System.Resources.Extensions.dll",
+      "sha256": "4ec128bcae6d9f79233475ca86eab4efee24e9a04f99d482cfd29eaad9a69e08",
+      "size": 107344,
+      "kind": "managed",
+      "packageId": "System.Resources.Extensions",
+      "packageVersion": "10.0.10",
+      "packagePaths": [
+        "lib/net10.0/System.Resources.Extensions.dll"
+      ]
+    },
+    {
+      "path": "af/NAPS2.Sdk.resources.dll",
+      "sha256": "09251c92540b64252a2b77f7e9aea4cedcf98c032f5c242fdc31bbbc0aba18ea",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/af/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "ar/NAPS2.Sdk.resources.dll",
+      "sha256": "526f7dc5381c6f25e941e09cb09414ff0d72082fc8b9b6d664f2d83a5c3a8dc6",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/ar/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "bg/NAPS2.Sdk.resources.dll",
+      "sha256": "3812593c4bdaa063fd2d666b78350e55eb9a04ffe915c11b3b62b4ef330e0d21",
+      "size": 7168,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/bg/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "bn/NAPS2.Sdk.resources.dll",
+      "sha256": "d03e84a3beb4d9631df803e197b750132bdc65a314b88f2ff2be229e168f4dcc",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/bn/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "bs/NAPS2.Sdk.resources.dll",
+      "sha256": "94ebfd3900e98486f66287c0e61b20b3cca9d976f1fe7fd040c92f69aec33ae1",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/bs/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "ca/NAPS2.Sdk.resources.dll",
+      "sha256": "a2774f10f7e55922913982dd004cf2a1be8ced30de19977ec8dd5da0a1a8ad1f",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/ca/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "cs/NAPS2.Sdk.resources.dll",
+      "sha256": "a386dd004845ee2bd4f010d3c7816e382f5b2f3a2cbcc793572a1ec7f9a06f1b",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/cs/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "da/NAPS2.Sdk.resources.dll",
+      "sha256": "17c2a6a7d81f7a7a6c732e4cc5cd20560a518a447ead2082d8d4fa637cff823a",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/da/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "de/NAPS2.Sdk.resources.dll",
+      "sha256": "27452efdaa647a226bddee156d08db9a570215a6a5fa46d8fa351518ebffaf62",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/de/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "de/PdfSharpCore.resources.dll",
+      "sha256": "e82ebf5138ceec230fdede2ad43931f36d5ad75c8b712d87a1bb5e9bea18536a",
+      "size": 5120,
+      "kind": "managed",
+      "packageId": "NAPS2.PdfSharp",
+      "packageVersion": "1.0.2",
+      "packagePaths": [
+        "lib/net6.0/de/PdfSharpCore.resources.dll"
+      ]
+    },
+    {
+      "path": "el/NAPS2.Sdk.resources.dll",
+      "sha256": "eec319acbea0da5a359a8388c5465076d0b1ba7017bc970bfad295ca6e3a374b",
+      "size": 7168,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/el/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "es/NAPS2.Sdk.resources.dll",
+      "sha256": "67e06612eebdc3fabaa66861dc33624e9e30bd42c30e6adf80edf392a9afee39",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/es/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "et/NAPS2.Sdk.resources.dll",
+      "sha256": "121823f61506d6db0589fc5cde2e67fd7671aef6037413b2b8fb46d4a835282d",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/et/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "fa/NAPS2.Sdk.resources.dll",
+      "sha256": "0419107b573d0d9530c183c50bcb4c776154044282f5b340e865328d73ed01b8",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/fa/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "fi/NAPS2.Sdk.resources.dll",
+      "sha256": "b7e536a1a51529929536e72bc3552d48e81e91634f4ce1f8e3845b7d7c372bbf",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/fi/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "fr/NAPS2.Sdk.resources.dll",
+      "sha256": "fc63f2ec3600f24c7143b89caeadd45ccce24d83ecb4e5604d2d1c1017900b38",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/fr/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "he/NAPS2.Sdk.resources.dll",
+      "sha256": "a5533523fc901b02bc61eb5f9720a2161a99c12d3d816c0d39a27c050022bc28",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/he/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "hi/NAPS2.Sdk.resources.dll",
+      "sha256": "02644d28cd6fd5dadb370d3341bbb6c59897cb2ec3e72b5fc071bb4b36051d66",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/hi/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "hr/NAPS2.Sdk.resources.dll",
+      "sha256": "7c34186149ee2aa3f644e69632f5c5f14a32204cb736759a5799c3835d8fec6a",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/hr/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "hu/NAPS2.Sdk.resources.dll",
+      "sha256": "5017e92a2ec8232d2f4df07bf33763544fd951d66f3ecb246d0adaefe214d204",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/hu/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "id/NAPS2.Sdk.resources.dll",
+      "sha256": "277b2cdde5f19f9a20c937c01cf5750ea1d4675ffde343ce42796433702b885c",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/id/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "it/NAPS2.Sdk.resources.dll",
+      "sha256": "2a7847bc83536a4b750cb4b5b5d50a9c1db37aad2475a3198598507b5b52153c",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/it/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "ja/NAPS2.Sdk.resources.dll",
+      "sha256": "fb587f1f87917c650670e117840c4794bf545190028ac3ea4c793af3619d907e",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/ja/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "ko/NAPS2.Sdk.resources.dll",
+      "sha256": "c2c09e8c1fef62cca21beb435d4d74cc95a020de27027fd9160cfad6c2a12034",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/ko/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "lt/NAPS2.Sdk.resources.dll",
+      "sha256": "46644bce4293d1711cf726f87917d4ed7f600d86b5bbaf26970fc2016e251cac",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/lt/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "lv/NAPS2.Sdk.resources.dll",
+      "sha256": "c76e9e3de823d92ed96ffa0d7797520cf27d7d45e866bc088b3173e4596828f1",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/lv/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "nb/NAPS2.Sdk.resources.dll",
+      "sha256": "ff9157003664ed6ef14c13869bc6e9759d398588dc25342176b85b5aa6d5c29f",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/nb/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "nl/NAPS2.Sdk.resources.dll",
+      "sha256": "9766dbc31909774ff6f5b0e80b3ff01fc44116f399bc6879eaa6a61cec8c1021",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/nl/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "nn/NAPS2.Sdk.resources.dll",
+      "sha256": "c7be8d46be660262f16eed01083be945227f8c4e5b1c2ffdc627cdeb98472fa1",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/nn/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "pl/NAPS2.Sdk.resources.dll",
+      "sha256": "d0bd6a493a6f8f7304e5f7a6541b4a5d80f792d8800d25ed6adcc225949088e5",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/pl/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "pt-BR/NAPS2.Sdk.resources.dll",
+      "sha256": "4c526ac957262972f5a8a08b32e68c569bb7cc2cac10162455cb6c38b0334393",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/pt-BR/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "pt-PT/NAPS2.Sdk.resources.dll",
+      "sha256": "6c3920d8486619a2e027c3df845989f965dfa913b494bdb6b78779e755f8ac4a",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/pt-PT/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "ro/NAPS2.Sdk.resources.dll",
+      "sha256": "2e543adc8324e1c4e096b8119e721f7155e4e370a750babcd260b3d7d00c52fd",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/ro/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "ru/NAPS2.Sdk.resources.dll",
+      "sha256": "cc64abb242f1efc01d0d36c8d486376104ad819336ae5d902461f615e22650b0",
+      "size": 7168,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/ru/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "si/NAPS2.Sdk.resources.dll",
+      "sha256": "62f8784e22b5b9ca19cf0a6614116e066861dd1b24983b5ed0b4e2234e7b3c17",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/si/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "sk/NAPS2.Sdk.resources.dll",
+      "sha256": "022f75697eeb35d180cbecb97ae8052372e3751b406159d55cc16e52c6dc768c",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/sk/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "sl/NAPS2.Sdk.resources.dll",
+      "sha256": "0aaab6ffa7d7f7f1968d24de0490e667c3ead6c5b5d6c2a996bb30be1bfd2188",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/sl/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "sq/NAPS2.Sdk.resources.dll",
+      "sha256": "3994b5a72645069081c5e7b5dae40df36d8f64e658b5390966e07dfbc10fe009",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/sq/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "sr/NAPS2.Sdk.resources.dll",
+      "sha256": "4eec822ceea1fdd7b4c220f9ac5ece1eab9661649bf8394af77d3c4497c6367c",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/sr/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "sr-CS/NAPS2.Sdk.resources.dll",
+      "sha256": "763f7fc674cef83dd38043094bfe2e5051109f3e1d6e7aca2ea2dec281cbe6a2",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/sr-CS/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "sv/NAPS2.Sdk.resources.dll",
+      "sha256": "2f6b4a10d1c41f122bd757f13b1e8322a409c7cf57473fe10d6fbe107faa97be",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/sv/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "th/NAPS2.Sdk.resources.dll",
+      "sha256": "eaa93c555c8d2ebdf8a3964d148abdea257d657cc52f796f03e28652bdd9c1cf",
+      "size": 7680,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/th/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "tr/NAPS2.Sdk.resources.dll",
+      "sha256": "d49d59db0aa55be241e5ab19eee05811f599b07e7266d0c3d07b720ac84386cd",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/tr/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "uk/NAPS2.Sdk.resources.dll",
+      "sha256": "e8168ecba93feb1ddb437c8f286dd24570d44afc5828a74018f8494c5aa9ba1b",
+      "size": 7168,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/uk/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "vi/NAPS2.Sdk.resources.dll",
+      "sha256": "65362186468407dca31fe99b9b9244b55c0f739f6ee6f2ffa6e5cb584ee886b1",
+      "size": 6656,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/vi/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "zh-CN/NAPS2.Sdk.resources.dll",
+      "sha256": "1371150800e5a89701902bbed6abc87ad28922d297921a76be78da49d44a063c",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/zh-CN/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "zh-TW/NAPS2.Sdk.resources.dll",
+      "sha256": "759aa21cb770828f394f839d05b75233eb133a37e5027ce9eca36f3f7efd92a0",
+      "size": 6144,
+      "kind": "managed",
+      "packageId": "NAPS2.Sdk",
+      "packageVersion": "1.6.0",
+      "packagePaths": [
+        "lib/net10.0/zh-TW/NAPS2.Sdk.resources.dll"
+      ]
+    },
+    {
+      "path": "zxing.dll",
+      "sha256": "2d9a1a3276fa21f5e20c0e8afa4ea33ca18fd6f984bd5b32ad457279e2709d73",
+      "size": 516096,
+      "kind": "managed",
+      "packageId": "ZXing.Net",
+      "packageVersion": "0.16.11",
+      "packagePaths": [
+        "lib/net9.0/zxing.dll"
+      ]
+    }
+  ],
+  "restoreNativeCandidates": [
+    {
+      "packageId": "Eto.Platform.Mac64",
+      "packageVersion": "2.11.0",
+      "path": "build/Launcher64",
+      "sha256": "a875e82237e0a26237189d1721e6b65057b05c52ee156db60f1b9393cd959c13",
+      "size": 624032
+    }
+  ],
+  "toolchainDownloads": []
+}

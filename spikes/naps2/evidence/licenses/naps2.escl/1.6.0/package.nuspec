@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>NAPS2.Escl</id>
+    <version>1.6.0</version>
+    <title>NAPS2.Escl</title>
+    <authors>Ben Olden-Cooligan</authors>
+    <license type="file">LICENSE</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <projectUrl>https://www.naps2.com/sdk</projectUrl>
+    <description>ESCL client for NAPS2.Sdk.</description>
+    <tags>naps2 escl</tags>
+    <repository type="git" url="https://github.com/cyanfish/naps2" commit="f914a4ec2af090aca4fa55eb3242ec91641482c3" />
+    <dependencies>
+      <group targetFramework="net10.0">
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.Mdns" version="1.0.1" exclude="Build,Analyzers" />
+        <dependency id="StandardSocketsHttpHandler" version="2.2.0.10" exclude="Build,Analyzers" />
+        <dependency id="System.ValueTuple" version="4.6.2" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETFramework4.6.2">
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.Mdns" version="1.0.1" exclude="Build,Analyzers" />
+        <dependency id="StandardSocketsHttpHandler" version="2.2.0.10" exclude="Build,Analyzers" />
+        <dependency id="System.Net.Http" version="4.3.4" exclude="Build,Analyzers" />
+        <dependency id="System.Private.Uri" version="4.3.2" exclude="Build,Analyzers" />
+        <dependency id="System.ValueTuple" version="4.6.2" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net8.0">
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.Mdns" version="1.0.1" exclude="Build,Analyzers" />
+        <dependency id="StandardSocketsHttpHandler" version="2.2.0.10" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="10.0.10" exclude="Build,Analyzers" />
+        <dependency id="NAPS2.Mdns" version="1.0.1" exclude="Build,Analyzers" />
+        <dependency id="StandardSocketsHttpHandler" version="2.2.0.10" exclude="Build,Analyzers" />
+        <dependency id="System.Private.Uri" version="4.3.2" exclude="Build,Analyzers" />
+        <dependency id="System.ValueTuple" version="4.6.2" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

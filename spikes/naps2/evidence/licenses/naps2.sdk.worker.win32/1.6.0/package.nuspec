@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>NAPS2.Sdk.Worker.Win32</id>
+    <version>1.6.0</version>
+    <title>NAPS2.Sdk.Worker.Win32</title>
+    <authors>Ben Olden-Cooligan</authors>
+    <license type="file">LICENSE</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <projectUrl>https://www.naps2.com/sdk</projectUrl>
+    <description>Windows 32-bit (x86) worker process for NAPS2.Sdk</description>
+    <copyright>Copyright 2009-2026 NAPS2 Contributors</copyright>
+    <tags>naps2</tags>
+    <repository type="git" url="https://github.com/cyanfish/naps2" commit="f914a4ec2af090aca4fa55eb3242ec91641482c3" />
+    <dependencies>
+      <group targetFramework="net10.0" />
+      <group targetFramework=".NETFramework4.6.2" />
+      <group targetFramework="net8.0" />
+    </dependencies>
+    <contentFiles>
+      <files include="NAPS2.Worker.exe" buildAction="None" copyToOutput="true" />
+    </contentFiles>
+  </metadata>
+</package>

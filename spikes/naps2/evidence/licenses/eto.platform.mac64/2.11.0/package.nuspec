@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Eto.Platform.Mac64</id>
+    <version>2.11.0</version>
+    <title>Eto.Forms - MonoMac 64-bit Platform</title>
+    <authors>Eto.Mac64</authors>
+    <license type="file">Eto-LICENSE.txt</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <projectUrl>https://github.com/picoe/Eto</projectUrl>
+    <description>This is the 64-bit MonoMac platform for Eto.Forms UI Framework.
+      
+Eto.Platform.Mac64 uses a modified version of the open source MonoMac for 64-bit, which allows you to create macOS application bundles from any platform.
+      
+This package creates an .app bundle to run your app on macOS, even on Windows or Linux.
+      
+By default, the .NET Core runtime will be bundled in Release configuration so your app won't require extra dependencies.
+
+Use Eto.Platform.macOS if you want to distribute your app to the Mac App Store.
+
+You do not need to use any of the classes of this assembly (unless customizing the MonoMac functionality of the platform), and should just use the UI controls from the Eto assembly.</description>
+    <copyright>(c) 2010-2025 by Curtis Wensley, 2012-2014 by Vivek Jhaveri and contributors</copyright>
+    <tags>cross platform gui ui framework desktop monomac osx mac eto.forms</tags>
+    <repository type="git" url="https://github.com/picoe/Eto.git" commit="73e42ec0b24e9e82162fb12a88b752a0a55fe5b8" />
+    <dependencies>
+      <group targetFramework="net6.0">
+        <dependency id="Eto.Forms" version="2.11.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net8.0">
+        <dependency id="Eto.Forms" version="2.11.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net10.0">
+        <dependency id="Eto.Forms" version="2.11.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Eto.Forms" version="2.11.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
