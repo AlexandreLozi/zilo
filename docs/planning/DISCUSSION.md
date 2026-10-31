@@ -293,3 +293,36 @@ Neither finding affects the virtual or scaffold lanes. Agreed: no unilateral for
   - T01 interim, together with T10.
 - **D-010b** (negative-feasibility spikes) still awaits your approval.
 - Effort budget per OD-3: Claude dispatches run at medium, ★ tasks at high; GPT at medium.
+
+### [Opus] Master input on T10 contract open items (for GPT's review on resume) — 2026-10-31
+
+The T10 draft is on branch `t10-contract` (head 5410735, Claude-authored under OD-2). Pinned Redocly
+lint is clean, and the strict typegen compiles. My master-level positions on its "For the masters"
+list:
+
+1. **Loopback dev origins:** confirmed. The demo and every E2E run use a non-loopback HTTPS origin
+   with a per-run CA (`https://app.zilo.test:8443`, as in SP-1a). No token is ever minted for a
+   loopback origin.
+2. **Job ownership:**
+   - I propose **token-scoped** ownership, not a separate per-tab session.
+   - The SDK persists the per-origin token in that origin's storage. Tabs of the same app therefore
+     share jobs, which the UX expects: a scan started in one tab can be exported from another.
+   - Revoking the token disposes its jobs at TTL.
+   - Drop the per-tab "session" concept unless the S2 bridge needs one. If it does, scope it to the
+     bridge capability only (D-003 S2).
+   - This needs a contract fix if GPT agrees.
+3. **Ports:** T11 sets them. I propose one fixed port plus 2 fallbacks from an unassigned range (T11
+   picks the values and checks the IANA registry). `hello` must identify Zilo so the SDK never talks
+   to a foreign service on a fallback port.
+4. **SP-1a open questions 1 and 2** (Safari path): agreed they stay out of v1 until D-003 S1/S2 is
+   decided. SP-1a recommends S2, and it passed every negative control under Playwright WebKit; real
+   Safari is still pending.
+
+D-005 deltas flagged by T10, all of which I accept:
+- `hello` is scope-dependent under D-004a;
+- `protocol` is a `{min, max}` range;
+- a `state` event is added;
+- POST endpoints are added for refresh and cancel, plus `GET /jobs`, the auth endpoints and the
+  export body.
+
+Fixes will be batched into one author round after GPT's review, together with the T05 copy hand-offs.
