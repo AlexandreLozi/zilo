@@ -82,7 +82,11 @@ def produce(rid, assets_path, lock_path, publish, cache, evidence):
         if library["type"] != "package":
             raise ValueError(f"Unexpected non-package library {identity}")
         package_id, version = identity.rsplit("/", 1)
-        package_dir = cache / library["path"]
+        roots = [cache] if cache else [Path(folder) for folder in assets["packageFolders"]]
+        package_dir = next((folder / library["path"] for folder in roots
+            if (folder / library["path"] / f"{package_id.lower()}.{version}.nupkg").is_file()), None)
+        if package_dir is None:
+            raise ValueError(f"Restored package ZIP missing from assets packageFolders: {identity}")
         nupkg = package_dir / f"{package_id.lower()}.{version}.nupkg"
         raw = nupkg.read_bytes()
         archive_hash = verify_hash(raw, nupkg.with_suffix(".nupkg.sha512").read_text().strip())
@@ -130,7 +134,8 @@ def produce(rid, assets_path, lock_path, publish, cache, evidence):
     packages.append({"id": "Zilo.Naps2Spike", "version": "0.0.0", "type": "first-party-source",
         "sha512": base64.b64encode(hashlib.sha512(project_source).digest()).decode(),
         "licenseExpression": "MIT", "licenseFile": "LICENSE", "licenseFileSha256": digest((Path(__file__).parent / "LICENSE").read_bytes()),
-        "source": "spikes/naps2/Program.cs + Naps2Spike.csproj + LICENSE"})
+        "source": "first-party:Zilo.Naps2Spike/Program.cs,Naps2Spike.csproj,LICENSE",
+        "sourceFiles": ["spikes/naps2/Program.cs", "spikes/naps2/Naps2Spike.csproj", "spikes/naps2/LICENSE"]})
     payloads = []
     own_names = {"Naps2Spike.dll", "Naps2Spike.pdb", "Naps2Spike.deps.json", "Naps2Spike.runtimeconfig.json"}
     for path in sorted(publish.rglob("*")):
@@ -162,19 +167,40 @@ def produce(rid, assets_path, lock_path, publish, cache, evidence):
         "toolchainDownloads": assets["project"]["frameworks"]["net10.0"].get("downloadDependencies", [])}
 
 
+def gate_inventory(inventory):
+    """Lossless identity/payload projection to the gate's deliberately strict schema."""
+    packages = []
+    for package in inventory["packages"]:
+        selected = {key: package.get(key) for key in (
+            "id", "version", "sha512", "licenseExpression", "licenseFile", "source")}
+        if package.get("licenseFileSha256"):
+            selected["licenseFileSha256"] = package["licenseFileSha256"]
+        selected["deployment"] = {"linkage": "dynamic", "separateDll": True, "replaceable": True,
+            "trimmed": False, "merged": False, "singleFile": False}
+        if package["id"].lower() == "naps2.sdk.worker.win32":
+            # Exact-source Worker.Build project publishes a trimmed, self-contained single-file bundle.
+            # Do not confuse these upstream settings with proof of which individual DLLs were trimmed.
+            selected["deployment"].update(separateDll=False, replaceable=False, trimmed=True, singleFile=True)
+        packages.append(selected)
+    return {"schemaVersion": 1, "rid": inventory["rid"], "packages": packages,
+        "payloads": [{key: payload[key] for key in ("path", "sha256", "kind", "packageId", "packageVersion")}
+            for payload in inventory["payloads"]]}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rid", required=True)
     parser.add_argument("--assets", type=Path, required=True)
     parser.add_argument("--lock", type=Path, required=True)
     parser.add_argument("--publish", type=Path, required=True)
-    parser.add_argument("--cache", type=Path, default=Path.home() / ".nuget/packages")
+    parser.add_argument("--cache", type=Path, help="Override authoritative assets packageFolders")
     parser.add_argument("--evidence", type=Path, default=Path("evidence"))
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     result = produce(args.rid, args.assets, args.lock, args.publish, args.cache, args.evidence)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2) + "\n")
+    args.output.with_suffix(".gate.json").write_text(json.dumps(gate_inventory(result), indent=2) + "\n")
     print(json.dumps({"rid": args.rid, "packages": len(result["packages"]), "payloads": len(result["payloads"]),
         "native": sum(p["kind"] == "native" for p in result["payloads"]),
         "unowned": sum(p["kind"] == "unowned" for p in result["payloads"])}))

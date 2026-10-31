@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Numerics;
 using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.Json;
 using NAPS2.Images;
@@ -13,6 +15,19 @@ using SixLabors.Fonts;
 CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 try
 {
+    if (args.FirstOrDefault() == "inspect")
+    {
+        using var stream = File.OpenRead(typeof(ScanController).Assembly.Location);
+        using var pe = new PEReader(stream);
+        var metadata = pe.GetMetadataReader();
+        var types = metadata.TypeDefinitions.Select(handle => metadata.GetTypeDefinition(handle))
+            .Select(type => metadata.GetString(type.Namespace) + "." + metadata.GetString(type.Name)).ToArray();
+        var references = metadata.AssemblyReferences.Select(handle => metadata.GetString(metadata.GetAssemblyReference(handle).Name)).ToArray();
+        Write(new { hasAppleDriver = types.Any(name => name.EndsWith(".AppleScanDriver")),
+            hasImageCaptureCoreReference = references.Any(name => name.Contains("ImageCaptureCore") || name.Contains("Microsoft.macOS")),
+            driverTypes = types.Where(name => name.EndsWith("ScanDriver")).Order().ToArray(), references });
+        return 0;
+    }
     string platform = OperatingSystem.IsWindows() ? "Gdi" : OperatingSystem.IsMacOS() ? "Mac" : "Gtk";
     var type = Assembly.Load($"NAPS2.Images.{platform}").GetType($"NAPS2.Images.{platform}.{platform}ImageContext", true)!;
     var images = (ImageContext)Activator.CreateInstance(type)!;

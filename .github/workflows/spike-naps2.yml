@@ -1,0 +1,104 @@
+name: SP-2a NAPS2 feasibility (not release clearance)
+
+on:
+  pull_request:
+    paths: ['spikes/naps2/**', 'tools/license-gate/**', '.github/workflows/spike-naps2.yml', 'docs/spikes/SP-2a.md']
+  push:
+    paths: ['spikes/naps2/**', 'tools/license-gate/**', '.github/workflows/spike-naps2.yml', 'docs/spikes/SP-2a.md']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gate-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Gate positive and seeded negative tests
+        run: python -B -m unittest discover -s tools/license-gate -p 'test_*.py' -v
+      - name: Actual graph, expected-denial assertions and seeded rejection tests
+        working-directory: spikes/naps2
+        run: |
+          python -B -m unittest discover -s tests -p test_real_gate.py -v
+          python -B -m unittest discover -s tests -p test_expected_gate.py -v
+
+  published-inventory:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rid: [win-x64, win-arm64, osx-arm64, osx-x64, linux-x64]
+    defaults:
+      run:
+        working-directory: spikes/naps2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: spikes/naps2/global.json
+      - name: Locked restore, framework-dependent cross-publish, full inventory
+        run: python run.py --rid ${{ matrix.rid }}
+      - name: Verify locks did not change
+        run: git diff --exit-code -- locks
+      - name: Assert exact gate outcome (D-010b tooling evidence, NEVER shipping clearance)
+        run: python expected_gate.py --rid ${{ matrix.rid }}
+      - name: Upload evidence even when the license graph is denied
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: naps2-inventory-${{ matrix.rid }}
+          path: |
+            spikes/naps2/evidence/inventory/${{ matrix.rid }}*.json
+            spikes/naps2/artifacts/logs/
+            spikes/naps2/locks/${{ matrix.rid }}.packages.lock.json
+
+  native-smoke:
+    # Independent of license acceptance: these are runtime research probes, not releasable artifacts.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: ubuntu-latest, rid: linux-x64, system: Linux, machine: x86_64 }
+          - { runner: windows-latest, rid: win-x64, system: Windows, machine: AMD64 }
+          - { runner: windows-11-arm, rid: win-arm64, system: Windows, machine: ARM64 }
+          - { runner: macos-latest, rid: osx-arm64, system: Darwin, machine: arm64 }
+          - { runner: macos-15-intel, rid: osx-x64, system: Darwin, machine: x86_64 }
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: spikes/naps2
+    env:
+      SPIKE_RID: ${{ matrix.rid }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: spikes/naps2/global.json
+      - name: Prove runner OS and architecture before labeling runtime evidence
+        run: python -c "import platform; assert (platform.system(), platform.machine()) == ('${{ matrix.system }}', '${{ matrix.machine }}'), platform.platform()"
+      - name: Build only the native RID with locked restore
+        run: python run.py --rid "${SPIKE_RID}"
+      - name: Runtime font/vector rendering, PNG/PDF, independent eSCL acquisition, metadata tests
+        run: python -B -m unittest discover -s tests -v
+      - name: Minimal eSCL enumeration (empty list does not prove acquisition)
+        run: dotnet "bin/Release/net10.0/${SPIKE_RID}/Naps2Spike.dll" list Escl
+      - name: Upload runtime probe outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: naps2-runtime-${{ matrix.rid }}
+          path: |
+            spikes/naps2/artifacts/render-test/
+            spikes/naps2/artifacts/fixture-test/
+            spikes/naps2/artifacts/logs/

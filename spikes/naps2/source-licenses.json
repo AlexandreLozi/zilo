@@ -1,0 +1,56 @@
+{
+  "Makaretu.Dns/2.0.1": {
+    "url": "https://raw.githubusercontent.com/richardschneider/net-dns/701463d2091e6d98d4cc4490abb0e0ead8ae2985/LICENSE",
+    "path": "evidence/source/makaretu-LICENSE",
+    "sha256": "37920e72b0c28aa74ad0eb9b37814a69d44614eb1991c0f1cd7e6caad735d7ad",
+    "association": "Repository commit declared by exact nupkg nuspec; MIT text at that commit."
+  },
+  "SimpleBase/1.3.1": {
+    "url": "https://raw.githubusercontent.com/ssg/SimpleBase/72ecb1de90918faade31351ece771e67f52d4d4a/LICENSE.txt",
+    "path": "evidence/source/simplebase-LICENSE.txt",
+    "sha256": "00d7839fe77ff1e115765e6a473ff45a49e7c1607bc5fd9e2dda045ada997bc0",
+    "association": "Exact nupkg licenseUrl points to Apache; publication-era source LICENSE is Apache2 and AssemblyInfo.cs declares1.3.1. Source-to-package association corroborated, not reproducibly rebuilt."
+  },
+  "AtkSharp/3.24.24.95": {
+    "url": "https://raw.githubusercontent.com/GtkSharp/GtkSharp/82dc24c1d5c288311ca9078244c4000cef6c211f/LICENSE",
+    "path": "evidence/source/gtksharp-LICENSE-candidate",
+    "sha256": "99298c267c899aacd27769a07446f9aab31413fda884d2b540d34adbf063b096",
+    "association": "UNRESOLVED: no license/commit metadata in nupkg; publication-era GtkSharp root LICENSE is LGPL2.0, not enough to map exact binary. Gate approval intentionally absent."
+  },
+  "CairoSharp/3.24.24.95": {
+    "url": "https://raw.githubusercontent.com/GtkSharp/GtkSharp/82dc24c1d5c288311ca9078244c4000cef6c211f/LICENSE",
+    "path": "evidence/source/gtksharp-LICENSE-candidate",
+    "sha256": "99298c267c899aacd27769a07446f9aab31413fda884d2b540d34adbf063b096",
+    "association": "UNRESOLVED: no license/commit metadata in nupkg; publication-era GtkSharp root LICENSE is LGPL2.0, not enough to map exact binary. Gate approval intentionally absent."
+  },
+  "GdkSharp/3.24.24.95": {
+    "url": "https://raw.githubusercontent.com/GtkSharp/GtkSharp/82dc24c1d5c288311ca9078244c4000cef6c211f/LICENSE",
+    "path": "evidence/source/gtksharp-LICENSE-candidate",
+    "sha256": "99298c267c899aacd27769a07446f9aab31413fda884d2b540d34adbf063b096",
+    "association": "UNRESOLVED: no license/commit metadata in nupkg; publication-era GtkSharp root LICENSE is LGPL2.0, not enough to map exact binary. Gate approval intentionally absent."
+  },
+  "GioSharp/3.24.24.95": {
+    "url": "https://raw.githubusercontent.com/GtkSharp/GtkSharp/82dc24c1d5c288311ca9078244c4000cef6c211f/LICENSE",
+    "path": "evidence/source/gtksharp-LICENSE-candidate",
+    "sha256": "99298c267c899aacd27769a07446f9aab31413fda884d2b540d34adbf063b096",
+    "association": "UNRESOLVED: no license/commit metadata in nupkg; publication-era GtkSharp root LICENSE is LGPL2.0, not enough to map exact binary. Gate approval intentionally absent."
+  },
+  "GLibSharp/3.24.24.95": {
+    "url": "https://raw.githubusercontent.com/GtkSharp/GtkSharp/82dc24c1d5c288311ca9078244c4000cef6c211f/LICENSE",
+    "path": "evidence/source/gtksharp-LICENSE-candidate",
+    "sha256": "99298c267c899aacd27769a07446f9aab31413fda884d2b540d34adbf063b096",
+    "association": "UNRESOLVED: no license/commit metadata in nupkg; publication-era GtkSharp root LICENSE is LGPL2.0, not enough to map exact binary. Gate approval intentionally absent."
+  },
+  "GtkSharp/3.24.24.95": {
+    "url": "https://raw.githubusercontent.com/GtkSharp/GtkSharp/82dc24c1d5c288311ca9078244c4000cef6c211f/LICENSE",
+    "path": "evidence/source/gtksharp-LICENSE-candidate",
+    "sha256": "99298c267c899aacd27769a07446f9aab31413fda884d2b540d34adbf063b096",
+    "association": "UNRESOLVED: no license/commit metadata in nupkg; publication-era GtkSharp root LICENSE is LGPL2.0, not enough to map exact binary. Gate approval intentionally absent."
+  },
+  "PangoSharp/3.24.24.95": {
+    "url": "https://raw.githubusercontent.com/GtkSharp/GtkSharp/82dc24c1d5c288311ca9078244c4000cef6c211f/LICENSE",
+    "path": "evidence/source/gtksharp-LICENSE-candidate",
+    "sha256": "99298c267c899aacd27769a07446f9aab31413fda884d2b540d34adbf063b096",
+    "association": "UNRESOLVED: no license/commit metadata in nupkg; publication-era GtkSharp root LICENSE is LGPL2.0, not enough to map exact binary. Gate approval intentionally absent."
+  }
+}

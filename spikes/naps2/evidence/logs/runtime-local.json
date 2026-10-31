@@ -1,0 +1,179 @@
+{
+  "recordedUtc": "2026-10-31",
+  "host": {
+    "os": "Linux",
+    "machine": "x86_64",
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39"
+  },
+  "scope": "Linux runtime only; other RIDs cross-published, not executed; no physical scanner",
+  "fixture": {
+    "requests": [
+      "GET /eSCL/ScannerCapabilities",
+      "GET /eSCL/ScannerCapabilities",
+      "GET /eSCL/ScannerStatus",
+      "POST /eSCL/ScanJobs",
+      "GET /eSCL/ScanJobs/1/NextDocument",
+      "GET /eSCL/ScanJobs/1/NextDocument",
+      "DELETE /eSCL/ScanJobs/1"
+    ],
+    "formats": [
+      "image/png"
+    ],
+    "hardware": false,
+    "mdns": false
+  },
+  "commands": [
+    {
+      "command": [
+        "/tmp/opencode/zilo-t02-dotnet/sdk/dotnet",
+        "--info"
+      ],
+      "exit": 0,
+      "stdout": ".NET SDK:\n Version:           10.0.403\n Commit:            5a2162bea6\n Workload version:  10.0.400-manifests.a00bebb6\n MSBuild version:   18.9.15+5a2162bea\n\nRuntime Environment:\n OS Name:     ubuntu\n OS Version:  24.04\n OS Platform: Linux\n RID:         linux-x64\n Base Path:   /tmp/opencode/zilo-t02-dotnet/sdk/sdk/10.0.403/\n\n.NET workloads installed:\nThere are no installed workloads to display.\nConfigured to use workload sets when installing new manifests.\nNo workload sets are installed. Run \"dotnet workload restore\" to install a workload set.\n\nHost:\n  Version:      10.0.14\n  Architecture: x64\n  Commit:       0427b9abbe\n\n.NET SDKs installed:\n  10.0.403 [/tmp/opencode/zilo-t02-dotnet/sdk/sdk]\n\n.NET runtimes installed:\n  Microsoft.AspNetCore.App 10.0.14 [/tmp/opencode/zilo-t02-dotnet/sdk/shared/Microsoft.AspNetCore.App]\n  Microsoft.NETCore.App 10.0.14 [/tmp/opencode/zilo-t02-dotnet/sdk/shared/Microsoft.NETCore.App]\n\nOther architectures found:\n  None\n\nEnvironment variables:\n  Not set\n\nglobal.json file:\n  /home/alexandre/orca/workspaces/zilo/t02-naps2-spike/spikes/naps2/global.json\n\nLearn more:\n  https://aka.ms/dotnet/info\n\nDownload .NET:\n  https://aka.ms/dotnet/download\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/opencode/zilo-t02-dotnet/sdk/dotnet",
+        "bin/Release/net10.0/linux-x64/Naps2Spike.dll",
+        "inspect"
+      ],
+      "exit": 0,
+      "stdout": "{\"hasAppleDriver\":false,\"hasImageCaptureCoreReference\":false,\"driverTypes\":[\"NAPS2.Scan.Internal.Escl.EsclScanDriver\",\"NAPS2.Scan.Internal.IScanDriver\",\"NAPS2.Scan.Internal.Sane.SaneScanDriver\",\"NAPS2.Scan.Internal.Twain.TwainScanDriver\",\"NAPS2.Scan.Internal.Wia.WiaScanDriver\"],\"references\":[\"System.Runtime\",\"System.Collections\",\"System.Net.WebClient\",\"NAPS2.Internals\",\"System.Threading.Tasks.Dataflow\",\"NAPS2.Images\",\"Google.Protobuf\",\"zxing\",\"System.Collections.Immutable\",\"NAPS2.Escl\",\"System.Xml.XDocument\",\"Microsoft.Extensions.Logging.Abstractions\",\"System.Net.NetworkInformation\",\"NAPS2.Wia\",\"NTwain\",\"System.Threading\",\"System.Linq\",\"System.Runtime.InteropServices\",\"System.Net.Primitives\",\"System.Net.Http\",\"Grpc.Core.Api\",\"System.Diagnostics.Process\",\"System.Collections.Concurrent\",\"GrpcDotNetNamedPipes\",\"System.Security.Cryptography\",\"System.Threading.Thread\",\"PdfSharpCore\",\"System.Xml.ReaderWriter\",\"System.IO.Compression\",\"System.Text.RegularExpressions\",\"Microsoft.Win32.Registry\",\"System.Memory\",\"System.Collections.Specialized\",\"System.ComponentModel.EventBasedAsync\",\"System.Console\",\"System.IO.Compression.ZipFile\"]}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/opencode/zilo-t02-dotnet/sdk/dotnet",
+        "bin/Release/net10.0/linux-x64/Naps2Spike.dll",
+        "list",
+        "Escl"
+      ],
+      "exit": 0,
+      "stdout": "{\"driver\":\"Escl\",\"count\":0,\"devices\":[],\"acquisitionProven\":false}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/opencode/zilo-t02-dotnet/sdk/dotnet",
+        "bin/Release/net10.0/linux-x64/Naps2Spike.dll",
+        "list",
+        "Default"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "{\"error\":\"System.Exception\",\"message\":\"Could not load library: \\u0022libsane.so.1\\u0022. Error: \",\"detail\":null}\n"
+    },
+    {
+      "command": [
+        "/tmp/opencode/zilo-t02-dotnet/sdk/dotnet",
+        "bin/Release/net10.0/linux-x64/Naps2Spike.dll",
+        "render",
+        "artifacts/render-observed"
+      ],
+      "exit": 0,
+      "stdout": "{\"platform\":\"Gtk\",\"fontsPackage\":\"1.0.1\",\"fontFamily\":\"IPAGothic\",\"fontsAssembly\":\"1.0.1\\u002Bbe8883caf13f364292508274d68c39c2455ec3e2\",\"textWidth\":219,\"glyphPaths\":14,\"pngBytes\":136,\"pdfBytes\":2690,\"scope\":\"Fonts glyph outlines to SVG; independent raster image to PNG/PDF; no OCR or PDF import\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/opencode/zilo-t02-dotnet/sdk/dotnet",
+        "bin/Release/net10.0/linux-x64/Naps2Spike.dll",
+        "fixture",
+        "http://127.0.0.1:46193/eSCL",
+        "artifacts/fixture-observed"
+      ],
+      "exit": 0,
+      "stdout": "{\"fixture\":\"independent-python-escl\",\"pages\":1,\"model\":\"Zilo independent SP-2a fixture\",\"hardware\":false}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/opencode/zilo-t02-dotnet/sdk/dotnet",
+        "restore",
+        "Naps2Spike.csproj",
+        "-p:RuntimeIdentifier=linux-x64",
+        "--configfile",
+        "NuGet.Config",
+        "--locked-mode"
+      ],
+      "cwd": "/tmp/opencode/zilo-t02-dotnet/locked-drift-59mbn0g9",
+      "mutation": "Only copied csproj Fonts direct pin changed1.0.1->2.0.0; original locks untouched",
+      "exit": 1,
+      "stdout": "  Determining projects to restore...\n/tmp/opencode/zilo-t02-dotnet/locked-drift-59mbn0g9/Naps2Spike.csproj : error NU1004: The package reference SixLabors.Fonts version has changed from [1.0.1, 1.0.1] to [2.0.0, 2.0.0].The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file.\n  Failed to restore /tmp/opencode/zilo-t02-dotnet/locked-drift-59mbn0g9/Naps2Spike.csproj (in 34 ms).\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/home/alexandre/.pyenv/versions/3.12.0/bin/python3",
+        "../../tools/license-gate/gate.py",
+        "check",
+        "evidence/inventory/win-x64.gate.json",
+        "--policy",
+        "policy.json"
+      ],
+      "exit": 1,
+      "stdout": "{\"status\": \"denied\", \"errors\": [\"package NAPS2.Sdk.Worker.Win32@1.6.0: LGPL requires dynamic, separate, replaceable, untrimmed/unmerged DLL deployment\", \"payload NAPS2.Sdk.Worker.Win32.dll: exact approved inventory owner required\", \"payload NAPS2.Worker.exe: exact approved inventory owner required\"], \"packages\": 28, \"payloads\": 79}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/home/alexandre/.pyenv/versions/3.12.0/bin/python3",
+        "../../tools/license-gate/gate.py",
+        "check",
+        "evidence/inventory/win-arm64.gate.json",
+        "--policy",
+        "policy.json"
+      ],
+      "exit": 1,
+      "stdout": "{\"status\": \"denied\", \"errors\": [\"package NAPS2.Sdk.Worker.Win32@1.6.0: LGPL requires dynamic, separate, replaceable, untrimmed/unmerged DLL deployment\", \"payload NAPS2.Sdk.Worker.Win32.dll: exact approved inventory owner required\"], \"packages\": 28, \"payloads\": 78}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/home/alexandre/.pyenv/versions/3.12.0/bin/python3",
+        "../../tools/license-gate/gate.py",
+        "check",
+        "evidence/inventory/osx-arm64.gate.json",
+        "--policy",
+        "policy.json"
+      ],
+      "exit": 0,
+      "stdout": "{\"status\": \"passed\", \"errors\": [], \"packages\": 27, \"payloads\": 77}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/home/alexandre/.pyenv/versions/3.12.0/bin/python3",
+        "../../tools/license-gate/gate.py",
+        "check",
+        "evidence/inventory/osx-x64.gate.json",
+        "--policy",
+        "policy.json"
+      ],
+      "exit": 0,
+      "stdout": "{\"status\": \"passed\", \"errors\": [], \"packages\": 27, \"payloads\": 77}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/home/alexandre/.pyenv/versions/3.12.0/bin/python3",
+        "../../tools/license-gate/gate.py",
+        "check",
+        "evidence/inventory/linux-x64.gate.json",
+        "--policy",
+        "policy.json"
+      ],
+      "exit": 1,
+      "stdout": "{\"status\": \"denied\", \"errors\": [\"package AtkSharp@3.24.24.95: missing exact package policy pin (id/version/hash/expression)\", \"package CairoSharp@3.24.24.95: missing exact package policy pin (id/version/hash/expression)\", \"package GLibSharp@3.24.24.95: missing exact package policy pin (id/version/hash/expression)\", \"package GdkSharp@3.24.24.95: missing exact package policy pin (id/version/hash/expression)\", \"package GioSharp@3.24.24.95: missing exact package policy pin (id/version/hash/expression)\", \"package GtkSharp@3.24.24.95: missing exact package policy pin (id/version/hash/expression)\", \"package PangoSharp@3.24.24.95: missing exact package policy pin (id/version/hash/expression)\", \"payload AtkSharp.dll: exact approved inventory owner required\", \"payload CairoSharp.dll: exact approved inventory owner required\", \"payload GLibSharp.dll: exact approved inventory owner required\", \"payload GdkSharp.dll: exact approved inventory owner required\", \"payload GioSharp.dll: exact approved inventory owner required\", \"payload GtkSharp.dll: exact approved inventory owner required\", \"payload PangoSharp.dll: exact approved inventory owner required\"], \"packages\": 32, \"payloads\": 81}\n",
+      "stderr": ""
+    }
+  ],
+  "locksSha256": {
+    "locks/osx-arm64.packages.lock.json": "e0f9fa82faa798a2706eb32f9ae8ae311ae34a99fc53d8b0f7db9b84ccf95fdd",
+    "locks/linux-x64.packages.lock.json": "8c01242cbd3521781060f113d55349caeb3406ac56d95ef023c84614a37cc540",
+    "locks/win-arm64.packages.lock.json": "e1f259f55841f743779d6df2ea73a935fb6641ee01aece81280247d5e6fadf01",
+    "locks/osx-x64.packages.lock.json": "0fc1059da4c6a3f40cd35f49b8e538ef4bbe3b00aa85bfa234c3f1750557608e",
+    "locks/win-x64.packages.lock.json": "2338c7b728c1d9d7a3f9467caf2189fe75ca2d582a32db513970ab54bef40d6f"
+  }
+}

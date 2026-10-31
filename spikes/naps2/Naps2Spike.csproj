@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <DefaultItemExcludes>$(DefaultItemExcludes);evidence/**;artifacts/**</DefaultItemExcludes>
     <SelfContained>false</SelfContained>
     <UseAppHost>false</UseAppHost>
     <PublishSingleFile>false</PublishSingleFile>

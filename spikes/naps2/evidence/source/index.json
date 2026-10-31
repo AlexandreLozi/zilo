@@ -1,0 +1,52 @@
+{
+  "makaretu-LICENSE": {
+    "url": "https://raw.githubusercontent.com/richardschneider/net-dns/701463d2091e6d98d4cc4490abb0e0ead8ae2985/LICENSE",
+    "path": "evidence/source/makaretu-LICENSE",
+    "sha256": "37920e72b0c28aa74ad0eb9b37814a69d44614eb1991c0f1cd7e6caad735d7ad"
+  },
+  "simplebase-LICENSE.txt": {
+    "url": "https://raw.githubusercontent.com/ssg/SimpleBase/72ecb1de90918faade31351ece771e67f52d4d4a/LICENSE.txt",
+    "path": "evidence/source/simplebase-LICENSE.txt",
+    "sha256": "00d7839fe77ff1e115765e6a473ff45a49e7c1607bc5fd9e2dda045ada997bc0"
+  },
+  "simplebase-AssemblyInfo.cs": {
+    "url": "https://raw.githubusercontent.com/ssg/SimpleBase/72ecb1de90918faade31351ece771e67f52d4d4a/src/Properties/AssemblyInfo.cs",
+    "path": "evidence/source/simplebase-AssemblyInfo.cs",
+    "sha256": "89288eb12550707d01015edce5de1769a449cbbf15d0c19636ecd13551779742"
+  },
+  "gtksharp-LICENSE-candidate": {
+    "url": "https://raw.githubusercontent.com/GtkSharp/GtkSharp/82dc24c1d5c288311ca9078244c4000cef6c211f/LICENSE",
+    "path": "evidence/source/gtksharp-LICENSE-candidate",
+    "sha256": "99298c267c899aacd27769a07446f9aab31413fda884d2b540d34adbf063b096"
+  },
+  "sdk-worker-build.csproj": {
+    "url": "https://raw.githubusercontent.com/cyanfish/naps2/f914a4ec2af090aca4fa55eb3242ec91641482c3/NAPS2.Sdk.Worker.Build/NAPS2.Sdk.Worker.Build.csproj",
+    "path": "evidence/source/sdk-worker-build.csproj",
+    "sha256": "51c0df287bfce002663d3b613cbed1133e75445436c503149fa8b1e53ab39e88"
+  },
+  "sdk-worker-package.csproj": {
+    "url": "https://raw.githubusercontent.com/cyanfish/naps2/f914a4ec2af090aca4fa55eb3242ec91641482c3/NAPS2.Sdk.Worker.Win32/NAPS2.Sdk.Worker.Win32.csproj",
+    "path": "evidence/source/sdk-worker-package.csproj",
+    "sha256": "ecddcd8fb6acb3569c936d4489c0538ab6ebdd0b6358911736832ad3d54a5b20"
+  },
+  "sdk-worker-copy.targets": {
+    "url": "https://raw.githubusercontent.com/cyanfish/naps2/f914a4ec2af090aca4fa55eb3242ec91641482c3/NAPS2.Sdk.Worker.Win32/NAPS2.Sdk.Worker.Win32.targets",
+    "path": "evidence/source/sdk-worker-copy.targets",
+    "sha256": "96f696483e5de7526267bca40063ffbe0084290aed2cd0e862afd311e95eca31"
+  },
+  "sdk-project.csproj": {
+    "url": "https://raw.githubusercontent.com/cyanfish/naps2/f914a4ec2af090aca4fa55eb3242ec91641482c3/NAPS2.Sdk/NAPS2.Sdk.csproj",
+    "path": "evidence/source/sdk-project.csproj",
+    "sha256": "216c266ad0bf522372f9e8df0b883845946f3643fde62dc6a45aaf68ce9fe0e4"
+  },
+  "sdk-driver-factory.cs": {
+    "url": "https://raw.githubusercontent.com/cyanfish/naps2/f914a4ec2af090aca4fa55eb3242ec91641482c3/NAPS2.Sdk/Scan/Internal/ScanDriverFactory.cs",
+    "path": "evidence/source/sdk-driver-factory.cs",
+    "sha256": "3249e946b116d7487cda8ad836915577785f2b53e0b703162319acae465cee2c"
+  },
+  "sdk-apple-driver.cs": {
+    "url": "https://raw.githubusercontent.com/cyanfish/naps2/f914a4ec2af090aca4fa55eb3242ec91641482c3/NAPS2.Sdk/Scan/Internal/Apple/AppleScanDriver.cs",
+    "path": "evidence/source/sdk-apple-driver.cs",
+    "sha256": "7ce8b2b92eb68dcc7b18135e93ec0f7840dc1031cca8bf8c7c487b1d65b2a6cb"
+  }
+}
