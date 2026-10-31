@@ -19,7 +19,8 @@ public sealed record DecodedPng(int Width, int Height, int BitDepth, int ColorTy
 
 /// <summary>
 /// Minimal PNG reader for verification (tests and the sample tool): non-interlaced grayscale
-/// (1/8-bit) and 8-bit RGB, all five filter types, CRC-checked. Inflate uses the runtime, which is
+/// (1/8-bit) and 8-bit RGB, all five filter types, CRC-checked, with IHDR first, IDAT present and
+/// IEND required as the final chunk. Not hardened for untrusted input. Inflate uses the runtime, which is
 /// fine because decoding is not part of the byte-identity guarantee.
 /// </summary>
 public static class PngDecoder
@@ -31,45 +32,69 @@ public static class PngDecoder
         var pos = 8;
         int w = 0, h = 0, depth = 0, type = 0;
         int? ppm = null;
+        bool ihdr = false, sawIdat = false, iend = false;
         using var idat = new MemoryStream();
         while (pos < png.Length)
         {
+            // Structural checks only (review r1 L3): this is a verifier for trusted generator output,
+            // not a general-purpose or hardened PNG parser.
+            if (png.Length - pos < 12) throw new InvalidDataException("Truncated chunk header.");
             var len = BinaryPrimitives.ReadInt32BigEndian(png[pos..]);
+            if (len < 0 || len > png.Length - pos - 12) throw new InvalidDataException("Chunk length out of range.");
             var ctype = Encoding.ASCII.GetString(png.Slice(pos + 4, 4));
             var data = png.Slice(pos + 8, len);
             var crc = BinaryPrimitives.ReadUInt32BigEndian(png[(pos + 8 + len)..]);
             var calc = Crc32.Update(0xFFFFFFFFu, png.Slice(pos + 4, 4 + len)) ^ 0xFFFFFFFFu;
             if (crc != calc) throw new InvalidDataException($"Bad CRC in {ctype}.");
+            if (!ihdr && ctype != "IHDR") throw new InvalidDataException("First chunk must be IHDR.");
             switch (ctype)
             {
                 case "IHDR":
+                    if (ihdr || len != 13) throw new InvalidDataException("Bad IHDR.");
+                    ihdr = true;
                     w = BinaryPrimitives.ReadInt32BigEndian(data);
                     h = BinaryPrimitives.ReadInt32BigEndian(data[4..]);
                     depth = data[8];
                     type = data[9];
+                    if (w <= 0 || h <= 0) throw new InvalidDataException("Bad dimensions.");
                     if (data[12] != 0) throw new NotSupportedException("Interlaced PNG.");
                     break;
-                case "pHYs" when data[8] == 1:
+                case "pHYs" when len == 9 && data[8] == 1:
                     ppm = BinaryPrimitives.ReadInt32BigEndian(data);
                     break;
                 case "IDAT":
+                    sawIdat = true;
                     idat.Write(data);
                     break;
             }
             pos += 12 + len;
-            if (ctype == "IEND") break;
+            if (ctype == "IEND")
+            {
+                iend = true;
+                break;
+            }
         }
+        if (!iend) throw new InvalidDataException("Missing IEND.");
+        if (pos != png.Length) throw new InvalidDataException("Data after IEND.");
+        if (!sawIdat) throw new InvalidDataException("Missing IDAT.");
 
         var channels = type switch { 0 => 1, 2 => 3, _ => throw new NotSupportedException($"Colour type {type}.") };
         if (depth != 8 && !(depth == 1 && type == 0)) throw new NotSupportedException($"Bit depth {depth}.");
         var bitsPerPixel = channels * depth;
-        var rowBytes = (w * bitsPerPixel + 7) / 8;
+        var rowBytes = checked((int)(((long)w * bitsPerPixel + 7) / 8));
         var bpp = Math.Max(1, bitsPerPixel / 8);
 
         idat.Position = 0;
         using var z = new ZLibStream(idat, CompressionMode.Decompress);
-        var raw = new byte[(rowBytes + 1) * h];
-        z.ReadExactly(raw);
+        var raw = new byte[checked((rowBytes + 1) * h)];
+        try
+        {
+            z.ReadExactly(raw);
+        }
+        catch (EndOfStreamException e)
+        {
+            throw new InvalidDataException("Image data shorter than the header requires.", e);
+        }
 
         var r = new Raster(w, h);
         var prev = new byte[rowBytes];
