@@ -1,0 +1,16 @@
+{
+  "scenario": "s2-coop-allow-popups",
+  "outcome": "pass",
+  "expectation": "with COOP same-origin-allow-popups the popup keeps its opener and the full bridge flow passes",
+  "observed": {
+    "ok": true,
+    "coopHeader": "same-origin-allow-popups",
+    "popupStatus": "bound"
+  },
+  "console": [],
+  "project": "chromium",
+  "os": "linux",
+  "browserVersion": "156.0.8078.4",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:24:38.361Z"
+}

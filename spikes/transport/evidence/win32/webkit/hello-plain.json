@@ -1,0 +1,37 @@
+{
+  "scenario": "hello-plain",
+  "outcome": "fail",
+  "expectation": "same fetch without the option returns 200",
+  "observed": {
+    "result": {
+      "ok": false,
+      "error": "TypeError",
+      "message": "Load failed",
+      "timedOut": false,
+      "ms": 0
+    },
+    "permissions": {
+      "loopback-network": "prompt",
+      "local-network": "prompt"
+    },
+    "grant": "not grantable: browserContext.grantPermissions: Unknown permission: local-network-access",
+    "targetAddressSpace": "ignored",
+    "requestsSeenByAgent": 0
+  },
+  "notes": "Playwright WebKit (not Safari): blocked before any request reaches the agent, consistent with mixed-content blocking of http://127.0.0.1",
+  "console": [
+    "warning: [blocked] The page at https://app.zilo.test:8443/ requested insecure content from http://127.0.0.1:47613/zilo/v1/hello. This content was blocked and must\n",
+    "error: Not allowed to request resource",
+    "warning: [blocked] The page at https://app.zilo.test:8443/ requested insecure content from http://127.0.0.1:47613/zilo/v1/hello. This content was blocked and must\n",
+    "error: Not allowed to request resource",
+    "warning: [blocked] The page at https://app.zilo.test:8443/ requested insecure content from http://127.0.0.1:47613/zilo/v1/events. This content was blocked and must\n",
+    "error: Not allowed to request resource",
+    "warning: [blocked] The page at https://app.zilo.test:8443/ requested insecure content from http://127.0.0.1:47613/zilo/v1/blob?size=1048576. This content was blocked and must\n",
+    "error: Not allowed to request resource"
+  ],
+  "project": "webkit",
+  "os": "win32",
+  "browserVersion": "27.2",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:22:21.878Z"
+}

@@ -90,6 +90,20 @@ test.describe('S2 popup bridge', () => {
     if (popupState && !popupState.error) expect(popupState.status).toBe('error: no-opener');
   });
 
+  test('COOP same-origin-allow-popups keeps the opener: bridge works', async ({ page, context, browser, browserName }, info) => {
+    await openPage(page, `${APP_ORIGIN}/coop-allow-popups`, TOKEN);
+    const { bridge, popupState } = await openBridge(page, context);
+    const strict = verified(browserName);
+    await saveEvidence(info, page, browser, {
+      scenario: 's2-coop-allow-popups',
+      outcome: strict ? (bridge.ok ? 'pass' : 'fail') : 'observed',
+      expectation: 'with COOP same-origin-allow-popups the popup keeps its opener and the full bridge flow passes',
+      observed: { ok: bridge.ok, code: bridge.code, coopHeader: bridge.coopHeader, popupStatus: popupState?.status },
+    });
+    expect(bridge.coopHeader).toBe('same-origin-allow-popups');
+    if (strict) expect(bridge.ok, JSON.stringify(bridge)).toBe(true);
+  });
+
   test('hostile opener: bridge never announces itself, rejects a forced hello, mints nothing', async ({ page, context, browser }, info) => {
     const mark = auditMark();
     await openPage(page, `${EVIL_ORIGIN}/`, TOKEN); // even a stolen token must not help
