@@ -170,7 +170,7 @@
 .z-banner {
   display: grid; grid-template-columns: auto 1fr; gap: var(--z-space-1) var(--z-space-3);
   padding: var(--z-space-3) var(--z-space-4);
-  border: 1px solid currentColor; border-left-width: 4px; border-radius: var(--z-radius-md);
+  border: 1px solid currentColor; border-radius: var(--z-radius-md);
   color: var(--z-info); background: var(--z-info-subtle);
 }
 .z-banner > svg { grid-row: span 3; margin-top: 2px; }
@@ -187,14 +187,19 @@
   background: color-mix(in srgb, var(--z-accent) 18%, var(--z-bg)); overflow: hidden;
 }
 .z-progress__bar {
-  position: absolute; inset: 0 auto 0 0; width: var(--value, 0%); background: var(--z-accent);
-  border-radius: inherit; transition: width var(--z-duration-base) var(--z-ease-standard);
+  /* --value is a 0..1 fraction. Width stays fixed; only transform animates (no layout work). */
+  position: absolute; inset: 0; background: var(--z-accent); border-radius: inherit;
+  transform-origin: left center; transform: scaleX(var(--value, 0));
+  transition: transform var(--z-duration-base) var(--z-ease-standard);
 }
-.z-progress--indeterminate .z-progress__bar { width: 35%; animation: z-indeterminate 1.4s var(--z-ease-standard) infinite; }
-@keyframes z-indeterminate { from { left: -35%; } to { left: 100%; } }
+.z-progress--indeterminate .z-progress__bar {
+  right: auto; width: 35%; transform: translateX(-100%);
+  animation: z-indeterminate 1.4s var(--z-ease-standard) infinite;
+}
+@keyframes z-indeterminate { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
 @media (prefers-reduced-motion: reduce) {
   .z-progress--indeterminate .z-progress__bar {
-    width: 100%; left: 0; animation: z-pulse 2s ease-in-out infinite;
+    width: 100%; transform: none; animation: z-pulse 2s ease-in-out infinite;
   }
 }
 @keyframes z-pulse { 50% { opacity: 0.45; } }
