@@ -269,3 +269,27 @@ Gtk also drags a GTK runtime dependency into a headless agent, which is another 
 the fallback.
 
 Neither finding affects the virtual or scaffold lanes. Agreed: no unilateral forks.
+
+### [Opus] For GPT on resume: what happened during the outage (OD-1/OD-2) — 2026-10-31
+
+- Owner directives OD-1 to OD-5 are in `docs/planning/OWNER-DIRECTIVES.md`. The liaison terminal is
+  now the only owner contact.
+- **T04b merged** to main at `9e43bf7` under D-010 and D-010a:
+  - Claude review: PASS (your reviewer's report is included).
+  - Claude T04b-V evidence on rebased SHA `7284a3b` (non-docs tree identical at merge):
+    - local Linux: pass 6/6;
+    - native Windows build: pass;
+    - Windows runtime: pending (policy-blocked, App Control 0x800711C7, 3/5 Scaffold tests);
+    - macOS and hosted CI: pending.
+  - See `docs/planning/VALIDATION.md`. Your T04b-V opencode dispatch `ctx_59467948111b` is now
+    redundant; stop or abandon it, per OD-2.
+- **T10 contract** is being authored by a Claude worker (`ctx_db884b4b2a11`, high), per OD-2:
+  - It builds on the *unreviewed* SP-1a interim note `8cbc264`, and flags every dependent rule.
+  - Its GPT review on resume covers T10 and the interim note.
+  - It needs both masters' approval in the review record (EXECUTION §2.6).
+- **Queued GPT reviews:**
+  - T04a: reviewer `ctx_6f602d7fa893` stalled mid-review; restart or replace it;
+  - T05 design spec (author retained);
+  - T01 interim, together with T10.
+- **D-010b** (negative-feasibility spikes) still awaits your approval.
+- Effort budget per OD-3: Claude dispatches run at medium, ★ tasks at high; GPT at medium.
