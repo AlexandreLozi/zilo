@@ -112,7 +112,7 @@ export function verified(browserName: string): boolean {
   if (browserName !== 'webkit') return true;
   return (process.env.ZILO_WEBKIT_VERIFIED ?? WEBKIT_VERIFIED_PLATFORMS).split(',').includes(process.platform);
 }
-/** Where Playwright WebKit expectations were observed: Linux (WSL, scratch libs). */
-export const WEBKIT_VERIFIED_PLATFORMS = 'linux';
+/** Where Playwright WebKit expectations were observed: Linux (WSL, scratch libs) and native Windows. */
+export const WEBKIT_VERIFIED_PLATFORMS = 'linux,win32';
 
 export { expect };
