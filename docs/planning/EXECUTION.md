@@ -101,7 +101,7 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T04b | merged 9e43bf7 (by Opus queue, during GPT outage; see VALIDATION.md) | BE | G | C | — | `backend/**`, `global.json`, `Directory.*.props`, `.github/workflows/ci-backend.yml` | `dotnet test` green in `ci-backend` on Windows, macOS and Linux runners, in locked mode |
 | T05 | UX and visual design spec: Scan dialog; Install, Permission-help (per browser), Update and Safari-state dialogs; tray consent prompt and revocation UI; tokens; copy per error code and detection state; a11y spec | FE | C | G | — | `docs/design/**`, `design/prototypes/**` (static HTML, no build integration) | Spec with annotated static prototypes; copy table covering every D-008 state and every contract error code (finalized after T10) |
 | T04b-V (Claude, OD-2) | done, evidence merged with T04b (released) | t04b-v-claude on q/t04b@7284a3b | task_aece2a6c9536 / ctx_1c7e1d2ebf1e (claude medium) | n/a (evidence) | | |
-| T10 ★ (Claude author, OD-2) | authored @5410735 (retained ctx_1340623ba837 after Orca-restart re-dispatch); GPT review queued for resume | t10-contract | task_97bc56f01fe2 | queued | | |
+| T10 ★ (Claude author, OD-2) | r1 changes (13 findings, report @1a1db73); fix r1 running ctx_b7e7205f9487 (claude high) | t10-contract | task_97bc56f01fe2 | GPT r1 (released) | changes | |
 | T03 (Claude author, gap) | authored @c00f066 (retained); Linux pass, Win/mac pending | t03-packaging-dryrun | task_ff5edf368285 / ctx_87244e823ed3 (claude medium) | queued for GPT | | |
 | T12-proto (Claude author, gap) | authored @0afb9c4, 146/146 Linux (retained) | t12-proto-pages | task_8756662f2e58 / ctx_3535b9f466da (claude medium) | queued for GPT | | |
 | T03 | **SP-4a** unsigned packaging dry runs (MSI or MSIX, `.pkg`, `.deb`/`.rpm`) of the T04b hello agent; signing smoke with **test keys only** | BE | G | C | T04b | `packaging/**`, `.github/workflows/packaging-dryrun.yml`, `docs/spikes/SP-4a.md` | Artifacts built on 3 OS runners; install/uninstall smoke on Linux and Windows runners; test-key signature verifies |
@@ -167,7 +167,7 @@ Tracked in VALIDATION.md.
 |---|---|---|---|---|---|---|
 | T01 | authoring | t01-transport-spike | task_7ad475b61ca4 / ctx_3e1242a839cb (claude opus-5-5 xhigh) | | | |
 | T04a | r1 verdict changes (1 minor: Node 24); fix r1 running ctx_e8380f29bd1f (claude low) | t04a-web-scaffold | | r1 ctx_4cd437852043 (released), report on t04a-review-r1@4b68400 | changes | |
-| T05 | authored @d667952; GPT review r1 running ctx_e1ede2fc43e4 (t05-review-r1) | t05-design-spec | task_d61d82f04b49 | ctx_e1ede2fc43e4 | | |
+| T05 | r1 changes (5 P2, report @e8c4aee); fix r1 running ctx_4a073a6ea3b3 (claude medium); reviewer ctx_e1ede2fc43e4 retained for r2 | t05-design-spec | | ctx_e1ede2fc43e4 | changes | |
 
 ## 4b. BE lane status (GPT edits)
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
