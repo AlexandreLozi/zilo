@@ -8,3 +8,9 @@
 Message the peer: `orca-ide terminal send --terminal <handle> --text "<msg>" --enter --json`
 Read the peer: `orca-ide terminal read --terminal <handle> --screen --json`
 Handles are runtime-scoped. After an Orca restart, re-discover them with `orca-ide terminal list --worktree path:/home/alexandre/PersonalProjects/zilo --json` and update this file.
+
+## Backend Run
+
+- Name: `zilo-be`
+- Run ID: `run_a2415f299b69`
+- Coordinator: GPT master; consume only this Run's inbox.

@@ -97,7 +97,7 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T04b | Backend scaffold: `backend/` .NET 10 solution (`Zilo.Agent`, `Zilo.Core`, `Zilo.Drivers.Naps2` (empty), `Zilo.Drivers.Virtual` (empty), `Zilo.Security`, test projects), production `global.json`, `Directory.Packages.props`, locked restore | BE | G | C | — | `backend/**`, `global.json`, `Directory.*.props`, `.github/workflows/ci-backend.yml` | `dotnet test` green in `ci-backend` on Windows, macOS and Linux runners, in locked mode |
 | T05 | UX and visual design spec: Scan dialog; Install, Permission-help (per browser), Update and Safari-state dialogs; tray consent prompt and revocation UI; tokens; copy per error code and detection state; a11y spec | FE | C | G | — | `docs/design/**`, `design/prototypes/**` (static HTML, no build integration) | Spec with annotated static prototypes; copy table covering every D-008 state and every contract error code (finalized after T10) |
 | T03 | **SP-4a** unsigned packaging dry runs (MSI or MSIX, `.pkg`, `.deb`/`.rpm`) of the T04b hello agent; signing smoke with **test keys only** | BE | G | C | T04b | `packaging/**`, `.github/workflows/packaging-dryrun.yml`, `docs/spikes/SP-4a.md` | Artifacts built on 3 OS runners; install/uninstall smoke on Linux and Windows runners; test-key signature verifies |
-| T06 | Reconcile T02's verified NAPS2 graph into production packages and locks | BE | G | C | T02, T04b | `Directory.Packages.props`, locks, `backend/src/Zilo.Drivers.Naps2/*.csproj` | `ci-backend` locked restore green; licence gate wired into `ci-backend` |
+| T06 | Reconcile T02's verified NAPS2 graph into production packages and locks | BE | G | C | T02, T04b | `Directory.Packages.props`, locks, `backend/src/Zilo.Drivers.Naps2/*.csproj`, `.github/workflows/ci-backend.yml` (ownership transferred from merged T04b) | `ci-backend` locked restore green; licence gate wired into `ci-backend` |
 
 ### Wave 1 — M1 contract + skeletons
 | ID | Task | Lane | A | R | Deps | Observable acceptance |
@@ -126,7 +126,7 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T30 | NAPS2 WIA + TWAIN with the x86 worker, caps mapping, effective settings | G | C | T20, T06 | Windows runner: driver unit tests with NAPS2 fakes; x86 worker starts, recovers from a killed worker, and cancels; the TWAIN WG sample source fixture (if its licence clears) completes one scan; hardware rows pending |
 | T31 | NAPS2 ICA driver | G | C | T20, T06 | macOS runner: builds and enumerates without crashing (empty list OK); caps-mapping unit tests; hardware rows pending |
 | T32 | NAPS2 SANE (+sane-airscan) and eSCL drivers | G | C | T20, T06 | Linux runner: SANE `test` backend scan of 2 pages through Zilo; eSCL against the T33 device |
-| T33 | Virtual eSCL device (D-007 layer 2) | G | C | T12, T06 | Linux CI: Zilo's eSCL driver scans 3 pages duplex from it; PDF order asserted |
+| T33 | Virtual eSCL device (D-007 layer 2) | G | C | T12, T06 | Independent eSCL client validates the fixture's capabilities and 3-page duplex sequence; combined Zilo-driver/PDF-order integration is gated on both T32 and T33 code, never a circular prerequisite to merge either fixture or driver |
 | T34 | Owner hardware checklist + real-Safari script (FE lane) | C | G | T23 | Checklist covers each driver route, the WSD routes, Safari, and install/update flows, with pass/fail fields |
 
 ### Wave 4 — M4 install and lifecycle
@@ -179,4 +179,4 @@ Tracked in VALIDATION.md.
 
 ## Sign-off
 - Opus: approved (2026-10-31)
-- GPT: pending
+- GPT: approved (2026-10-31), including explicit T06 workflow ownership transfer and non-circular T32/T33 integration gate above
