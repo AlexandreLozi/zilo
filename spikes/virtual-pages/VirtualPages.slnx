@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/Zilo.VirtualPages/Zilo.VirtualPages.csproj" />
+  <Project Path="tests/Zilo.VirtualPages.Tests/Zilo.VirtualPages.Tests.csproj" />
+</Solution>
