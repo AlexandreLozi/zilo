@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zilo design prototypes</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<link rel="stylesheet" href="assets/proto.css">
+<style>
+  .idx { max-width: 60rem; margin: 0 auto; padding: var(--z-space-10) var(--z-space-6); }
+  .idx h2 { font-size: var(--z-text-2xl); font-weight: var(--z-weight-semibold); margin-bottom: var(--z-space-2); }
+  .idx > p { color: var(--z-text-muted); max-width: 44rem; margin-bottom: var(--z-space-8); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: var(--z-space-4); }
+  .card {
+    display: grid; gap: var(--z-space-2); align-content: start; padding: var(--z-space-5);
+    border: 1px solid var(--z-border); border-radius: var(--z-radius-lg); background: var(--z-bg);
+    color: var(--z-text); text-decoration: none; box-shadow: var(--z-shadow-1);
+  }
+  .card:hover { border-color: var(--z-border-strong); color: var(--z-text); }
+  .card h3 { font-size: var(--z-text-lg); font-weight: var(--z-weight-semibold); color: var(--z-accent); }
+  .card p { color: var(--z-text-muted); font-size: var(--z-text-sm); }
+  .card code { font-family: var(--z-font-mono); font-size: var(--z-text-xs); color: var(--z-text-muted); }
+  .idx footer { margin-top: var(--z-space-10); color: var(--z-text-muted); font-size: var(--z-text-sm); }
+</style>
+</head>
+<body class="proto">
+<main class="proto-stage" aria-label="Prototype index" style="overflow:auto">
+  <div class="zilo idx">
+    <h2>Zilo design prototypes (T05)</h2>
+    <p>Static, self-contained prototypes for every user-facing Zilo surface. Open any file directly from disk. Each page has a
+      control bar to switch state, theme and platform; the state lives in the URL so it can be linked and scanned with axe.
+      The written spec is in <code>docs/design/</code>.</p>
+    <div class="cards">
+      <a class="card" href="scan-dialog.html"><h3>Scan dialog</h3><p>Scanners with driver badges, capability-bound settings, progress, live thumbnails with rotate, reorder and delete, export, every error code.</p><code>docs/design/scan-dialog.md</code></a>
+      <a class="card" href="detection.html"><h3>Detection dialogs</h3><p>Checking, permission denied with per-browser help, Install (unreachable or blocked), consent wait, Update, Safari paths.</p><code>docs/design/detection-dialogs.md</code></a>
+      <a class="card" href="tray.html"><h3>Tray and menu-bar agent</h3><p>Spoof-resistant consent prompt, allowed sites with revoke, status menu, quit and logs, on Windows, macOS and Linux.</p><code>docs/design/tray-agent.md</code></a>
+      <a class="card" href="tokens.html"><h3>Design tokens</h3><p>Colour, type, spacing, radius, elevation and motion for light and dark themes, plus the host theming API.</p><code>docs/design/tokens.md</code></a>
+    </div>
+    <footer>
+      Copy for every state and error code: <code>docs/design/copy.md</code> (generated from <code>assets/copy.js</code>).
+      Accessibility: <code>docs/design/accessibility.md</code>. Checks: <code>design/prototypes/check/run.sh</code>.
+    </footer>
+  </div>
+</main>
+<script>window.PROTO = { title: "Index", controls: [], autofocus: false, render() {} };</script>
+<script src="assets/proto.js"></script>
+</body>
+</html>
