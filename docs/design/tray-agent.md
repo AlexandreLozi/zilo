@@ -139,6 +139,6 @@ fallback on desktops without a tray.
 - Native controls give each platform's screen reader (Narrator, VoiceOver, Orca) names and roles. The origin box must
   expose the full origin as one readable string, not fragments.
 - Each window has a title. The consent window's accessible description is its body text.
-- Every action is keyboard-reachable. Tab order: origin box (focusable, read-only, so it can be read and copied), then
-  Deny, then Allow.
+- Every action is keyboard-reachable. The tab order is the origin box (focusable and read-only, so it can be read and
+  copied), then the buttons in their visual order for the platform. Initial focus is on Deny.
 - Respect the OS high-contrast and reduced-motion settings.
