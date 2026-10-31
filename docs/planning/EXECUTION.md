@@ -162,7 +162,7 @@ Tracked in VALIDATION.md.
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
 |---|---|---|---|---|---|---|
 | T01 | authoring | t01-transport-spike | task_7ad475b61ca4 / ctx_3e1242a839cb (claude opus-5-5 xhigh) | | | |
-| T04a | authoring | t04a-web-scaffold | task_87c003f8c96a / ctx_af0edf2dc598 (claude opus-5-5 high) | | | |
+| T04a | in review r1 | t04a-web-scaffold @1842f4e | task_87c003f8c96a / ctx_af0edf2dc598 (retained) | task_cc19d0403fad / ctx_6f602d7fa893 (opencode GPT-6.1 Sol high, branch t04a-review-r1) | | |
 | T05 | authoring | t05-design-spec | task_d61d82f04b49 / ctx_dff3213d1716 (claude opus-5-5 high) | | | |
 
 ## 4b. BE lane status (GPT edits)
