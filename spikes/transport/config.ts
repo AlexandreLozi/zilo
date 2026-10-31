@@ -1,6 +1,8 @@
 // SP-1a spike configuration shared by the agent stub, the test-page server and the tests.
 // Throwaway spike code: not a production package.
 
+import { fileURLToPath } from 'node:url';
+
 const env = (name: string, fallback: string): string => process.env[name] ?? fallback;
 
 export const AGENT_PORT = Number(env('ZILO_AGENT_PORT', '47613'));
@@ -35,7 +37,7 @@ export const MAX_BRIDGE_BYTES = 8 * 1024 * 1024;
 export const EVENT_TICKS = 5;
 export const EVENT_INTERVAL_MS = 200;
 
-export const SPIKE_DIR = new URL('.', import.meta.url).pathname;
+export const SPIKE_DIR = fileURLToPath(new URL('.', import.meta.url)); // trailing separator included
 export const CERT_DIR = `${SPIKE_DIR}.certs`;
 export const ARTIFACT_DIR = `${SPIKE_DIR}artifacts`;
 export const AUDIT_LOG = env('ZILO_AUDIT_LOG', `${ARTIFACT_DIR}/agent-audit.jsonl`);

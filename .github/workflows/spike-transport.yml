@@ -1,0 +1,108 @@
+# SP-1a transport spike (T01). Throwaway spike; owned by T01 (EXECUTION.md §2.6).
+#
+# What runs where:
+#   linux   (ubuntu-latest):  stub rules + Chromium + Firefox + Playwright WebKit (WPE). Chromium's
+#                             headful prompt test runs under xvfb-run. Expectations are asserted.
+#   windows (windows-latest): stub rules + Playwright WebKit (Windows port). Expectations asserted
+#                             (recorded locally on 2026-10-31, see docs/spikes/SP-1a.md).
+#   macos   (macos-latest):   stub rules + Playwright WebKit (macOS port). Observe-only until a
+#                             first run is recorded: tests record evidence and assert only
+#                             browser-independent invariants.
+# Playwright WebKit is not Safari. Real Safari 26 stays pending (manual script in SP-1a.md).
+name: spike-transport
+
+on:
+  push:
+    paths:
+      - 'spikes/transport/**'
+      - '.github/workflows/spike-transport.yml'
+  pull_request:
+    paths:
+      - 'spikes/transport/**'
+      - '.github/workflows/spike-transport.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: spike-transport-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: spikes/transport
+
+jobs:
+  linux:
+    name: ubuntu-latest · stub, chromium, firefox, webkit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: spikes/transport/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Playwright suite (xvfb for the headful Chromium prompt test)
+        run: xvfb-run -a npx playwright test
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spike-transport-linux
+          path: |
+            spikes/transport/evidence/
+            spikes/transport/artifacts/
+            spikes/transport/test-results/
+          if-no-files-found: warn
+
+  windows-webkit:
+    name: windows-latest · stub, webkit
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: spikes/transport/package-lock.json
+      - run: npm ci
+      - run: npx playwright install webkit
+      - run: npx playwright test --project=stub --project=webkit
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spike-transport-windows
+          path: |
+            spikes/transport/evidence/
+            spikes/transport/artifacts/
+            spikes/transport/test-results/
+          if-no-files-found: warn
+
+  macos-webkit:
+    name: macos-latest · stub, webkit (observe-only)
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: spikes/transport/package-lock.json
+      - run: npm ci
+      - run: npx playwright install webkit
+      - run: npx playwright test --project=stub --project=webkit
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spike-transport-macos
+          path: |
+            spikes/transport/evidence/
+            spikes/transport/artifacts/
+            spikes/transport/test-results/
+          if-no-files-found: warn

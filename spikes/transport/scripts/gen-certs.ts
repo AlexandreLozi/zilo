@@ -2,6 +2,7 @@
 // Output goes to spikes/transport/.certs (gitignored). Keys are created per run and never committed.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { CERT_DIR, APP_HOST, EVIL_HOST } from '../config.ts';
 
 export interface CertMeta {
@@ -68,7 +69,7 @@ export function ensureCerts(force = false): CertMeta {
   return meta;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const meta = ensureCerts(process.argv.includes('--force'));
   console.log(JSON.stringify(meta, null, 2));
 }
