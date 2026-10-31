@@ -1,0 +1,24 @@
+{
+  "scenario": "hello-tas",
+  "outcome": "pass",
+  "expectation": "fetch(..., {targetAddressSpace:'loopback'}) returns 200",
+  "observed": {
+    "result": {
+      "ok": true,
+      "status": 200,
+      "product": "zilo-spike-agent",
+      "ms": 13
+    },
+    "permissions": {
+      "loopback-network": "granted",
+      "local-network": "granted"
+    },
+    "grant": "granted via context.grantPermissions(local-network-access)",
+    "targetAddressSpace": "loopback"
+  },
+  "project": "chromium",
+  "os": "linux",
+  "browserVersion": "156.0.8078.4",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:04:40.485Z"
+}

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zilo SP-1a transport test page</title>
+<style>
+  body{font:14px system-ui,sans-serif;margin:16px;max-width:980px}
+  button{margin:2px 4px 2px 0}
+  pre{background:#f4f4f4;padding:8px;white-space:pre-wrap;word-break:break-all;font-size:12px}
+  fieldset{margin:8px 0}
+</style>
+</head>
+<body>
+<h1>Zilo SP-1a transport test page</h1>
+<p>Origin: <code id="origin"></code> · secure context: <code id="secure"></code> · variant: <code id="variant"></code></p>
+<label>Bearer token (typed, never put in a URL): <input id="token" type="password" autocomplete="off" size="40"></label>
+<fieldset><legend>Loopback fetch</legend>
+  <button id="btn-hello-tas">hello with targetAddressSpace</button>
+  <button id="btn-hello-plain">hello without option</button>
+  <button id="btn-events">SSE over fetch streaming</button>
+  <button id="btn-blob">blob 1 MiB</button>
+  <button id="btn-perm">query permissions</button>
+  <button id="btn-forge-mint">forged bridge mint (negative)</button>
+</fieldset>
+<fieldset><legend>S2 popup bridge</legend>
+  <button id="btn-bridge">open bridge + handshake + relay</button>
+  <button id="btn-bridge-close">close bridge</button>
+</fieldset>
+<pre id="log"></pre>
+<script type="application/json" id="zilo-app-config">__ZILO_APP_CONFIG__</script>
+<script src="/app.js"></script>
+</body>
+</html>
