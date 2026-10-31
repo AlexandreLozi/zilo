@@ -1,0 +1,21 @@
+{
+  "name": "@zilo/demo",
+  "version": "0.0.0",
+  "description": "Zilo demo app and Playwright E2E target.",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p e2e/tsconfig.json --noEmit",
+    "lint": "eslint . && prettier --check . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "test": "vitest run",
+    "e2e": "playwright test -c e2e/playwright.config.ts"
+  },
+  "dependencies": {
+    "@zilo/sdk": "workspace:*",
+    "@zilo/ui": "workspace:*"
+  }
+}

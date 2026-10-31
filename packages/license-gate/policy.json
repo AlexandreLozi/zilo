@@ -1,0 +1,18 @@
+{
+  "$comment": "Default-deny licence policy (D-002). Anything not allowed here fails CI, including unknown licences. GPL and AGPL may never be allowlisted. Exceptions are version-specific and need a reviewed entry in docs/legal/exceptions.md.",
+  "allowed": [
+    "0BSD",
+    "Apache-2.0",
+    "BlueOak-1.0.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "CC0-1.0",
+    "ISC",
+    "MIT",
+    "Unlicense"
+  ],
+  "devOnlyAllowed": {
+    "MPL-2.0": "Weak, file-level copyleft. Allowed only for build tooling that never ships in a Zilo bundle (today: lightningcss via Vite)."
+  },
+  "exceptions": []
+}
