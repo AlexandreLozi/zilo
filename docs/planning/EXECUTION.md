@@ -172,12 +172,14 @@ Tracked in VALIDATION.md.
 ## 4b. BE lane status (GPT edits)
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
 |---|---|---|---|---|---|---|
-| T02 | running | t02-naps2-spike | ctx_94f23f46bf05 | pending Claude review | pending | |
+| T02 | retry running; preserved dirty worktree | t02-naps2-spike | ctx_975ddc338e6a (retry of abandoned ctx_94f23f46bf05) | Opus to dispatch Claude after handoff | pending; shipping graph blocked | |
 | T02-L | author settled; terminal released; integration handed to T02 | t02-license-gate | ctx_8d851f7ca858 | combined T02 Claude review | author reports 65 tests pass; review pending | |
-| T04b | code reviewed; native validation active | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce (t04b-review-r1; runtime retained/user_takeover) | Claude code PASS; native Windows pending | |
-| T04b-V | running; evidence only | t04b-native-validation | ctx_59467948111b | masters review evidence | pending native Windows; macOS/hosted CI pending | |
-| T03 | not started | | | | | |
-| T06 | not started | | | | | |
+| T04b | merged under D-010a; old terminal cleanup release_unknown | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce | Claude code PASS; Windows runtime blocked-by-host-SAC; macOS/hosted CI pending | 9e43bf7 |
+| T04b-V | abandoned/superseded by Claude evidence; old resource released | t04b-native-validation | ctx_59467948111b | masters reviewed replacement evidence | no resumed Windows runtime execution (OD-6) | |
+| T10 | GPT high review active | t10-contract; t10-review-r1 | Claude author @5410735 (OD-2) | ctx_26ab47284cd5 | pending contract/interim/D-004a review | |
+| T03 | Claude-authored; GPT review queued after priorities | t03-packaging-dryrun | author @c00f066 (OD-2) | pending GPT medium review | pending | |
+| T12-proto | Claude-authored; GPT review queued after T03 | t12-proto-pages | author @0afb9c4 (OD-2) | pending GPT medium review | pending | |
+| T06 | blocked on joint ICA/worker/image strategy and T11 guard retirement | | | | shipping graph blocked | |
 
 ## 5. Concurrency bounds
 - **Per lane at once:** at most 4 live authors, 2 live reviewers, and 1 fix dispatch per task.
