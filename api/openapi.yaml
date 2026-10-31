@@ -1439,99 +1439,100 @@ components:
       type: object
       description: |
         Effective limits of this agent (CONTRACT.md §10). Values are the defaults unless
-        installer config overrides them. Clients must tolerate missing or additional fields.
+        installer config overrides them. `x-zilo-default` gives the default value. Clients must
+        tolerate missing or additional fields.
       properties:
         maxPagesPerJob:
           type: integer
           minimum: 1
-          default: 500
+          x-zilo-default: 500
         maxPixelsPerPage:
           type: integer
           minimum: 1
-          default: 150000000
+          x-zilo-default: 150000000
         maxResolutionDpi:
           type: integer
           minimum: 1
-          default: 1200
+          x-zilo-default: 1200
         maxJobBytes:
           type: integer
           minimum: 1
-          default: 2147483648
+          x-zilo-default: 2147483648
         maxStoreBytes:
           type: integer
           minimum: 1
-          default: 8589934592
+          x-zilo-default: 8589934592
         maxExportBytes:
           type: integer
           minimum: 1
-          default: 1073741824
+          x-zilo-default: 1073741824
         maxJobDurationSeconds:
           type: integer
           minimum: 1
-          default: 1800
+          x-zilo-default: 1800
         pageTimeoutSeconds:
           type: integer
           minimum: 1
-          default: 120
+          x-zilo-default: 120
         discoveryTimeoutSeconds:
           type: integer
           minimum: 1
-          default: 15
+          x-zilo-default: 15
         maxActiveJobsPerDevice:
           type: integer
           const: 1
         maxActiveJobsPerOrigin:
           type: integer
           minimum: 1
-          default: 2
+          x-zilo-default: 2
         maxJobsPerSession:
           type: integer
           minimum: 1
-          default: 8
+          x-zilo-default: 8
         maxSessionsPerOrigin:
           type: integer
           minimum: 1
-          default: 16
+          x-zilo-default: 16
         maxEventStreamsPerJob:
           type: integer
           minimum: 1
-          default: 4
+          x-zilo-default: 4
         maxConcurrentExportsPerSession:
           type: integer
           minimum: 1
-          default: 2
+          x-zilo-default: 2
         maxRequestBodyBytes:
           type: integer
           minimum: 1
-          default: 65536
+          x-zilo-default: 65536
         tokenTtlSeconds:
           type: integer
           minimum: 1
-          default: 3600
+          x-zilo-default: 3600
         tokenRenewGraceSeconds:
           type: integer
           minimum: 0
-          default: 60
+          x-zilo-default: 60
         sessionMaxSeconds:
           type: integer
           minimum: 1
-          default: 86400
+          x-zilo-default: 86400
         jobIdleTtlSeconds:
           type: integer
           minimum: 1
-          default: 3600
+          x-zilo-default: 3600
         jobMaxTtlSeconds:
           type: integer
           minimum: 1
-          default: 28800
+          x-zilo-default: 28800
         tombstoneSeconds:
           type: integer
           minimum: 0
-          default: 300
+          x-zilo-default: 300
         sseHeartbeatSeconds:
           type: integer
           minimum: 1
-          default: 15
+          x-zilo-default: 15
 
     # ---------------------------------------------------------------- auth
     ConsentState:
@@ -1840,17 +1841,15 @@ components:
           $ref: '#/components/schemas/ScanSettings'
         strict:
           type: boolean
-          default: false
           description: |
             When true, any setting the device cannot honour exactly returns
-            `422 unsupported-capability` instead of being coerced.
+            `422 unsupported-capability` instead of being coerced. Default: false.
     CancelJobRequest:
       type: object
       properties:
         discardPages:
           type: boolean
-          default: false
-          description: Dispose the job (and delete its pages) once it is cancelled.
+          description: "Dispose the job (and delete its pages) once it is cancelled. Default: false."
     EffectiveSettings:
       type: object
       description: |
@@ -2039,16 +2038,14 @@ components:
           type: integer
           minimum: 1
           maximum: 100
-          default: 85
-          description: JPEG quality, for `jpeg` output and for JPEG-compressed images inside PDF and TIFF.
+          description: JPEG quality (default 85), for `jpeg` output and for JPEG-compressed images inside PDF and TIFF.
         filename:
           type: string
           description: Base name, without extension, for `Content-Disposition`. The agent sanitises it.
           maxLength: 128
         deleteAfterExport:
           type: boolean
-          default: false
-          description: Opt-in. Dispose the job once this export has been written completely (D-004).
+          description: Opt-in, default false. Dispose the job once this export has been written completely (D-004).
 
     # ---------------------------------------------------------------- events
     EventType:
