@@ -9,7 +9,7 @@
       "error": "TypeError",
       "message": "Load failed",
       "timedOut": false,
-      "ms": 1
+      "ms": 0
     },
     "blob": {
       "ok": false,
@@ -30,5 +30,5 @@
   "os": "linux",
   "browserVersion": "27.2",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:16:31.965Z"
+  "recordedAt": "2026-10-31T16:28:02.057Z"
 }

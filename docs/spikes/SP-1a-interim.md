@@ -138,3 +138,8 @@ plus the minted capability.
    open item.
 4. The bridge binary transfer is bounded only by a size cap and one in-flight transfer. T25 still
    needs credit-based backpressure for multi-page jobs.
+
+## Update (same day): WebKit
+Playwright WebKit 27.2, on Linux and Windows, is not Safari. In it, the HTTPS page's fetch to
+`http://127.0.0.1` is **blocked as mixed content before sending**, so the agent sees nothing. The S2
+bridge works, and COOP `same-origin-allow-popups` keeps it working. See `SP-1a.md`.
