@@ -166,8 +166,8 @@ Tracked in VALIDATION.md.
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
 |---|---|---|---|---|---|---|
 | T01 | authoring | t01-transport-spike | task_7ad475b61ca4 / ctx_3e1242a839cb (claude opus-5-5 xhigh) | | | |
-| T04a | in review r1 (re-dispatched ctx_4cd437852043 after outage) | t04a-web-scaffold @1842f4e | task_87c003f8c96a / ctx_af0edf2dc598 (retained) | task_cc19d0403fad / ctx_6f602d7fa893 (opencode GPT-6.1 Sol high, branch t04a-review-r1) | | |
-| T05 | authored @d667952; GPT review queued for GPT resume (OD-1) | t05-design-spec | task_d61d82f04b49 / ctx_dff3213d1716 (retained) | | | |
+| T04a | r1 verdict changes (1 minor: Node 24); fix r1 running ctx_e8380f29bd1f (claude low) | t04a-web-scaffold | | r1 ctx_4cd437852043 (released), report on t04a-review-r1@4b68400 | changes | |
+| T05 | authored @d667952; GPT review r1 running ctx_e1ede2fc43e4 (t05-review-r1) | t05-design-spec | task_d61d82f04b49 | ctx_e1ede2fc43e4 | | |
 
 ## 4b. BE lane status (GPT edits)
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
