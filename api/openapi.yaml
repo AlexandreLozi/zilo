@@ -1,0 +1,2271 @@
+openapi: 3.1.0
+info:
+  title: Zilo local agent API
+  version: 1.0.0-draft.1
+  summary: Wire contract between the Zilo local agent and @zilo/sdk.
+  description: |
+    Normative wire contract for `/zilo/v1` (D-005). `api/CONTRACT.md` is normative alongside this
+    file. It holds the rules that OpenAPI cannot express: check order, CORS tiers, the job state
+    machine, SSE replay, limits and retention.
+
+    Provenance markers:
+    - `x-zilo-source: SP-1a-interim (unreviewed)` marks a rule that depends on the unreviewed T01
+      interim note (OD-2).
+    - `x-zilo-source: D-004a (pending GPT)` marks a rule that depends on the proposed pre-auth
+      consent tier, which is not yet in force.
+
+    Both kinds are listed in CONTRACT.md, "Unreviewed inputs".
+
+    Enums in **responses** are open. A client must accept and ignore values it does not know
+    (`x-zilo-open-enum: true`). Clients must also ignore unknown object fields and unknown SSE
+    event types.
+  license:
+    name: Proprietary (Zilo project)
+    url: https://example.invalid/zilo/license
+  x-zilo-status: draft for cross-model review (T10, Claude-authored under OD-2)
+servers:
+  - url: http://127.0.0.1:{port}
+    description: |
+      Per-user agent on loopback, addressed by IP literal (D-003). The port is the fixed agent port
+      or one of its two fallbacks. The numbers are set by T11, not by this contract.
+    variables:
+      port:
+        default: '48100'
+        description: Placeholder. T11 fixes the primary port and the two fallbacks.
+tags:
+  - name: discovery
+    description: Agent identity and capability negotiation.
+  - name: auth
+    description: Consent for unknown origins, and bearer token issuance, renewal and revocation.
+  - name: devices
+    description: Scanner list, refresh and capabilities.
+  - name: jobs
+    description: Scan jobs, their state machine, cancel and dispose.
+  - name: events
+    description: Job events as server-sent events read through fetch streaming.
+  - name: pages
+    description: Scanned page metadata and image bytes.
+  - name: export
+    description: PDF, TIFF, JPEG and PNG export of selected pages.
+  - name: cors
+    description: CORS preflight. Served without authentication.
+security:
+  - bearer: []
+paths:
+  /zilo/v1/hello:
+    get:
+      tags: [discovery]
+      operationId: getHello
+      summary: Identify the agent and negotiate capabilities
+      description: |
+        Has no side effects. A plain `GET` without an `Authorization` header is a CORS simple
+        request, so it sends no preflight.
+
+        - **Without a bearer token**, or with a token that is not valid for the calling origin, the
+          response has `scope: public`. It holds only `product`, `protocol` and the flow
+          capabilities (D-004a, pending GPT).
+        - **With a valid bearer token** for the calling origin, the response has `scope: full`.
+          That adds `version`, `os`, `arch`, `instanceId` and `limits`.
+
+        An invalid token on this endpoint never produces a 401. The response simply falls back to
+        `scope: public`.
+      x-zilo-source:
+        - D-004a (pending GPT)
+        - SP-1a-interim (unreviewed)
+      security:
+        - {}
+        - bearer: []
+      responses:
+        '200':
+          description: Agent identity.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Zilo-Request-Id:
+              $ref: '#/components/headers/ZiloRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hello'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    options:
+      tags: [cors]
+      operationId: preflightHello
+      summary: CORS preflight for hello
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+  /zilo/v1/auth/consent:
+    get:
+      tags: [auth]
+      operationId: getConsent
+      summary: Read the calling origin's consent state
+      description: |
+        Returns the consent state of the calling origin. It never shows a prompt and never
+        changes state. The SDK polls it while the state is `pending`, at the interval given by
+        `pollAfterSeconds`.
+      x-zilo-source:
+        - D-004a (pending GPT)
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+      responses:
+        '200':
+          description: Consent state of the calling origin.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Retry-After:
+              $ref: '#/components/headers/RetryAfter'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentStatus'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    post:
+      tags: [auth]
+      operationId: requestConsent
+      summary: Ask the user to allow the calling origin (native prompt)
+      description: |
+        This is the **only** call that can show the native consent prompt (D-004). The SDK makes
+        it only during an active user interaction.
+
+        - **Origin already granted or baked:** `200`, with `state: granted`. No prompt is shown.
+        - **No consent on record:** the agent shows the prompt and returns `202`, with
+          `state: pending`.
+        - **A prompt for this origin is already open:** `202` with the same pending state. The
+          duplicate is coalesced, so no second prompt appears.
+        - **Another origin's prompt is open, or a per-origin or global limit is hit:** `429`
+          `rate-limited`, with `Retry-After`.
+        - **Denied and still in cool-down:** `403` `consent-denied`, with `Retry-After`.
+        - **Blocked from the tray:** `403` `consent-denied` with `blocked: true` and no
+          `Retry-After`. No prompt is shown, ever.
+      x-zilo-source:
+        - D-004a (pending GPT)
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+      responses:
+        '200':
+          description: Already granted. No prompt was shown.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentStatus'
+        '202':
+          description: Prompt shown, or coalesced with the open prompt. Poll `GET /zilo/v1/auth/consent`.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Retry-After:
+              $ref: '#/components/headers/RetryAfter'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentStatus'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    options:
+      tags: [cors]
+      operationId: preflightConsent
+      summary: CORS preflight for consent
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+  /zilo/v1/auth/token:
+    post:
+      tags: [auth]
+      operationId: issueToken
+      summary: Issue a bearer token and session for the calling origin
+      description: |
+        Mints a random bearer token bound to the calling origin. It starts a new **session**, and
+        jobs and pages belong to that origin and session (D-004).
+
+        - Succeeds only if the origin has granted consent, or is installer-baked. Baked origins
+          skip the prompt but still authenticate here (D-004).
+        - Never mints for a `null`, opaque or loopback origin (D-004a).
+        - Never shows a prompt.
+        - Fails with `consent-pending`, `consent-denied` or `unauthorized-origin` when the origin
+          is not allowed.
+      x-zilo-source:
+        - D-004a (pending GPT)
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRequest'
+      responses:
+        '201':
+          description: Token issued; a new session started.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    delete:
+      tags: [auth]
+      operationId: revokeToken
+      summary: End the current session (self-revocation)
+      description: |
+        Revokes the presented token, and every token renewed from the same session. Every job of
+        the session is disposed (cancelled first if active). Later use of the token yields
+        `token-revoked`.
+      responses:
+        '204':
+          description: Session ended.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    options:
+      tags: [cors]
+      operationId: preflightToken
+      summary: CORS preflight for token
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+  /zilo/v1/auth/token/renew:
+    post:
+      tags: [auth]
+      operationId: renewToken
+      summary: Exchange a valid token for a fresh one in the same session
+      description: |
+        Returns a new token for the same session, origin and jobs. The presented token stays
+        valid for `limits.tokenRenewGraceSeconds`, then expires.
+
+        Renewal never extends the session past `sessionExpiresAt`. After that, call
+        `POST /zilo/v1/auth/token` again. Consented and baked origins get no prompt then, but the
+        new session starts without jobs.
+      responses:
+        '200':
+          description: Renewed.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    options:
+      tags: [cors]
+      operationId: preflightTokenRenew
+      summary: CORS preflight for token renewal
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+  /zilo/v1/devices:
+    get:
+      tags: [devices]
+      operationId: listDevices
+      summary: List known scanners (cached; no side effects)
+      description: |
+        Returns the agent's current device list, including the Zilo Virtual Scanner when it is
+        enabled. The list is read from cache: this call never starts discovery. To rediscover,
+        use `POST /zilo/v1/devices/refresh`.
+      responses:
+        '200':
+          description: Device list.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    options:
+      tags: [cors]
+      operationId: preflightDevices
+      summary: CORS preflight for devices
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+  /zilo/v1/devices/refresh:
+    post:
+      tags: [devices]
+      operationId: refreshDevices
+      summary: Rediscover scanners and return the new list
+      description: |
+        Runs discovery on every driver, bounded by `limits.discoveryTimeoutSeconds`, then returns
+        the list. If a discovery is already running, the call joins it instead of starting
+        another. Drivers that time out keep their last known devices and are listed in
+        `discovery.incompleteDrivers`.
+      responses:
+        '200':
+          description: Device list after discovery.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    options:
+      tags: [cors]
+      operationId: preflightDevicesRefresh
+      summary: CORS preflight for device refresh
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+  /zilo/v1/devices/{deviceId}/caps:
+    parameters:
+      - $ref: '#/components/parameters/DeviceId'
+    get:
+      tags: [devices]
+      operationId: getDeviceCaps
+      summary: Read a device's capabilities
+      description: |
+        Reads the device's capabilities for each source it offers. The driver may need to open
+        the device for this. If the device is in use, the call returns `device-busy`.
+      responses:
+        '200':
+          description: Capabilities.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceCaps'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        '504':
+          $ref: '#/components/responses/DeviceTimeout'
+    options:
+      tags: [cors]
+      operationId: preflightDeviceCaps
+      summary: CORS preflight for device caps
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+  /zilo/v1/jobs:
+    get:
+      tags: [jobs]
+      operationId: listJobs
+      summary: List the jobs of the current session
+      description: |
+        Lists only the jobs of the calling session. Disposed jobs stay listed only while their
+        tombstone lasts.
+      responses:
+        '200':
+          description: Jobs of this session.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [jobs]
+      operationId: createJob
+      summary: Create a scan job and start scanning
+      description: |
+        Validates the settings against the device's capabilities, resolves the effective
+        settings, and starts the job in state `queued`.
+
+        - A device runs at most one active job at a time. A busy device returns `device-busy`;
+          the agent does not queue behind another job.
+        - With `strict: false` (the default), the agent may coerce `resolution` and `pageSize` to
+          the nearest supported value and reports each change in `adjustments`.
+        - `source` and `colorMode` are never coerced.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobRequest'
+      responses:
+        '201':
+          description: Job created.
+          headers:
+            Location:
+              description: URL path of the new job, `/zilo/v1/jobs/{jobId}`.
+              schema:
+                type: string
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '413':
+          $ref: '#/components/responses/TooLarge'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+    options:
+      tags: [cors]
+      operationId: preflightJobs
+      summary: CORS preflight for jobs
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+  /zilo/v1/jobs/{jobId}:
+    parameters:
+      - $ref: '#/components/parameters/JobId'
+    get:
+      tags: [jobs]
+      operationId: getJob
+      summary: Read a job snapshot
+      description: |
+        Returns the job if the calling session owns it. A job of another session or origin, or
+        a job that never existed, returns `404 not-found`: existence is never revealed.
+      responses:
+        '200':
+          description: Job snapshot.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [jobs]
+      operationId: disposeJob
+      summary: Dispose a job and delete its pages
+      description: |
+        Disposes the job. An active job (`queued`, `scanning`) is cancelled first, which emits
+        `state: cancelled`, then `state: disposed`. Every page and temp file is deleted.
+
+        The call is idempotent: disposing an already disposed job (inside the tombstone window)
+        returns `204`.
+      responses:
+        '204':
+          description: Disposed.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    options:
+      tags: [cors]
+      operationId: preflightJob
+      summary: CORS preflight for a job
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+  /zilo/v1/jobs/{jobId}/cancel:
+    parameters:
+      - $ref: '#/components/parameters/JobId'
+    post:
+      tags: [jobs]
+      operationId: cancelJob
+      summary: Stop scanning; keep pages unless asked to discard them
+      description: |
+        Requests cancellation of an active job. The job moves to `cancelled` once the device has
+        stopped. Pages scanned before that point are **kept** unless `discardPages` is true; in
+        that case the job is disposed right after it reaches `cancelled`.
+
+        On a job that is already terminal, the call is a no-op and returns the current job
+        (`200`). It never discards pages there; use `DELETE` instead.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelJobRequest'
+      responses:
+        '200':
+          description: Job already terminal; nothing changed.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '202':
+          description: Cancellation accepted. Watch the event stream for `state` changes.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    options:
+      tags: [cors]
+      operationId: preflightJobCancel
+      summary: CORS preflight for job cancel
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+  /zilo/v1/jobs/{jobId}/events:
+    parameters:
+      - $ref: '#/components/parameters/JobId'
+    get:
+      tags: [events]
+      operationId: streamJobEvents
+      summary: Stream job events (SSE over fetch)
+      description: |
+        A `text/event-stream` response, read with `fetch` streaming. `EventSource` cannot send
+        `Authorization`, so it is not used.
+
+        Each event has this form:
+        ```
+        id: <seq>
+        event: <type>
+        data: <one-line JSON matching JobEvent>
+        ```
+
+        - `seq` is per job, starts at 1 and strictly increases. Gaps are allowed, because
+          superseded `progress` events are not replayed.
+        - **Reconnect:** send `Last-Event-ID: <seq>`. The agent replays every retained event with
+          a larger `seq`, then continues live.
+        - **Replay window:** every `state`, `page`, `error` and `done` event is kept for the life
+          of the job. Of the `progress` events, only the latest is kept.
+        - An `id` older than the window cannot occur for those types. A `Last-Event-ID` larger
+          than the current `seq`, or one that is not an integer, returns `400 invalid-request`.
+        - **Heartbeat:** a comment line (`: hb`) is sent every `limits.sseHeartbeatSeconds`.
+        - The stream closes after `done`, or after `state: disposed`. A stream opened after the
+          job ended replays the retained events, then closes.
+      x-zilo-source:
+        - SP-1a-interim (unreviewed)
+      parameters:
+        - name: Last-Event-ID
+          in: header
+          required: false
+          description: Last `seq` the client processed. Allowed by the CORS preflight.
+          schema:
+            type: string
+            pattern: '^[0-9]{1,15}$'
+      responses:
+        '200':
+          description: Event stream.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: SSE frames whose `data` lines each hold one `JobEvent` JSON object.
+              x-zilo-event-schema:
+                $ref: '#/components/schemas/JobEvent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    options:
+      tags: [cors]
+      operationId: preflightJobEvents
+      summary: CORS preflight for job events
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+  /zilo/v1/jobs/{jobId}/pages:
+    parameters:
+      - $ref: '#/components/parameters/JobId'
+    get:
+      tags: [pages]
+      operationId: listPages
+      summary: List page metadata for a job
+      responses:
+        '200':
+          description: Pages in index order.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    options:
+      tags: [cors]
+      operationId: preflightPages
+      summary: CORS preflight for pages
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+  /zilo/v1/jobs/{jobId}/pages/{index}:
+    parameters:
+      - $ref: '#/components/parameters/JobId'
+      - $ref: '#/components/parameters/PageIndex'
+    get:
+      tags: [pages]
+      operationId: getPageImage
+      summary: Get a page image, or a thumbnail with maxWidth
+      description: |
+        Returns the image bytes of the page as scanned, with no rotation applied. Rotation is an
+        export option.
+
+        - `maxWidth` scales the image down, preserving the aspect ratio. It never scales up.
+        - Page bytes are immutable, so the `ETag` (strong) is stable for a given page, `format`,
+          `maxWidth` and `quality`.
+        - The response carries `Cache-Control: no-store`, so documents are never written to the
+          browser HTTP cache. The SDK may keep an in-memory cache and revalidate it with
+          `If-None-Match`, which returns `304`.
+      parameters:
+        - name: format
+          in: query
+          required: false
+          description: |
+            Image encoding. When omitted: `png` for `bw` pages, `jpeg` otherwise.
+          schema:
+            $ref: '#/components/schemas/ImageFormat'
+        - name: maxWidth
+          in: query
+          required: false
+          description: Thumbnail width bound in pixels. Never upscales.
+          schema:
+            type: integer
+            minimum: 16
+            maximum: 4096
+        - name: quality
+          in: query
+          required: false
+          description: JPEG quality, 1 to 100. Ignored for PNG. Default 85.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: If-None-Match
+          in: header
+          required: false
+          description: ETag from an earlier response for the same variant.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Image bytes.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Content-Length:
+              $ref: '#/components/headers/ContentLength'
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                contentMediaType: image/jpeg
+            image/png:
+              schema:
+                type: string
+                contentMediaType: image/png
+        '304':
+          description: Not modified; the client's copy for this ETag is current.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    options:
+      tags: [cors]
+      operationId: preflightPage
+      summary: CORS preflight for a page
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+  /zilo/v1/jobs/{jobId}/export:
+    parameters:
+      - $ref: '#/components/parameters/JobId'
+    post:
+      tags: [export]
+      operationId: exportJob
+      summary: Export selected pages as PDF, TIFF, JPEG or PNG
+      description: |
+        Renders the selected pages, in the order given and with each page's rotation, and
+        returns the file as the response body.
+
+        - **Formats:** `pdf` and `tiff` produce one multi-page file. `jpeg` and `png` produce
+          **one page per request**: `pages` must then hold exactly one entry, and the SDK loops
+          over the pages. See CONTRACT.md §8 for why this is not a zip.
+        - **Retries and repeats:** an export is a pure function of the stored pages and the
+          request. It can be retried and repeated any number of times, and pages are kept
+          (D-004).
+        - **`deleteAfterExport: true`** (opt-in) disposes the job once the body has been
+          completely written. It is allowed only on a terminal job; otherwise the call returns
+          `409 invalid-state`. If the export fails, nothing is deleted.
+        - **During scanning:** an active job may export the pages it already has.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+      responses:
+        '200':
+          description: The exported file.
+          headers:
+            Content-Disposition:
+              description: '`attachment; filename="<name>.<ext>"`. The SDK uses it as the `File` name.'
+              schema:
+                type: string
+            Content-Length:
+              $ref: '#/components/headers/ContentLength'
+            Zilo-Page-Count:
+              description: Number of pages in the exported file.
+              schema:
+                type: integer
+                minimum: 1
+            Access-Control-Allow-Origin:
+              $ref: '#/components/headers/AccessControlAllowOrigin'
+            Vary:
+              $ref: '#/components/headers/Vary'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/pdf:
+              schema:
+                type: string
+                contentMediaType: application/pdf
+            image/tiff:
+              schema:
+                type: string
+                contentMediaType: image/tiff
+            image/jpeg:
+              schema:
+                type: string
+                contentMediaType: image/jpeg
+            image/png:
+              schema:
+                type: string
+                contentMediaType: image/png
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '413':
+          $ref: '#/components/responses/TooLarge'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    options:
+      tags: [cors]
+      operationId: preflightExport
+      summary: CORS preflight for export
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/AccessControlRequestMethod'
+        - $ref: '#/components/parameters/AccessControlRequestHeaders'
+      responses:
+        '204':
+          $ref: '#/components/responses/Preflight'
+        '403':
+          $ref: '#/components/responses/PreflightDenied'
+
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      description: |
+        Random, origin-bound bearer token from `POST /zilo/v1/auth/token`. It travels only in the
+        `Authorization` header, never in a URL (D-004). The request `Origin` must equal the
+        token's origin.
+
+  parameters:
+    Origin:
+      name: Origin
+      in: header
+      required: false
+      description: |
+        Set by the browser. This is the serialised origin the agent authorises against. Requests
+        whose Origin is missing, `null` or opaque get no CORS headers (D-004a).
+      schema:
+        type: string
+    AccessControlRequestMethod:
+      name: Access-Control-Request-Method
+      in: header
+      required: true
+      description: Set by the browser on a preflight.
+      schema:
+        type: string
+        enum: [GET, POST, DELETE]
+    AccessControlRequestHeaders:
+      name: Access-Control-Request-Headers
+      in: header
+      required: false
+      description: Set by the browser on a preflight, e.g. `authorization,content-type`.
+      schema:
+        type: string
+    DeviceId:
+      name: deviceId
+      in: path
+      required: true
+      description: Opaque device ID from the device list.
+      schema:
+        $ref: '#/components/schemas/DeviceId'
+    JobId:
+      name: jobId
+      in: path
+      required: true
+      description: Opaque job ID.
+      schema:
+        $ref: '#/components/schemas/JobId'
+    PageIndex:
+      name: index
+      in: path
+      required: true
+      description: 0-based page index within the job.
+      schema:
+        type: integer
+        minimum: 0
+
+  headers:
+    AccessControlAllowOrigin:
+      description: |
+        Exact reflection of the request `Origin`, only when CORS applies (CONTRACT.md §2). Never
+        `*`. It is also sent on error responses, so the SDK can read the problem `code`.
+      x-zilo-source:
+        - SP-1a-interim (unreviewed)
+      schema:
+        type: string
+    Vary:
+      description: Includes `Origin` on every response.
+      x-zilo-source:
+        - SP-1a-interim (unreviewed)
+      schema:
+        type: string
+    CacheControlNoStore:
+      description: '`no-store` on every `/zilo/v1` response.'
+      x-zilo-source:
+        - SP-1a-interim (unreviewed)
+      schema:
+        type: string
+        const: no-store
+    ZiloRequestId:
+      description: Opaque per-request ID for "Copy details" and agent logs. Exposed through CORS.
+      schema:
+        type: string
+    RetryAfter:
+      description: Seconds before retrying (RFC 9110). Mirrors `retryAfterSeconds` in the body.
+      schema:
+        type: integer
+        minimum: 0
+    ETag:
+      description: Strong ETag of the returned variant.
+      schema:
+        type: string
+    ContentLength:
+      description: Body length in bytes.
+      schema:
+        type: integer
+        minimum: 0
+    AccessControlAllowMethods:
+      description: '`GET, POST, DELETE`.'
+      x-zilo-source:
+        - SP-1a-interim (unreviewed)
+      schema:
+        type: string
+    AccessControlAllowHeaders:
+      description: '`Authorization, Content-Type, Last-Event-ID, If-None-Match`.'
+      x-zilo-source:
+        - SP-1a-interim (unreviewed)
+      schema:
+        type: string
+    AccessControlMaxAge:
+      description: Preflight cache lifetime in seconds (600).
+      schema:
+        type: integer
+    WwwAuthenticate:
+      description: '`Bearer error="invalid_token"` on 401.'
+      schema:
+        type: string
+
+  responses:
+    Preflight:
+      description: |
+        Preflight accepted. It needs no authentication and returns no body. It does not send
+        `Access-Control-Allow-Private-Network` or any other PNA/LNA header.
+      x-zilo-source:
+        - SP-1a-interim (unreviewed)
+        - D-004a (pending GPT)
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: '#/components/headers/AccessControlAllowOrigin'
+        Access-Control-Allow-Methods:
+          $ref: '#/components/headers/AccessControlAllowMethods'
+        Access-Control-Allow-Headers:
+          $ref: '#/components/headers/AccessControlAllowHeaders'
+        Access-Control-Max-Age:
+          $ref: '#/components/headers/AccessControlMaxAge'
+        Vary:
+          $ref: '#/components/headers/Vary'
+    PreflightDenied:
+      description: |
+        Preflight refused: the origin is not eligible for this path (CONTRACT.md §2), or the
+        `Host` is not allowed. The response has no CORS headers and no body, so the browser
+        reports a network error.
+      x-zilo-source:
+        - SP-1a-interim (unreviewed)
+    BadRequest:
+      description: '`invalid-request`.'
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: '#/components/headers/AccessControlAllowOrigin'
+        Vary:
+          $ref: '#/components/headers/Vary'
+        Zilo-Request-Id:
+          $ref: '#/components/headers/ZiloRequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unauthorized:
+      description: |
+        `token-invalid` or `token-revoked`. CORS headers are present when the origin is allowed,
+        or when the presented token was issued to this origin.
+      headers:
+        WWW-Authenticate:
+          $ref: '#/components/headers/WwwAuthenticate'
+        Access-Control-Allow-Origin:
+          $ref: '#/components/headers/AccessControlAllowOrigin'
+        Vary:
+          $ref: '#/components/headers/Vary'
+        Zilo-Request-Id:
+          $ref: '#/components/headers/ZiloRequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Forbidden:
+      description: |
+        Several codes share this status:
+        - `host-denied` (no CORS headers);
+        - `unauthorized-origin` (no CORS headers outside the pre-auth tier);
+        - `consent-pending`;
+        - `consent-denied`;
+        - `permission`.
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: '#/components/headers/AccessControlAllowOrigin'
+        Vary:
+          $ref: '#/components/headers/Vary'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+        Zilo-Request-Id:
+          $ref: '#/components/headers/ZiloRequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: '`not-found`. Also returned for resources owned by another session or origin.'
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: '#/components/headers/AccessControlAllowOrigin'
+        Vary:
+          $ref: '#/components/headers/Vary'
+        Zilo-Request-Id:
+          $ref: '#/components/headers/ZiloRequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Conflict:
+      description: |
+        Several codes share this status:
+        - `device-busy`;
+        - `invalid-state`;
+        - device conditions at job start (`feeder-empty`, `paper-jam`, `cover-open`).
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: '#/components/headers/AccessControlAllowOrigin'
+        Vary:
+          $ref: '#/components/headers/Vary'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+        Zilo-Request-Id:
+          $ref: '#/components/headers/ZiloRequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    TooLarge:
+      description: '`limits-exceeded` (a size, page, pixel or duration limit).'
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: '#/components/headers/AccessControlAllowOrigin'
+        Vary:
+          $ref: '#/components/headers/Vary'
+        Zilo-Request-Id:
+          $ref: '#/components/headers/ZiloRequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unprocessable:
+      description: '`invalid-settings`, `unsupported-capability` or `invalid-request`.'
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: '#/components/headers/AccessControlAllowOrigin'
+        Vary:
+          $ref: '#/components/headers/Vary'
+        Zilo-Request-Id:
+          $ref: '#/components/headers/ZiloRequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    TooManyRequests:
+      description: '`rate-limited`, or `limits-exceeded` for a concurrency quota.'
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: '#/components/headers/AccessControlAllowOrigin'
+        Vary:
+          $ref: '#/components/headers/Vary'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+        Zilo-Request-Id:
+          $ref: '#/components/headers/ZiloRequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    ServerError:
+      description: '`export-failed` or `unknown`.'
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: '#/components/headers/AccessControlAllowOrigin'
+        Vary:
+          $ref: '#/components/headers/Vary'
+        Zilo-Request-Id:
+          $ref: '#/components/headers/ZiloRequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unavailable:
+      description: '`disconnected` or `agent-unavailable`.'
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: '#/components/headers/AccessControlAllowOrigin'
+        Vary:
+          $ref: '#/components/headers/Vary'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+        Zilo-Request-Id:
+          $ref: '#/components/headers/ZiloRequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    DeviceTimeout:
+      description: '`timeout`.'
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: '#/components/headers/AccessControlAllowOrigin'
+        Vary:
+          $ref: '#/components/headers/Vary'
+        Zilo-Request-Id:
+          $ref: '#/components/headers/ZiloRequestId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+  schemas:
+    # ---------------------------------------------------------------- identifiers
+    DeviceId:
+      type: string
+      description: |
+        Opaque and URL-path-safe. It is stable for one physical route (device plus driver) for as
+        long as the agent install sees that device. Clients must not parse it.
+      pattern: '^[A-Za-z0-9._~-]{1,128}$'
+    JobId:
+      type: string
+      description: Opaque, random, URL-path-safe. It is never reused.
+      pattern: '^[A-Za-z0-9_-]{16,64}$'
+    SessionId:
+      type: string
+      description: Opaque session ID. It is not a credential.
+      pattern: '^[A-Za-z0-9_-]{16,64}$'
+    Timestamp:
+      type: string
+      format: date-time
+      description: RFC 3339, UTC.
+
+    # ---------------------------------------------------------------- discovery
+    Hello:
+      type: object
+      description: |
+        Always present: `product`, `scope`, `protocol` and `capabilities`. Present only when
+        `scope` is `full` (valid bearer for an allowed origin): `version`, `os`, `arch`,
+        `instanceId` and `limits` (D-004a).
+      required: [product, scope, protocol, capabilities]
+      properties:
+        product:
+          type: string
+          const: zilo
+        scope:
+          type: string
+          enum: [public, full]
+          description: '`public` for an unauthenticated or not-yet-allowed caller, `full` otherwise.'
+        protocol:
+          $ref: '#/components/schemas/ProtocolRange'
+        capabilities:
+          type: array
+          description: |
+            Capability flags (CONTRACT.md §1.3). With `scope: public` the agent lists only the
+            flow capabilities: `auth.consent`, `auth.token`, and the transport flags. Unknown
+            flags must be ignored.
+          uniqueItems: true
+          items:
+            type: string
+            pattern: '^[a-z0-9]+(\.[a-z0-9-]+)+$'
+        version:
+          type: string
+          description: "Agent version, SemVer 2.0.0. Present only with `scope: full`."
+          pattern: '^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$'
+        os:
+          type: string
+          enum: [windows, macos, linux]
+          x-zilo-open-enum: true
+          description: "Present only with `scope: full`."
+        arch:
+          type: string
+          enum: [x64, arm64, x86]
+          x-zilo-open-enum: true
+          description: "Process architecture of the agent. Present only with `scope: full`."
+        instanceId:
+          type: string
+          description: |
+            Random value chosen at each agent start. A change means the agent restarted, and
+            every token and job is gone. Present only with `scope: full`.
+        limits:
+          $ref: '#/components/schemas/Limits'
+    ProtocolRange:
+      type: object
+      description: |
+        Protocol versions this agent serves, as `major.minor`. The major version equals the path
+        version (`/zilo/v1` means major 1). The minor version counts additive changes.
+        Capabilities, not the minor number, gate features.
+      required: [min, max]
+      properties:
+        min:
+          type: string
+          pattern: '^[0-9]+\.[0-9]+$'
+          examples: ['1.0']
+        max:
+          type: string
+          pattern: '^[0-9]+\.[0-9]+$'
+          examples: ['1.0']
+    Limits:
+      type: object
+      description: |
+        Effective limits of this agent (CONTRACT.md §10). Values are the defaults unless
+        installer config overrides them. Clients must tolerate missing or additional fields.
+      properties:
+        maxPagesPerJob:
+          type: integer
+          minimum: 1
+          default: 500
+        maxPixelsPerPage:
+          type: integer
+          minimum: 1
+          default: 150000000
+        maxResolutionDpi:
+          type: integer
+          minimum: 1
+          default: 1200
+        maxJobBytes:
+          type: integer
+          minimum: 1
+          default: 2147483648
+        maxStoreBytes:
+          type: integer
+          minimum: 1
+          default: 8589934592
+        maxExportBytes:
+          type: integer
+          minimum: 1
+          default: 1073741824
+        maxJobDurationSeconds:
+          type: integer
+          minimum: 1
+          default: 1800
+        pageTimeoutSeconds:
+          type: integer
+          minimum: 1
+          default: 120
+        discoveryTimeoutSeconds:
+          type: integer
+          minimum: 1
+          default: 15
+        maxActiveJobsPerDevice:
+          type: integer
+          const: 1
+        maxActiveJobsPerOrigin:
+          type: integer
+          minimum: 1
+          default: 2
+        maxJobsPerSession:
+          type: integer
+          minimum: 1
+          default: 8
+        maxSessionsPerOrigin:
+          type: integer
+          minimum: 1
+          default: 16
+        maxEventStreamsPerJob:
+          type: integer
+          minimum: 1
+          default: 4
+        maxConcurrentExportsPerSession:
+          type: integer
+          minimum: 1
+          default: 2
+        maxRequestBodyBytes:
+          type: integer
+          minimum: 1
+          default: 65536
+        tokenTtlSeconds:
+          type: integer
+          minimum: 1
+          default: 3600
+        tokenRenewGraceSeconds:
+          type: integer
+          minimum: 0
+          default: 60
+        sessionMaxSeconds:
+          type: integer
+          minimum: 1
+          default: 86400
+        jobIdleTtlSeconds:
+          type: integer
+          minimum: 1
+          default: 3600
+        jobMaxTtlSeconds:
+          type: integer
+          minimum: 1
+          default: 28800
+        tombstoneSeconds:
+          type: integer
+          minimum: 0
+          default: 300
+        sseHeartbeatSeconds:
+          type: integer
+          minimum: 1
+          default: 15
+
+    # ---------------------------------------------------------------- auth
+    ConsentState:
+      type: string
+      description: |
+        - `none`: no consent on record. `POST /zilo/v1/auth/consent` shows the prompt.
+        - `pending`: a prompt for this origin is open.
+        - `granted`: consented by the user, or baked by the installer (`managed: true`).
+        - `denied`: denied, and the cool-down is running. After it ends the state returns to
+          `none`.
+        - `blocked`: blocked from the tray. The agent never prompts for this origin again.
+      enum: [none, pending, granted, denied, blocked]
+      x-zilo-open-enum: true
+    ConsentStatus:
+      type: object
+      x-zilo-source:
+        - D-004a (pending GPT)
+      required: [origin, state]
+      properties:
+        origin:
+          type: string
+          description: The calling origin, exactly as the agent evaluated it.
+        state:
+          $ref: '#/components/schemas/ConsentState'
+        managed:
+          type: boolean
+          description: True when the origin is installer-baked (D-004).
+        pollAfterSeconds:
+          type: integer
+          minimum: 1
+          description: With `pending`, how long to wait before the next `GET`. Default 2.
+        promptExpiresAt:
+          $ref: '#/components/schemas/Timestamp'
+        retryAfterSeconds:
+          type: integer
+          minimum: 0
+          description: With `denied`, the seconds of cool-down left (T05 "Ask again in {minutes} min").
+    TokenRequest:
+      type: object
+      description: Optional diagnostics. Never used for authorisation.
+      properties:
+        sdk:
+          type: object
+          properties:
+            name:
+              type: string
+              maxLength: 64
+            version:
+              type: string
+              maxLength: 64
+    Token:
+      type: object
+      required: [token, tokenType, origin, sessionId, expiresAt, expiresIn, sessionExpiresAt]
+      properties:
+        token:
+          type: string
+          description: Opaque bearer secret with at least 256 bits of entropy. Never log it.
+          minLength: 43
+        tokenType:
+          type: string
+          const: Bearer
+        origin:
+          type: string
+          description: Origin the token is bound to.
+        sessionId:
+          $ref: '#/components/schemas/SessionId'
+        expiresAt:
+          $ref: '#/components/schemas/Timestamp'
+        expiresIn:
+          type: integer
+          minimum: 1
+          description: Seconds until `expiresAt`.
+        renewAfter:
+          $ref: '#/components/schemas/Timestamp'
+        sessionExpiresAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    # ---------------------------------------------------------------- devices
+    Driver:
+      type: string
+      description: |
+        Route the agent uses to reach the device. `virtual` is the Zilo Virtual Scanner (D-007).
+        WSD devices appear as `wia` (Windows) or `sane` (Linux, through sane-airscan) (D-001).
+      enum: [wia, twain, ica, sane, escl, virtual]
+      x-zilo-open-enum: true
+    Connection:
+      type: string
+      enum: [usb, network, virtual, other]
+      x-zilo-open-enum: true
+    Device:
+      type: object
+      required: [id, name, driver, connection]
+      properties:
+        id:
+          $ref: '#/components/schemas/DeviceId'
+        name:
+          type: string
+          description: Display name. The virtual device is named "Zilo Virtual Scanner".
+        driver:
+          $ref: '#/components/schemas/Driver'
+        connection:
+          $ref: '#/components/schemas/Connection'
+        manufacturer:
+          type: string
+        model:
+          type: string
+        busy:
+          type: boolean
+          description: True while a Zilo job is active on this device.
+    DeviceList:
+      type: object
+      required: [devices, discovery]
+      properties:
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+        discovery:
+          type: object
+          required: [state]
+          properties:
+            state:
+              type: string
+              enum: [idle, running]
+              x-zilo-open-enum: true
+            lastCompletedAt:
+              $ref: '#/components/schemas/Timestamp'
+            incompleteDrivers:
+              type: array
+              description: Drivers that timed out or failed in the last discovery.
+              items:
+                $ref: '#/components/schemas/Driver'
+    Source:
+      type: string
+      enum: [flatbed, feeder, duplex]
+      x-zilo-open-enum: true
+      description: '`duplex` is a feeder that scans both sides.'
+    ColorMode:
+      type: string
+      enum: [color, gray, bw]
+      x-zilo-open-enum: true
+      description: 24-bit colour, 8-bit greyscale, 1-bit black and white.
+    ResolutionCaps:
+      description: Supported resolutions, either as a discrete list or as a stepped range.
+      oneOf:
+        - $ref: '#/components/schemas/ResolutionList'
+        - $ref: '#/components/schemas/ResolutionRange'
+      discriminator:
+        propertyName: kind
+        mapping:
+          list: '#/components/schemas/ResolutionList'
+          range: '#/components/schemas/ResolutionRange'
+    ResolutionList:
+      type: object
+      required: [kind, values]
+      properties:
+        kind:
+          type: string
+          const: list
+        values:
+          type: array
+          minItems: 1
+          items:
+            type: integer
+            minimum: 1
+    ResolutionRange:
+      type: object
+      required: [kind, min, max, step]
+      properties:
+        kind:
+          type: string
+          const: range
+        min:
+          type: integer
+          minimum: 1
+        max:
+          type: integer
+          minimum: 1
+        step:
+          type: integer
+          minimum: 1
+    PageSize:
+      type: object
+      required: [id, widthMm, heightMm]
+      properties:
+        id:
+          type: string
+          description: |
+            Well-known IDs: `a3`, `a4`, `a5`, `b5`, `letter`, `legal`, `executive`. An agent may
+            add others, and clients must accept unknown IDs.
+          pattern: '^[a-z0-9-]{1,32}$'
+        widthMm:
+          type: number
+          exclusiveMinimum: 0
+        heightMm:
+          type: number
+          exclusiveMinimum: 0
+    SourceCaps:
+      type: object
+      required: [source, resolutions, colorModes, pageSizes, maxAreaMm, customPageSize]
+      properties:
+        source:
+          $ref: '#/components/schemas/Source'
+        resolutions:
+          $ref: '#/components/schemas/ResolutionCaps'
+        colorModes:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ColorMode'
+        pageSizes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PageSize'
+        maxAreaMm:
+          type: object
+          required: [widthMm, heightMm]
+          properties:
+            widthMm:
+              type: number
+              exclusiveMinimum: 0
+            heightMm:
+              type: number
+              exclusiveMinimum: 0
+        customPageSize:
+          type: boolean
+          description: True if any size up to `maxAreaMm` is accepted.
+        maxPages:
+          type: integer
+          minimum: 1
+          description: Feeder capacity, if the device reports one.
+        defaults:
+          type: object
+          properties:
+            resolution:
+              type: integer
+              minimum: 1
+            colorMode:
+              $ref: '#/components/schemas/ColorMode'
+            pageSize:
+              type: string
+    DeviceCaps:
+      type: object
+      required: [deviceId, sources]
+      properties:
+        deviceId:
+          $ref: '#/components/schemas/DeviceId'
+        sources:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/SourceCaps'
+        limits:
+          type: object
+          description: Agent limits applied to this device (subset of `Limits`).
+          properties:
+            maxPagesPerJob:
+              type: integer
+              minimum: 1
+            maxPixelsPerPage:
+              type: integer
+              minimum: 1
+            maxResolutionDpi:
+              type: integer
+              minimum: 1
+
+    # ---------------------------------------------------------------- jobs
+    ScanSettings:
+      type: object
+      required: [source]
+      properties:
+        source:
+          $ref: '#/components/schemas/Source'
+        resolution:
+          type: integer
+          minimum: 1
+          description: Dots per inch. Defaults to the source default.
+        colorMode:
+          $ref: '#/components/schemas/ColorMode'
+        pageSize:
+          type: string
+          description: A `PageSize.id` from caps, or `custom` together with `customPageSizeMm`.
+        customPageSizeMm:
+          type: object
+          required: [widthMm, heightMm]
+          properties:
+            widthMm:
+              type: number
+              exclusiveMinimum: 0
+            heightMm:
+              type: number
+              exclusiveMinimum: 0
+        maxPages:
+          type: integer
+          minimum: 1
+          description: |
+            Stop after this many pages. When omitted: 1 for `flatbed`, and for feeders, until
+            the feeder is empty. Always capped by `limits.maxPagesPerJob`.
+    CreateJobRequest:
+      type: object
+      required: [deviceId, settings]
+      properties:
+        deviceId:
+          $ref: '#/components/schemas/DeviceId'
+        settings:
+          $ref: '#/components/schemas/ScanSettings'
+        strict:
+          type: boolean
+          default: false
+          description: |
+            When true, any setting the device cannot honour exactly returns
+            `422 unsupported-capability` instead of being coerced.
+    CancelJobRequest:
+      type: object
+      properties:
+        discardPages:
+          type: boolean
+          default: false
+          description: Dispose the job (and delete its pages) once it is cancelled.
+    EffectiveSettings:
+      type: object
+      description: |
+        The settings the device actually applied (D-005). They are known when the job starts and
+        may be refined by the driver after the first page. Each page also reports its own values.
+      required: [source, resolution, colorMode]
+      properties:
+        source:
+          $ref: '#/components/schemas/Source'
+        resolution:
+          type: integer
+          minimum: 1
+        colorMode:
+          $ref: '#/components/schemas/ColorMode'
+        pageSize:
+          type: string
+        pageSizeMm:
+          type: object
+          required: [widthMm, heightMm]
+          properties:
+            widthMm:
+              type: number
+              exclusiveMinimum: 0
+            heightMm:
+              type: number
+              exclusiveMinimum: 0
+        maxPages:
+          type: integer
+          minimum: 1
+    Adjustment:
+      type: object
+      description: One requested setting the agent or the device changed (T05 `scan.effective-settings`).
+      required: [field, requested, effective, reason]
+      properties:
+        field:
+          type: string
+          enum: [resolution, pageSize, colorMode, source, maxPages]
+          x-zilo-open-enum: true
+        requested:
+          type: [string, integer, number]
+        effective:
+          type: [string, integer, number]
+        reason:
+          type: string
+          enum: [coerced, device-applied, limit]
+          x-zilo-open-enum: true
+          description: |
+            - `coerced`: the agent snapped the value to a supported one (`strict: false`).
+            - `device-applied`: the driver reported a different value at scan time.
+            - `limit`: an agent limit capped it.
+    JobState:
+      type: string
+      description: State machine in CONTRACT.md §5.2.
+      enum: [queued, scanning, completed, failed, cancelled, disposed]
+      x-zilo-open-enum: true
+    Job:
+      type: object
+      required: [id, deviceId, state, createdAt, requested, pageCount, lastSeq]
+      properties:
+        id:
+          $ref: '#/components/schemas/JobId'
+        deviceId:
+          $ref: '#/components/schemas/DeviceId'
+        state:
+          $ref: '#/components/schemas/JobState'
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+        updatedAt:
+          $ref: '#/components/schemas/Timestamp'
+        requested:
+          $ref: '#/components/schemas/ScanSettings'
+        effective:
+          $ref: '#/components/schemas/EffectiveSettings'
+        adjustments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Adjustment'
+        pageCount:
+          type: integer
+          minimum: 0
+          description: Pages stored so far. Always 0 once the job is `disposed`.
+        lastSeq:
+          type: integer
+          minimum: 0
+          description: Highest event `seq` so far.
+        error:
+          $ref: '#/components/schemas/Problem'
+        expiresAt:
+          $ref: '#/components/schemas/Timestamp'
+    JobList:
+      type: object
+      required: [jobs]
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Job'
+
+    # ---------------------------------------------------------------- pages
+    ImageFormat:
+      type: string
+      enum: [jpeg, png]
+    Side:
+      type: string
+      enum: [front, back]
+      x-zilo-open-enum: true
+    Page:
+      type: object
+      required: [index, sheet, side, widthPx, heightPx, resolution, colorMode, etag, createdAt]
+      properties:
+        index:
+          type: integer
+          minimum: 0
+          description: 0-based and stable. Assigned in scan order and never reused or renumbered.
+        sheet:
+          type: integer
+          minimum: 0
+          description: 0-based physical sheet. In a duplex job the front and back share a sheet.
+        side:
+          $ref: '#/components/schemas/Side'
+        widthPx:
+          type: integer
+          minimum: 1
+        heightPx:
+          type: integer
+          minimum: 1
+        resolution:
+          type: object
+          required: [x, y]
+          properties:
+            x:
+              type: integer
+              minimum: 1
+            y:
+              type: integer
+              minimum: 1
+        colorMode:
+          $ref: '#/components/schemas/ColorMode'
+        etag:
+          type: string
+          description: ETag of the full-size image in its default format.
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+    PageList:
+      type: object
+      required: [pages]
+      properties:
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Page'
+
+    # ---------------------------------------------------------------- export
+    ExportFormat:
+      type: string
+      enum: [pdf, tiff, jpeg, png]
+    Rotation:
+      type: integer
+      description: Clockwise rotation in degrees, applied at export.
+      enum: [0, 90, 180, 270]
+    ExportPage:
+      type: object
+      required: [index]
+      properties:
+        index:
+          type: integer
+          minimum: 0
+        rotate:
+          $ref: '#/components/schemas/Rotation'
+    ExportRequest:
+      type: object
+      required: [format]
+      properties:
+        format:
+          $ref: '#/components/schemas/ExportFormat'
+        pages:
+          type: array
+          description: |
+            Pages in output order, each with an optional rotation. Duplicate indices are
+            rejected. When omitted, every page is exported in index order with no rotation.
+            For `jpeg` and `png` this must hold exactly one entry.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ExportPage'
+        quality:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 85
+          description: JPEG quality, for `jpeg` output and for JPEG-compressed images inside PDF and TIFF.
+        filename:
+          type: string
+          description: Base name, without extension, for `Content-Disposition`. The agent sanitises it.
+          maxLength: 128
+        deleteAfterExport:
+          type: boolean
+          default: false
+          description: Opt-in. Dispose the job once this export has been written completely (D-004).
+
+    # ---------------------------------------------------------------- events
+    EventType:
+      type: string
+      enum: [state, progress, page, error, done]
+      x-zilo-open-enum: true
+    EventBase:
+      type: object
+      required: [seq, type, jobId, time]
+      properties:
+        seq:
+          type: integer
+          minimum: 1
+          description: Per job and strictly increasing. Equal to the SSE `id`.
+        type:
+          $ref: '#/components/schemas/EventType'
+        jobId:
+          $ref: '#/components/schemas/JobId'
+        time:
+          $ref: '#/components/schemas/Timestamp'
+    StateEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventBase'
+        - type: object
+          required: [type, state]
+          properties:
+            type:
+              type: string
+              const: state
+            state:
+              $ref: '#/components/schemas/JobState'
+            previous:
+              $ref: '#/components/schemas/JobState'
+            effective:
+              $ref: '#/components/schemas/EffectiveSettings'
+            adjustments:
+              type: array
+              items:
+                $ref: '#/components/schemas/Adjustment'
+    ProgressEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventBase'
+        - type: object
+          required: [type, pagesCompleted]
+          properties:
+            type:
+              type: string
+              const: progress
+            pagesCompleted:
+              type: integer
+              minimum: 0
+            pageIndex:
+              type: integer
+              minimum: 0
+              description: Index the page being scanned will get.
+            fraction:
+              type: [number, 'null']
+              minimum: 0
+              maximum: 1
+              description: Progress within the current page, or null if the driver does not report it.
+            totalPages:
+              type: [integer, 'null']
+              minimum: 1
+              description: Known total (flatbed, or `maxPages`), else null.
+    PageEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventBase'
+        - type: object
+          required: [type, page]
+          properties:
+            type:
+              type: string
+              const: page
+            page:
+              $ref: '#/components/schemas/Page'
+    ErrorEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventBase'
+        - type: object
+          required: [type, fatal, problem]
+          properties:
+            type:
+              type: string
+              const: error
+            fatal:
+              type: boolean
+              description: True if the job is failing. A `state` event to `failed` and a `done` event follow.
+            problem:
+              $ref: '#/components/schemas/Problem'
+    DoneEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventBase'
+        - type: object
+          required: [type, state, pageCount]
+          properties:
+            type:
+              type: string
+              const: done
+            state:
+              type: string
+              enum: [completed, failed, cancelled]
+              x-zilo-open-enum: true
+            pageCount:
+              type: integer
+              minimum: 0
+            error:
+              $ref: '#/components/schemas/Problem'
+    JobEvent:
+      description: Payload of one SSE `data` line. Clients must ignore unknown `type` values.
+      oneOf:
+        - $ref: '#/components/schemas/StateEvent'
+        - $ref: '#/components/schemas/ProgressEvent'
+        - $ref: '#/components/schemas/PageEvent'
+        - $ref: '#/components/schemas/ErrorEvent'
+        - $ref: '#/components/schemas/DoneEvent'
+      discriminator:
+        propertyName: type
+        mapping:
+          state: '#/components/schemas/StateEvent'
+          progress: '#/components/schemas/ProgressEvent'
+          page: '#/components/schemas/PageEvent'
+          error: '#/components/schemas/ErrorEvent'
+          done: '#/components/schemas/DoneEvent'
+
+    # ---------------------------------------------------------------- errors
+    ErrorCode:
+      type: string
+      description: |
+        Stable problem codes. CONTRACT.md §9 gives the HTTP status, retryability and meaning of
+        each. Clients map unknown codes to `unknown`.
+      enum:
+        - host-denied
+        - unauthorized-origin
+        - consent-pending
+        - consent-denied
+        - token-invalid
+        - token-revoked
+        - rate-limited
+        - invalid-request
+        - invalid-settings
+        - unsupported-capability
+        - invalid-state
+        - not-found
+        - device-busy
+        - feeder-empty
+        - paper-jam
+        - cover-open
+        - timeout
+        - disconnected
+        - permission
+        - export-failed
+        - limits-exceeded
+        - agent-unavailable
+        - unknown
+      x-zilo-open-enum: true
+    Problem:
+      type: object
+      description: |
+        RFC 9457 problem details, sent as `application/problem+json`. `type` is
+        `urn:zilo:problem:<code>`. Problems never carry document content, tokens or file paths.
+      required: [type, title, status, code, retryable]
+      properties:
+        type:
+          type: string
+          format: uri
+          pattern: '^urn:zilo:problem:[a-z-]+$'
+        title:
+          type: string
+          description: Short English summary for logs. Not UI copy; the SDK uses T05 copy by `code`.
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          description: Request path. Never contains secrets.
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+        retryable:
+          type: boolean
+          description: True if the identical request can succeed later, possibly after a physical user action.
+        retryAfterSeconds:
+          type: integer
+          minimum: 0
+        requestId:
+          type: string
+        jobId:
+          $ref: '#/components/schemas/JobId'
+        deviceId:
+          $ref: '#/components/schemas/DeviceId'
+        pagesKept:
+          type: integer
+          minimum: 0
+          description: For job errors, the pages that remain available.
+        blocked:
+          type: boolean
+          description: For `consent-denied`, true when the origin is blocked from the tray (never prompts again).
+        limit:
+          type: object
+          description: For `limits-exceeded`, which limit was hit.
+          required: [name]
+          properties:
+            name:
+              type: string
+            max:
+              type: number
+        errors:
+          type: array
+          description: For validation codes, the field-level reasons.
+          items:
+            type: object
+            required: [field, reason]
+            properties:
+              field:
+                type: string
+                description: JSON Pointer into the request body.
+              reason:
+                type: string

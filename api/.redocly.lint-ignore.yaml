@@ -1,0 +1,7 @@
+# Redocly lint ignores for the Zilo contract.
+# JobEvent is the schema of each SSE `data` line. OpenAPI 3.1 has no standard way to attach an
+# item schema to text/event-stream, so it is linked through `x-zilo-event-schema` (which the
+# no-unused-components rule does not follow) and exported to generated types as a component.
+openapi.yaml:
+  no-unused-components:
+    - '#/components/schemas/JobEvent'

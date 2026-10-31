@@ -1,0 +1,8 @@
+# Redocly CLI config for the Zilo contract. Pinned CLI version: see api/tools/check.sh.
+extends:
+  - recommended
+rules:
+  # Problem `type` uses URNs (urn:zilo:problem:<code>), which are valid URIs.
+  no-invalid-media-type-examples: error
+  # Unused components fail the lint; see .redocly.lint-ignore.yaml for the one justified exception.
+  no-unused-components: error
