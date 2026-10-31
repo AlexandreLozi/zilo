@@ -22,9 +22,17 @@ public static class PageGenerator
     }
 
     /// <summary>The exact QR payload a page carries (fixed key order, no whitespace).</summary>
-    public static string QrPayload(PageSettings s, int pageIndex, Side side, uint seed) =>
-        string.Create(CultureInfo.InvariantCulture,
+    /// <remarks>
+    /// Validates <paramref name="s"/> first. The job ID charset needs no JSON escaping, so the
+    /// payload is valid JSON for every accepted input.
+    /// </remarks>
+    public static string QrPayload(PageSettings s, int pageIndex, Side side, uint seed)
+    {
+        ArgumentNullException.ThrowIfNull(s);
+        s.Validate();
+        return string.Create(CultureInfo.InvariantCulture,
             $"{{\"job\":\"{s.Job}\",\"page\":{pageIndex},\"side\":\"{side.Name()}\",\"dpi\":{s.Dpi},\"mode\":\"{s.Mode.Name()}\",\"paper\":\"{s.Paper.Name()}\",\"seed\":{seed}}}");
+    }
 
     /// <summary>Layout for the given page (the QR size depends on the payload length).</summary>
     public static PageLayout Layout(PageSettings s, int pageIndex, Side side, uint seed) =>

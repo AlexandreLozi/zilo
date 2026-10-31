@@ -40,7 +40,9 @@ public sealed partial record PageSettings(
             throw new ArgumentException("Job must match [A-Za-z0-9._-]{1,40}.", nameof(Job));
     }
 
-    [GeneratedRegex("^[A-Za-z0-9._-]{1,40}$", RegexOptions.CultureInvariant)]
+    // \z, not $: in .NET, $ also matches before a final '\n', which would let "job\n" through
+    // and break the QR JSON (review r1 M1).
+    [GeneratedRegex(@"\A[A-Za-z0-9._-]{1,40}\z", RegexOptions.CultureInvariant)]
     private static partial Regex JobPattern();
 }
 
@@ -97,12 +99,17 @@ public static class JobPlan
     /// <summary>
     /// The images a job of <paramref name="count"/> images produces, in order. Page indices are
     /// 1-based. Duplex alternates front/back (page 1 front, page 2 back of the same sheet, ...).
-    /// The generator sets no limit; the caller decides the count.
+    /// The generator sets no limit; the caller decides the count (any non-negative int, including
+    /// <see cref="int.MaxValue"/>).
     /// </summary>
     public static IEnumerable<PageRef> Pages(ScanSource source, int count)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         for (var i = 1; i <= count; i++)
+        {
             yield return new PageRef(i, source == ScanSource.Duplex && i % 2 == 0 ? Side.Back : Side.Front);
+            // Stop before i++ so that count == int.MaxValue cannot wrap to int.MinValue (review r1 M2).
+            if (i == count) yield break;
+        }
     }
 }
