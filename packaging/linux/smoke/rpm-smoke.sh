@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # SP-4a .rpm install/uninstall smoke. Runs as root INSIDE a disposable Fedora environment
 # (CI: `fedora:43` container; locally: packaging/linux/smoke/rootless-chroot.sh).
 # usage: rpm-smoke.sh <path-to-zilo-agent.rpm>
 # Uses the network for dnf only (the package scripts themselves never do).
-set -eu
+set -euo pipefail
 rpmf=$(readlink -f "$1")
 step() { printf '\n=== %s\n' "$*"; }
 fail() { echo "SMOKE FAIL: $*"; exit 1; }
@@ -12,7 +12,8 @@ snapshot() {
   find / -xdev \( -path /proc -o -path /sys -o -path /dev -o -path /run -o -path /tmp \
        -o -path /work -o -path /var/cache -o -path /var/log -o -path /var/lib/dnf \) -prune \
        -o -printf '%p %y %m\n' | sort
-  find /etc /usr/share/applications /usr/lib/systemd -xdev -type f -exec md5sum {} + 2>/dev/null | sort -k2
+  # Hashes are best effort (an unreadable file must not abort the snapshot); the listing above is strict.
+  { find /etc /usr/share/applications /usr/lib/systemd -xdev -type f -exec md5sum {} + 2>/dev/null || true; } | sort -k2
 }
 
 step "os"; . /etc/os-release; echo "$PRETTY_NAME"; uname -m
@@ -38,7 +39,15 @@ for f in /usr/lib/zilo/Zilo.Agent /usr/lib/zilo/Zilo.Agent.dll /usr/lib/zilo/Zil
 done
 [ -L /usr/bin/zilo-agent ] || fail "missing /usr/bin/zilo-agent symlink"
 [ -L /etc/systemd/user/default.target.wants/zilo-agent.service ] || fail "user unit not globally enabled"
-rpm -V zilo-agent && echo "rpm -V: clean"
+rpm -V zilo-agent || fail "rpm -V reported drift (exit $?)"
+echo "rpm -V: clean"
+# Negative control: a mode change must make rpm -V (and therefore this smoke) fail.
+dll=/usr/lib/zilo/Zilo.Agent.dll; mode=$(stat -c %a "$dll")
+chmod 0600 "$dll"
+if rpm -V zilo-agent; then fail "negative control: rpm -V accepted a changed file mode"; fi
+echo "rpm -V negative control: changed mode detected (exit nonzero), as expected"
+chmod "$mode" "$dll"
+rpm -V zilo-agent || fail "rpm -V not clean after restoring mode"
 
 step "agent runs against the distro .NET 10 runtime"
 out=$(/usr/bin/zilo-agent); echo "$out"

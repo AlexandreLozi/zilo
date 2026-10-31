@@ -17,7 +17,9 @@ mkdir -p "$out"; out=$(cd "$out" && pwd)
 
 pub="$out/publish-osx"
 "$repo/packaging/publish.sh" osx "$pub"
-lipo -archs "$pub/Zilo.Agent" | grep -q 'x86_64 arm64\|arm64 x86_64' || { echo "apphost not universal" >&2; exit 1; }
+fail() { echo "PKG FAIL: $*" >&2; exit 1; }
+archs=$(lipo -archs "$pub/Zilo.Agent")  # publish.sh already asserts this; re-check before packaging
+case "$archs" in "x86_64 arm64"|"arm64 x86_64") echo "apphost archs: $archs" ;; *) fail "apphost not universal: $archs" ;; esac
 
 root="$out/pkgroot"; rm -rf "$root"
 app="$root/Applications/Zilo Agent.app"
@@ -30,9 +32,12 @@ chmod 0755 "$here/scripts/postinstall"
 
 pkgbuild --root "$root" --identifier dev.zilo.agent --version "$version" \
   --scripts "$here/scripts" --install-location / "$out/zilo-agent-component.pkg"
+[ -s "$out/zilo-agent-component.pkg" ] || fail "pkgbuild produced no component pkg"
 sed "s/@VERSION@/$version/g" "$here/distribution.xml" > "$out/distribution.xml"
 productbuild --distribution "$out/distribution.xml" --package-path "$out" \
   "$out/zilo-agent-$version-universal.pkg"
+[ -s "$out/zilo-agent-$version-universal.pkg" ] || fail "productbuild produced no pkg"
 pkgutil --payload-files "$out/zilo-agent-$version-universal.pkg"
-pkgutil --check-signature "$out/zilo-agent-$version-universal.pkg" || true  # expected: unsigned
+# Expected: unsigned. Exit status is deliberately ignored (pkgutil fails on unsigned pkgs).
+pkgutil --check-signature "$out/zilo-agent-$version-universal.pkg" || true
 ls -l "$out"/*.pkg

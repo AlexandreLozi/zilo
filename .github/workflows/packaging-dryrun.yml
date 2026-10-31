@@ -23,12 +23,23 @@ on:
 permissions:
   contents: read
 
+# T03 fix r1 (review finding 6): every POSIX step runs under explicit bash, which GitHub invokes as
+# `bash --noprofile --norc -eo pipefail {0}`, so `producer | tee log` fails when the producer
+# fails. Run blocks also `set -euo pipefail` themselves, and each build step is followed by an
+# explicit artifact-existence assertion that does not depend on log upload.
+defaults:
+  run:
+    shell: bash
+
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: '1'
   DOTNET_NOLOGO: '1'
   ZILO_VERSION: '0.0.1'
   NFPM_VERSION: '2.48.0'
   NFPM_SHA256: '6d7f9a28b2f397934403950fcbba83f598b08d02edbe79a0815b3b4897341750'
+  # Pinned test-signing tool (review finding 5): the exact Ubuntu 24.04 build used locally.
+  OSSLSIGNCODE_DEB: 'osslsigncode_2.8-2_amd64.deb'
+  OSSLSIGNCODE_SHA256: '1aee7be603102633e80b4c67cd939bba2e16a62813e4a3035696727783f632b0'
 
 jobs:
   linux-build:
@@ -40,32 +51,61 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+      - name: pipefail negative control (a failing producer must fail a tee pipeline)
+        run: |
+          set -euo pipefail
+          if bash --noprofile --norc -eo pipefail -c 'false | tee /dev/null'; then
+            echo "pipefail control FAILED: a failing producer was masked by tee"; exit 1
+          fi
+          echo "pipefail control: failing producer propagated through tee (expected)"
       - name: Install pinned nfpm (checksum verified)
         run: |
+          set -euo pipefail
           curl -fsSL -o nfpm.tgz "https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_Linux_x86_64.tar.gz"
           echo "${NFPM_SHA256}  nfpm.tgz" | sha256sum -c
           mkdir -p "$RUNNER_TEMP/nfpm" && tar -xzf nfpm.tgz -C "$RUNNER_TEMP/nfpm"
           echo "$RUNNER_TEMP/nfpm" >> "$GITHUB_PATH"
-      - name: Install inspection and signing tools (Ubuntu archive)
+      - name: Install inspection and signing tools (osslsigncode pinned + checksum verified)
         run: |
+          set -euo pipefail
+          curl -fsSL -o "$RUNNER_TEMP/$OSSLSIGNCODE_DEB" \
+            "https://archive.ubuntu.com/ubuntu/pool/universe/o/osslsigncode/$OSSLSIGNCODE_DEB"
+          echo "${OSSLSIGNCODE_SHA256}  $RUNNER_TEMP/$OSSLSIGNCODE_DEB" | sha256sum -c
           sudo apt-get update -qq
-          sudo apt-get install -y -qq osslsigncode wixl rpm desktop-file-utils apt-utils
+          # Unpinned (dry-run inspection only; see SP-4a): wixl, rpm, desktop-file-utils, apt-utils.
+          sudo apt-get install -y -qq "$RUNNER_TEMP/$OSSLSIGNCODE_DEB" wixl rpm desktop-file-utils apt-utils
+          test "$(dpkg-query -W -f='${Version}' osslsigncode)" = 2.8-2
+          osslsigncode --version | head -1
       - name: Build .deb and .rpm
         run: |
+          set -euo pipefail
           mkdir -p artifacts/logs
           packaging/linux/build.sh artifacts 2>&1 | tee artifacts/logs/linux-build.log
+      - name: Assert Linux packages exist
+        run: |
+          set -euo pipefail
+          test -s "artifacts/zilo-agent_${ZILO_VERSION}-1_amd64.deb"
+          test -s "artifacts/zilo-agent-${ZILO_VERSION}-1.x86_64.rpm"
+          ls -l artifacts/*.deb artifacts/*.rpm
       - name: Inspect packages
         run: |
+          set -euo pipefail
           packaging/linux/inspect.sh artifacts/zilo-agent_${ZILO_VERSION}-1_amd64.deb \
             artifacts/zilo-agent-${ZILO_VERSION}-1.x86_64.rpm "$RUNNER_TEMP/inspect" \
             2>&1 | tee artifacts/logs/inspect.log
       - name: Test-key signing smoke (throwaway keys, generated at runtime)
         run: |
-          packaging/publish.sh win "$RUNNER_TEMP/publish-win"
+          set -euo pipefail
+          packaging/publish.sh win "$RUNNER_TEMP/publish-win" 2>&1 | tee artifacts/logs/publish-win.log
+          test -s "$RUNNER_TEMP/publish-win/Zilo.Agent.exe"
           packaging/signing/test-sign-smoke.sh "$RUNNER_TEMP/publish-win" \
             artifacts/zilo-agent_${ZILO_VERSION}-1_amd64.deb \
             artifacts/zilo-agent-${ZILO_VERSION}-1.x86_64.rpm "$RUNNER_TEMP/sign" \
             2>&1 | tee artifacts/logs/test-sign.log
+      - name: Cross-target publish isolation (osx apphosts after linux+win in the same job)
+        run: |
+          set -euo pipefail
+          packaging/publish.sh osx "$RUNNER_TEMP/publish-osx" 2>&1 | tee artifacts/logs/publish-osx.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -74,7 +114,7 @@ jobs:
             artifacts/*.deb
             artifacts/*.rpm
             artifacts/logs/
-          if-no-files-found: warn
+          if-no-files-found: error
 
   deb-smoke:
     name: deb install/purge smoke (Ubuntu 24.04 container)
@@ -89,7 +129,7 @@ jobs:
           name: linux-packages
           path: artifacts
       - name: Install, verify, purge
-        run: sh packaging/linux/smoke/deb-smoke.sh artifacts/zilo-agent_${ZILO_VERSION}-1_amd64.deb
+        run: bash packaging/linux/smoke/deb-smoke.sh artifacts/zilo-agent_${ZILO_VERSION}-1_amd64.deb
 
   rpm-smoke:
     name: rpm install/erase smoke (Fedora 43 container)
@@ -104,7 +144,7 @@ jobs:
           name: linux-packages
           path: artifacts
       - name: Install, verify, erase
-        run: sh packaging/linux/smoke/rpm-smoke.sh artifacts/zilo-agent-${ZILO_VERSION}-1.x86_64.rpm
+        run: bash packaging/linux/smoke/rpm-smoke.sh artifacts/zilo-agent-${ZILO_VERSION}-1.x86_64.rpm
 
   windows-msi:
     name: Windows MSI build and install smoke (hosted runner; no SAC there)
@@ -117,18 +157,38 @@ jobs:
           global-json-file: global.json
       - name: Publish (framework-dependent, win-x64 apphost)
         shell: bash
-        run: packaging/publish.sh win artifacts/publish-win
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/logs
+          packaging/publish.sh win artifacts/publish-win 2>&1 | tee artifacts/logs/publish-win.log
+          test -s artifacts/publish-win/Zilo.Agent.exe
       - name: Build MSI (pinned WiX 5.0.2)
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force artifacts/logs | Out-Null
-          pwsh packaging/windows/build-msi.ps1 -PublishDir artifacts/publish-win `
-            -Out "$PWD/artifacts/zilo-agent-$env:ZILO_VERSION-x64.msi" -Version $env:ZILO_VERSION 2>&1 |
-            Tee-Object artifacts/logs/msi-build.log
+          $ErrorActionPreference = 'Stop'
+          # Absolute paths from the workflow; build-msi.ps1 also resolves relative ones caller-side.
+          $msi = Join-Path $PWD "artifacts/zilo-agent-$env:ZILO_VERSION-x64.msi"
+          pwsh packaging/windows/build-msi.ps1 -PublishDir (Join-Path $PWD 'artifacts/publish-win') `
+            -Out $msi -Version $env:ZILO_VERSION 2>&1 | Tee-Object artifacts/logs/msi-build.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (-not (Test-Path -LiteralPath $msi -PathType Leaf)) { throw "MSI missing: $msi" }
+          Get-Item -LiteralPath $msi | Format-List FullName, Length
+      - name: Root-relative builder invocation (the exact contract that failed in run 41240014938)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          pwsh packaging/windows/build-msi.ps1 -PublishDir artifacts/publish-win `
+            -Out artifacts/relative-check/zilo-agent-rel.msi -Version $env:ZILO_VERSION 2>&1 |
+            Tee-Object artifacts/logs/msi-build-relative.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (-not (Test-Path -LiteralPath artifacts/relative-check/zilo-agent-rel.msi -PathType Leaf)) {
+            throw 'relative-path MSI missing'
+          }
+          Remove-Item -Recurse -Force artifacts/relative-check
       - name: Install / verify / uninstall smoke
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           pwsh packaging/windows/install-smoke.ps1 -Msi "artifacts/zilo-agent-$env:ZILO_VERSION-x64.msi" `
             -LogDir artifacts/logs 2>&1 | Tee-Object artifacts/logs/msi-smoke.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -139,7 +199,7 @@ jobs:
           path: |
             artifacts/*.msi
             artifacts/logs/
-          if-no-files-found: warn
+          if-no-files-found: error
 
   macos-pkg:
     name: macOS universal pkg build (unsigned; notarization pending M6)
@@ -152,8 +212,17 @@ jobs:
           global-json-file: global.json
       - name: Build pkg
         run: |
+          set -euo pipefail
           mkdir -p artifacts/logs
           packaging/macos/build-pkg.sh artifacts "$ZILO_VERSION" 2>&1 | tee artifacts/logs/pkg-build.log
+      - name: Assert universal apphost and pkg exist
+        run: |
+          set -euo pipefail
+          test -s "artifacts/zilo-agent-${ZILO_VERSION}-universal.pkg"
+          archs=$(lipo -archs artifacts/publish-osx/Zilo.Agent)
+          echo "apphost archs: $archs"
+          case "$archs" in "x86_64 arm64"|"arm64 x86_64") ;; *) echo "not universal"; exit 1 ;; esac
+          ls -l artifacts/*.pkg
       - uses: actions/upload-artifact@v4
         if: always()
         with:

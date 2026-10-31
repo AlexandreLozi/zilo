@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # SP-4a .deb install/uninstall smoke. Runs as root INSIDE a disposable Ubuntu LTS environment
 # (CI: `ubuntu:24.04` container; locally: packaging/linux/smoke/rootless-chroot.sh).
 # usage: deb-smoke.sh <path-to-zilo-agent.deb>
 # Uses the network for apt only (the package scripts themselves never do).
-set -eu
+set -euo pipefail
 deb=$(readlink -f "$1")
 export DEBIAN_FRONTEND=noninteractive
 step() { printf '\n=== %s\n' "$*"; }
@@ -13,7 +13,8 @@ snapshot() { # whole-rootfs listing (path, type, mode) + content hashes of confi
   find / -xdev \( -path /proc -o -path /sys -o -path /dev -o -path /run -o -path /tmp \
        -o -path /work -o -path /var/cache -o -path /var/log -o -path /var/lib/apt/lists \) -prune \
        -o -printf '%p %y %m\n' | sort
-  find /etc /usr/share/applications /usr/lib/systemd -xdev -type f -exec md5sum {} + 2>/dev/null | sort -k2
+  # Hashes are best effort (an unreadable file must not abort the snapshot); the listing above is strict.
+  { find /etc /usr/share/applications /usr/lib/systemd -xdev -type f -exec md5sum {} + 2>/dev/null || true; } | sort -k2
 }
 
 step "os"; . /etc/os-release; echo "$PRETTY_NAME"; uname -m

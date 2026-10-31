@@ -72,4 +72,4 @@ for tool in chown chgrp; do
   chmod 0755 "$root/usr/local/sbin/$tool"
 done
 exec chroot "$root" /usr/bin/env -i PATH=/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin HOME=/root \
-  LANG=C.UTF-8 ZILO_SMOKE_NO_RECOMMENDS=1 /bin/sh "/work/$smoke" "/work/$(basename "$pkg")"
+  LANG=C.UTF-8 ZILO_SMOKE_NO_RECOMMENDS=1 /bin/bash "/work/$smoke" "/work/$(basename "$pkg")"

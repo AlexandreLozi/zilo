@@ -24,4 +24,8 @@ sed -e "s|\${ZILO_PUBLISH_DIR}|$ZILO_PUBLISH_DIR|g" \
     "$here/nfpm.yaml" > "$out/nfpm.rendered.yaml"
 nfpm package --config "$out/nfpm.rendered.yaml" --packager deb --target "$out/"
 nfpm package --config "$out/nfpm.rendered.yaml" --packager rpm --target "$out/"
-ls -l "$out"/*.deb "$out"/*.rpm
+deb="$out/zilo-agent_${ZILO_VERSION}-1_amd64.deb" rpm="$out/zilo-agent-${ZILO_VERSION}-1.x86_64.rpm"
+[ -s "$ZILO_PUBLISH_DIR/Zilo.Agent" ] || { echo "BUILD FAIL: publish output missing" >&2; exit 1; }
+[ -s "$deb" ] || { echo "BUILD FAIL: missing $deb" >&2; exit 1; }
+[ -s "$rpm" ] || { echo "BUILD FAIL: missing $rpm" >&2; exit 1; }
+ls -l "$deb" "$rpm"
