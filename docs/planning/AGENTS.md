@@ -14,3 +14,9 @@ Handles are runtime-scoped. After an Orca restart, re-discover them with `orca-i
 - Name: `zilo-be`
 - Run ID: `run_a2415f299b69`
 - Coordinator: GPT master; consume only this Run's inbox.
+
+## Frontend Run
+
+- Name: `zilo-fe`
+- Run ID: `run_0e7be3212f99`
+- Coordinator: Opus master (also owns the merge queue); consume only this Run's inbox.
