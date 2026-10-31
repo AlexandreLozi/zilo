@@ -1,0 +1,11 @@
+<Project>
+  <!-- Keep independent spikes/tools outside production central management. -->
+  <PropertyGroup Condition="$([System.String]::Copy('$(MSBuildProjectDirectory)').StartsWith('$(MSBuildThisFileDirectory)backend$([System.IO.Path]::DirectorySeparatorChar)'))">
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup Condition="$([System.String]::Copy('$(MSBuildProjectDirectory)').StartsWith('$(MSBuildThisFileDirectory)backend$([System.IO.Path]::DirectorySeparatorChar)'))">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="[18.11.0]" />
+    <PackageVersion Include="xunit" Version="[2.9.3]" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="[4.0.1]" />
+  </ItemGroup>
+</Project>
