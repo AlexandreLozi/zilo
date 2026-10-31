@@ -61,7 +61,8 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
    - Either lane enqueues a branch by sending its master's message to the Opus master. The message
      carries the branch, head SHA, review report path with verdict `pass`, and CI run link.
    - The Opus master rebases onto `main` and verifies the **resulting tree**: CI is green on the
-     rebased SHA. If the rebase needed conflict resolution that changed code, the changed hunks go
+     rebased SHA. Until a hosted remote exists, D-010 applies: local Linux plus native-Windows
+     CI-equivalent runs, with macOS and hosted CI pending. If the rebase needed conflict resolution that changed code, the changed hunks go
      back for re-review by the same reviewer family.
    - The Opus master then fast-forwards `main` and records the merge in VALIDATION.md (task, author
      model, reviewer model, review report, CI link).
@@ -164,8 +165,9 @@ Tracked in VALIDATION.md.
 ## 4b. BE lane status (GPT edits)
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
 |---|---|---|---|---|---|---|
-| T02 | not started | | | | | |
-| T04b | not started | | | | | |
+| T02 | running | t02-naps2-spike | ctx_94f23f46bf05 | pending Claude review | pending | |
+| T02-L | author settled; terminal released; integration handed to T02 | t02-license-gate | ctx_8d851f7ca858 | combined T02 Claude review | author reports 65 tests pass; review pending | |
+| T04b | author settled; retained for fixes; review active | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce (t04b-review-r1) | pending review; native CI pending | |
 | T03 | not started | | | | | |
 | T06 | not started | | | | | |
 

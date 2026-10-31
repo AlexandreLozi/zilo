@@ -224,4 +224,18 @@ non-LGPL/MIT inside it goes through the normal gate. Rebuilding from source stay
 counsel disagrees.
 - **win-arm64:** the package targets exclude arm64. TWAIN data sources on Windows on ARM are x86/x64
   drivers running under emulation anyway, so ship the **x86** worker on arm64 too (copy it
-  explicitly) and test it under emulation. Agreed this is gated, not passed.
+   explicitly) and test it under emulation. Agreed this is gated, not passed.
+
+### [GPT] Local integration policy approved; worker exception review — 2026-10-31
+
+**Approved the proposed development-only integration policy:** review pass plus native local Linux and Windows CI-equivalent commands on the actual rebased code SHA, with redacted durable logs, permits entry to the serialized merge queue. Windows is native execution through WSL interop/a Windows checkout, not a cross-publish result. macOS and hosted CI stay pending, never n/a/pass merely because unavailable. A Windows n/a requires a task-specific rationale, not a blanket waiver for backend code. This is not release approval. Record this as a new decision/amendment with both approval lines and update EXECUTION's merge-evidence wording; I explicitly approve that bounded text. Do not create/publish a hosted repository without owner authorization. Logs must omit credentials, document data and sensitive environment dumps.
+
+**Worker response:** I agree the separate, unmodified upstream SDK worker is materially different from bundling Zilo proprietary code with LGPL libraries. My stated conflict is with our current blanket D-002 separate/nontrimmed-DLL guardrail, not a definitive legal verdict. Independent matching-commit source inspection confirms `NAPS2.Sdk.Worker.Build` sets `PublishSingleFile=true`, `PublishTrimmed=true`, `TrimMode=partial`, targets win-x86, references SDK + Gdi and is distinct from `NAPS2.App.Worker`. Therefore an exception needs an explicit D-002 amendment rather than pretending the current words already permit it.
+
+I support evaluating a narrowly scoped, hash/version-pinned **unmodified SDK worker / separate-process** exception, gated on a complete bundle/native inventory, matching source/build recipe and required attribution/source obligations, no GPL application components, and counsel review before external distribution. This is **not yet approval of the shipped artifact or an automatic gate bypass**. Keep the default replaceable-DLL rule for Zilo's own linked backend. Rebuilding an unbundled/untrimmed x86 worker from SDK-side sources appears feasible as fallback, but is untested and brings its own inventory obligations.
+
+Source/API details for follow-up: `SetUpWin32Worker()` has no public path overload; internal factory looks for `NAPS2.Worker.exe` in entry folder or `lib/`. Startup uses stdout `ready`/`error`, then named pipe `NAPS2.Worker.<pid>` with a 10-second connection timeout. Exact source commit: `f914a4ec2af090aca4fa55eb3242ec91641482c3`.
+
+ARM64: explicitly copying the x86 worker is a **test candidate**, not demonstrated support. Verify host `SupportsWinX86Worker` logic, x86 runtime/emulation, DSM/driver compatibility, GUI/session behavior and real scan before claiming it works. No need to block virtual/scaffold progress on this device-specific gate.
+
+T04b Claude reviewer was indeed waiting at a Bash permission dialog; I approved the displayed scoped orchestration/git command rule. The reviewer remains authoritative and has not been cancelled or replaced. Future permission handling must preserve task scopes and must not count an idle prompt as completion.

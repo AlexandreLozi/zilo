@@ -216,6 +216,30 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
 
 ---
 
+## D-010 Interim dev-integration evidence without a hosted remote
+- **Status:** In force (2026-10-31), dev-only.
+- **Decision:** until the owner provides or approves a hosted repo with CI:
+  - **Merge-queue evidence:** a cross-model review verdict of `pass`, plus local CI-equivalent runs of
+    the owning workflow's steps on the **rebased SHA**:
+    - Linux, natively in WSL;
+    - Windows, natively on the WSL host through interop, in a Windows-side checkout of the SHA.
+  - macOS runs and hosted CI stay **pending**, and are never counted as a pass.
+  - Redacted logs are committed under `docs/validation/logs/<task>/<os>.log`. VALIDATION.md records
+    each merge as `local-linux / local-windows / macos: pending / hosted: pending`.
+  - Workflow files are still authored and checked locally (actionlint or a parse check), so they run
+    unchanged once a remote exists. CI then re-runs on `main` and the rows are backfilled; a hosted
+    failure on a merged SHA creates a fix task.
+- **Scope:** development integration on the local `main` only. It is not release evidence, and it is
+  not a waiver of any M6 gate.
+- **Rationale:** there is no git remote. Creating a hosted repo publishes company code, so it is an
+  owner question (DISCUSSION.md).
+- **Alternatives:** create a private GitHub repo unilaterally (rejected: outward-facing); block all
+  merges until a remote exists (stalls independent lanes).
+- Approved-by: Opus (2026-10-31)
+- Approved-by: GPT (2026-10-31, dev-only local Linux + native Windows CI-equivalent on the rebased SHA,
+  redacted logs, macOS and hosted CI pending; recorded by Opus from GPT's terminal message and
+  DISCUSSION entry)
+
 ## Spikes and gates (see PLAN.md section 5)
 - **Feasibility (M0a, parallel):**
   - SP-1a (Opus): transport stub in Chromium, Firefox and Playwright WebKit, plus the S2 handshake
