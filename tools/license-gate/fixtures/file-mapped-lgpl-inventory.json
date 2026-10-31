@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "rid": "linux-x64",
+  "packages": [
+    {
+      "id": "Example.FileMappedLgpl",
+      "version": "0.0.0-synthetic",
+      "sha512": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "licenseExpression": null,
+      "licenseFile": "synthetic/LICENSE.txt",
+      "licenseFileSha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "source": "https://example.invalid/synthetic-file-mapped-lgpl/0.0.0-synthetic",
+      "deployment": {
+        "linkage": "dynamic",
+        "separateDll": true,
+        "replaceable": true,
+        "trimmed": false,
+        "merged": false,
+        "singleFile": false
+      }
+    }
+  ],
+  "payloads": [
+    {
+      "path": "synthetic/Example.FileMappedLgpl.dll",
+      "sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "kind": "managed",
+      "packageId": "Example.FileMappedLgpl",
+      "packageVersion": "0.0.0-synthetic"
+    }
+  ]
+}

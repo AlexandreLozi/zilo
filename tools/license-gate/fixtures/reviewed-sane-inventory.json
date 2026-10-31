@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "rid": "linux-x64",
+  "packages": [
+    {
+      "id": "Example.Sane",
+      "version": "0.0.0-synthetic",
+      "sha512": "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg==",
+      "licenseExpression": "GPL-2.0-or-later WITH SANE-exception",
+      "licenseFile": "SYNTHETIC LICENSE: https://example.invalid/sane/COPYING",
+      "source": "SYNTHETIC PACKAGE: https://example.invalid/sane/0.0.0-synthetic"
+    }
+  ],
+  "payloads": [
+    {
+      "path": "synthetic/libexample-sane.so",
+      "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "kind": "native",
+      "packageId": "Example.Sane",
+      "packageVersion": "0.0.0-synthetic"
+    }
+  ]
+}
