@@ -6,7 +6,6 @@
 - Which front-end framework the app uses (React/Angular/Vue/other), and whether scanning runs inside a cross-origin iframe (needs `allow="loopback-network"`).
 - Which Dynamic Web TWAIN version is deployed (18.5–19.2 return blank images on Chrome 142+).
 - Is Safari on macOS a must-have for v1? Do customer fleets have MDM/GPO (lets us pre-grant browser local-access permission)?
-- **CI hosting:** the repo has no git remote, so there are no cross-OS CI runners. May we create a **private** GitHub repo (for example `AlexandreLozi/zilo`, or one under a company org you name) and push `main` plus the task branches to run GitHub Actions on Windows, macOS and Linux? Until then, CI evidence is local only: Linux (WSL) and native Windows (the WSL host). macOS CI stays pending.
 
 ## Log (append-only)
 

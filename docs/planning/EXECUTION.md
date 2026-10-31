@@ -177,8 +177,8 @@ Tracked in VALIDATION.md.
 | T04b | merged under D-010a; old terminal cleanup release_unknown | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce | Claude code PASS; Windows runtime blocked-by-host-SAC; macOS/hosted CI pending | 9e43bf7 |
 | T04b-V | abandoned/superseded by Claude evidence; old resource released | t04b-native-validation | ctx_59467948111b | masters reviewed replacement evidence | no resumed Windows runtime execution (OD-6) | |
 | T10 | GPT review changes @1a1db73; Opus author fix round requested | t10-contract; t10-review-r1 | Claude author @5410735 (OD-2) | ctx_26ab47284cd5 (settled/released) | 13 findings; four schema regressions red; contract/D-004a pending | |
-| T03 | Claude-authored; GPT review queued after priorities | t03-packaging-dryrun | author @c00f066 (OD-2) | pending GPT medium review | pending | |
-| T12-proto | Claude-authored; GPT review queued after T03 | t12-proto-pages | author @0afb9c4 (OD-2) | pending GPT medium review | pending | |
+| T03 | GPT medium review active | t03-packaging-dryrun; t03-review-r1 | author @c00f066 (OD-2) | ctx_fc9df29a06d6 (GPT-6.1 Sol medium selected before dispatch) | pending | |
+| T12-proto | GPT review changes @dd9a1eb; Opus author fix requested | t12-proto-pages; t12-proto-review-r1 | author @0afb9c4 (OD-2) | ctx_d53d5fb717f7 (settled; external terminal retained for r2) | baseline 146 pass; four regressions red; cross-OS pending | |
 | T06 | blocked on joint ICA/worker/image strategy and T11 guard retirement | | | | shipping graph blocked | |
 
 ## 5. Concurrency bounds
