@@ -10,6 +10,7 @@ import http from 'node:http';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   AGENT_PORT, ALLOWED_APP_ORIGINS, APP_TOKENS, AUDIT_LOG, BRIDGE_ORIGIN, EVENT_INTERVAL_MS,
   EVENT_TICKS, MAX_BLOB_BYTES, MAX_BRIDGE_BYTES,
@@ -32,7 +33,7 @@ const usedNonces = new Set<string>();
 mkdirSync(dirname(AUDIT_LOG), { recursive: true });
 writeFileSync(AUDIT_LOG, '');
 
-const here = dirname(new URL(import.meta.url).pathname);
+const here = dirname(fileURLToPath(import.meta.url));
 const bridgeHtml = readFileSync(`${here}/bridge.html`, 'utf8').replace(
   '__ZILO_BRIDGE_CONFIG__',
   JSON.stringify({ allowedOrigins: [...ORIGIN_ALLOWLIST], maxBytes: MAX_BRIDGE_BYTES, protocol: 1 }),

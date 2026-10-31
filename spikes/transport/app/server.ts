@@ -6,12 +6,13 @@ import http from 'node:http';
 import https from 'node:https';
 import { readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   AGENT_PORT, APP_HOST, APP_HTTP_PORT, APP_HTTPS_PORT, EVIL_HOST, MAX_BRIDGE_BYTES,
 } from '../config.ts';
 import { ensureCerts } from '../scripts/gen-certs.ts';
 
-const here = dirname(new URL(import.meta.url).pathname);
+const here = dirname(fileURLToPath(import.meta.url));
 const certs = ensureCerts();
 const pageTemplate = readFileSync(`${here}/index.html`, 'utf8');
 const appJs = readFileSync(`${here}/app.js`, 'utf8');
