@@ -232,7 +232,7 @@
     const c = C("state.updating");
     Z.announce(c.title, "polite");
     const body = head(c, "info", "download") + `
-      <div class="z-progress" role="progressbar" aria-label="Update progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="62" aria-valuetext="Downloading, 18 of 29 MB" style="--value:62%"><div class="z-progress__bar"></div></div>
+      <div class="z-progress" role="progressbar" aria-label="Update progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="62" aria-valuetext="Downloading, 18 of 29 MB" style="--value:0.62"><div class="z-progress__bar"></div></div>
       <div class="upd-meta"><span>Downloading Zilo 1.4.2</span><span>18 of 29 MB</span></div>`;
     return shell({ body, describedBy: "det-desc", footer: footer("", c.secondary, { secondaryFocus: true }) });
   }
