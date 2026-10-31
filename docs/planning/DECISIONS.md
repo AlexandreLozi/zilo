@@ -137,35 +137,46 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
 - Approved-by: Opus (2026-10-31)
 - Approved-by: GPT (2026-10-31)
 
-## D-004a Pre-auth consent tier (amends D-004)
-- **Status:** Proposed. Opus-approved; GPT approval pending on resume. T10 marks every dependent rule
-  as provisional.
-- **Problem:** read literally, D-004 means an unknown origin can read nothing. The SDK then cannot
-  show the "approve this site in Zilo" (consent-pending) state or the denial cool-down, and cannot
-  tell "awaiting consent" from "agent not running".
-- **Decision:** a narrow pre-auth tier.
-  - **Pre-auth endpoints:** `GET /zilo/v1/hello`, `POST`/`GET /zilo/v1/auth/consent`,
-    `POST /zilo/v1/auth/token` and their `OPTIONS`.
-  - **CORS on those endpoints:** they reflect exact-origin CORS for any well-formed `https` origin.
-    A null or opaque Origin gets no CORS. Non-https origins get none either, except loopback dev
-    origins behind a dev flag.
-  - **What a not-yet-allowed origin sees:** product, protocol version range, the flow capability
-    flags, and its own consent state. Nothing more. Full version, os and arch go only to allowed,
-    authenticated origins.
-  - **Consent prompts:**
-    - rate-limited per origin and globally;
-    - at most one pending prompt at a time, with duplicates coalesced;
-    - a cool-down after denial, returned as `Retry-After`;
-    - the tray offers "block this site", after which the origin gets `consent-denied` and is never
-      prompted again.
-  - **Tokens:** minted only for consented or baked origins, never for loopback or null origins.
-  - **Everything else:** unchanged from D-004.
-- **Residual risk (accepted):** any site can detect that Zilo is installed and its protocol range.
-  Dynamsoft has the same exposure today.
-- **Alternatives:** literal D-004, with opaque responses for unknown origins and consent triggered by
-  a simple POST. Rejected: it loses the consent-pending and cool-down states, and that UX is
-  essential.
-- Approved-by: Opus (2026-10-31)
+## D-004a Pre-auth consent tier and token family (amends D-004; rewritten after T10 r1)
+- **Status:** Proposed, revision 2. Opus-approved; GPT approval pending. The text follows both
+  masters' agreed T10 r1 positions (DISCUSSION.md).
+- **Pre-auth tier:**
+  - `GET /hello`, `POST`/`GET /auth/consent`, `POST /auth/token` and their `OPTIONS` reflect
+    exact-origin CORS only for an **exact serialized eligible HTTPS origin**.
+  - Null, opaque, loopback and non-https origins get no CORS and **never get tokens**. The dev flag
+    grants pre-auth diagnostics only.
+  - Public `hello` (HelloPublic) carries product, protocol range, flow capabilities and that origin's
+    consent state. The full `hello` (HelloFull: version, os, arch) is authenticated only.
+  - Pre-auth gives no access to devices, jobs or pages, and never mints arbitrary bridge tokens.
+- **Budgets:**
+  - native consent prompts are bounded per origin and globally, with one pending prompt that
+    coalesces duplicates;
+  - a cool-down after denial, returned via `Retry-After`;
+  - "block this site" in the tray;
+  - bounded retained bookkeeping;
+  - bounded token issuance and renewal.
+- **Token family (amends the D-004 ownership wording):**
+  - Jobs and pages belong to a **shared origin-bound token family** that stays stable across
+    rotation. Tabs of the same app share it. Separate families, even from the same origin, are
+    isolated.
+  - Bridge capabilities (D-003 S2) keep their own session boundary.
+  - Obsolete or expired credentials get `token-invalid`, which never implies that data was destroyed.
+- **Revocation:**
+  - Explicit revocation (`token-revoked`) immediately denies every protected operation and closes
+    live streams.
+  - Physical cleanup of private temp data finishes within a bounded TTL.
+  - The UI copy says "access revoked", never "erased".
+- **Export:** receive-then-DELETE is the normal SDK flow. `deleteAfterExport` is receipt-ambiguous
+  and never a retry guarantee, and the SDK never sets it on the first page of a batch. Selection is
+  a snapshot. Absent or empty indices are rejected deterministically. Acquisition numbering is
+  immutable.
+- **Residual risks (accepted, documented in CONTRACT.md):**
+  - any site can detect that Zilo is installed and its protocol range;
+  - a hostile site can exhaust its own and the global prompt budget, which is bounded;
+  - a browser user-gesture policy is not server-side proof.
+- **Alternatives:** literal D-004, with opaque responses for unknown origins (rejected: it loses the
+  consent-pending and cool-down UX).
+- Approved-by: Opus (2026-10-31, rev 2)
 - Approved-by: GPT — pending
 
 ## D-005 API contract: Zilo-native REST + events, versioned

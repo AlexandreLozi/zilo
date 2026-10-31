@@ -162,6 +162,51 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 SP-1b real Safari 26, SP-4b production signing and notarization, the hardware matrix, legal sign-off.
 Tracked in VALIDATION.md.
 
+## 3a. OD-8 / OD-9 amendments to the DAG (v3; Opus approved, GPT pending)
+These amendments override the rows in §3 where they conflict.
+
+**Front end:**
+- **T14:** the demo is **React + TS (Vite)**. It consumes the Web Components through the React
+  wrapper.
+- **T15:** the **React (TSX) wrapper is first-class**, with typed props and events plus tests. An
+  Angular/Vue wrapper is a later task (T55, not v1).
+- **T23:**
+  - WebKit must pass the production Safari path (S2, or better). The unsupported state may only be
+    an interim negative test.
+  - Add the §8 budget checks for detection, time to first page and throughput, plus the
+    sleep/resume reconnect test.
+
+**Safari path:**
+- **T25-BE and T25-FE are release-blocking (OD-8).** Real-Safari evidence (SP-1b) is an M6 gate
+  that can never be waived.
+
+**Back end:**
+- **T20:** add the §8 budgets (first page, throughput, memory, export), the 500-page soak, and
+  zero leaked temp files on every path.
+- **T24:** add the agent kill and recovery tests and the revoke-mid-stream test.
+- **T30–T33:**
+  - add x86-worker crash recovery (T30), unplug/jam/feeder-empty typed errors (all four), and
+    retention of pages acquired before a failure;
+  - arm64 builds for every OS.
+- **T40–T42:** each OS gets both a **per-user** and an **admin/machine-wide** install mode (OD-9),
+  with upgrade and uninstall tests for both.
+
+**Compat:**
+- **T50:** `dwt-compat` covers the **common public DWT API**, clean-room, prioritized by
+  OWNER-QUESTIONS.md. It is no longer blocked on the owner's code: work starts after T21 with
+  public-docs-only API names, and the owner's answers re-rank it.
+
+**New tasks:**
+- **T54 (FE lane, docs/tooling), open-source hygiene:**
+  - a licence proposal (masters propose, owner decides; recorded in OWNER-QUESTIONS.md #18);
+  - CONTRIBUTING, SECURITY.md, DCO;
+  - a scripted clean public export that excludes CLAUDE.md, `.claude/`, `opencode.json`,
+    `.opencode/`, `docs/planning`, `docs/tasks` and `docs/reviews`, keeps the product docs, and
+    starts the public repo from a fresh history.
+  - Reviewed by GPT. Deps: T53.
+- **T56 (joint), performance and soak harness:** a shared timing and memory harness used by
+  T11/T13/T20/T23, with hosted-CI jobs. Keep the macOS minutes low (OD-7). Deps: T20, T21.
+
 ## 4a. FE lane status (Opus edits)
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
 |---|---|---|---|---|---|---|
@@ -177,7 +222,7 @@ Tracked in VALIDATION.md.
 | T04b | merged under D-010a; old terminal cleanup release_unknown | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce | Claude code PASS; Windows runtime blocked-by-host-SAC; macOS/hosted CI pending | 9e43bf7 |
 | T04b-V | abandoned/superseded by Claude evidence; old resource released | t04b-native-validation | ctx_59467948111b | masters reviewed replacement evidence | no resumed Windows runtime execution (OD-6) | |
 | T10 | GPT review changes @1a1db73; Opus author fix round requested | t10-contract; t10-review-r1 | Claude author @5410735 (OD-2) | ctx_26ab47284cd5 (settled/released) | 13 findings; four schema regressions red; contract/D-004a pending | |
-| T03 | GPT medium review active | t03-packaging-dryrun; t03-review-r1 | author @c00f066 (OD-2) | ctx_fc9df29a06d6 (GPT-6.1 Sol medium selected before dispatch) | pending | |
+| T03 | GPT review changes @f30645e; Opus author fix requested | t03-packaging-dryrun; t03-review-r1 | author @c00f066 (OD-2) | ctx_fc9df29a06d6 (settled; external terminal retained for r2) | six findings; Linux hosted smokes pass; Windows fails/macOS false-green | |
 | T12-proto | GPT review changes @dd9a1eb; Opus author fix requested | t12-proto-pages; t12-proto-review-r1 | author @0afb9c4 (OD-2) | ctx_d53d5fb717f7 (settled; external terminal retained for r2) | baseline 146 pass; four regressions red; cross-OS pending | |
 | T06 | blocked on joint ICA/worker/image strategy and T11 guard retirement | | | | shipping graph blocked | |
 
@@ -190,5 +235,6 @@ Tracked in VALIDATION.md.
   Absence alone never authorizes stop, abandon or retry.
 
 ## Sign-off
+- **v3 amendment (§3a, OD-8/OD-9):** Opus approved (2026-10-31); GPT pending.
 - Opus: approved (2026-10-31)
 - GPT: approved (2026-10-31), including explicit T06 workflow ownership transfer and non-circular T32/T33 integration gate above

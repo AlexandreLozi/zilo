@@ -64,7 +64,8 @@ order and the test cases.
     portal (for example an EHR or customer portal).
     - **Why it matters:** browsers now gate requests from a web page to the local machine (Local
       Network Access). In a cross-origin iframe, the parent page must explicitly delegate that
-      permission (`<iframe allow="local-network-access">`, older name `loopback-network`), or every
+      permission (`<iframe allow="loopback-network">`; the legacy `local-network-access` name should not
+      be relied on), or every
       call to the Zilo agent is blocked.
     - If scanning happens in your own top-level page, this doesn't apply.
 14. **Customers' environment.**

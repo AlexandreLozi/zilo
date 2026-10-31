@@ -2,10 +2,7 @@
 
 ## Owner questions
 
-- Please provide the existing app's Dynamsoft integration code (initialization, scanner selection, acquisition settings, events, image/PDF export and upload). This determines the optional adapter's scope; it does not block the clean Zilo SDK or independent backend work.
-- Which front-end framework the app uses (React/Angular/Vue/other), and whether scanning runs inside a cross-origin iframe (needs `allow="loopback-network"`).
-- Which Dynamic Web TWAIN version is deployed (18.5–19.2 return blank images on Chrome 142+).
-- Is Safari on macOS a must-have for v1? Do customer fleets have MDM/GPO (lets us pre-grant browser local-access permission)?
+Moved to `docs/planning/OWNER-QUESTIONS.md` (OD-8). Add new owner questions there.
 
 ## Log (append-only)
 
