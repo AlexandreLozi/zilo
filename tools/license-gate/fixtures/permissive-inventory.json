@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "rid": "linux-x64",
+  "packages": [
+    {
+      "id": "Example.Permissive",
+      "version": "0.0.0-synthetic",
+      "sha512": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "licenseExpression": "MIT",
+      "licenseFile": "SYNTHETIC LICENSE: https://example.invalid/permissive/LICENSE",
+      "source": "SYNTHETIC PACKAGE: https://example.invalid/permissive/0.0.0-synthetic"
+    }
+  ],
+  "payloads": [
+    {
+      "path": "synthetic/Example.Permissive.dll",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "kind": "managed",
+      "packageId": "Example.Permissive",
+      "packageVersion": "0.0.0-synthetic"
+    }
+  ]
+}
