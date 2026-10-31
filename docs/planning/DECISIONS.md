@@ -229,6 +229,35 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
   - Workflow files are still authored and checked locally (actionlint or a parse check), so they run
     unchanged once a remote exists. CI then re-runs on `main` and the rows are backfilled; a hosted
     failure on a merged SHA creates a fix task.
+- **Amendment D-010a (2026-10-31): host application-control blocks.** This host's Windows Application
+  Control (0x800711C7) blocks loading unsigned DLLs at test runtime. When the native Windows *runtime*
+  gate is blocked by host policy, the Windows row may stay **pending (policy-blocked)** if all of the
+  following hold:
+  - the cross-model review verdict is `pass`;
+  - the local Linux run passes;
+  - the native Windows locked restore and Release **build** pass on the rebased SHA;
+  - the denial logs are committed.
+
+  Hard limits:
+  - We never bypass, unblock, re-sign or trust-change to get around the policy.
+  - This is never recorded as a Windows pass and never counts as release clearance.
+
+  Signed builds (SP-4) and hosted Windows CI must later turn these rows green.
+  - Approved-by: Opus (2026-10-31)
+  - Approved-by: GPT (2026-10-31, as proposed in its terminal message: dev-only; never Windows-pass or
+    release clearance)
+- **Amendment D-010b (2026-10-31): negative-feasibility spikes.** A spike whose finding is negative
+  (for example, the T02 licence gate correctly denying the Windows worker or the Linux Gtk graph) may
+  merge as **evidence and tooling** if all of the following hold:
+  - its workflow asserts the expected outcome (the gate *denies* the named artifacts), so a green run
+    means the "tooling works as specified";
+  - VALIDATION.md records the shipping graph as **blocked**;
+  - no suppression, waiver or allowlist entry is added.
+
+  A merged negative spike never unblocks dependent production tasks: T06 stays blocked until a joint
+  strategy is in force.
+  - Approved-by: Opus (2026-10-31)
+  - Approved-by: GPT — pending
 - **Scope:** development integration on the local `main` only. It is not release evidence, and it is
   not a waiver of any M6 gate.
 - **Rationale:** there is no git remote. Creating a hosted repo publishes company code, so it is an

@@ -70,6 +70,9 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
      announced by terminal message, released by message after the push). The same verification rules
      apply.
 6. **Shared files:**
+   - Shared test files (for example the scaffold guard tests in `backend/tests/**`) have exactly one
+     owning task at a time, handed over in DAG order: T04b, then T11 (empty-type guard), then T06
+     (no-NAPS2 guard). T12 adds its own test files and does not edit those.
    - `api/openapi.yaml` and `api/CONTRACT.md` change only through tasks that name them. Those tasks
      need both masters' approval in the review record.
    - Each CI workflow file has exactly one owning task: `ci-web.yml` (T04a), `ci-backend.yml` (T04b),
@@ -98,13 +101,13 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T04b | Backend scaffold: `backend/` .NET 10 solution (`Zilo.Agent`, `Zilo.Core`, `Zilo.Drivers.Naps2` (empty), `Zilo.Drivers.Virtual` (empty), `Zilo.Security`, test projects), production `global.json`, `Directory.Packages.props`, locked restore | BE | G | C | — | `backend/**`, `global.json`, `Directory.*.props`, `.github/workflows/ci-backend.yml` | `dotnet test` green in `ci-backend` on Windows, macOS and Linux runners, in locked mode |
 | T05 | UX and visual design spec: Scan dialog; Install, Permission-help (per browser), Update and Safari-state dialogs; tray consent prompt and revocation UI; tokens; copy per error code and detection state; a11y spec | FE | C | G | — | `docs/design/**`, `design/prototypes/**` (static HTML, no build integration) | Spec with annotated static prototypes; copy table covering every D-008 state and every contract error code (finalized after T10) |
 | T03 | **SP-4a** unsigned packaging dry runs (MSI or MSIX, `.pkg`, `.deb`/`.rpm`) of the T04b hello agent; signing smoke with **test keys only** | BE | G | C | T04b | `packaging/**`, `.github/workflows/packaging-dryrun.yml`, `docs/spikes/SP-4a.md` | Artifacts built on 3 OS runners; install/uninstall smoke on Linux and Windows runners; test-key signature verifies |
-| T06 | Reconcile T02's verified NAPS2 graph into production packages and locks | BE | G | C | T02, T04b | `Directory.Packages.props`, locks, `backend/src/Zilo.Drivers.Naps2/*.csproj`, `.github/workflows/ci-backend.yml` (ownership transferred from merged T04b) | `ci-backend` locked restore green; licence gate wired into `ci-backend` |
+| T06 | Reconcile T02's verified NAPS2 graph into production packages and locks; retires T04b's no-NAPS2 scaffold guard. **Blocked** until the joint ICA/worker/image-backend strategy is in force | BE | G | C | T02, T04b, joint strategy | `Directory.Packages.props`, locks, `backend/src/Zilo.Drivers.Naps2/*.csproj`, `.github/workflows/ci-backend.yml` (ownership transferred from merged T04b) | `ci-backend` locked restore green; licence gate wired into `ci-backend` |
 
 ### Wave 1 — M1 contract + skeletons
 | ID | Task | Lane | A | R | Deps | Observable acceptance |
 |---|---|---|---|---|---|---|
 | T10 ★ | Full contract `api/openapi.yaml` + `api/CONTRACT.md` (PLAN §4). Uses T01 findings only as a **reviewed handoff note** (`docs/spikes/SP-1a-interim.md`, reviewed by G), never an unmerged branch | BE | G | C | T04b, T01-interim note | Both masters approve in the review record; schema lint passes; TS types generated in a scratch dir compile |
-| T11 ★ | Agent skeleton: `hello`, `devices`, `caps`; Host/Origin checks; headless consent hook; tokens (issue, expire, revoke, scope); resource bounds | BE | G | C | T10, T06 | Contract tests for these endpoints; security unit tests for Host, Origin, token expiry and revocation |
+| T11 ★ | Agent skeleton: `hello`, `devices`, `caps`; Host/Origin checks; headless consent hook; tokens (issue, expire, revoke, scope); resource bounds. Retires T04b's empty-type scaffold guard | BE | G | C | T10, T04b | Contract tests for these endpoints; security unit tests for Host, Origin, token expiry and revocation |
 | T12 | Virtual driver (D-007 layer 1) against the T10 neutral model. A standalone page-generator prototype may start earlier under `spikes/` | BE | G | C | T10, T04b | Golden-image tests (decoded pixels, QR payload); failure-variant tests |
 | T13 | SDK core: D-008 detection state machine, permission query, HTTP transport, typed errors, devices/caps, unknown-field tolerance with redacted debug logs | FE | C | G | T04a, T10 | Unit tests against an OpenAPI-generated mock server |
 | T14 | Demo app device list, integrated with the real agent | FE | C | G | T13, T11, T12 | Linux CI job starts the agent and the demo lists "Zilo Virtual Scanner" over real HTTP (M1 exit) |
@@ -167,7 +170,8 @@ Tracked in VALIDATION.md.
 |---|---|---|---|---|---|---|
 | T02 | running | t02-naps2-spike | ctx_94f23f46bf05 | pending Claude review | pending | |
 | T02-L | author settled; terminal released; integration handed to T02 | t02-license-gate | ctx_8d851f7ca858 | combined T02 Claude review | author reports 65 tests pass; review pending | |
-| T04b | author settled; retained for fixes; review active | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce (t04b-review-r1) | pending review; native CI pending | |
+| T04b | code reviewed; native validation active | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce (t04b-review-r1; runtime retained/user_takeover) | Claude code PASS; native Windows pending | |
+| T04b-V | running; evidence only | t04b-native-validation | ctx_59467948111b | masters review evidence | pending native Windows; macOS/hosted CI pending | |
 | T03 | not started | | | | | |
 | T06 | not started | | | | | |
 
