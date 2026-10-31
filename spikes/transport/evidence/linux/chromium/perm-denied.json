@@ -12,12 +12,16 @@
       "error": "TypeError",
       "message": "Failed to fetch",
       "timedOut": false,
-      "ms": 14
+      "ms": 12
     }
   },
+  "console": [
+    "error: Access to fetch at 'http://127.0.0.1:47613/zilo/v1/hello' from origin 'https://app.zilo.test:8443' has been blocked by CORS policy: Permission was denied for this request to access the `loopback` address space.",
+    "error: Failed to load resource: net::ERR_FAILED"
+  ],
   "project": "chromium",
   "os": "linux",
   "browserVersion": "156.0.8078.4",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:04:40.849Z"
+  "recordedAt": "2026-10-31T16:15:21.885Z"
 }

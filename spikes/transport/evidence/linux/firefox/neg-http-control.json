@@ -16,9 +16,12 @@
       "ms": 3
     }
   },
+  "console": [
+    "warning: [JavaScript Warning: \"Password fields present on an insecure (http://) page. This is a security risk that allows user login credentials to be stolen.\" {file: \"http://app.zilo.test:8080/\" line: 0}]"
+  ],
   "project": "firefox",
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:05:21.392Z"
+  "recordedAt": "2026-10-31T16:16:02.587Z"
 }

@@ -1,0 +1,95 @@
+{
+  "scenario": "s2-bridge",
+  "outcome": "pass",
+  "expectation": "handshake ok without any LNA permission; hello relayed; 1 MiB ArrayBuffer transferred; 5 SSE ticks relayed; oversize refused (too-large); arbitrary op refused",
+  "observed": {
+    "bridge": {
+      "ok": true,
+      "steps": [
+        {
+          "s": "opened",
+          "ms": 41,
+          "closedImmediately": false
+        },
+        {
+          "s": "ready",
+          "ms": 55
+        },
+        {
+          "s": "welcome",
+          "ms": 59,
+          "sessionId": "6a261086fafce4d3"
+        },
+        {
+          "s": "op-hello",
+          "ms": 62,
+          "ok": true
+        },
+        {
+          "s": "op-blob",
+          "ms": 74,
+          "ok": true
+        },
+        {
+          "s": "op-blob-oversize",
+          "ms": 74,
+          "code": "too-large"
+        },
+        {
+          "s": "op-events",
+          "ms": 1079,
+          "ticks": 5
+        }
+      ],
+      "coopHeader": null,
+      "nonce": "be5c27f59fd0c8caea04298c2bbe25a9",
+      "sessionId": "6a261086fafce4d3",
+      "hello": {
+        "ok": true,
+        "product": "zilo-spike-agent"
+      },
+      "blob": {
+        "ok": true,
+        "bytes": 1048576,
+        "ms": 12
+      },
+      "oversize": {
+        "code": "too-large"
+      },
+      "events": {
+        "ticks": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "unknownOp": {
+        "code": "unknown-op"
+      }
+    },
+    "rejections": [],
+    "popupState": {
+      "url": "http://127.0.0.1:47613/bridge",
+      "status": "bound",
+      "rejections": [],
+      "hasOpener": true
+    },
+    "mintStatuses": [
+      [
+        201,
+        "bridge-session-minted",
+        "https://app.zilo.test:8443"
+      ]
+    ]
+  },
+  "console": [
+    "error: Unable to post message to http://app.zilo.test:8080. Recipient has origin https://app.zilo.test:8443.\n"
+  ],
+  "project": "webkit",
+  "os": "linux",
+  "browserVersion": "27.2",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-10-31T16:16:06.436Z"
+}

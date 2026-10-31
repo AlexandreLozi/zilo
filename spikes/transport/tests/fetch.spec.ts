@@ -4,7 +4,7 @@ import { test } from '@playwright/test';
 import { APP_ORIGIN, APP_TOKENS } from '../config.ts';
 import { chromiumArgs, firefoxPrefs } from '../playwright.config.ts';
 import { ensureCerts } from '../scripts/gen-certs.ts';
-import { chromiumDeny, expect, openPage, queryPermissions, run, saveEvidence, verified } from './helpers.ts';
+import { auditMark, auditSince, chromiumDeny, expect, openPage, queryPermissions, run, saveEvidence, verified } from './helpers.ts';
 
 const TOKEN = APP_TOKENS[APP_ORIGIN];
 
@@ -41,6 +41,12 @@ test.describe('loopback fetch from an HTTPS public origin', () => {
       expect(hello.ok).toBe(false);
       expect(hello.timedOut).toBe(true);
       expect(after['loopback-network']).toBe('prompt');
+    } else if (verified(browserName)) {
+      // Playwright WebKit answers the query with `prompt` but has no prompt: the HTTPS page's
+      // loopback fetch is refused immediately (see the hello rows).
+      expect(before['loopback-network']).toBe('prompt');
+      expect(hello.error).toBe('TypeError');
+      expect(hello.timedOut).toBe(false);
     }
     await saveEvidence(info, page, browser, {
       scenario: 'perm-prompt',
@@ -82,11 +88,13 @@ test.describe('loopback fetch from an HTTPS public origin', () => {
     }
     await openPage(page, `${APP_ORIGIN}/`, TOKEN);
     const perms = await queryPermissions(page);
+    const mark = auditMark();
     const helloTas = await run(page, 'hello-tas', 'hello-tas');
     const helloPlain = await run(page, 'hello-plain', 'hello-plain');
     const events = await run(page, 'events', 'events');
     const blob = await run(page, 'blob', 'blob');
     const env = await page.evaluate(() => (window as any).__zilo.results.env);
+    const reachedAgent = auditSince(mark).length;
     const strict = verified(browserName);
     const rows: Array<[string, any, string]> = [
       ['hello-tas', helloTas, "fetch(..., {targetAddressSpace:'loopback'}) returns 200"],
@@ -99,13 +107,22 @@ test.describe('loopback fetch from an HTTPS public origin', () => {
         scenario,
         outcome: strict ? (r.ok ? 'pass' : 'fail') : 'observed',
         expectation,
-        observed: { result: r, permissions: perms, grant, targetAddressSpace: env.tas },
+        observed: { result: r, permissions: perms, grant, targetAddressSpace: env.tas, requestsSeenByAgent: reachedAgent },
+        notes: browserName === 'webkit'
+          ? 'Playwright WebKit (not Safari): blocked before any request reaches the agent, consistent with mixed-content blocking of http://127.0.0.1'
+          : undefined,
       });
     }
     if (browserName === 'webkit') {
       if (strict) {
-        // Filled in from the first recorded WebKit run (see SP-1a.md).
-        for (const [, r] of rows) expect(r.ok).toBe(false);
+        // Expected failure (observed in Playwright WebKit 27.2): blocked immediately, never sent.
+        expect(grant).toContain('Unknown permission');
+        for (const [, r] of rows) {
+          expect(r.ok).toBe(false);
+          expect(r.error).toBe('TypeError');
+          expect(r.timedOut).toBe(false);
+        }
+        expect(reachedAgent).toBe(0);
       }
       return;
     }

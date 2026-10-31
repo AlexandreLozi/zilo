@@ -13,20 +13,22 @@
         4,
         5
       ],
-      "spreadMs": 802,
+      "spreadMs": 799,
       "incremental": true,
-      "ms": 1006
+      "ms": 1004
     },
     "permissions": {
       "loopback-network": "granted",
       "local-network": "granted"
     },
     "grant": "granted via context.grantPermissions(local-network-access)",
-    "targetAddressSpace": "ignored"
+    "targetAddressSpace": "ignored",
+    "requestsSeenByAgent": 6
   },
+  "console": [],
   "project": "firefox",
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:05:18.314Z"
+  "recordedAt": "2026-10-31T16:15:59.202Z"
 }

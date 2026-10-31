@@ -17,9 +17,14 @@
       "ms": 12
     }
   },
+  "console": [
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "error: Access to fetch at 'http://127.0.0.1:47613/zilo/v1/hello' from origin 'http://app.zilo.test:8080' has been blocked by CORS policy: The request client is not a secure context and the resource is in more-private address space `loopback`.",
+    "error: Failed to load resource: net::ERR_FAILED"
+  ],
   "project": "chromium",
   "os": "linux",
   "browserVersion": "156.0.8078.4",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:04:41.534Z"
+  "recordedAt": "2026-10-31T16:15:22.570Z"
 }

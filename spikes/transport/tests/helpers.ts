@@ -29,6 +29,7 @@ export async function saveEvidence(info: TestInfo, page: Page | null, browser: B
   const file = `${dir}/${ev.scenario}`;
   const payload = {
     ...ev,
+    console: page && ev.outcome !== 'n/a' ? consoleOf(page) : undefined,
     project: info.project.name,
     os: process.platform,
     browserVersion: browser ? browser.version() : null,
@@ -43,7 +44,19 @@ export async function saveEvidence(info: TestInfo, page: Page | null, browser: B
   console.log(`[evidence] ${info.project.name}/${process.platform} ${ev.scenario}: ${ev.outcome} :: ${JSON.stringify(ev.observed)}`);
 }
 
+const consoleLogs = new WeakMap<Page, string[]>();
+
+/** Browser console lines (errors and warnings), e.g. mixed-content or LNA block messages. */
+export function consoleOf(page: Page): string[] {
+  return (consoleLogs.get(page) ?? []).filter((l) => !l.includes('[zilo-ignore]'));
+}
+
 export async function openPage(page: Page, url: string, token?: string): Promise<void> {
+  if (!consoleLogs.has(page)) {
+    const lines: string[] = [];
+    consoleLogs.set(page, lines);
+    page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') lines.push(`${m.type()}: ${m.text()}`.slice(0, 400)); });
+  }
   await page.setViewportSize({ width: 900, height: 700 });
   await page.goto(url);
   if (token) await page.fill('#token', token);
@@ -93,11 +106,13 @@ export async function chromiumDeny(browser: Browser, context: BrowserContext, pa
 /**
  * Platforms where the encoded expectations were observed at least once. Elsewhere a browser test
  * records what it sees and only asserts browser-independent invariants (server-side denials, the
- * bridge's own checks). WebKit on Linux and macOS stays observe-only until a run there is recorded.
+ * bridge's own checks). WebKit on macOS stays observe-only until a run there is recorded.
  */
 export function verified(browserName: string): boolean {
   if (browserName !== 'webkit') return true;
-  return (process.env.ZILO_WEBKIT_VERIFIED ?? 'win32').split(',').includes(process.platform);
+  return (process.env.ZILO_WEBKIT_VERIFIED ?? WEBKIT_VERIFIED_PLATFORMS).split(',').includes(process.platform);
 }
+/** Where Playwright WebKit expectations were observed: Linux (WSL, scratch libs). */
+export const WEBKIT_VERIFIED_PLATFORMS = 'linux';
 
 export { expect };

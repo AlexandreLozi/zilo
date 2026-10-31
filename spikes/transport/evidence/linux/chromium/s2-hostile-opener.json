@@ -8,16 +8,16 @@
       "steps": [
         {
           "s": "opened",
-          "ms": 26,
+          "ms": 27,
           "closedImmediately": false
         },
         {
           "s": "ready-timeout",
-          "ms": 5026
+          "ms": 5027
         }
       ],
       "coopHeader": null,
-      "nonce": "6b89f91d5c7df09c89b549980a1c1ef8",
+      "nonce": "331a6c1e1dac58148e4604a89e2ac3a3",
       "code": "no-ready-then-timeout"
     },
     "popupState": {
@@ -33,9 +33,12 @@
     },
     "minted": 0
   },
+  "console": [
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
   "project": "chromium",
   "os": "linux",
   "browserVersion": "156.0.8078.4",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:04:18.936Z"
+  "recordedAt": "2026-10-31T16:14:59.929Z"
 }

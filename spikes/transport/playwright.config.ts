@@ -106,6 +106,9 @@ export default defineConfig({
         browserName: 'webkit',
         ignoreHTTPSErrors: webkitIgnoreTls,
         proxy: { server: `http://127.0.0.1:${PROXY_PORT}` },
+        // Local-only escape hatch: a scratch WebKit copy whose wrapper appends ZILO_EXTRA_LD_PATH
+        // (host libraries extracted without root). CI never sets it.
+        launchOptions: process.env.ZILO_WEBKIT_EXECUTABLE ? { executablePath: process.env.ZILO_WEBKIT_EXECUTABLE } : {},
       },
     },
   ],
