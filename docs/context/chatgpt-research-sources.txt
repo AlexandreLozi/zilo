@@ -1,0 +1,845 @@
+CSCANTWAIN  BROWSER BASED DOCUMENT SCANNING SDK  cScanTWAIN is a browser-based document scanning SDK specifically designed for web applications. A few lines of JavaScript code and a small non-intrusi...
+
+=====
+
+2607 LTSR  * Service * Current Release * 2607 LTSR * 2511 * 2507 LTSR * 2503 * 2411 * 2407 * 2402 LTSR * 2311 * 2203 LTSR  SCANNING  Last published : Oct 15, 2026  Scanner is a device that optically...
+
+=====
+
+NAPS2 - NOT ANOTHER PDF SCANNER  NAPS2 on Windows, Mac, and Linux  NAPS2 is a document scanning application with a focus on simplicity and ease of use. Scan your documents from WIA, TWAIN, SANE, and...
+
+=====
+
+SANE - INTRODUCTION  SANE stands for "Scanner Access Now Easy" and is an application programming interface (API) that provides standardized access to any raster image scanner hardware (flatbed scanner...
+
+=====
+
+SDK USAGE  Relevant source files  * NAPS2.App.Console/NAPS2.App.Console.csproj * NAPS2.App.Gtk/NAPS2.App.Gtk.csproj * NAPS2.App.Mac/NAPS2.App.Mac.csproj * NAPS2.App.PortableLauncher/NAPS2.App.Portabl...
+
+=====
+
+BROWSER-TO-SCANNER in 5 minutes. No plugins.  CLRSCAN lets your web app talk to USB and network scanners with a simple JavaScript SDK. No Java applets, no ActiveX, no browser extensions.  Get Started...
+
+=====
+
+MAKING TRADITIONAL DOCUMENT SCANNERS WORK WITH WEB APPLICATIONS  * August 25, 2026 * Kevin Miller  If your business relies on web-based software for daily operations, you’ve likely run into a frustra...
+
+=====
+
+AMBIRSCAN WEB CONNECT SDK  AMBIRSCAN WEB CONNECT  Add Document Scanning to Any Web Application.  One JavaScript SDK · One-Click Scanning · Zero Cloud Dependency · Any TWAIN Scanner   The Problem  Web...
+
+=====
+
+DWT  Image: This package contains built-in TypeScript declarations  19.5.0 • Public • Published 2 days ago  * Readme * Code Beta * 0 Dependencies * 15 Dependents * 121 Versions  DYNAMIC WEB TWAIN SDK...
+
+=====
+
+SECURE CONTEXTS  A secure context is a `Window` or `Worker` for which certain minimum standards of authentication and confidentiality are met. Many Web APIs and features are accessible only in a secu...
+
+=====
+
+NAPS2-SCAN  Python wrapper over NAPS2.Sdk via pythonnet. Cross-platform scanner discovery and image acquisition on Windows, macOS, and Linux.  INSTALLATION  pip install naps2-scan   > Requires the .N...
+
+=====
+
+PYTHON SDK FOR DYNAMIC WEB TWAIN SERVICE  This repository provides a Python wrapper around the Dynamic Web TWAIN Service REST API for scanner discovery, job control, page capture, document storage, a...
+
+=====
+
+WINDOWS IMAGE ACQUISITION (WIA) DRIVER SAMPLES  * 07/02/2024  Browse code  The Windows Image Acquisition driver sample set contains samples and test tools for Windows Image Acquisition (WIA), a drive...
+
+=====
+
+IMAGING DEVICE DRIVER DESIGN GUIDE  Feedback  Summarize this article for me  IN THIS ARTICLE  1. In this section 2. WIA and STI Driver Reference 3. Related sections  This section contains information...
+
+=====
+
+WINDOWS IMAGE ACQUISITION (WIA)  Feedback  Summarize this article for me  IN THIS ARTICLE  1. Introduction 2. Benefits of Windows Image Acquisition 2.0 3. Development of Windows Image Acquisition 4....
+
+=====
+
+WINDOWS IMAGE ACQUISITION DRIVERS  Feedback  Summarize this article for me  IN THIS ARTICLE  The Microsoft Windows Image Acquisition (WIA) programming interface is a Still Image (STI) architecture fo...
+
+=====
+
+NAPS2.Escl.Server  | 2025-09-16  | Ben Olden-Cooligan  | [3cd680] Escl: Fix CORS for OPTIONS request  NAPS2.Escl.Tests  | 2025-08-04  | Ben Olden-Cooligan  | [43d502] Escl: Accept different capabilit...
+
+=====
+
+CYANFISH/NAPS2  Scan documents to PDF and more, as simply as possible.  ★ 4,698 Forks 476 C#GitHub ↗Compare  Project website ↗  csharpdotnetescllinuxmacosocrpdfsanescannertwainwiawindows  README  NAP...
+
+=====
+
+NAPS2: A CROSS-PLATFORM SCANNING FRONT END WITH A .NET SDK UNDERNEATH  Scan documents to PDF and more, as simply as possible.  4,684 stars 476 forks C#NOASSERTION  GitHub Official website  AT A GLANC...
+
+=====
+
+WEB SCANNING WITH JS/TS  NAPS2's scanner-sharing server uses ESCL, which is a standard HTTP protocol and can be used from a web browser with JavaScript or TypeScript.  See the naps2-webscan project fo...
+
+=====
+
+.NET DOCUMENT SCANNER FOR TWAIN, WIA, SANE, ICA, AND ESCL  This .NET package provides a wrapper for calling the Dynamic Web TWAIN Service REST API. It enables developers to create desktop or cross-pl...
+
+=====
+
+NAPS2.SDK  NAPS2.Sdk is a fully-featured scanning library, supporting WIA, TWAIN, SANE, and ESCL scanners on Windows, Mac, and Linux.  PACKAGES  NAPS2.Sdk is modular, and depending on your needs you m...
+
+=====
+
+DRIVERS  | Windows  | Mac  | Linux --- | --- | --- | --- WIA  | X  |  | TWAIN  | X  | *  | Apple  |  | X  | SANE  |  | X  | X ESCL  | X  | X  | X  WIA (Windows Image Acquisition) is a Microsoft techn...
+
+=====
+
+NAPS2.SDK 1.3.0  Prefix Reserved  .NET 8.0 This package targets .NET 8.0. The package is compatible with this framework or higher. .NET Framework 4.6.2 This package targets .NET Framework 4.6.2. The...
+
+=====
+
+Sdk  NAPS2.Sdk is a fully-featured scanning library, supporting WIA, TWAIN, SANE, and ESCL scanners on Windows, Mac, and Linux.  PACKAGES  NAPS2.Sdk is modular, and depending on your needs you may hav...
+
+=====
+
+PERMISSIONS-POLICY: LOCAL-NETWORK DIRECTIVE  Limited availability  This feature is not Baseline because it does not work in some of the most widely-used browsers.  Want more browser support for this...
+
+=====
+
+REQUEST: TARGETADDRESSSPACE PROPERTY  Note: This feature is available in Web Workers.  Experimental: This is an experimental technology Check the Browser compatibility table carefully before using th...
+
+=====
+
+SECURE CONTEXTS  A secure context is an environment such as a `Window` or `Worker` which meets a defined standard of authentication and confidentiality. Many Web APIs and features are accessible only...
+
+=====
+
+LOCAL NETWORK ACCESS  The Local network access technology places restrictions on the ability of websites to make requests to the user's local network, mitigating the risk of attacks such as cross-sit...
+
+=====
+
+WEBUSB API  Limited availability  This feature is not Baseline because it does not work in some of the most widely-used browsers.  * See full compatibility * Learn more  Experimental: This is an expe...
+
+=====
+
+WHAT IS PRIVATE NETWORK ACCESS (PNA)  Private Network Access (formerly known as CORS-RFC1918) restricts the ability of websites to send requests to servers on private networks.  Chrome has already imp...
+
+=====
+
+NEW PERMISSION PROMPT FOR LOCAL NETWORK ACCESS STAY ORGANIZED WITH COLLECTIONS SAVE AND CATEGORIZE CONTENT BASED ON YOUR PREFERENCES.  Chris Thompson  Published: June 9, 2025  Update (2025-09-29): Th...
+
+=====
+
+ACESSO À REDE LOCAL MANTENHA TUDO ORGANIZADO COM AS COLEÇÕES SALVE E CATEGORIZE O CONTEÚDO COM BASE NAS SUAS PREFERÊNCIAS.  Recursos da Web: Acesso à rede local  Observação: estes guias foram criados...
+
+=====
+
+LOCAL NETWORK ACCESS STAY ORGANIZED WITH COLLECTIONS SAVE AND CATEGORIZE CONTENT BASED ON YOUR PREFERENCES.  Web features: Local network access  Note: These guides are authored for AI coding agents (...
+
+=====
+
+WEBUSB DESCRIPTORS  While WebUSB can work with many devices without firmware modifications, additional functionality is enabled by marking the device with specific descriptors indicating support for...
+
+=====
+
+NAPS2 - NOT ANOTHER PDF SCANNER  SCAN DOCUMENTS TO PDF AND MORE, AS SIMPLY AS POSSIBLE.  NAPS2 is free and open source scanning software for Windows, Mac and Linux.  Easily scan with devices from Can...
+
+=====
+
+ENUM DRIVER  Namespace NAPS2.Scan  Assembly NAPS2.Sdk.dll  Specifies the driver type to be used for performing the actual scan. Available options depend on the platform. See https://github.com/cyanfi...
+
+=====
+
+NAPS2 SDK - SCANNING SDK FOR .NET  SCAN DOCUMENTS TO PDF AND MORE, AS SIMPLY AS POSSIBLE.  `// Set up using var scanningContext = new ScanningContext(new GdiImageContext()); var controller = new Scan...
+
+=====
+
+NAPS2.SDK  NAPS2.Sdk is a fully-featured scanning library, supporting WIA, TWAIN, SANE, and ESCL scanners on Windows, Mac, and Linux.  PACKAGES  NAPS2.Sdk is modular, and depending on your needs you...
+
+=====
+
+NAPS2.EXE IS MISSING WHILE USING SCAN SERVER #648  Closed  NAPS2.exe is missing while using scan server#648  DESCRIPTION  Exlord  opened on Jul 12, 2025  Issue body actions  I am trying to use the sc...
+
+=====
+
+4. ARCHITECTURE  Jump to bottom  Ben Olden-Cooligan edited this page Jan 15, 2023 · 5 revisions  Note that, as always, design documentation is a high-level overview and may simplify some things. The...
+
+=====
+
+title: Secure contexts  slug: Web/Security/Defenses/Secure_Contexts  page-type: guide  sidebar: security  ---  A **secure context** is an environment such as a `Window` or `Worker` which meets a defi...
+
+=====
+
+title: "Permissions-Policy: local-network directive"  short-title: local-network  slug: Web/HTTP/Reference/Headers/Permissions-Policy/local-network  page-type: http-permissions-policy-directive  stat...
+
+=====
+
+POTENTIALLY TRUSTWORTHY URLS  A URL is potentially trustworthy if any of the following apply:  * Its value is `about:blank` or `about:srcdoc` * Its scheme is `data` * Its {{glossary("origin")}} is a...
+
+=====
+
+3. PROJECT STRUCTURE  Jump to bottom  Ben Olden-Cooligan edited this page Mar 11, 2023 · 5 revisions  The NAPS2 solution has a number of projects:  * `NAPS2.Sdk` is available as a Nuget package and i...
+
+=====
+
+1. cyanfish 2. naps2-webscan  REPOSITORY NAVIGATION  *   * Code * Issues4 (4) * Pull requests * Actions * Projects * Security and quality * Insights  More items  Image: cyanfish  naps2-webscan  Publi...
+
+=====
+
+RSWEBTWAIN  A headless system tray app that bridges browser-based applications to TWAIN document scanners on Windows. Designed as an open-source replacement for commercial WebTWAIN bridges.  > Status...
+
+=====
+
+INTRODUCTION  Imagine a user trying to upload a signed medical release form to a patient portal, or a small business owner scanning a stack of invoices into an accounting web app. Today, these users m...
+
+=====
+
+DynamicWebTWAIN.REST.NET.sln  | DynamicWebTWAIN.REST.NET.sln  |    | build.bat  | build.bat  |    | build_dll.bat  | build_dll.bat  |    | build_nuget_pkg.bat  | build_nuget_pkg.bat  |    | readme.md...
+
+=====
+
+GitHub - naps2-software/naps2-scanner: NAPS2 Software maintains NAPS2 Scanner, an open-source desktop solution for capturing documents and saving polished PDF, TIFF, JPEG, or PNG files. It supports WIA, TWAIN, SANE, and ESCL devices, offers OCR in over 100 languages, and lets users rotate, crop, reorder, or delete pages before saving. · GitHub
+
+=====
+
+ABOUT  NAPS2 Software maintains NAPS2 Scanner, an open-source desktop solution for capturing documents and saving polished PDF, TIFF, JPEG, or PNG files. It supports WIA, TWAIN, SANE, and ESCL device...
+
+=====
+
+Dynamic-Web-TWAIN  Public  * NotificationsYou must be signed in to change notification settings * Fork26 (26) * Star83 (83)You must be signed in to star a repository  ABOUT  Dynamic Web TWAIN for pac...
+
+=====
+
+HOW TO BUILD A WEB DOCUMENT SCANNER ON CHROME OS WITH DYNAMIC WEB TWAIN  By Xiao Ling  Updated Jul 14, 2026   Document Scanning  *  WEB TWAIN *  CHROME OS *  CHROMEBOOK *  DOCUMENT SCANNING *  DOCUME...
+
+=====
+
+CROSS-BROWSER WEB SCANNING: HOW TO CHOOSE A TOOL THAT WORKS IN CHROME, EDGE, FIREFOX, AND SAFARI  Oct 12, 2026 · Geetanjali  Cross-browser web scanning enables browser-based applications to capture d...
+
+=====
+
+IMAGING HARDWARE  Dynamic Web TWAIN’s main feature is interacting with imaging devices like scanners and cameras via different APIs like TWAIN, ICA, SANE, WIA, eSCL and DirectShow. As long as the sca...
+
+=====
+
+TWAIN  TWAIN is a standard for interacting with image devices, like document scanners and cameras. It was created by a small group of software and hardware companies in response to the need for a pro...
+
+=====
+
+Blog > document management > The Complete Guide to Web Document Scanning: TWAIN, WIA, and Browser-Based Solutions  THE COMPLETE GUIDE TO WEB DOCUMENT SCANNING: TWAIN, WIA, AND BROWSER-BASED SOLUTIONS...
+
+=====
+
+DYNAMIC WEB TWAIN SERVICE  Dynamic Web TWAIN Service (previously known as Dynamsoft Service prior to version 19) is a local service installed on end-user devices to make it possible to access imaging...
+
+=====
+
+{WEBTWAINOBJECT} SCAN  > The properties and methods on this page live in the namespace {WebTwainObject}. {WebTwainObject} denotes the `WebTwain` instance. Learn more about creating `WebTwain` instanc...
+
+=====
+
+Supported Client-Side OS  | Technology  | Supported Client-Side Browsers  | Supported Client-Side Browsers  | Supported Frameworks  | Supported Server-Side OS --- | --- | --- | --- | --- | --- Window...
+
+=====
+
+Blog > product features > How Dynamic Web TWAIN HTML5 Edition Works  HOW DYNAMIC WEB TWAIN HTML5 EDITION WORKS  Oct 24, 2022 · Admin  With 72.19% of Dynamic Web TWAIN customers having the requirement...
+
+=====
+
+Document Scanning SDK  Free trial Get pricing  Document Scanning SDK  v19.4.4 (09/22/2026)  SECURE DOCUMENT Scanning for Web Apps  Add scanner support to any web app in a few lines of JavaScript. ISO...
+
+=====
+
+ADD-ONS  DWT add-ons provide additional features:  * Webcam add-on to access cameras in the browser. * Barcode Reader add-on to read barcodes in documents. * PDF Rasterizer add-on to load external PD...
+
+=====
+
+EXTEND FOR YOUR WORKFLOW  From scanner control to export — no stitching multiple libraries together.  Need text extraction?  OCR ADD-ON  AI-powered, on-device OCR. Supports multiple languages, region-...
+
+=====
+
+INTRODUCTION  Dynamsoft Dynamic Web TWAIN (DWT) is a software development kit (SDK) that enables users to scan documents from a web environment via APIs like TWAIN, WIA, ICA, SANE and eSCL. DWT handl...
+
+=====
+
+## 3. There's already an example of exactly what you want
+
+I found an especially relevant GitHub repository:
+
+<row align="center" gap={3}>
+  <AsyncImage query="NAPS2 document scanning software application screenshot Windows scan interface" aspectRatio="5:4" maxWidth="136px"/>
+  <box flex="1" gap={1}>
+    **<Link url="https://github.com/cyanfish/naps2-webscan" title="NAPS2 WebScan on GitHub"/>**
+
+    An example project that lets JavaScript/TypeScript web applications scan documents through a locally installed Windows service.
+  </box>
+</row>
+
+It already includes two important pieces:
+
+- `NAPS2.WebScan.LocalService`: a Windows service that exposes scanners through an eSCL interface.
+- `NAPS2.WebScan.WebServer`: an example of accessing that scanning functionality from JavaScript/TypeScript.
+
+This is a reference implementation, not a production-ready replacement, but it directly demonstrates the architecture you're looking for. <Cite ref="turn398475search0"/>
+
+## 4. What features would you actually need to develop?
+
+Here's how I'd scope the first version.
+
+{@body const features=[{name:"Detect available scanners",level:"Easy",essential:true},{name:"Start scan from browser",level:"Medium",essential:true},{name:"Choose DPI, color, paper size",level:"Medium",essential:true},{name:"Scan multiple pages (ADF)",level:"Medium",essential:true},{name:"Duplex scanning",level:"Medium",essential:true},{name:"Return PDF or images",level:"Easy",essential:true},{name:"Preview pages in browser",level:"Easy",essential:false},{name:"Rotate, crop, reorder pages",level:"Medium",essential:false},{name:"OCR / searchable PDF",level:"Medium",essential:false},{name:"Cross-platform support",level:"Hard",essential:false},{name:"Installer and automatic updates",level:"Hard",essential:false}]}
+{@body const [chosen,setChosen]=DIL.useState(features.map(f=>f.essential))}
+<box border radius="xl" padding={3} gap={3}>
+  <row justify="between" align="center">
+    **Feature checklist for your replacement**
+    <text color="secondary" size="xs" tabularNums>{chosen.filter(Boolean).length} of {features.length} selected</text>
+  </row>
+  {#each features as f,i}
+    <row align="center" justify="between" key={f.name}>
+      <box flex="1">
+        <checkbox checked={chosen[i]} onChange={v=>setChosen(old=>old.map((x,j)=>i===j?v:x))} lineThrough={false}>{f.name}</checkbox>
+      </box>
+      <text color="secondary" size="xs">{f.level}</text>
+    </row>
+  {/each}
+  <button block onClick={()=>GenUI.issueNewTurn("Design a technical MVP implementation plan for my Web TWAIN replacement using NAPS2 SDK, C# local service and React. Include these features: "+features.filter((f,i)=>chosen[i]).map(f=>f.name).join(", ")+". Include architecture, endpoint contracts, security, and implementation order.")}>Create implementation plan for selected features <icon name="arrow-right" inline/></button>
+</box>
+
+## 5. Example of how the API could work
+
+Your local service could expose just three endpoints initially:
+
+```http
+GET http://127.0.0.1:17890/api/scanners
+
+GET http://127.0.0.1:17890/api/scanners/{id}/capabilities
+
+POST http://127.0.0.1:17890/api/scan
+```
+
+The web application might issue a request like this:
+
+```javascript
+const response = await fetch(
+  "http://127.0.0.1:17890/api/scan",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${localToken}`
+    },
+    body: JSON.stringify({
+      scannerId: "scanner-001",
+      dpi: 300,
+      colorMode: "color",
+      source: "feeder",
+      duplex: true,
+      format: "pdf"
+    })
+  }
+);
+
+const pdf = await response.blob();
+```
+
+This is an illustrative API design, not an existing NAPS2 endpoint.
+
+For production, you'd need secure client pairing, origin validation, access control, and appropriate CORS configuration. Modern browsers also apply local-network access permissions when public websites communicate with localhost. <Cite ref="turn398475search2"/>
+
+## 6. How difficult is the project?
+
+These are my rough engineering estimates for one experienced developer, assuming hardware is available for testing.
+
+| Scope | Estimated effort |
+|---|---|
+| Proof of concept: one Windows scanner | 2–5 days |
+| Windows MVP: basic scanning and PDF | 2–4 weeks |
+| Production-ready Windows version | 1–3 months |
+| Broad cross-platform alternative | 3–6+ months |
+
+These are development estimates, not guarantees. The number and variety of supported scanner models can change the effort dramatically.
+
+The biggest complications are usually hardware compatibility, paper feeder behavior, error recovery, installation, and driver differences. For example, TWAIN sometimes requires a 32-bit worker process even when your application is 64-bit; NAPS2 already provides support for this. <Cite ref="turn932435search1"/>
+
+One more important point: **licensing**. The NAPS2 SDK is LGPL-2.1-or-later, while the main NAPS2 application is GPL-2.0-or-later. Using the SDK in commercial software may be possible, but you'll need to comply with the LGPL requirements and check the licenses of all packaged components. <Cite ref="turn932435search9"/>
+
+## My recommendation
+
+I wouldn't develop your own TWAIN driver implementation or build the entire scanner integration stack from scratch. I'd start by cloning `naps2-webscan`, getting it working against your actual scanners, and evaluating the NAPS2 SDK as the foundation.
+
+That could turn a substantial driver-integration project into a much smaller local-service and frontend-integration project.
+
+**One important question:** Is your company currently using Dynamic Web TWAIN in a web application deployed to multiple customers or offices, where each computer has its own scanner?
+
+Or are you only using it internally with a few known scanner models?
+
+That distinction matters enormously: supporting 5–10 known models on Windows is a very different project from building a reliable replacement for hundreds of different scanners across customer environments.
+
+=====
+
+https://images.openai.com/static-rsc-4/dIEajBPtwhJwXtd3phO7vFb_aFjbj4llJkBKZVOTaq-B8le6rlQkhmoDfevj9MvAwPbbdOxx98tbMaejhNxa308AhV7Q3jDWUOkEJB1YmyhMOfaLHAImtpW84C3dHVQ4gS4_wMW7NiZZkv0ZI4zjBqKPp0K4tyQCPo9dM3n5e1Y?purpose=inline
+
+=====
+
+https://images.openai.com/static-rsc-4/MBh0quiXLXlI82Ifk92k98qWqirclqjRrIfEtQCjPTdX6OIyW0i3g34AegZUmdO_kAS1_C5crcMbSmPOdlYixH1Ge5sWcwz7lkeCnWVHCbExvTazIgsXoDb2OshKvutk6TEwu4E1FY6QJp-KFRrvSn6m0v9fmLD86XXmUSa_P58bkgI9igGok1UjJoh4NW1s?purpose=fullsize
+
+=====
+
+Outline the main challenges, feasibility, and approaches involved in extending a local scanning service like the NAPS2-based solution beyond Windows to support macOS and Linux. Include discussion about different scanning protocols (WIA vs SANE), driver availability, API surface differences, and effort estimates required to build a cross-platform scanning replacement for Dynamic Web TWAIN.
+
+=====
+
+Explain best practices for implementing secure client pairing, authorization, and authentication between the web application and the local scanning service running on localhost. Cover strategies for bearer token management, origin validation, CORS policies, and handling modern browser local network access permissions for a production-ready scanning solution.
+
+=====
+
+Design a detailed technical MVP implementation plan for building a Web TWAIN replacement using the NAPS2 SDK for local scanning service in C#, and React + TypeScript for frontend integration. Include selected essential features such as detecting available scanners, starting scan from browser, choosing DPI/color/paper size, multi-page and duplex scanning, and returning PDFs or images. Specify architecture, API endpoints, security considerations, and development order.
+
+=====
+
+```javascript
+const response = await fetch(
+  "http://127.0.0.1:17890/api/scan",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${localToken}`
+    },
+    body: JSON.stringify({
+      scannerId: "scanner-001",
+      dpi: 300,
+      colorMode: "color",
+      source: "feeder",
+      duplex: true,
+      format: "pdf"
+    })
+  }
+);
+
+const pdf = await response.blob();
+```
+
+=====
+
+const response = await fetch(
+  "http://127.0.0.1:17890/api/scan",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${localToken}`
+    },
+    body: JSON.stringify({
+      scannerId: "scanner-001",
+      dpi: 300,
+      colorMode: "color",
+      source: "feeder",
+      duplex: true,
+      format: "pdf"
+    })
+  }
+);
+
+const pdf = await response.blob();
+
+=====
+
+function __dilSafe(evaluate,failureValue){try{return evaluate()}catch{return failureValue}}
+
+DIL.render(__dil.jsx(()=>{const __dilConstants=DIL.useConstants();const __dilModelDataBindings=DIL.useAppData((appData)=>appData.opGenui?.modelDataBindings??{});const features=__dilSafe(()=>([{name:"Detect available scanners",level:"Easy",essential:true},{name:"Start scan from browser",level:"Medium",essential:true},{name:"Choose DPI, color, paper size",level:"Medium",essential:true},{name:"Scan multiple pages (ADF)",level:"Medium",essential:true},{name:"Duplex scanning",level:"Medium",essential:true},{name:"Return PDF or images",level:"Easy",essential:true},{name:"Preview pages in browser",level:"Easy",essential:false},{name:"Rotate, crop, reorder pages",level:"Medium",essential:false},{name:"OCR / searchable PDF",level:"Medium",essential:false},{name:"Cross-platform support",level:"Hard",essential:false},{name:"Installer and automatic updates",level:"Hard",essential:false}]),undefined)
+const [chosen,setChosen]=DIL.useState(features.map(f=>f.essential),{key:"chosen"})
+return __dil.jsx(__dil.Fragment,null,__dil.jsx("text",null,__dil.jsx("bold",null,__dilConstants["0"]),__dilConstants["1"]),__dil.jsx("text",null,__dilConstants["2"],__dilSafe(()=>(__dil.jsx(Entity,{"category":"software","value":__dilConstants["3"],"disambig":"Open-source document scanning SDK","__resolutionId":__dilConstants["4"]})),null),__dilConstants["5"]),__dil.jsx("text",null,__dilConstants["6"]),__dil.jsx("title",{"size":"lg"},__dilConstants["7"]),__dil.jsx("text",null,__dilConstants["8"]),__dil.jsx("box",{"border":true,"radius":"xl","padding":3,"gap":2},__dil.jsx("svg",{"viewBox":__dilConstants["9"],"width":__dilConstants["10"],"xmlns":__dilConstants["11"]},__dilSafe(()=>(([{y:8,title:"Your web application",sub:"React / JavaScript / TypeScript",fill:"#E4EEFE",stroke:"#6396E5"},{y:80,title:"Local scanning service",sub:"HTTP API on localhost",fill:"#DDF4E7",stroke:"#53A982"},{y:152,title:"Scanner interface",sub:"TWAIN / WIA / eSCL / SANE",fill:"#F3E8FA",stroke:"#B58AD7"},{y:224,title:"Physical scanner",sub:"USB or local network",fill:"#F4EBDE",stroke:"#CA9C56"}]).map((b,i)=>__dilSafe(()=>(__dil.jsx(__dil.Fragment,null,__dilSafe(()=>(__dil.jsx("rect",{"x":__dilConstants["12"],"y":b.y,"width":__dilConstants["13"],"height":__dilConstants["14"],"rx":__dilConstants["15"],"fill":b.fill,"stroke":b.stroke})),null),__dilSafe(()=>(__dil.jsx("text",{"x":__dilConstants["16"],"y":b.y+19,"textAnchor":__dilConstants["17"],"fontSize":__dilConstants["18"],"fontWeight":__dilConstants["19"],"fill":__dilConstants["20"]},b.title)),null),__dilSafe(()=>(__dil.jsx("text",{"x":__dilConstants["21"],"y":b.y+35,"textAnchor":__dilConstants["22"],"fontSize":__dilConstants["23"],"fill":__dilConstants["24"]},b.sub)),null),(__dilSafe(()=>(i<3),false))?__dilSafe(()=>(__dil.jsx("path",{"d":`M170 ${b.y+48} v21 m-4 -5 l4 5 4 -5`,"fill":__dilConstants["25"],"stroke":__dilConstants["26"],"strokeWidth":__dilConstants["27"],"strokeLinecap":__dilConstants["28"],"strokeLinejoin":__dilConstants["29"]})),null):null)),null))),[])),__dil.jsx("caption",{"textAlign":"center"},__dilConstants["30"])),__dil.jsx("text",null,__dilConstants["31"],__dil.jsx("bold",null,__dilConstants["32"]),__dilConstants["33"]),__dil.jsx("list",{"marker":"number"},__dil.jsx("list-item",null,__dil.jsx("text",null,__dilConstants["34"])),__dil.jsx("list-item",null,__dil.jsx("text",null,__dilConstants["35"])),__dil.jsx("list-item",null,__dil.jsx("text",null,__dilConstants["36"])),__dil.jsx("list-item",null,__dil.jsx("text",null,__dilConstants["37"])),__dil.jsx("list-item",null,__dil.jsx("text",null,__dilConstants["38"]))),__dil.jsx("text",null,__dilConstants["39"],__dilSafe(()=>(__dil.jsx(Cite,{"refs":__dilConstants["40"],"__resolutionId":__dilConstants["41"]})),null)),__dil.jsx("text",null,__dilConstants["42"],__dil.jsx("bold",null,__dilConstants["43"]),__dilConstants["44"]),__dil.jsx("title",{"size":"lg"},__dilConstants["45"]),__dil.jsx("table",null,__dil.jsx("table-row",null,__dil.jsx("table-cell",{"header":true},__dil.jsx("text",null,__dilConstants["46"])),__dil.jsx("table-cell",{"header":true},__dil.jsx("text",null,__dilConstants["47"])),__dil.jsx("table-cell",{"header":true},__dil.jsx("text",null,__dilConstants["48"]))),__dil.jsx("table-row",null,__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["49"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["50"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["51"]))),__dil.jsx("table-row",null,__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["52"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["53"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["54"]))),__dil.jsx("table-row",null,__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["55"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["56"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["57"]))),__dil.jsx("table-row",null,__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["58"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["59"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["60"]))),__dil.jsx("table-row",null,__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["61"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["62"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["63"]))),__dil.jsx("table-row",null,__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["64"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["65"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["66"]))),__dil.jsx("table-row",null,__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["67"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["68"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["69"])))),__dil.jsx("text",null,__dilConstants["70"],__dil.jsx("bold",null,__dilConstants["71"]),__dilConstants["72"]),__dil.jsx("text",null,__dilConstants["73"]),__dil.jsx("title",{"size":"lg"},__dilConstants["74"]),__dil.jsx("text",null,__dilConstants["75"]),__dil.jsx("row",{"align":"center","gap":3},__dilSafe(()=>(__dil.jsx(AsyncImage,{"query":"NAPS2 document scanning software application screenshot Windows scan interface","aspectRatio":"5:4","maxWidth":"136px","__resolutionId":__dilConstants["76"]})),null),__dil.jsx("box",{"flex":"1","gap":1},__dil.jsx("text",null,__dil.jsx("bold",null,__dilSafe(()=>(__dil.jsx(Link,{"url":"https://github.com/cyanfish/naps2-webscan","title":__dilConstants["77"],"__resolutionId":__dilConstants["78"]})),null))),__dil.jsx("text",null,__dilConstants["79"]))),__dil.jsx("text",null,__dilConstants["80"]),__dil.jsx("list",{"marker":"bullet"},__dil.jsx("list-item",null,__dil.jsx("text",null,__dil.jsx("code",null,__dilConstants["81"]),__dilConstants["82"])),__dil.jsx("list-item",null,__dil.jsx("text",null,__dil.jsx("code",null,__dilConstants["83"]),__dilConstants["84"]))),__dil.jsx("text",null,__dilConstants["85"],__dilSafe(()=>(__dil.jsx(Cite,{"ref":"turn398475search0","__resolutionId":__dilConstants["86"]})),null)),__dil.jsx("title",{"size":"lg"},__dilConstants["87"]),__dil.jsx("text",null,__dilConstants["88"]),__dil.jsx("box",{"border":true,"radius":"xl","padding":3,"gap":3},__dil.jsx("row",{"justify":"between","align":"center"},__dil.jsx("text",null,__dil.jsx("bold",null,__dilConstants["89"])),__dil.jsx("text",{"color":"secondary","size":"xs","tabularNums":true},__dilSafe(()=>(chosen.filter(Boolean).length),null),__dilConstants["90"],__dilSafe(()=>(features.length),null),__dilConstants["91"])),__dilSafe(()=>((features).map((f,i)=>__dilSafe(()=>(__dilSafe(()=>(__dil.jsx("row",{"align":"center","justify":"between","key":f.name},__dil.jsx("box",{"flex":"1"},__dilSafe(()=>(__dil.jsx("checkbox",{"checked":chosen[i],"onChange":v=>setChosen(old=>old.map((x,j)=>i===j?v:x)),"lineThrough":false},f.name)),null)),__dilSafe(()=>(__dil.jsx("text",{"color":"secondary","size":"xs"},f.level)),null))),null)),null))),[]),__dilSafe(()=>(__dil.jsx("button",{"block":true,"onClick":()=>GenUI.issueNewTurn("Design a technical MVP implementation plan for my Web TWAIN replacement using NAPS2 SDK, C# local service and React. Include these features: "+features.filter((f,i)=>chosen[i]).map(f=>f.name).join(", ")+". Include architecture, endpoint contracts, security, and implementation order.")},__dilConstants["92"],__dil.jsx("icon",{"name":"arrow-right","inline":true}))),null)),__dil.jsx("title",{"size":"lg"},__dilConstants["93"]),__dil.jsx("text",null,__dilConstants["94"]),(__dilConstants["96"]==null?__dil.jsx("__chatgptClientDefinedWidget",{"key":"cdw:0","invocationId":__dilConstants["95"]}):__dilConstants["96"].type==="math"?__dil.jsx("math",{"key":"cdw:0","value":__dilConstants["96"].value}):__dilConstants["96"].type==="text"?__dil.jsx("text",{"key":"cdw:0"},__dilConstants["96"].value):null),__dil.jsx("text",null,__dilConstants["97"]),(__dilConstants["99"]==null?__dil.jsx("__chatgptClientDefinedWidget",{"key":"cdw:1","invocationId":__dilConstants["98"]}):__dilConstants["99"].type==="math"?__dil.jsx("math",{"key":"cdw:1","value":__dilConstants["99"].value}):__dilConstants["99"].type==="text"?__dil.jsx("text",{"key":"cdw:1"},__dilConstants["99"].value):null),__dil.jsx(__dil.Fragment,null,__dil.jsx("text",null,__dilConstants["100"]),__dil.jsx("text",null,__dilConstants["101"],__dilSafe(()=>(__dil.jsx(Cite,{"ref":"turn398475search2","__resolutionId":__dilConstants["102"]})),null))),__dil.jsx("title",{"size":"lg"},__dilConstants["103"]),__dil.jsx("text",null,__dilConstants["104"]),__dil.jsx("table",null,__dil.jsx("table-row",null,__dil.jsx("table-cell",{"header":true},__dil.jsx("text",null,__dilConstants["105"])),__dil.jsx("table-cell",{"header":true},__dil.jsx("text",null,__dilConstants["106"]))),__dil.jsx("table-row",null,__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["107"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["108"]))),__dil.jsx("table-row",null,__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["109"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["110"]))),__dil.jsx("table-row",null,__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["111"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["112"]))),__dil.jsx("table-row",null,__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["113"])),__dil.jsx("table-cell",null,__dil.jsx("text",null,__dilConstants["114"])))),__dil.jsx("text",null,__dilConstants["115"]),__dil.jsx("text",null,__dilConstants["116"],__dilSafe(()=>(__dil.jsx(Cite,{"ref":"turn932435search1","__resolutionId":__dilConstants["117"]})),null)),__dil.jsx("text",null,__dilConstants["118"],__dil.jsx("bold",null,__dilConstants["119"]),__dilConstants["120"],__dilSafe(()=>(__dil.jsx(Cite,{"ref":"turn932435search9","__resolutionId":__dilConstants["121"]})),null)),__dil.jsx("title",{"size":"lg"},__dilConstants["122"]),__dil.jsx("text",null,__dilConstants["123"],__dil.jsx("code",null,__dilConstants["124"]),__dilConstants["125"]),__dil.jsx("text",null,__dilConstants["126"]),__dil.jsx("text",null,__dil.jsx("bold",null,__dilConstants["127"]),__dilConstants["128"]),__dil.jsx("text",null,__dilConstants["129"]),__dil.jsx("text",null,__dilConstants["130"]),(__dil.jsx("col",{gap:3},__dil.jsx("divider",null),__dil.jsx("text",null,"If you want, I can:"),__dil.jsx("list",null,__dil.jsx("list-item",null,__dil.jsx("pressable",{inline:true,onClick:()=>GenUI.issueNewTurn("Design a detailed technical MVP implementation plan for building a Web TWAIN replacement using the NAPS2 SDK for local scanning service in C#, and React + TypeScript for frontend integration. Include selected essential features such as detecting available scanners, starting scan from browser, choosing DPI/color/paper size, multi-page and duplex scanning, and returning PDFs or images. Specify architecture, API endpoints, security considerations, and development order.")},__dil.jsx("text",{inline:true,underline:"dotted"},"Design a detailed MVP implementation plan using NAPS2 SDK and React"))),__dil.jsx("list-item",null,__dil.jsx("pressable",{inline:true,onClick:()=>GenUI.issueNewTurn("Explain best practices for implementing secure client pairing, authorization, and authentication between the web application and the local scanning service running on localhost. Cover strategies for bearer token management, origin validation, CORS policies, and handling modern browser local network access permissions for a production-ready scanning solution.")},__dil.jsx("text",{inline:true,underline:"dotted"},"Explain how to securely authorize and authenticate local scanner service requests"))),__dil.jsx("list-item",null,__dil.jsx("pressable",{inline:true,onClick:()=>GenUI.issueNewTurn("Outline the main challenges, feasibility, and approaches involved in extending a local scanning service like the NAPS2-based solution beyond Windows to support macOS and Linux. Include discussion about different scanning protocols (WIA vs SANE), driver availability, API surface differences, and effort estimates required to build a cross-platform scanning replacement for Dynamic Web TWAIN.")},__dil.jsx("text",{inline:true,underline:"dotted"},"Outline cross-platform support challenges beyond Windows for scanner access")))))));},{"key":"body:2"}));
+
+=====
+
+**You can absolutely build your own alternative to Dynamic Web TWAIN and stop paying Dynamsoft licensing fees.** The interesting part is that you don't need to develop scanner drivers yourself. You can use the drivers and scanning interfaces that already exist in Windows, macOS, and Linux.
+
+Even better, there's an open-source library called entity["software","NAPS2 SDK","Open-source document scanning SDK"] that could eliminate a substantial amount of the development effort.
+
+The main challenge isn't actually scanning documents. It's making physical scanners accessible from a web application reliably and securely.
+
+## 1\. How Web TWAIN actually works
+
+Dynamic Web TWAIN is effectively a bridge between your website and a scanner connected to the user's computer.
+
+Simplified architecture of a browser-based scanning solution
+
+Here's what happens when someone clicks **Scan Document**\:
+
+1. The browser sends a request to a small application running locally.
+2. The local application communicates with the scanner through an existing driver or scanning protocol.
+3. The scanner captures one or more pages.
+4. The local application returns the images or PDF to the browser.
+5. Your web application previews, processes, or uploads the document.
+
+Dynamsoft uses this same general architecture with its local Dynamic Web TWAIN Service. citeturn932435search0turn932435search2
+
+You would be replacing their software layer, **not the scanner's manufacturer-provided driver**\.
+
+## 2\. Which technologies would you need?
+
+| Component | Recommended technology | Complexity |
+|--------|--------|--------|
+| Scanner integration | NAPS2 SDK (.NET/C\#) | Medium |
+| Local background service | ASP.NET Core Minimal API | Low–medium |
+| Browser communication | HTTP on localhost | Low–medium |
+| Frontend | React + TypeScript | Low |
+| PDF generation | NAPS2 / PDF library | Low |
+| Installation | Windows MSI or EXE | Medium |
+| Security and compatibility | Local authentication, HTTPS/CORS controls, device testing | Medium–high |
+
+For a Windows-first application, I'd use **C\#/.NET for the local scanner service and TypeScript for the web integration**\.
+
+Even if your existing backend is Python, Java, or Node.js, the local service can remain completely independent.
+
+## 3\. There's already an example of exactly what you want
+
+I found an especially relevant GitHub repository\:
+
+image_group{"query":["NAPS2 document scanning software application screenshot Windows scan interface"],"aspect_ratio":"5:4","layout":"carousel","num_per_query":1}
+
+**urlNAPS2 WebScan on GitHubhttps://github.com/cyanfish/naps2-webscan**
+
+An example project that lets JavaScript/TypeScript web applications scan documents through a locally installed Windows service.
+
+It already includes two important pieces\:
+
+- `NAPS2.WebScan.LocalService`\: a Windows service that exposes scanners through an eSCL interface.
+- `NAPS2.WebScan.WebServer`\: an example of accessing that scanning functionality from JavaScript/TypeScript.
+
+This is a reference implementation, not a production-ready replacement, but it directly demonstrates the architecture you're looking for. citeturn398475search0
+
+## 4\. What features would you actually need to develop?
+
+Here's how I'd scope the first version.
+
+**Feature checklist for your replacement**  of  selected
+
+[Create implementation plan for selected features]
+
+## 5\. Example of how the API could work
+
+Your local service could expose just three endpoints initially\:
+
+```http
+GET http://127.0.0.1:17890/api/scanners
+
+GET http://127.0.0.1:17890/api/scanners/{id}/capabilities
+
+POST http://127.0.0.1:17890/api/scan
+```
+
+The web application might issue a request like this\:
+
+```javascript
+const response = await fetch(
+  "http://127.0.0.1:17890/api/scan",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${localToken}`
+    },
+    body: JSON.stringify({
+      scannerId: "scanner-001",
+      dpi: 300,
+      colorMode: "color",
+      source: "feeder",
+      duplex: true,
+      format: "pdf"
+    })
+  }
+);
+
+const pdf = await response.blob();
+```
+
+This is an illustrative API design, not an existing NAPS2 endpoint.
+
+For production, you'd need secure client pairing, origin validation, access control, and appropriate CORS configuration. Modern browsers also apply local-network access permissions when public websites communicate with localhost. citeturn398475search2
+
+## 6\. How difficult is the project?
+
+These are my rough engineering estimates for one experienced developer, assuming hardware is available for testing.
+
+| Scope | Estimated effort |
+|--------|--------|
+| Proof of concept: one Windows scanner | 2–5 days |
+| Windows MVP: basic scanning and PDF | 2–4 weeks |
+| Production-ready Windows version | 1–3 months |
+| Broad cross-platform alternative | 3–6+ months |
+
+These are development estimates, not guarantees. The number and variety of supported scanner models can change the effort dramatically.
+
+The biggest complications are usually hardware compatibility, paper feeder behavior, error recovery, installation, and driver differences. For example, TWAIN sometimes requires a 32-bit worker process even when your application is 64-bit; NAPS2 already provides support for this. citeturn932435search1
+
+One more important point: **licensing**\. The NAPS2 SDK is LGPL-2.1-or-later, while the main NAPS2 application is GPL-2.0-or-later. Using the SDK in commercial software may be possible, but you'll need to comply with the LGPL requirements and check the licenses of all packaged components. citeturn932435search9
+
+## My recommendation
+
+I wouldn't develop your own TWAIN driver implementation or build the entire scanner integration stack from scratch. I'd start by cloning `naps2-webscan`, getting it working against your actual scanners, and evaluating the NAPS2 SDK as the foundation.
+
+That could turn a substantial driver-integration project into a much smaller local-service and frontend-integration project.
+
+**One important question\:** Is your company currently using Dynamic Web TWAIN in a web application deployed to multiple customers or offices, where each computer has its own scanner?
+
+Or are you only using it internally with a few known scanner models?
+
+That distinction matters enormously: supporting 5–10 known models on Windows is a very different project from building a reliable replacement for hundreds of different scanners across customer environments.
+
+---
+
+If you want, I can:
+
+- Design a detailed MVP implementation plan using NAPS2 SDK and React
+- Explain how to securely authorize and authenticate local scanner service requests
+- Outline cross-platform support challenges beyond Windows for scanner access
+
+=====
+
+For production, you'd need secure client pairing, origin validation, access control, and appropriate CORS configuration. Modern browsers also apply local-network access permissions when public websites communicate with localhost. 
+
+=====
+
+The biggest complications are usually hardware compatibility, paper feeder behavior, error recovery, installation, and driver differences. For example, TWAIN sometimes requires a 32-bit worker process even when your application is 64-bit; NAPS2 already provides support for this. 
+
+=====
+
+. The NAPS2 SDK is LGPL-2.1-or-later, while the main NAPS2 application is GPL-2.0-or-later. Using the SDK in commercial software may be possible, but you'll need to comply with the LGPL requirements and check the licenses of all packaged components. 
+
+=====
+
+That distinction matters enormously: supporting 5–10 known models on Windows is a very different project from building a reliable replacement for hundreds of different scanners across customer environments.
+
+=====
+
+**You can absolutely build your own alternative to Dynamic Web TWAIN and stop paying Dynamsoft licensing fees.** The interesting part is that you don't need to develop scanner drivers yourself. You can use the drivers and scanning interfaces that already exist in Windows, macOS, and Linux.
+
+Even better, there's an open-source library called <Entity category="software" value="NAPS2 SDK" disambig="Open-source document scanning SDK"/> that could eliminate a substantial amount of the development effort.
+
+The main challenge isn't actually scanning documents. It's making physical scanners accessible from a web application reliably and securely.
+
+## 1. How Web TWAIN actually works
+
+Dynamic Web TWAIN is effectively a bridge between your website and a scanner connected to the user's computer.
+
+<box border radius="xl" padding={3} gap={2}>
+  <svg viewBox="0 0 340 278" width="100%" xmlns="http://www.w3.org/2000/svg">
+    {#each [{y:8,title:"Your web application",sub:"React / JavaScript / TypeScript",fill:"#E4EEFE",stroke:"#6396E5"},{y:80,title:"Local scanning service",sub:"HTTP API on localhost",fill:"#DDF4E7",stroke:"#53A982"},{y:152,title:"Scanner interface",sub:"TWAIN / WIA / eSCL / SANE",fill:"#F3E8FA",stroke:"#B58AD7"},{y:224,title:"Physical scanner",sub:"USB or local network",fill:"#F4EBDE",stroke:"#CA9C56"}] as b,i}
+      <rect x="24" y={b.y} width="292" height="47" rx="8" fill={b.fill} stroke={b.stroke}/>
+      <text x="170" y={b.y+19} textAnchor="middle" fontSize="13" fontWeight="600" fill="#253040">{b.title}</text>
+      <text x="170" y={b.y+35} textAnchor="middle" fontSize="10" fill="#4D5D69">{b.sub}</text>
+      {#if i<3}
+        <path d={`M170 ${b.y+48} v21 m-4 -5 l4 5 4 -5`} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+      {/if}
+    {/each}
+  </svg>
+  <caption textAlign="center">Simplified architecture of a browser-based scanning solution</caption>
+</box>
+
+Here's what happens when someone clicks **Scan Document**:
+
+1. The browser sends a request to a small application running locally.
+2. The local application communicates with the scanner through an existing driver or scanning protocol.
+3. The scanner captures one or more pages.
+4. The local application returns the images or PDF to the browser.
+5. Your web application previews, processes, or uploads the document.
+
+Dynamsoft uses this same general architecture with its local Dynamic Web TWAIN Service. <Cite refs={["turn932435search0","turn932435search2"]}/>
+
+You would be replacing their software layer, **not the scanner's manufacturer-provided driver**.
+
+## 2. Which technologies would you need?
+
+| Component | Recommended technology | Complexity |
+|---|---|---|
+| Scanner integration | NAPS2 SDK (.NET/C#) | Medium |
+| Local background service | ASP.NET Core Minimal API | Low–medium |
+| Browser communication | HTTP on localhost | Low–medium |
+| Frontend | React + TypeScript | Low |
+| PDF generation | NAPS2 / PDF library | Low |
+| Installation | Windows MSI or EXE | Medium |
+| Security and compatibility | Local authentication, HTTPS/CORS controls, device testing | Medium–high |
+
+For a Windows-first application, I'd use **C#/.NET for the local scanner service and TypeScript for the web integration**.
+
+Even if your existing backend is Python, Java, or Node.js, the local service can remain completely independent.
+
+## 3. There's already an example of exactly what you want
+
+I found an especially relevant GitHub repository:
+
+<row align="center" gap={3}>
+  <AsyncImage query="NAPS2 document scanning software application screenshot Windows scan interface" aspectRatio="5:4" maxWidth="136px"/>
+  <box flex="1" gap={1}>
+    **<Link url="https://github.com/cyanfish/naps2-webscan" title="NAPS2 WebScan on GitHub"/>**
+
+    An example project that lets JavaScript/TypeScript web applications scan documents through a locally installed Windows service.
+  </box>
+</row>
+
+It already includes two important pieces:
+
+- `NAPS2.WebScan.LocalService`: a Windows service that exposes scanners through an eSCL interface.
+- `NAPS2.WebScan.WebServer`: an example of accessing that scanning functionality from JavaScript/TypeScript.
+
+This is a reference implementation, not a production-ready replacement, but it directly demonstrates the architecture you're looking for. <Cite ref="turn398475search0"/>
+
+## 4. What features would you actually need to develop?
+
+Here's how I'd scope the first version.
+
+{@body const features=[{name:"Detect available scanners",level:"Easy",essential:true},{name:"Start scan from browser",level:"Medium",essential:true},{name:"Choose DPI, color, paper size",level:"Medium",essential:true},{name:"Scan multiple pages (ADF)",level:"Medium",essential:true},{name:"Duplex scanning",level:"Medium",essential:true},{name:"Return PDF or images",level:"Easy",essential:true},{name:"Preview pages in browser",level:"Easy",essential:false},{name:"Rotate, crop, reorder pages",level:"Medium",essential:false},{name:"OCR / searchable PDF",level:"Medium",essential:false},{name:"Cross-platform support",level:"Hard",essential:false},{name:"Installer and automatic updates",level:"Hard",essential:false}]}
+{@body const [chosen,setChosen]=DIL.useState(features.map(f=>f.essential))}
+<box border radius="xl" padding={3} gap={3}>
+  <row justify="between" align="center">
+    **Feature checklist for your replacement**
+    <text color="secondary" size="xs" tabularNums>{chosen.filter(Boolean).length} of {features.length} selected</text>
+  </row>
+  {#each features as f,i}
+    <row align="center" justify="between" key={f.name}>
+      <box flex="1">
+        <checkbox checked={chosen[i]} onChange={v=>setChosen(old=>old.map((x,j)=>i===j?v:x))} lineThrough={false}>{f.name}</checkbox>
+      </box>
+      <text color="secondary" size="xs">{f.level}</text>
+    </row>
+  {/each}
+  <button block onClick={()=>GenUI.issueNewTurn("Design a technical MVP implementation plan for my Web TWAIN replacement using NAPS2 SDK, C# local service and React. Include these features: "+features.filter((f,i)=>chosen[i]).map(f=>f.name).join(", ")+". Include architecture, endpoint contracts, security, and implementation order.")}>Create implementation plan for selected features <icon name="arrow-right" inline/></button>
+</box>
+
+## 5. Example of how the API could work
+
+Your local service could expose just three endpoints initially:
+
+```http
+GET http://127.0.0.1:17890/api/scanners
+
+GET http://127.0.0.1:17890/api/scanners/{id}/capabilities
+
+POST http://127.0.0.1:17890/api/scan
+```
+
+The web application might issue a request like this:
+
+```javascript
+const response = await fetch(
+  "http://127.0.0.1:17890/api/scan",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${localToken}`
+    },
+    body: JSON.stringify({
+      scannerId: "scanner-001",
+      dpi: 300,
+      colorMode: "color",
+      source: "feeder",
+      duplex: true,
+      format: "pdf"
+    })
+  }
+);
+
+const pdf = await response.blob();
+```
+
+This is an illustrative API design, not an existing NAPS2 endpoint.
+
+For production, you'd need secure client pairing, origin validation, access control, and appropriate CORS configuration. Modern browsers also apply local-network access permissions when public websites communicate with localhost. <Cite ref="turn398475search2"/>
+
+## 6. How difficult is the project?
+
+These are my rough engineering estimates for one experienced developer, assuming hardware is available for testing.
+
+| Scope | Estimated effort |
+|---|---|
+| Proof of concept: one Windows scanner | 2–5 days |
+| Windows MVP: basic scanning and PDF | 2–4 weeks |
+| Production-ready Windows version | 1–3 months |
+| Broad cross-platform alternative | 3–6+ months |
+
+These are development estimates, not guarantees. The number and variety of supported scanner models can change the effort dramatically.
+
+The biggest complications are usually hardware compatibility, paper feeder behavior, error recovery, installation, and driver differences. For example, TWAIN sometimes requires a 32-bit worker process even when your application is 64-bit; NAPS2 already provides support for this. <Cite ref="turn932435search1"/>
+
+One more important point: **licensing**. The NAPS2 SDK is LGPL-2.1-or-later, while the main NAPS2 application is GPL-2.0-or-later. Using the SDK in commercial software may be possible, but you'll need to comply with the LGPL requirements and check the licenses of all packaged components. <Cite ref="turn932435search9"/>
+
+## My recommendation
+
+I wouldn't develop your own TWAIN driver implementation or build the entire scanner integration stack from scratch. I'd start by cloning `naps2-webscan`, getting it working against your actual scanners, and evaluating the NAPS2 SDK as the foundation.
+
+That could turn a substantial driver-integration project into a much smaller local-service and frontend-integration project.
+
+**One important question:** Is your company currently using Dynamic Web TWAIN in a web application deployed to multiple customers or offices, where each computer has its own scanner?
+
+Or are you only using it internally with a few known scanner models?
+
+That distinction matters enormously: supporting 5–10 known models on Windows is a very different project from building a reliable replacement for hundreds of different scanners across customer environments.
+
+---
+
+If you want, I can:
+
+- Design a detailed MVP implementation plan using NAPS2 SDK and React
+- Explain how to securely authorize and authenticate local scanner service requests
+- Outline cross-platform support challenges beyond Windows for scanner access
+
+=====
+
+**You can absolutely build your own alternative to Dynamic Web TWAIN and stop paying Dynamsoft licensing fees.** The interesting part is that you don't need to develop scanner drivers yourself. You can use the drivers and scanning interfaces that already exist in Windows, macOS, and Linux.
+
+Even better, there's an open-source library called <Entity category="software" value="NAPS2 SDK" disambig="Open-source document scanning SDK"/> that could eliminate a substantial amount of the development effort.
+
+The main challenge isn't actually scanning documents. It's making physical scanners accessible from a web application reliably and securely.
+
+## 1. How Web TWAIN actually works
+
+Dynamic Web TWAIN is effectively a bridge between your website and a scanner connected to the user's computer.
+
+<box border radius="xl" padding={3} gap={2}>
+  <svg viewBox="0 0 340 278" width="100%" xmlns="http://www.w3.org/2000/svg">
+    {#each [{y:8,title:"Your web application",sub:"React / JavaScript / TypeScript",fill:"#E4EEFE",stroke:"#6396E5"},{y:80,title:"Local scanning service",sub:"HTTP API on localhost",fill:"#DDF4E7",stroke:"#53A982"},{y:152,title:"Scanner interface",sub:"TWAIN / WIA / eSCL / SANE",fill:"#F3E8FA",stroke:"#B58AD7"},{y:224,title:"Physical scanner",sub:"USB or local network",fill:"#F4EBDE",stroke:"#CA9C56"}] as b,i}
+      <rect x="24" y={b.y} width="292" height="47" rx="8" fill={b.fill} stroke={b.stroke}/>
+      <text x="170" y={b.y+19} textAnchor="middle" fontSize="13" fontWeight="600" fill="#253040">{b.title}</text>
+      <text x="170" y={b.y+35} textAnchor="middle" fontSize="10" fill="#4D5D69">{b.sub}</text>
+      {#if i<3}
+        <path d={`M170 ${b.y+48} v21 m-4 -5 l4 5 4 -5`} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+      {/if}
+    {/each}
+  </svg>
+  <caption textAlign="center">Simplified architecture of a browser-based scanning solution</caption>
+</box>
+
+Here's what happens when someone clicks **Scan Document**:
+
+1. The browser sends a request to a small application running locally.
+2. The local application communicates with the scanner through an existing driver or scanning protocol.
+3. The scanner captures one or more pages.
+4. The local application returns the images or PDF to the browser.
+5. Your web application previews, processes, or uploads the document.
+
+Dynamsoft uses this same general architecture with its local Dynamic Web TWAIN Service. <Cite refs={["turn932435search0","turn932435search2"]}/>
+
+You would be replacing their software layer, **not the scanner's manufacturer-provided driver**.
+
+## 2. Which technologies would you need?
+
+| Component | Recommended technology | Complexity |
+|---|---|---|
+| Scanner integration | NAPS2 SDK (.NET/C#) | Medium |
+| Local background service | ASP.NET Core Minimal API | Low–medium |
+| Browser communication | HTTP on localhost | Low–medium |
+| Frontend | React + TypeScript | Low |
+| PDF generation | NAPS2 / PDF library | Low |
+| Installation | Windows MSI or EXE | Medium |
+| Security and compatibility | Local authentication, HTTPS/CORS controls, device testing | Medium–high |
+
+For a Windows-first application, I'd use **C#/.NET for the local scanner service and TypeScript for the web integration**.
+
+Even if your existing backend is Python, Java, or Node.js, the local service can remain completely independent.
+
+
+
+=====
+
+DIL.render(__dil.jsx(()=>{const __dilConstants=DIL.useConstants();const __dilModelDataBindings=DIL.useAppData((appData)=>appData.opGenui?.modelDataBindings??{});return __dil.jsx("text",null,__dilConstants["0"]);},{"key":"body:0"}));
+
+=====
+
