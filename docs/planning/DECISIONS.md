@@ -198,6 +198,9 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
   over `@zilo/sdk`) is scoped only from the owner's actual call inventory and written from public docs
   only, with contract tests against the owner's usage. Until the code arrives, no adapter work beyond
   a stub package.
+- **Superseded in part by owner OD-9 (2026-10-31):** the owner-code-only scoping and the "stub until
+  the code arrives" restriction no longer apply. `dwt-compat` covers the common public DWT API,
+  clean-room, from public docs only. Work starts after T21, and the owner's answers re-rank it.
 - Approved-by: Opus (2026-10-31)
 - Approved-by: GPT (2026-10-31)
 

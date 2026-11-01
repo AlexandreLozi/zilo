@@ -19,8 +19,9 @@ arm64:
 - **Output:** return images or a PDF to the web app.
 - **Browsers:**
   - Chrome, Edge and Firefox on all three OSes;
-  - **Safari on macOS is required and release-blocking (OD-8).** The T25 path is S2, or better if
-    evidence shows it.
+  - **Safari on macOS is required and release-blocking (OD-8).** The T25 path (S1 or S2) is
+    selected under D-003 from evidence only: SP-1a recommends S2, and real-Safari evidence (SP-1b)
+    is still pending. This amendment does not select it.
   - The "Safari unsupported" state is an interim test state only.
 - **Front end (OD-8):**
   - framework-agnostic TS SDK core and Web Components UI;
@@ -63,7 +64,7 @@ Zilo Agent (per-user, .NET) ── HTTP API /zilo/v1 (Host + Origin checks, per-
 | Installers, signing, notarization, updater | GPT | D-008 |
 | `packages/sdk` | Opus | discovery, permission state, transports, jobs, export |
 | `packages/ui` | Opus | Web Components + React wrapper, themable, a11y (WCAG 2.2 AA) |
-| `packages/dwt-compat` | Opus | after owner code (D-006) |
+| `packages/dwt-compat` | Opus | public-docs clean-room API after T21 (OD-9 overrides D-006's owner-code-only start); owner answers re-rank it |
 | `apps/demo` | Opus | demo + Playwright E2E target |
 | Download page / `latest.json` consumer | Opus (UI) + GPT (manifest) | |
 | CI workflows | joint | GPT for backend and packaging jobs, Opus for web and E2E jobs |
@@ -186,7 +187,7 @@ Exit:
 ## 7. Risks
 | Risk | Mitigation |
 |---|---|
-| Safari blocks loopback HTTP | SP-1a stub early; S1/S2 candidates; explicit unsupported state if neither proven |
+| Safari blocks loopback HTTP | SP-1a stub early; S1/S2 candidates, both prototyped. If neither is proven, the release is blocked (OD-8): "Safari unsupported" is an interim test state, never a shipped outcome |
 | Users deny the browser permission | detect `denied` and show per-browser help; enterprise policy docs |
 | TWAIN driver crashes | x86 worker process isolation, restart, job-level error |
 | NAPS2 licence graph changes | pinned versions + CI licence gate |
@@ -197,10 +198,34 @@ Exit:
 
 ## 8. Performance budgets and reliability (OD-9)
 
-**Reference environment.** Budgets are measured on GitHub-hosted runners: ubuntu-latest,
-windows-latest and macos-latest, with the virtual scanner unless a row says otherwise. Each one is
-enforced by a test that fails the build when the budget is exceeded, measured over 5 runs. Hardware
-numbers come from the owner's checklist.
+**Status.** These numbers are **proposed enforceable targets**. They are not measured support
+claims. T56a calibrates them on hosted runners, and both masters re-sign any changed number before it
+gates a merge.
+
+**Reference environment.** GitHub-hosted runners (ubuntu-latest, windows-latest, macos-latest)
+with the virtual scanner, unless a row says otherwise. Hardware numbers come from the owner's
+checklist.
+
+**Measurement rules (T56a implements them):**
+- **Samples:** 2 warm-up observations are discarded, then **20 observations** are kept. Latency
+  budgets gate on **p95 by nearest rank**, which is the 19th of 20 sorted values, so a single outlier
+  cannot fail the build. A cold-start observation is a fresh process each time.
+- **Virtual pacing:** the budget runs use an unpaced virtual ADF, so generation is as fast as
+  possible and the agent pipeline is what is measured. A paced mode (fixed ppm) exists for UI and
+  soak tests only.
+- **Real-device throughput reference:** the same device, settings (dpi, colour, duplex, paper) and
+  connection path, scanned with NAPS2 standalone or the vendor's own app. The device's rated ppm is
+  informational only and is never the baseline.
+- **Agent memory:** two separate measures.
+  - *Peak per page:* the peak RSS during the job, minus the idle baseline taken just before it,
+    divided by the number of pages in flight. Sampled at 10 Hz.
+  - *After dispose:* run a forced full GC, wait 5 s, then sample at 1 Hz for 5 s. The managed heap
+    (`GC.GetTotalMemory(true)`) must be back within baseline + 5 MB. RSS is allowed allocator
+    retention, so it gates only on the soak growth rule below.
+- **Browser memory:** Chromium only, through CDP `HeapProfiler.collectGarbage` followed by
+  `Runtime.getHeapUsage`. The limit is B0 + 1.5 × (encoded bytes of retained page blobs) + decoded
+  bitmaps (w × h × 4 for each rendered thumbnail or preview). B0 is the post-GC heap with the UI
+  mounted and zero pages, so the limit holds at zero blobs.
 
 | Budget | Target | Enforced by |
 |---|---|---|
@@ -209,19 +234,31 @@ numbers come from the owner's checklist.
 | SDK `unreachable-or-blocked` verdict (no agent; user prompt time excluded) | ≤ 2 s | T13/T23 |
 | Time to first page (`POST /jobs` → first `page` event), virtual, A4 300 dpi colour | p95 ≤ 1.0 s | T20 |
 | ADF throughput, virtual, A4 300 dpi colour, thumbnails on | ≥ 60 pages/min | T20/T23 |
-| ADF throughput, real device | ≥ 90% of the device's rated ppm | hardware checklist (T34) |
-| Agent memory per in-flight page (A4 300 dpi colour) | ≤ 40 MB; after dispose, RSS returns to baseline + 10 MB | T20 |
-| Browser heap in the SDK/UI | ≤ 1.5× the total size of page blobs held | T21/T22 |
+| ADF throughput, real device | ≥ 90% of the reference-path throughput (see the rules) | hardware checklist (T34) |
+| Agent memory, peak per in-flight page (A4 300 dpi colour) | ≤ 40 MB; after dispose, managed heap ≤ baseline + 5 MB | T20 |
+| Browser JS heap in the SDK/UI (post-GC) | ≤ B0 + 1.5× encoded blob bytes + decoded bitmaps (see the rules) | T21/T22 |
 | Export of a 50-page PDF, A4 300 dpi | colour ≤ 10 s, B/W ≤ 3 s | T20 |
 
 **Reliability (acceptance criteria in T20, T23, T24 and T30–T33):**
-- **Soak:** 500 pages through the virtual ADF, in 10 jobs. Zero temp files remain after dispose,
-  and RSS stays within baseline + 10%. No handle or thread growth.
+- **Soak:** 500 pages through the virtual ADF (paced mode), in 10 jobs. Zero temp files remain
+  after dispose. Post-GC RSS, sampled after each job, grows by less than 10% between job 5 and
+  job 10. That rule tolerates one-time allocator retention but catches a leak. No handle or thread
+  growth.
 - **Agent crash or kill mid-job:**
-  - the SDK surfaces `agent-unavailable` within 2 s;
-  - autostart or relaunch brings the agent back within 5 s;
-  - no corrupt state: jobs of the dead process are reported as failed or retryable, never silently
-    lost.
+  - Pages and jobs are **ephemeral**. They die with the process, and v1 adds **no durable document
+    or job storage**.
+  - **Lost-session contract (an input to T10 r2 and the T20 contract tests):** `hello` carries an
+    `instanceId` that is new for each process start. When the SDK reconnects and sees a different
+    `instanceId`, it marks every job it holds from the old instance as `agent-restarted`, which is
+    retryable. A job ID the new process doesn't know returns a typed not-found. So no job is ever
+    silently lost, and the new process never claims anything about old-process jobs.
+  - **Detection:** the SDK surfaces `agent-unavailable` within 2 s, but only during an active
+    operation (an open event stream or an in-flight request). An idle SDK finds out on its next
+    call.
+  - **Relaunch within 5 s needs a supervisor. Login autostart alone does not relaunch.** The
+    installer tasks own it: T42 uses the `systemd --user` unit with `Restart=on-failure`; T41 uses
+    launchd `KeepAlive` with `SuccessfulExit=false`; T40 uses a scheduled task with
+    restart-on-failure, or the T44 tray shell as the watchdog. T24 owns the kill-and-relaunch test.
 - **x86 TWAIN worker crash or kill:** the job fails with a retryable error, and the next job
   succeeds without an agent restart.
 - **Sleep and resume:** the event stream reconnects with `Last-Event-ID` and loses no events. This is
@@ -232,4 +269,4 @@ numbers come from the owner's checklist.
 
 ## Sign-off
 - v2: signed by Opus and GPT (2026-10-31).
-- **v3 (OD-8/OD-9 amendment: scope, M5, M6, §8 budgets, risks):** Opus approved (2026-10-31); GPT pending.
+- **v3 (OD-8/OD-9 amendment: scope, M5, M6, §8 budgets, risks):** Opus approved (2026-10-31); GPT requested changes (2026-11-01); rev 3.1 addresses them (Opus, 2026-11-01); GPT pending.

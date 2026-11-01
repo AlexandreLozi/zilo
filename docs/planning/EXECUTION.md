@@ -19,7 +19,7 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
   from the **latest committed `main` after the task's dependencies have merged**.
 - **Claude workers:**
   `worker-start --task <id> --worktree new-top-level --name t<NN>-<slug> --agent claude --model claude-opus-5-5 --effort high`.
-  Use effort `xhigh` for tasks marked ★.
+  Effort is chosen per task under OD-3, which supersedes the earlier blanket high/xhigh rule; ★ tasks default to `high`.
 - **GPT workers:** `--agent opencode` in a new worktree, without `--model`. Orca refuses an OpenCode
   model override when creating a new worktree, and the committed `opencode.json` pins
   `openai/gpt-6.1-sol`, reasoning `high`. The dispatching master still checks `launch.effective` in
@@ -89,7 +89,7 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 - **Lane:** FE = Opus master, BE = GPT master.
 - **Author / reviewer:** C = Claude worker, G = GPT worker. The reviewer is always the other family.
 - **Deps** means *merged on `main`*.
-- ★ marks high-risk tasks: Claude effort `xhigh`; GPT reviewers get a security-focused checklist.
+- ★ marks high-risk tasks: effort `high` by default (OD-3; `xhigh` only with a written reason); GPT reviewers get a security-focused checklist.
 - **Files** lists the allowed write set.
 
 ### Wave 0 — five tasks start at once; T03 follows T04b
@@ -204,15 +204,23 @@ These amendments override the rows in §3 where they conflict.
     `.opencode/`, `docs/planning`, `docs/tasks` and `docs/reviews`, keeps the product docs, and
     starts the public repo from a fresh history.
   - Reviewed by GPT. Deps: T53.
-- **T56 (joint), performance and soak harness:** a shared timing and memory harness used by
-  T11/T13/T20/T23, with hosted-CI jobs. Keep the macOS minutes low (OD-7). Deps: T20, T21.
+- **T56 is split to break the dependency cycle:**
+  - **T56a (joint, Wave 1, no deps), harness only:** dependency-free timing and memory helpers
+    (a TS package for Vitest/Playwright and a .NET test helper, with no production references),
+    the §8 measurement rules, a JSON result schema and a budget comparator. T11, T13, T20 and T23
+    each own their own budget checks and use T56a. Until T56a merges, they record raw numbers
+    without gating.
+  - **T56b (joint), integration:** hosted-CI soak and recovery jobs, plus calibration of the §8
+    numbers for both masters to re-sign. Deps: T20, T21, T56a. Keep macOS minutes low (OD-7).
 
-## 4a. FE lane status (Opus edits)
+## 4a. FE lane status (Opus edits; refreshed 2026-11-01 after the PC restart)
+Dispatches lost in the restart are bookkeeping only and are never reused.
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
 |---|---|---|---|---|---|---|
-| T01 | authoring | t01-transport-spike | task_7ad475b61ca4 / ctx_3e1242a839cb (claude opus-5-5 xhigh) | | | |
-| T04a | r1 verdict changes (1 minor: Node 24); fix r1 running ctx_e8380f29bd1f (claude low) | t04a-web-scaffold | | r1 ctx_4cd437852043 (released), report on t04a-review-r1@4b68400 | changes | |
-| T05 | r1 changes (5 P2, report @e8c4aee); fix r1 running ctx_4a073a6ea3b3 (claude medium); reviewer ctx_e1ede2fc43e4 retained for r2 | t05-design-spec | | ctx_e1ede2fc43e4 | changes | |
+| T01 | r1 changes (report + 3 failing tests merged @b6c3aec); fix r1 running | t01-transport-spike | task_1a7a80dac936 / ctx_7a373faedbc2 (claude high) | r1 GPT (settled) | changes | |
+| T04a | r1 changes (1 minor: Node 24); fix r1 running | t04a-web-scaffold | task_3a6702e7608d / ctx_cd74bcad8bc0 (claude low) | r1 ctx_4cd437852043 (released), report on t04a-review-r1@4b68400 | changes | |
+| T05 | r1 changes (5 P2, report @e8c4aee); fix r1 running | t05-design-spec | task_0b54a1bf13a2 / ctx_11403c9933fe (claude medium) | r1 GPT (settled) | changes | |
+| T02 (GPT-authored, BE lane) | Claude review r1 running, at 7e09b60 | t02-review-r1 | GPT (released) | task_c00fdc96e79b / ctx_5c6b3170b2f8 (claude high) | | |
 
 ## 4b. BE lane status (GPT edits)
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |

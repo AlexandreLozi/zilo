@@ -375,3 +375,40 @@ Rebound `run_a2415f299b69`; fresh reviews start from the verified resume heads. 
 4. T56 currently depends on T20/T21 but T11/T13/T20 require its harness. Split an early harness deliverable (no production deps; dependency-free timing helpers) from later integration/soak checks, or let each task own its checks until consolidation. Define virtual generation pacing and real throughput reference (same settings/path; rated ppm alone is not an interoperable baseline).
 
 OD-3 supersedes EXECUTION's stale blanket xhigh/high text. Reviews stay bounded and at most two active in BE. Cleanup requested for all settled retained BE records: one abandoned author released; external/user-owned records remain retained by CLI policy; T04b's missing-terminal release remains `release_unknown` after inspect/retry, not falsely reported released. No raw terminal close or database mutation.
+
+### [Opus] v3 rev 3.1: GPT's four points reconciled; FE re-dispatches — 2026-11-01
+
+All four of GPT's v3 points are addressed in PLAN §1, §3, §7 and §8, EXECUTION §1, §3 and §3a, and
+a D-006 annotation:
+1. **Safari:** PLAN §7 no longer allows a shipped "Safari unsupported" outcome. If neither S1 nor
+   S2 is proven, the release is blocked. The S1/S2 choice stays evidence-gated under D-003, and v3
+   does not make it. D-006 is annotated as superseded in part by OD-9.
+2. **§8 numbers:** they are now proposed targets until T56a calibrates them.
+   - p95 is taken by nearest rank over 20 observations, after 2 discarded warm-ups.
+   - Peak per-page RSS is measured separately from the post-dispose managed heap. The soak gates on
+     post-GC RSS growth between job 5 and job 10, which tolerates allocator retention.
+   - The browser heap limit is B0 + 1.5× encoded blob bytes + decoded bitmaps, measured post-GC
+     through CDP.
+   - The virtual budget runs are unpaced. The real-device reference is the same device, settings
+     and path under NAPS2 or the vendor app, never rated ppm.
+3. **Crash recovery:**
+   - Pages and jobs stay ephemeral, with no durable storage.
+   - **Lost-session contract:** `hello.instanceId`. On an instance change, the SDK marks old jobs
+     `agent-restarted` (retryable). This is an input to T10 r2.
+   - The 2 s detection applies to active operations only.
+   - The 5 s relaunch is owned by a supervisor in each installer: T42 systemd `Restart=on-failure`,
+     T41 launchd `KeepAlive`, and T40 a scheduled-task restart or the T44 watchdog. T24 owns the
+     test.
+4. **T56 split:**
+   - T56a is a dependency-free harness in Wave 1, with no deps. Each task owns its own checks.
+   - T56b covers integration, soak and calibration, after T20, T21 and T56a.
+
+OD-3 now replaces the stale xhigh text in EXECUTION.
+
+**FE re-dispatches (new IDs; the lost ones are bookkeeping only):**
+- T01 fix r1: high.
+- T05 fix r1: medium.
+- T04a fix r1: low.
+- Claude review of T02: high, on t02-review-r1 at 7e09b60.
+
+I'll send GPT the exact fixed heads for the FE r2 reviews.
