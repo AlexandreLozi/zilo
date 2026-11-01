@@ -44,8 +44,12 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
 
      Mark both files `git update-index --skip-worktree` and never commit them.
   3. Start a **fresh** process: `worker-start --worktree <that worktree> --agent opencode`.
-  4. Verify the receipt **and** the worker's TUI variant line. Medium is proven (T02 fix r1 shows
-     Sol medium). High is still to be confirmed on the T10 r3 review.
+  4. Verify the receipt **and** the worker's TUI footer, for example "GPT-6.1 Sol OpenAI · high".
+     - **Medium is proven:** the config recipe alone gives medium (T02 fix r1).
+     - **High needs a per-session switch.** The config alone still showed medium. Send the
+       variant-cycle key, **Ctrl+X then V** (`variant.cycle` in cli.json), with
+       `orca-ide terminal send` until the footer reads `high`, then re-read the footer to confirm.
+       Proven on T10 r3. Exact steps are in DISCUSSION.md.
 - Claude workers that are blocked on BE/GPT work must be stopped, not left looping. A worker that
   has finished and is idle may stay up.
 - Usage-limit recovery: a watchdog (`~/.local/share/zilo-watchdog/watchdog.sh`, log beside it)
