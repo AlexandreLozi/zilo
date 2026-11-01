@@ -1,14 +1,13 @@
 import { expect, test } from '@playwright/test';
 
-test('demo loads and renders the placeholder component', async ({ page }) => {
+test('demo loads and renders a Zilo button', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
 
   await expect(page.getByRole('heading', { name: 'Zilo demo' })).toBeVisible();
-  const placeholder = page.locator('zilo-placeholder');
-  await expect(placeholder).toBeVisible();
-  await expect(placeholder).toHaveText(/^Zilo SDK v\d+\.\d+\.\d+/);
+  const button = page.getByRole('button', { name: /^Zilo SDK v\d+\.\d+\.\d+/ });
+  await expect(button).toBeVisible();
   expect(errors).toEqual([]);
 });
