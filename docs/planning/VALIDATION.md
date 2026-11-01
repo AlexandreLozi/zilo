@@ -13,6 +13,18 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 |---|---|---|---|---|---|---|---|---|---|---|
 | T04b backend scaffold | 9e43bf7 | 7284a3b (non-docs tree identical at 9e43bf7) | GPT (gpt-6.1-sol) | Claude opus-5-5, PASS, `docs/reviews/T04b-r1.md` | pass (6/6) | pass | local: blocked-by-host-SAC; **hosted windows-latest: pass** | **hosted macos-latest + macos-15-intel: pass** | **pass**: run 41240050339 @35019a3 (backend tree identical to 9e43bf7), ubuntu/windows/macos-arm64/macos-intel all success | `docs/validation/T04b.md`, `docs/validation/logs/T04b/`, https://github.com/AlexandreLozi/zilo/actions/runs/41240050339 |
 
+## Merge record: T03 SP-4a packaging dry run (2026-11-01, Opus queue)
+- Merged at `f38e3ea89aaadb5cf130f371611123f2e39c6d32` (fast-forward). Author: Claude (OD-2 gap; fix r1 7869d17, fix r2 26f5ab5).
+  Reviewer: GPT. r1 changes, r2 changes (1 medium), then r3 **pass** (`docs/reviews/T03-r3.md`,
+  dc19861).
+- Hosted CI: packaging-dryrun run 41315822436 on 26f5ab5 is **success on all 5 jobs**: Linux deb/rpm
+  plus test-key signing, the macOS universal pkg build, the Windows MSI install smoke (HKCU self-test,
+  sibling sentinel, `MSI SMOKE PASS`), the rpm smoke and the deb smoke.
+- Rebased tree: `packaging/`, `backend/`, `.github/` and the root build props are byte-identical to
+  26f5ab5. The rebase added only main's docs and the separate `spikes/virtual-pages`. Per OD-7, no
+  billed rerun.
+- Not cleared: shipping signing (D-011, real CA), notarization, macOS runtime, WiX 6+/EULA choice.
+
 ## Merge record: T12-proto (2026-11-01, Opus queue)
 - Merged at `32051c657c36304e50558388c43d1a38e93e36ef` (fast-forward). Author: Claude (OD-2 gap, author head 574aa2c, rebased). Reviewer:
   GPT. r1 changes, then r2 **pass** (`docs/reviews/T12-proto-r2.md`, review commit fc72aa9).
