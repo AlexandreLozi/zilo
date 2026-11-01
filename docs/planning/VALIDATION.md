@@ -13,6 +13,22 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 |---|---|---|---|---|---|---|---|---|---|---|
 | T04b backend scaffold | 9e43bf7 | 7284a3b (non-docs tree identical at 9e43bf7) | GPT (gpt-6.1-sol) | Claude opus-5-5, PASS, `docs/reviews/T04b-r1.md` | pass (6/6) | pass | local: blocked-by-host-SAC; **hosted windows-latest: pass** | **hosted macos-latest + macos-15-intel: pass** | **pass**: run 41240050339 @35019a3 (backend tree identical to 9e43bf7), ubuntu/windows/macos-arm64/macos-intel all success | `docs/validation/T04b.md`, `docs/validation/logs/T04b/`, https://github.com/AlexandreLozi/zilo/actions/runs/41240050339 |
 
+## Merge record: T11a neutral Core contracts (2026-11-01, Opus queue)
+- Merged at `4a3aed549b0caa35566a116c43bb5d0a401be897` (fast-forward). This is a no-conflict rebase onto main of the GPT author commit
+  cf58cd7, the docs-only fix r1 d0deb8f, and both review reports.
+- Reviewer: Claude.
+  - r1: **changes**, doc-only (`docs/reviews/T11a-r1.md`, ctx_c72fe0573317).
+  - r2: **PASS**, narrow (`docs/reviews/T11a-r2.md`, written by the Opus master), covering the F1
+    typed-failure table, the F2 refinement and pageSizeMm rules, and the F3/F4/F7 notes.
+- Local, on r1: Release build with 0 warnings; 14/14 tests (Core 7, Scaffold 6, Agent 1).
+- Hosted on cf58cd7: Backend CI 41343443373 and Packaging dry run 41343443468 are both green.
+  **D-012 evidence reuse.** d0deb8f is docs-only, and `git diff d0deb8f 4a3aed549b0caa35566a116c43bb5d0a401be897 -- backend packaging
+  global.json Directory.*.props .github/workflows/ci-backend.yml
+  .github/workflows/packaging-dryrun.yml` is empty, as is the same diff against cf58cd7. This is
+  not an exact-SHA pass. The push to main reruns both workflows on the exact SHA as the backstop.
+- The Core is now FROZEN for T11 (high) and T12 (medium). Further Core changes need a reviewed
+  amendment.
+
 ## Merge record: T02 NAPS2 spike / SP-2a (2026-11-01, Opus queue)
 - Merged at `f362669af7aeaf66bbb0f9c8bf8e56c164a77dd1` (fast-forward). This is a no-conflict rebase
   onto main of the fix-r2 head 35958a8 plus the r3 report commits 3ee2b67 and 6da5e85.
