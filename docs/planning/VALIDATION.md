@@ -13,6 +13,16 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 |---|---|---|---|---|---|---|---|---|---|---|
 | T04b backend scaffold | 9e43bf7 | 7284a3b (non-docs tree identical at 9e43bf7) | GPT (gpt-6.1-sol) | Claude opus-5-5, PASS, `docs/reviews/T04b-r1.md` | pass (6/6) | pass | local: blocked-by-host-SAC; **hosted windows-latest: pass** | **hosted macos-latest + macos-15-intel: pass** | **pass**: run 41240050339 @35019a3 (backend tree identical to 9e43bf7), ubuntu/windows/macos-arm64/macos-intel all success | `docs/validation/T04b.md`, `docs/validation/logs/T04b/`, https://github.com/AlexandreLozi/zilo/actions/runs/41240050339 |
 
+## Merge record: T04a web scaffold (2026-11-01, Opus queue)
+- Merged at `463934049f739b5d5309bc1c7ef1e70df6679325` (fast-forward). Author: Claude (fix r1 a715ea0 Node 24.22.2; fix r2 02c4374
+  FE-scoped format check). Reviewer: GPT. r1 changes, r2 **pass** (Node), r3 **pass** (format scope;
+  `docs/reviews/T04a-r3.md`, 5750ed7).
+- Hosted CI: ci-web run 41319600327 on 02c4374 (PR #1, merge ref with main) is green on every step,
+  incl. Playwright Chromium, Firefox and WebKit. **D-012 evidence reuse:** a no-conflict rebase,
+  and `git diff 02c4374 463934049f739b5d5309bc1c7ef1e70df6679325 -- packages apps package.json pnpm-lock.yaml pnpm-workspace.yaml .nvmrc
+  .prettierignore .prettierrc* tsconfig* eslint.config.* .github/workflows/ci-web.yml` is empty.
+  This is not an exact-SHA pass. The push to main runs ci-web on the exact SHA as the backstop.
+
 ## Merge record: T05 design spec (2026-11-01, Opus queue)
 - Merged at `f22eb2e216144471ac68805aa0fc0f84f3404539` (fast-forward). Author: Claude (fix r1 07ae1c6). Reviewer: GPT. r1 changes
   (5 P2), then r2 **pass** (`docs/reviews/T05-r2.md`, 8f387ff).
