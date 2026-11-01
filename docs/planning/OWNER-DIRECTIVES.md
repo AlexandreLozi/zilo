@@ -36,11 +36,16 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
   opencode.json is `medium` for `build` and `high` for the master's `orchestrator` agent. To run a
   GPT worker at another effort:
   1. Pre-create the worktree.
-  2. Set `provider.openai.models.gpt-6.1-sol.options.reasoningEffort` and `agent.build.variant` in
-     that worktree's `opencode.json`. This is a local edit only: run
-     `git update-index --skip-worktree opencode.json` and never commit it.
-  3. Run `worker-start --worktree <that worktree> --agent opencode`.
-  4. Check `launch.effective`.
+  2. Set the effort in **both** config files. The proven recipe (GPT, a798748, exact steps in
+     DISCUSSION.md):
+     - **`opencode.json`:** the 3 core keys.
+     - **`.opencode/oh-my-opencode-slim.json`:** the active Slim preset's variant. This preset
+       overrides the core keys, which is why earlier dispatches ignored the setting.
+
+     Mark both files `git update-index --skip-worktree` and never commit them.
+  3. Start a **fresh** process: `worker-start --worktree <that worktree> --agent opencode`.
+  4. Verify the receipt **and** the worker's TUI variant line. Medium is proven (T02 fix r1 shows
+     Sol medium). High is still to be confirmed on the T10 r3 review.
 - Claude workers that are blocked on BE/GPT work must be stopped, not left looping. A worker that
   has finished and is idle may stay up.
 - Usage-limit recovery: a watchdog (`~/.local/share/zilo-watchdog/watchdog.sh`, log beside it)
