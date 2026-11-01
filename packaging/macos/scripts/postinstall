@@ -1,0 +1,20 @@
+#!/bin/sh
+# Zilo agent pkg postinstall (runs as root). No network access.
+# 1. Register the bundle with LaunchServices so zilo:// resolves to it.
+# 2. Load the LaunchAgent into the logged-in console user's GUI session, if there is one.
+#    Other users pick it up at their next login (RunAtLoad).
+set -u
+app="/Applications/Zilo Agent.app"
+plist="/Library/LaunchAgents/dev.zilo.agent.plist"
+lsregister="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+
+chown root:wheel "$plist" && chmod 0644 "$plist"
+[ -x "$lsregister" ] && "$lsregister" -f "$app" || true
+
+console_user=$(stat -f %Su /dev/console 2>/dev/null || true)
+if [ -n "$console_user" ] && [ "$console_user" != root ]; then
+  uid=$(id -u "$console_user")
+  launchctl bootout "gui/$uid/dev.zilo.agent" 2>/dev/null || true
+  launchctl bootstrap "gui/$uid" "$plist" 2>/dev/null || true
+fi
+exit 0

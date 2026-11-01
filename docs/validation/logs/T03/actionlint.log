@@ -1,0 +1,8 @@
+$ actionlint -verbose .github/workflows/packaging-dryrun.yml
+verbose: Linting .github/workflows/packaging-dryrun.yml
+verbose: Using project at <worktree>
+verbose: Found 0 parse errors in 0 ms for .github/workflows/packaging-dryrun.yml
+verbose: Rule "shellcheck" was disabled: exec: "shellcheck": executable file not found in $PATH
+verbose: Rule "pyflakes" was disabled: exec: "pyflakes": executable file not found in $PATH
+verbose: Found total 0 errors in 136 ms for .github/workflows/packaging-dryrun.yml
+exit=0

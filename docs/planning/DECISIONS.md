@@ -137,6 +137,51 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
 - Approved-by: Opus (2026-10-31)
 - Approved-by: GPT (2026-10-31)
 
+## D-004a Pre-auth consent tier and token family (amends D-004; rewritten after T10 r1)
+- **Status:** In force, revision 2 (2026-11-01). The text follows both
+  masters' agreed T10 r1 positions (DISCUSSION.md).
+- **Pre-auth tier:**
+  - `GET /hello`, `POST`/`GET /auth/consent`, `POST /auth/token` and their `OPTIONS` reflect
+    exact-origin CORS only for an **exact serialized eligible HTTPS origin**.
+  - Null, opaque, loopback and non-https origins get no CORS and **never get tokens**. The dev flag
+    grants pre-auth diagnostics only.
+  - Public `hello` (HelloPublic) stays minimal: product, protocol range and flow capabilities. That
+    origin's consent state comes from `GET /auth/consent`, not from `hello` (clarification, 2026-11-01).
+    The full `hello` (HelloFull: version, os, arch and a per-process `instanceId`) is authenticated
+    only. `instanceId` never appears pre-auth.
+  - Pre-auth gives no access to devices, jobs or pages, and never mints arbitrary bridge tokens.
+- **Budgets:**
+  - native consent prompts are bounded per origin and globally, with one pending prompt that
+    coalesces duplicates;
+  - a cool-down after denial, returned via `Retry-After`;
+  - "block this site" in the tray;
+  - bounded retained bookkeeping;
+  - bounded token issuance and renewal.
+- **Token family (amends the D-004 ownership wording):**
+  - Jobs and pages belong to a **shared origin-bound token family** that stays stable across
+    rotation. Tabs of the same app share it. Separate families, even from the same origin, are
+    isolated.
+  - Bridge capabilities (D-003 S2) keep their own session boundary.
+  - Obsolete or expired credentials get `token-invalid`, which never implies that data was destroyed.
+- **Revocation:**
+  - Explicit revocation (`token-revoked`) immediately denies every protected operation and closes
+    live streams.
+  - Physical cleanup of private temp data finishes within a bounded TTL.
+  - The UI copy says "access revoked", never "erased".
+- **Export:** receive-then-DELETE is the normal SDK flow. `deleteAfterExport` is receipt-ambiguous
+  and never a retry guarantee, and the SDK never sets it on the first page of a batch. Selection is
+  a snapshot. Absent or empty indices are rejected deterministically. Acquisition numbering is
+  immutable.
+- **Residual risks (accepted, documented in CONTRACT.md):**
+  - any site can detect that Zilo is installed and its protocol range;
+  - a hostile site can exhaust its own and the global prompt budget, which is bounded;
+  - a browser user-gesture policy is not server-side proof.
+- **Alternatives:** literal D-004, with opaque responses for unknown origins (rejected: it loses the
+  consent-pending and cool-down UX).
+- Approved-by: Opus (2026-10-31, rev 2)
+- Clarification (2026-11-01: minimal HelloPublic, consent via `GET /auth/consent`, authenticated `instanceId`): Approved-by: Opus (2026-11-01); Approved-by: GPT (2026-11-01; architecture only, exact T10 fixed contract still requires review and both-master approval).
+- Approved-by: GPT (2026-11-01, rev 2; architecture approval only, T10 draft 2 remains subject to r2 review and both-master contract approval)
+
 ## D-005 API contract: Zilo-native REST + events, versioned
 - **Status:** In force
 - **Decision:** `/zilo/v1/` REST: `hello` (product, version, protocol, os, arch, capabilities),
@@ -156,6 +201,9 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
   over `@zilo/sdk`) is scoped only from the owner's actual call inventory and written from public docs
   only, with contract tests against the owner's usage. Until the code arrives, no adapter work beyond
   a stub package.
+- **Superseded in part by owner OD-9 (2026-10-31):** the owner-code-only scoping and the "stub until
+  the code arrives" restriction no longer apply. `dwt-compat` covers the common public DWT API,
+  clean-room, from public docs only. Work starts after T21, and the owner's answers re-rank it.
 - Approved-by: Opus (2026-10-31)
 - Approved-by: GPT (2026-10-31)
 
@@ -257,7 +305,7 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
   A merged negative spike never unblocks dependent production tasks: T06 stays blocked until a joint
   strategy is in force.
   - Approved-by: Opus (2026-10-31)
-  - Approved-by: GPT — pending
+  - Approved-by: GPT (2026-10-31, evidence/tooling only; assert exact expected denials without bypass; production graph and T06 remain blocked)
 - **Scope:** development integration on the local `main` only. It is not release evidence, and it is
   not a waiver of any M6 gate.
 - **Rationale:** there is no git remote. Creating a hosted repo publishes company code, so it is an
@@ -268,6 +316,21 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
 - Approved-by: GPT (2026-10-31, dev-only local Linux + native Windows CI-equivalent on the rebased SHA,
   redacted logs, macOS and hosted CI pending; recorded by Opus from GPT's terminal message and
   DISCUSSION entry)
+
+## D-011 Every shipped Windows PE file is Authenticode-signed (owner directive OD-6)
+- **Status:** In force by owner authority (OD-6, 2026-10-31). Owner directives rank above both masters.
+- **Decision:**
+  - Every Windows PE we ship must carry an Authenticode signature from a reputable CA, with a
+    timestamp. Acceptable sources include Azure Trusted Signing and OV/EV certificates.
+  - This covers the agent exe, every Zilo DLL, the bundled NAPS2 worker and every helper, not only the
+    installer.
+  - Test-key signing cannot satisfy Smart App Control.
+- **Applies to:** SP-4b, T03, T40, T53. The GPT lane owns implementation.
+- **Corollary for dev evidence:** agents never run unsigned binaries natively on the SAC-enforcing
+  host. Windows runtime rows are `blocked-by-host-SAC` (pending) until hosted Windows CI or a VM
+  exists.
+- Approved-by: Owner (OD-6); recorded by Opus (2026-10-31)
+- Approved-by: GPT (2026-10-31, acknowledged owner OD-6; no unsigned Windows host execution, no bypass, reputable timestamped PE signatures required for shipping; signatures alone do not constitute runtime/SAC validation)
 
 ## Spikes and gates (see PLAN.md section 5)
 - **Feasibility (M0a, parallel):**
@@ -283,3 +346,31 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
   - SP-4b: signing and notarization with owner credentials.
   - Hardware matrix.
   - Legal review.
+
+## D-012 Bounded reuse of hosted evidence across a merge-queue rebase
+- **Status:** In force (2026-11-01), under the owner-authorized OD-7 interpretation.
+- **Decision:** The merge queue may reuse a hosted CI run on the pre-rebase author head, in place of
+  a run on the exact rebased SHA, only when all of these hold:
+  1. The run is green, and it ran on the exact reviewed author head.
+  2. The rebase applied with no conflicts.
+  3. `git diff --quiet <ci-head> <rebased> -- <inputs>` succeeds, where `<inputs>` covers every
+     path the workflow builds, tests or reads:
+     - its `paths:` filter;
+     - the workflow file itself;
+     - every script it calls;
+     - lock files;
+     - `global.json`, `Directory.*.props`, `package.json`, `pnpm-*.yaml`, `.nvmrc`;
+     - any tool configuration.
+  4. VALIDATION.md records both SHAs, the input list and the command result, labelled
+     "evidence reuse", never "exact-SHA pass".
+  5. Under the OD-7 owner backstop, path-filtered workflows run again on `main` after the push.
+     A red post-merge `main` run is an immediate P1 fix and blocks the next merge in that lane.
+
+  Otherwise CI runs on the rebased SHA. ★ tasks (T10, T11, T20, T24, T25, T43) always run on the
+  exact SHA.
+- **Rationale:** OD-7 billing (macOS 10×, Windows 2×). When the inputs are byte-identical, a rerun
+  adds cost but no information.
+- **Alternatives:** always rerun on the rebased SHA (costly for macOS matrices); merge without
+  hosted evidence (rejected).
+- Approved-by: Opus (2026-11-01)
+- Approved-by: GPT (2026-11-01; complete workflow-input closure, conflict-free non-star rebase only, both SHAs and diff result recorded; subject to OD-7 post-merge main/P1 backstop; never exact-SHA evidence or release clearance)

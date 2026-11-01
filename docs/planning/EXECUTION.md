@@ -19,7 +19,7 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
   from the **latest committed `main` after the task's dependencies have merged**.
 - **Claude workers:**
   `worker-start --task <id> --worktree new-top-level --name t<NN>-<slug> --agent claude --model claude-opus-5-5 --effort high`.
-  Use effort `xhigh` for tasks marked ★.
+  Effort is chosen per task under OD-3, which supersedes the earlier blanket high/xhigh rule; ★ tasks default to `high`.
 - **GPT workers:** `--agent opencode` in a new worktree, without `--model`. Orca refuses an OpenCode
   model override when creating a new worktree, and the committed `opencode.json` pins
   `openai/gpt-6.1-sol`, reasoning `high`. The dispatching master still checks `launch.effective` in
@@ -89,18 +89,21 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 - **Lane:** FE = Opus master, BE = GPT master.
 - **Author / reviewer:** C = Claude worker, G = GPT worker. The reviewer is always the other family.
 - **Deps** means *merged on `main`*.
-- ★ marks high-risk tasks: Claude effort `xhigh`; GPT reviewers get a security-focused checklist.
+- ★ marks high-risk tasks: effort `high` by default (OD-3; `xhigh` only with a written reason); GPT reviewers get a security-focused checklist.
 - **Files** lists the allowed write set.
 
 ### Wave 0 — five tasks start at once; T03 follows T04b
 | ID | Task | Lane | A | R | Deps | Files | Observable acceptance |
 |---|---|---|---|---|---|---|---|
-| T01 | **SP-1a** transport spike: loopback HTTP stub with Host/Origin checks, HTTPS test page served from a non-loopback test origin (never on localhost), Playwright in Chromium, Firefox and WebKit: fetch with `targetAddressSpace`, fetch-stream SSE, permission states, S2 handshake prototype; real-Safari manual script | FE | C | G | — | `spikes/transport/**`, `.github/workflows/spike-transport.yml`, `docs/spikes/SP-1a.md` | Matrix in `SP-1a.md` with logs and screenshots per browser; real-Safari rows marked pending |
+| T01 | r1 changes (4 medium, 3 failing tests @b6c3aec); fix r1 running ctx_f5308be39c1d (claude medium); reviewer ctx_06fe211b88a3 retained for r2 | t01-transport-spike | | ctx_06fe211b88a3 | changes | |
 | T02 | **SP-2a** NAPS2 spike, isolated: own `spikes/naps2/` project, own `global.json` and locks there, NAPS2.Sdk 1.6.0 on net10 with locked restore per RID, package and native payload inventory, default-deny licence gate tool, device-list against an independent eSCL/SANE fixture (not T12; an empty physical list is not a failure) | BE | G | C | — | `spikes/naps2/**`, `tools/license-gate/**`, `.github/workflows/spike-naps2.yml`, `docs/spikes/SP-2a.md` | Inventory per RID in `SP-2a.md`; gate fails on a seeded disallowed package in CI and passes on the real graph |
 | T04a | Web scaffold: pnpm workspace `packages/{sdk,ui,dwt-compat}`, `apps/demo` (Vite + TS), TS strict, Vitest, Playwright config, lint and format | FE | C | G | — | `package.json`, `pnpm-*.yaml`, `packages/**`, `apps/**`, `tsconfig*`, lint configs, `.github/workflows/ci-web.yml` | `pnpm -r build test lint` green in `ci-web` |
-| T04b | Backend scaffold: `backend/` .NET 10 solution (`Zilo.Agent`, `Zilo.Core`, `Zilo.Drivers.Naps2` (empty), `Zilo.Drivers.Virtual` (empty), `Zilo.Security`, test projects), production `global.json`, `Directory.Packages.props`, locked restore | BE | G | C | — | `backend/**`, `global.json`, `Directory.*.props`, `.github/workflows/ci-backend.yml` | `dotnet test` green in `ci-backend` on Windows, macOS and Linux runners, in locked mode |
+| T04b | merged 9e43bf7 (by Opus queue, during GPT outage; see VALIDATION.md) | BE | G | C | — | `backend/**`, `global.json`, `Directory.*.props`, `.github/workflows/ci-backend.yml` | `dotnet test` green in `ci-backend` on Windows, macOS and Linux runners, in locked mode |
 | T05 | UX and visual design spec: Scan dialog; Install, Permission-help (per browser), Update and Safari-state dialogs; tray consent prompt and revocation UI; tokens; copy per error code and detection state; a11y spec | FE | C | G | — | `docs/design/**`, `design/prototypes/**` (static HTML, no build integration) | Spec with annotated static prototypes; copy table covering every D-008 state and every contract error code (finalized after T10) |
-| T04b-V (Claude, OD-2) | running | t04b-v-claude on q/t04b@7284a3b | task_aece2a6c9536 / ctx_1c7e1d2ebf1e (claude medium) | n/a (evidence) | | |
+| T04b-V (Claude, OD-2) | done, evidence merged with T04b (released) | t04b-v-claude on q/t04b@7284a3b | task_aece2a6c9536 / ctx_1c7e1d2ebf1e (claude medium) | n/a (evidence) | | |
+| T10 ★ (Claude author, OD-2) | r1 changes (13 findings, report @1a1db73); fix r1 running ctx_b7e7205f9487 (claude high) | t10-contract | task_97bc56f01fe2 | GPT r1 (released) | changes | |
+| T03 (Claude author, gap) | authored @c00f066 (retained); Linux pass, Win/mac pending | t03-packaging-dryrun | task_ff5edf368285 / ctx_87244e823ed3 (claude medium) | queued for GPT | | |
+| T12-proto (Claude author, gap) | authored @0afb9c4, 146/146 Linux (retained) | t12-proto-pages | task_8756662f2e58 / ctx_3535b9f466da (claude medium) | queued for GPT | | |
 | T03 | **SP-4a** unsigned packaging dry runs (MSI or MSIX, `.pkg`, `.deb`/`.rpm`) of the T04b hello agent; signing smoke with **test keys only** | BE | G | C | T04b | `packaging/**`, `.github/workflows/packaging-dryrun.yml`, `docs/spikes/SP-4a.md` | Artifacts built on 3 OS runners; install/uninstall smoke on Linux and Windows runners; test-key signature verifies |
 | T06 | Reconcile T02's verified NAPS2 graph into production packages and locks; retires T04b's no-NAPS2 scaffold guard. **Blocked** until the joint ICA/worker/image-backend strategy is in force | BE | G | C | T02, T04b, joint strategy | `Directory.Packages.props`, locks, `backend/src/Zilo.Drivers.Naps2/*.csproj`, `.github/workflows/ci-backend.yml` (ownership transferred from merged T04b) | `ci-backend` locked restore green; licence gate wired into `ci-backend` |
 
@@ -159,22 +162,98 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 SP-1b real Safari 26, SP-4b production signing and notarization, the hardware matrix, legal sign-off.
 Tracked in VALIDATION.md.
 
-## 4a. FE lane status (Opus edits)
+## 3a. OD-8 / OD-9 amendments to the DAG (v3 rev 3.1; both masters approved 2026-11-01)
+These amendments override the rows in §3 where they conflict.
+
+**Front end:**
+- **T14:** the demo is **React + TS (Vite)**. It consumes the Web Components through the React
+  wrapper.
+- **T15:** the **React (TSX) wrapper is first-class**, with typed props and events plus tests. An
+  Angular/Vue wrapper is a later task (T55, not v1).
+- **T23:**
+  - WebKit must pass the production Safari path (S2, or better). The unsupported state may only be
+    an interim negative test.
+  - Add the §8 budget checks for detection, time to first page and throughput, plus the
+    sleep/resume reconnect test.
+
+**Safari path:**
+- **T25-BE and T25-FE are release-blocking (OD-8).** Real-Safari evidence (SP-1b) is an M6 gate
+  that can never be waived.
+
+**Back end:**
+- **T20:** add the §8 budgets (first page, throughput, memory, export), the 500-page soak, and
+  zero leaked temp files on every path.
+- **T24:** add the agent kill and recovery tests and the revoke-mid-stream test.
+- **T30–T33:**
+  - add x86-worker crash recovery (T30), unplug/jam/feeder-empty typed errors (all four), and
+    retention of pages acquired before a failure;
+  - arm64 builds for every OS.
+- **T40–T42:** each OS gets both a **per-user** and an **admin/machine-wide** install mode (OD-9),
+  with upgrade and uninstall tests for both.
+
+**Compat:**
+- **T50:** `dwt-compat` covers the **common public DWT API**, clean-room, prioritized by
+  OWNER-QUESTIONS.md. It is no longer blocked on the owner's code: work starts after T21 with
+  public-docs-only API names, and the owner's answers re-rank it.
+
+**New tasks:**
+- **T54 (FE lane, docs/tooling), open-source hygiene:**
+  - a licence proposal (masters propose, owner decides; recorded in OWNER-QUESTIONS.md #18);
+  - CONTRIBUTING, SECURITY.md, DCO;
+  - a scripted clean public export that excludes CLAUDE.md, `.claude/`, `opencode.json`,
+    `.opencode/`, `docs/planning`, `docs/tasks` and `docs/reviews`, keeps the product docs, and
+    starts the public repo from a fresh history.
+  - Reviewed by GPT. Deps: T53.
+- **T56 is split to break the dependency cycle:**
+  - **T56a (joint, Wave 1, no deps), harness only:** dependency-free timing and memory helpers
+    (a TS package for Vitest/Playwright and a .NET test helper, with no production references),
+    the §8 measurement rules, a JSON result schema and a budget comparator. T11, T13, T20 and T23
+    each own their own budget checks and use T56a. Until T56a merges, they record raw numbers
+    without gating.
+  - **T56b (joint), integration:** hosted-CI soak and recovery jobs, plus calibration of the §8
+    numbers for both masters to re-sign. Deps: T20, T21, T56a. Keep macOS minutes low (OD-7).
+
+## 4a. FE lane status (Opus edits; refreshed 2026-11-01 ~12:30 -03)
+Dispatches lost in the restart are bookkeeping only and are never reused.
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
 |---|---|---|---|---|---|---|
-| T01 | authoring | t01-transport-spike | task_7ad475b61ca4 / ctx_3e1242a839cb (claude opus-5-5 xhigh) | | | |
-| T04a | in review r1 | t04a-web-scaffold @1842f4e | task_87c003f8c96a / ctx_af0edf2dc598 (retained) | task_cc19d0403fad / ctx_6f602d7fa893 (opencode GPT-6.1 Sol high, branch t04a-review-r1) | | |
-| T05 | authored @d667952; GPT review queued for GPT resume (OD-1) | t05-design-spec | task_d61d82f04b49 / ctx_dff3213d1716 (retained) | | | |
+| T04a | **merged** (r2 Node pass, r3 format-scope pass; D-012 reuse of ci-web 41319600327; main backstop ci-web 41320055013) | — | fix r1 ctx_cd74bcad8bc0, fix r2 ctx_e53b3cb5f39b | r2 ctx_1d112881a0b7, r3 ctx_15fbb7f49d56 (GPT) | pass | 4639340 |
+| T05 | **merged** (r2 pass; rebased checks: 190 states, 0 axe violations) | — | fix r1 ctx_11403c9933fe | r2 ctx_e5c59cb532bb (GPT) | pass | f22eb2e |
+| T01 | fix r2 DONE @83df7dd (pushed; harness-only determinism fix 17accfa; suite 60/5/0; forged-ready 20x in 3 browsers 60/0). Author settled and closed. Next after reset: check the push-triggered spike-transport run, then GPT r3 (narrow, medium) | t01-transport-spike | fix r1 ctx_7a373faedbc2; fix r2 ctx_18d2b7435bfb (claude medium) | r2 ctx_48f38cafb0c0 (GPT high) | changes -> r3 pending | |
+| T10 ★ (Claude author) | r3 changes (root-dot loopback); round-3 escalation agreed; fix r3 done f3ba120; GPT r4 next (BE run) | t10-contract | fix r2 ctx_0a8ee3069c14, fix r3 ctx_062ede7e79cc | GPT (BE run) | pending r4 | |
+| T03 (Claude author) | **merged**; exact-SHA main runs green | — | fix r2 ctx_b6c1ba2bdb7e | GPT r3 (BE) | pass | f38e3ea |
+| T12-proto (Claude author) | **merged**; Linux 183/183 rebased; cross-OS pending | — | — | GPT r2 (BE) | pass | 32051c6 |
+| T02 (GPT) | Claude r1 changes (8895977); GPT fix r1 5bc5a05; Claude r2 in BE run | AlexandreLozi/t02-fix-r1 | GPT | r1 ctx_5c6b3170b2f8; r2 BE ctx_b125dedba577 | r2 pending | |
+
+**USAGE STOP (2026-11-01, liaison).** No new dispatches. Mid-flight in zilo-fe: none (T01 fix r2 settled at 83df7dd). Resume order after the reset:
+1. GPT T10 r4 (high) of f3ba120, BE run.
+2. The T10 merge (Opus queue), after both masters approve the contract.
+3. Wave 1 (T11/T12/T13/T15/T56a) by dependency order.
+4. T01: process its worker_done, then a GPT r3.
+
+Main backstop ci-web 41320055013 on 675f59d: check its result on resume.
+Wave 1 (T11, T12, T13, T15, T56a) starts once T10 merges. T04a and T05 are already on main.
 
 ## 4b. BE lane status (GPT edits)
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
 |---|---|---|---|---|---|---|
-| T02 | running | t02-naps2-spike | ctx_94f23f46bf05 | pending Claude review | pending | |
+| T02 | **USAGE-PAUSED** fix r2 at d30d592; no edits/tests yet. Next after T10/Wave1 priority: root-anchor three .gitattributes source rules, run 2 red regressions, then Claude r3 | origin/AlexandreLozi/t02-fix-r2 (d30d592); worktree t02-fix-r2 | fix r1 ctx_7605215e19fe released; fix r2 task_3ca101d3feaa / ctx_0713a663fd69 settled failed=usage-paused/incomplete, released | Claude r2 ctx_b125dedba577 released; report d30d592 | r2 changes: F1-F3/F5-F8 fixed; F4 upstream LICENSE normalization regression. Known 10 attribute-only LICENSE dirty paths preserved; no evidence bytes staged/discarded. T06/shipping blocked | |
 | T02-L | author settled; terminal released; integration handed to T02 | t02-license-gate | ctx_8d851f7ca858 | combined T02 Claude review | author reports 65 tests pass; review pending | |
-| T04b | code reviewed; native validation active | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce (t04b-review-r1; runtime retained/user_takeover) | Claude code PASS; native Windows pending | |
-| T04b-V | running; evidence only | t04b-native-validation | ctx_59467948111b | masters review evidence | pending native Windows; macOS/hosted CI pending | |
-| T03 | not started | | | | | |
-| T06 | not started | | | | | |
+| T04b | merged under D-010a; old terminal cleanup release_unknown | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce | Claude code PASS; Windows runtime blocked-by-host-SAC; macOS/hosted CI pending | 9e43bf7 |
+| T04b-V | abandoned/superseded by Claude evidence; old resource released | t04b-native-validation | ctx_59467948111b | masters reviewed replacement evidence | no resumed Windows runtime execution (OD-6) | |
+| T10 | **USAGE-PAUSED; FIRST ON RESET:** narrow GPT r4 of f3ba120 (high). No substantive review/tests/edits performed. Then both-master exact contract approval and Opus merge | t10-contract @f3ba120; origin/AlexandreLozi/t10-review-r4 @f3ba120; worktree t10-review-r4 clean | Claude fix r3 ctx_062ede7e79cc done; joint round-3 escalation agreed | task_98de4952c49d / ctx_d1000c7fe8db settled failed=usage-paused/incomplete, released; no verdict | r3 report255b3e5: one root-dot localhost residual; fix f3ba120 author reports60/60. r4 not done, contract NOT approved. Fresh/retry dispatch only after reset authorization, verify TUI high | |
+| T03 | r3 PASS @dc19861; merged by Opus; exact-SHA main CI gap closed | archived on origin; locals pruned by Opus | Claude fix r2 @26f5ab5 | task_f3300d311cb8 / ctx_d21e2a135b45 (released) | main f38e3ea packaging41316990218 +backend41316990194 success; signing/macOS runtime pending | f38e3ea |
+| T12-proto | r2 PASS @fc72aa9; merged by Opus | t12-proto-pages; AlexandreLozi/t12-proto-review-r2 | Claude fix r1 @574aa2c | task_b312bc4653ca / ctx_f5c436f16f0e (settled; release retained/user_takeover) | rebased Linux Debug/Release 183/183 reported by Opus; prototype only; cross-OS pending | 32051c6 |
+| T06 | blocked on joint ICA/worker/image strategy and T11 guard retirement | | | | shipping graph blocked | |
+
+**BE USAGE STOP — 2026-11-01 15:15 UTC (owner liaison).** No new dispatches/reviews/sub-steps;
+stop/checkpoint instructions sent to both live BE workers. Both settled usage-paused/incomplete
+and their terminals were released; T10 r4 has no verdict. T02 fix r2 checkpoint is unchanged from
+the reviewed base (known attribute-only dirty evidence paths).
+Both exact checkpoint branch heads are pushed to origin. No polling or wait loops while stopped.
+After reset authorization: **T10 r4 high → both-master contract approval + Opus T10 merge → Wave 1
+(T11/T12/T13/T15/T56a) in dependency order**. T02 fix r2/Claude r3 and T01 follow at lower priority.
+No contract approval, shipping graph clearance, or T06 unblock is implied by a usage checkpoint.
 
 ## 5. Concurrency bounds
 - **Per lane at once:** at most 4 live authors, 2 live reviewers, and 1 fix dispatch per task.
@@ -185,5 +264,6 @@ Tracked in VALIDATION.md.
   Absence alone never authorizes stop, abandon or retry.
 
 ## Sign-off
+- **v3 rev 3.1 amendment (§3a, OD-8/OD-9):** Opus approved (2026-11-01); GPT approved (2026-11-01), including T56a/T56b split and task-owned checks; numerical budget gates await calibration and joint re-signature.
 - Opus: approved (2026-10-31)
 - GPT: approved (2026-10-31), including explicit T06 workflow ownership transfer and non-circular T32/T33 integration gate above

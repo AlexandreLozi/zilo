@@ -1,0 +1,64 @@
+# SP-4a dry-run package definition for the T04b hello agent (nfpm, MIT licence).
+# Build: packaging/linux/build.sh renders ${ZILO_*} placeholders (nfpm does not expand them in contents).
+#
+# Placeholders to settle before any external release: maintainer, homepage, vendor.
+name: zilo-agent
+arch: amd64
+platform: linux
+version: ${ZILO_VERSION}
+version_schema: none
+release: "1"
+section: utils
+priority: optional
+maintainer: "Zilo packaging (placeholder) <packaging@zilo.invalid>"
+vendor: "Zilo (placeholder)"
+homepage: "https://zilo.invalid/"
+license: "Proprietary; bundled LGPL-2.1+ components ship as separate files (D-002)"
+description: |-
+  Zilo local scanning agent (SP-4a packaging dry run).
+  Per-user agent started by systemd --user; registers the zilo:// URL scheme.
+  This dry-run build is the T04b scaffold: it prints a notice and exits.
+
+# Framework-dependent publish: the distro .NET 10 runtime is a hard dependency.
+# SANE comes from the system (D-002: SANE is used, not redistributed).
+overrides:
+  deb:
+    depends:
+      - dotnet-runtime-10.0
+      - libsane1
+    recommends:
+      - sane-airscan
+  rpm:
+    depends:
+      - dotnet-runtime-10.0
+      - sane-backends
+    recommends:
+      - sane-airscan
+
+contents:
+  # Agent payload: every assembly a separate file (no single-file, no trimming).
+  - src: ${ZILO_PUBLISH_DIR}/
+    dst: /usr/lib/zilo/
+    # Source modes are kept: the apphost is 0755, assemblies and JSON are 0644.
+    type: tree
+    file_info:
+      owner: root
+      group: root
+  - src: /usr/lib/zilo/Zilo.Agent
+    dst: /usr/bin/zilo-agent
+    type: symlink
+  # systemd --user unit (D-008 autostart on Linux).
+  - src: ${ZILO_LINUX_DIR}/zilo-agent.service
+    dst: /usr/lib/systemd/user/zilo-agent.service
+    file_info:
+      mode: 0644
+  # XDG desktop entry handling x-scheme-handler/zilo. desktop-file-utils file triggers
+  # (dpkg and rpm) refresh mimeinfo.cache, so the scripts do not call it.
+  - src: ${ZILO_LINUX_DIR}/zilo-agent.desktop
+    dst: /usr/share/applications/zilo-agent.desktop
+    file_info:
+      mode: 0644
+
+scripts:
+  postinstall: ${ZILO_LINUX_DIR}/scripts/postinstall.sh
+  preremove: ${ZILO_LINUX_DIR}/scripts/preremove.sh

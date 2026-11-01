@@ -1,0 +1,7 @@
+packages:
+  - packages/*
+  - apps/*
+
+# Exact versions only; refuse to install on a Node/pnpm outside `engines`.
+saveExact: true
+engineStrict: true

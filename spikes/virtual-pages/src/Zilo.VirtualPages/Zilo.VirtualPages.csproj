@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Zilo.VirtualPages</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Apache-2.0, no transitive dependencies on net9.0+. Used only for the QR module matrix. -->
+    <PackageReference Include="ZXing.Net" Version="[0.16.11]" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Zilo.VirtualPages.Tests" />
+  </ItemGroup>
+</Project>

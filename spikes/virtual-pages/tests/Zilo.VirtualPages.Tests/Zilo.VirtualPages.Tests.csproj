@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Same test stack and versions as backend/ (root Directory.Packages.props). -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="[18.11.0]" />
+    <PackageReference Include="xunit.v3.mtp-off" Version="[4.0.2]" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="[4.0.1]" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Zilo.VirtualPages/Zilo.VirtualPages.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="golden-hashes.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../samples/**" LinkBase="samples" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

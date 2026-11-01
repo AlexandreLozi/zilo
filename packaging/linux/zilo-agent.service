@@ -1,0 +1,13 @@
+[Unit]
+Description=Zilo local scanning agent
+Documentation=file:///usr/share/applications/zilo-agent.desktop
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/zilo-agent
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

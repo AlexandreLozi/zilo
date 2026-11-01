@@ -1,0 +1,36 @@
+  Determining projects to restore...
+  Restored <repo>/backend/src/Zilo.Core/Zilo.Core.csproj (in 57 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 64 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 64 ms).
+  Restored <repo>/backend/src/Zilo.Security/Zilo.Security.csproj (in 64 ms).
+  Restored <repo>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 121 ms).
+  Zilo.Core -> <scratch>/pub/osx.work/osx-arm64/bin/Zilo.Core/release/Zilo.Core.dll
+  Zilo.Drivers.Virtual -> <scratch>/pub/osx.work/osx-arm64/bin/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.dll
+  Zilo.Security -> <scratch>/pub/osx.work/osx-arm64/bin/Zilo.Security/release/Zilo.Security.dll
+  Zilo.Drivers.Naps2 -> <scratch>/pub/osx.work/osx-arm64/bin/Zilo.Drivers.Naps2/release/Zilo.Drivers.Naps2.dll
+  Zilo.Agent -> <scratch>/pub/osx.work/osx-arm64/bin/Zilo.Agent/release_osx-arm64/Zilo.Agent.dll
+  Zilo.Agent -> <scratch>/pub/osx/
+  Determining projects to restore...
+  Restored <repo>/backend/src/Zilo.Security/Zilo.Security.csproj (in 69 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 69 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 69 ms).
+  Restored <repo>/backend/src/Zilo.Core/Zilo.Core.csproj (in 63 ms).
+  Restored <repo>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 127 ms).
+  Zilo.Core -> <scratch>/pub/osx.work/osx-x64/bin/Zilo.Core/release/Zilo.Core.dll
+  Zilo.Drivers.Virtual -> <scratch>/pub/osx.work/osx-x64/bin/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.dll
+  Zilo.Security -> <scratch>/pub/osx.work/osx-x64/bin/Zilo.Security/release/Zilo.Security.dll
+  Zilo.Drivers.Naps2 -> <scratch>/pub/osx.work/osx-x64/bin/Zilo.Drivers.Naps2/release/Zilo.Drivers.Naps2.dll
+  Zilo.Agent -> <scratch>/pub/osx.work/osx-x64/bin/Zilo.Agent/release_osx-x64/Zilo.Agent.dll
+  Zilo.Agent -> <scratch>/pub/osx.work/osx-x64.out/
+apphost ok: <scratch>/pub/osx/Zilo.Agent (macho-arm64, sha256 bad7f6862fa7404877c3d694d15cd8ef75c06fe7397df63955ec198057680e4e)
+apphost ok: <scratch>/pub/osx.work/osx-x64.out/Zilo.Agent (macho-x64, sha256 ef5b63e90415bf842176d8861ce04280b3dbb959bf0ba1b1c89f30496620678d)
+lipo not available: osx apphost left arm64-only (build the pkg on macOS)
+total 156
+-rwxr-xr-x 1 user user 124712 Oct 31 17:54 Zilo.Agent
+-rw-r--r-- 1 user user   2087 Oct 31 17:54 Zilo.Agent.deps.json
+-rw-r--r-- 1 user user   4608 Oct 31 17:54 Zilo.Agent.dll
+-rw-r--r-- 1 user user    330 Oct 31 17:54 Zilo.Agent.runtimeconfig.json
+-rw-r--r-- 1 user user   3584 Oct 31 17:54 Zilo.Core.dll
+-rw-r--r-- 1 user user   3584 Oct 31 17:54 Zilo.Drivers.Naps2.dll
+-rw-r--r-- 1 user user   3584 Oct 31 17:54 Zilo.Drivers.Virtual.dll
+-rw-r--r-- 1 user user   3584 Oct 31 17:54 Zilo.Security.dll

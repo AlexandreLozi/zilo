@@ -1,23 +1,41 @@
 # Zilo plan
 
-**Status:** v2, signed off by both masters on 2026-10-31. Built on Proposed decisions D-001 to D-009, so it changes if
+**Status:** v3 rev 3.1 approved by both masters (2026-11-01; OD-8/OD-9 amendment). v2 was signed off by both masters. Built on decisions D-001 to D-009, so it changes if
 they do. Nothing here is in force until both masters sign off at the bottom.
 
 ## 1. Scope
 
-**v1 (must):** replace the Dynamsoft service and JS SDK for the owner's flow on Windows, macOS and
-Linux. That means:
-- detect the agent, and offer start, download, update and permission help;
-- list local and network scanners plus the Zilo Virtual Scanner;
-- scan with DPI, colour mode, paper size, flatbed, ADF, duplex and multi-page;
-- return images or a PDF to the web app;
-- support Chrome, Edge and Firefox on all three OSes, and Safari on macOS (path set by SP-1).
+**Product goal (OD-9):** an open-source alternative to Dynamic Web TWAIN for anyone, with the
+owner's app as the first integrator.
 
-**v1 (should):** an optional `@zilo/dwt-compat` facade covering the owner's actual Dynamsoft calls,
-once we have their code.
+**v1 (must):** replace the Dynamsoft service and JS SDK on Windows, macOS and Linux, on x64 and
+arm64:
+- **Detection:** detect the agent, and offer start, download, update and permission help.
+- **Devices:**
+  - list local and network scanners plus the Zilo Virtual Scanner;
+  - **wide compatibility** (OD-9): TWAIN x86/x64, WIA, ICA, SANE, eSCL/AirScan, and WSD where a
+    verified route exists.
+- **Scanning:** DPI, colour mode, paper size, flatbed, ADF, duplex and multi-page.
+- **Output:** return images or a PDF to the web app.
+- **Browsers:**
+  - Chrome, Edge and Firefox on all three OSes;
+  - **Safari on macOS is required and release-blocking (OD-8).** The T25 path (S1 or S2) is
+    selected under D-003 from evidence only: SP-1a recommends S2, and real-Safari evidence (SP-1b)
+    is still pending. This amendment does not select it.
+  - The "Safari unsupported" state is an interim test state only.
+- **Front end (OD-8):**
+  - framework-agnostic TS SDK core and Web Components UI;
+  - **React (TSX) as the first-class wrapper and reference integration**;
+  - a **React + TS (Vite)** demo.
+- **Installs:** per-user and admin (machine-wide) installs (OD-9).
+- **`@zilo/dwt-compat`:** a clean-room facade over the **commonly used public DWT API** (OD-9),
+  prioritized by the owner's answers in OWNER-QUESTIONS.md.
+- **Budgets:** the performance budgets and reliability requirements in §8, enforced by tests.
 
-**Out of v1:** OCR, PDF import, image editing beyond rotate, reorder and delete, mobile browsers, a
-machine-wide Windows service (unless the owner requires it), and WSD on macOS.
+**Later:** thin Angular and Vue wrappers.
+
+**Out of v1:** OCR, PDF import, image editing beyond rotate, reorder and delete, mobile browsers, and
+WSD on macOS.
 
 ## 2. Architecture
 
@@ -46,7 +64,7 @@ Zilo Agent (per-user, .NET) ── HTTP API /zilo/v1 (Host + Origin checks, per-
 | Installers, signing, notarization, updater | GPT | D-008 |
 | `packages/sdk` | Opus | discovery, permission state, transports, jobs, export |
 | `packages/ui` | Opus | Web Components + React wrapper, themable, a11y (WCAG 2.2 AA) |
-| `packages/dwt-compat` | Opus | after owner code (D-006) |
+| `packages/dwt-compat` | Opus | public-docs clean-room API after T21 (OD-9 overrides D-006's owner-code-only start); owner answers re-rank it |
 | `apps/demo` | Opus | demo + Playwright E2E target |
 | Download page / `latest.json` consumer | Opus (UI) + GPT (manifest) | |
 | CI workflows | joint | GPT for backend and packaging jobs, Opus for web and E2E jobs |
@@ -137,7 +155,13 @@ Exit:
 - Probing happens only during an active user interaction.
 
 **M5 — Compat + hardening.**
-- `dwt-compat`, if the owner's code has arrived.
+- `dwt-compat` over the common public DWT API (clean-room), prioritized by the owner's answers.
+- The §8 soak and recovery suites run green on hosted CI.
+- Open-source hygiene (OD-9):
+  - a licence proposal for the owner to decide;
+  - CONTRIBUTING, SECURITY.md, DCO or CLA;
+  - the NOTICE file from T53;
+  - a scripted clean public export that excludes agent and planning paths.
 - Consent UI polish, diagnostics, resource bounds.
 - Threat-model review and the legal licence review.
 
@@ -145,8 +169,10 @@ Exit:
 - real Safari 26 on macOS, run by the owner from a checklist or on a proven safaridriver lane (Playwright
   WebKit never substitutes);
 - the hardware matrix;
-- signing and notarization with owner credentials (SP-4b);
-- legal sign-off.
+- signing and notarization with owner credentials (SP-4b); every Windows PE file signed (D-011);
+- §8 budgets met on hosted runners, and on real hardware where the budget applies;
+- legal sign-off;
+- the public export reviewed by both masters and approved by the owner.
 
 ## 6. Cross-cutting acceptance
 - **Cross-model review applies to everything:** research, plans and code. The Phase 1 exchange counts as
@@ -161,15 +187,86 @@ Exit:
 ## 7. Risks
 | Risk | Mitigation |
 |---|---|
-| Safari blocks loopback HTTP | SP-1a stub early; S1/S2 candidates; explicit unsupported state if neither proven |
+| Safari blocks loopback HTTP | SP-1a stub early; S1/S2 candidates, both prototyped. If neither is proven, the release is blocked (OD-8): "Safari unsupported" is an interim test state, never a shipped outcome |
 | Users deny the browser permission | detect `denied` and show per-browser help; enterprise policy docs |
 | TWAIN driver crashes | x86 worker process isolation, restart, job-level error |
 | NAPS2 licence graph changes | pinned versions + CI licence gate |
 | macOS notarization/.NET hardened runtime | SP-4a dry run early; SP-4b with owner credentials |
 | Owner code shows heavy DWT coupling | compat facade scoped from real calls; migration guide |
+| Safari S2 bridge fails on real Safari | S1 explicit local trust as fallback (D-003 rules); Safari is release-blocking (OD-8), so both are prototyped early |
+| Open-source release leaks agent/planning material or private history | scripted clean export with a path denylist, reviewed by both masters (OD-9) |
+
+## 8. Performance budgets and reliability (OD-9)
+
+**Status.** These numbers are **proposed enforceable targets**. They are not measured support
+claims. T56a calibrates them on hosted runners, and both masters re-sign any changed number before it
+gates a merge.
+
+**Reference environment.** GitHub-hosted runners (ubuntu-latest, windows-latest, macos-latest)
+with the virtual scanner, unless a row says otherwise. Hardware numbers come from the owner's
+checklist.
+
+**Measurement rules (T56a implements them):**
+- **Samples:** 2 warm-up observations are discarded, then **20 observations** are kept. Latency
+  budgets gate on **p95 by nearest rank**, which is the 19th of 20 sorted values, so a single outlier
+  cannot fail the build. A cold-start observation is a fresh process each time.
+- **Virtual pacing:** the budget runs use an unpaced virtual ADF, so generation is as fast as
+  possible and the agent pipeline is what is measured. A paced mode (fixed ppm) exists for UI and
+  soak tests only.
+- **Real-device throughput reference:** the same device, settings (dpi, colour, duplex, paper) and
+  connection path, scanned with NAPS2 standalone or the vendor's own app. The device's rated ppm is
+  informational only and is never the baseline.
+- **Agent memory:** two separate measures.
+  - *Peak per page:* the peak RSS during the job, minus the idle baseline taken just before it,
+    divided by the number of pages in flight. Sampled at 10 Hz.
+  - *After dispose:* run a forced full GC, wait 5 s, then sample at 1 Hz for 5 s. The managed heap
+    (`GC.GetTotalMemory(true)`) must be back within baseline + 5 MB. RSS is allowed allocator
+    retention, so it gates only on the soak growth rule below.
+- **Browser memory:** Chromium only, through CDP `HeapProfiler.collectGarbage` followed by
+  `Runtime.getHeapUsage`. The limit is B0 + 1.5 × (encoded bytes of retained page blobs) + decoded
+  bitmaps (w × h × 4 for each rendered thumbnail or preview). B0 is the post-GC heap with the UI
+  mounted and zero pages, so the limit holds at zero blobs.
+
+| Budget | Target | Enforced by |
+|---|---|---|
+| Agent cold start (process start → `hello` 200) | p95 ≤ 1.5 s Linux/macOS, ≤ 2.5 s Windows | T11 perf test |
+| SDK detection, agent running, permission granted | p95 ≤ 300 ms | T13/T23 |
+| SDK `unreachable-or-blocked` verdict (no agent; user prompt time excluded) | ≤ 2 s | T13/T23 |
+| Time to first page (`POST /jobs` → first `page` event), virtual, A4 300 dpi colour | p95 ≤ 1.0 s | T20 |
+| ADF throughput, virtual, A4 300 dpi colour, thumbnails on | ≥ 60 pages/min | T20/T23 |
+| ADF throughput, real device | ≥ 90% of the reference-path throughput (see the rules) | hardware checklist (T34) |
+| Agent memory, peak per in-flight page (A4 300 dpi colour) | ≤ 40 MB; after dispose, managed heap ≤ baseline + 5 MB | T20 |
+| Browser JS heap in the SDK/UI (post-GC) | ≤ B0 + 1.5× encoded blob bytes + decoded bitmaps (see the rules) | T21/T22 |
+| Export of a 50-page PDF, A4 300 dpi | colour ≤ 10 s, B/W ≤ 3 s | T20 |
+
+**Reliability (acceptance criteria in T20, T23, T24 and T30–T33):**
+- **Soak:** 500 pages through the virtual ADF (paced mode), in 10 jobs. Zero temp files remain
+  after dispose. Post-GC RSS, sampled after each job, grows by less than 10% between job 5 and
+  job 10. That rule tolerates one-time allocator retention but catches a leak. No handle or thread
+  growth.
+- **Agent crash or kill mid-job:**
+  - Pages and jobs are **ephemeral**. They die with the process, and v1 adds **no durable document
+    or job storage**.
+  - **Lost-session contract (an input to T10 r2 and the T20 contract tests):** `hello` carries an
+    `instanceId` that is new for each process start. When the SDK reconnects and sees a different
+    `instanceId`, it marks every job it holds from the old instance as `agent-restarted`, which is
+    retryable. A job ID the new process doesn't know returns a typed not-found. So no job is ever
+    silently lost, and the new process never claims anything about old-process jobs.
+  - **Detection:** the SDK surfaces `agent-unavailable` within 2 s, but only during an active
+    operation (an open event stream or an in-flight request). An idle SDK finds out on its next
+    call.
+  - **Relaunch within 5 s needs a supervisor. Login autostart alone does not relaunch.** The
+    installer tasks own it: T42 uses the `systemd --user` unit with `Restart=on-failure`; T41 uses
+    launchd `KeepAlive` with `SuccessfulExit=false`; T40 uses a scheduled task with
+    restart-on-failure, or the T44 tray shell as the watchdog. T24 owns the kill-and-relaunch test.
+- **x86 TWAIN worker crash or kill:** the job fails with a retryable error, and the next job
+  succeeds without an agent restart.
+- **Sleep and resume:** the event stream reconnects with `Last-Event-ID` and loses no events. This is
+  simulated with network suspension in CI and checked on hardware with a real sleep.
+- **Unplug, paper jam and feeder empty:** typed errors. Pages acquired before the failure stay
+  retrievable.
+- **No leaked temp files on any path:** cancel, error, revoke, TTL.
 
 ## Sign-off
-- Opus: approved (2026-10-31), including GPT's three clarifications (independent M0a fixture,
-  bearer-replay semantics, redacted debug logs).
-- GPT: approved (2026-10-31), with the clarified M0a fixture independence, bearer-replay test and
-  debug-log redaction above; D-003 approval covers the candidate/safety rules only, not passed spikes.
+- v2: signed by Opus and GPT (2026-10-31).
+- **v3 rev 3.1 (OD-8/OD-9 amendment: scope, M5, M6, §8 budgets, risks):** Opus approved (2026-11-01); GPT approved (2026-11-01). Numeric budgets remain proposed until measured/calibrated and jointly re-signed; protocol changes still require the T10 contract gate.

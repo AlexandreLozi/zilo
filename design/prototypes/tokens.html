@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zilo prototype: Design tokens</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<link rel="stylesheet" href="assets/proto.css">
+<style>
+  .tok { max-width: 68rem; margin: 0 auto; padding: var(--z-space-8) var(--z-space-6) var(--z-space-10); background: var(--z-bg); }
+  .tok h2 { font-size: var(--z-text-xl); font-weight: var(--z-weight-semibold); margin: var(--z-space-10) 0 var(--z-space-2); }
+  .tok h2:first-of-type { margin-top: 0; }
+  .tok > p { color: var(--z-text-muted); max-width: 46rem; }
+  .tok table { width: 100%; border-collapse: collapse; margin-top: var(--z-space-4); font-size: var(--z-text-sm); }
+  .tok th, .tok td { text-align: left; padding: var(--z-space-2) var(--z-space-3); border-bottom: 1px solid var(--z-border); vertical-align: middle; }
+  .tok th { font-weight: var(--z-weight-semibold); color: var(--z-text-muted); }
+  .tok code { font-family: var(--z-font-mono); font-size: 0.95em; }
+  .sw { width: 2.5rem; height: 1.75rem; border-radius: var(--z-radius-sm); border: 1px solid var(--z-border-strong); }
+  .scale { display: grid; gap: var(--z-space-3); margin-top: var(--z-space-4); }
+  .scale__row { display: grid; grid-template-columns: 11rem 1fr; align-items: center; gap: var(--z-space-4); }
+  .bar-s { height: 12px; background: var(--z-accent); border-radius: 2px; }
+  .tiles { display: flex; gap: var(--z-space-5); flex-wrap: wrap; margin-top: var(--z-space-4); }
+  .tile { width: 9rem; height: 5.5rem; display: grid; place-items: center; background: var(--z-surface-raised); border: 1px solid var(--z-border); font-family: var(--z-font-mono); font-size: var(--z-text-xs); text-align: center; }
+  .specimen { display: flex; gap: var(--z-space-3); flex-wrap: wrap; align-items: center; margin-top: var(--z-space-4); }
+  .motion-demo { width: 2.5rem; height: 2.5rem; border-radius: var(--z-radius-md); background: var(--z-accent); transition: transform var(--z-duration-slow) var(--z-ease-standard); }
+  .motion-demo[data-moved="true"] { transform: translateX(12rem); }
+  .host-demo { margin-top: var(--z-space-4); display: grid; grid-template-columns: 1fr 1fr; gap: var(--z-space-5); }
+  .host-demo pre { margin: 0; padding: var(--z-space-4); border-radius: var(--z-radius-md); background: var(--z-surface-sunken); border: 1px solid var(--z-border); font-family: var(--z-font-mono); font-size: var(--z-text-xs); overflow: auto; white-space: pre; }
+  .host-demo .card { padding: var(--z-space-5); border-radius: var(--z-radius-lg); border: 1px solid var(--z-border); display: grid; gap: var(--z-space-4); background: var(--z-bg); }
+  /* The host's own CSS, exactly as in the snippet. */
+  #host-demo { --zilo-color-accent: #5b3cc4; --zilo-color-on-accent: #ffffff; --zilo-radius-md: 10px; --zilo-radius-lg: 16px; --zilo-font-sans: Georgia, serif; }
+  html[data-proto-theme="dark"] #host-demo { --zilo-color-accent: #b9a6ff; --zilo-color-on-accent: #1d1246; }
+  @media (max-width: 52rem) { .host-demo { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body class="proto">
+<main class="proto-stage" aria-label="Prototype stage" style="overflow:auto">
+  <div class="zilo tok" id="tok">
+    <h2>Colour</h2>
+    <p>Semantic tokens only. Components read <code>--z-*</code>; hosts override <code>--zilo-*</code>. Values are read live from the current theme.</p>
+    <table>
+      <thead><tr><th scope="col">Swatch</th><th scope="col">Token</th><th scope="col">Host override</th><th scope="col">Value</th><th scope="col">Use</th></tr></thead>
+      <tbody id="colors"></tbody>
+    </table>
+
+    <h2>Typography</h2>
+    <p>System fonts only. Sizes are in rem so the user's browser font size applies.</p>
+    <div class="scale" id="type"></div>
+
+    <h2>Spacing</h2>
+    <p>4 px grid. Controls are at least 36 px tall; icon buttons on page thumbnails are 28 px (WCAG 2.5.8 target size is 24 px).</p>
+    <div class="scale" id="space"></div>
+
+    <h2>Radius and elevation</h2>
+    <div class="tiles" id="tiles"></div>
+
+    <h2>Motion</h2>
+    <p>Durations drop to 0 under <code>prefers-reduced-motion: reduce</code>; spinners become a slow opacity pulse.</p>
+    <table>
+      <thead><tr><th scope="col">Token</th><th scope="col">Value</th><th scope="col">Use</th></tr></thead>
+      <tbody>
+        <tr><td><code>--z-duration-instant</code></td><td>80ms</td><td>Press feedback</td></tr>
+        <tr><td><code>--z-duration-fast</code></td><td>140ms</td><td>Hover, colour changes</td></tr>
+        <tr><td><code>--z-duration-base</code></td><td>200ms</td><td>Dialog enter, thumbnail rotate</td></tr>
+        <tr><td><code>--z-duration-slow</code></td><td>320ms</td><td>Page card arrival</td></tr>
+        <tr><td><code>--z-ease-standard</code></td><td>cubic-bezier(0.2, 0, 0, 1)</td><td>Moves within the dialog</td></tr>
+        <tr><td><code>--z-ease-enter</code></td><td>cubic-bezier(0.05, 0.7, 0.1, 1)</td><td>Things appearing</td></tr>
+        <tr><td><code>--z-ease-exit</code></td><td>cubic-bezier(0.3, 0, 1, 1)</td><td>Things leaving</td></tr>
+      </tbody>
+    </table>
+    <div class="specimen"><button class="z-btn" type="button" id="move">Play motion sample</button><div class="motion-demo" id="demo" aria-hidden="true"></div></div>
+
+    <h2>Components</h2>
+    <div class="specimen">
+      <button class="z-btn z-btn--primary" type="button">Primary</button>
+      <button class="z-btn" type="button">Secondary</button>
+      <button class="z-btn z-btn--ghost" type="button">Ghost</button>
+      <button class="z-btn z-btn--danger" type="button">Danger</button>
+      <button class="z-btn" type="button" aria-disabled="true">Disabled</button>
+    </div>
+    <div class="specimen" aria-label="Driver badges" role="group">
+      <span class="z-badge">WIA</span><span class="z-badge">TWAIN</span><span class="z-badge">ICA</span>
+      <span class="z-badge">SANE</span><span class="z-badge">eSCL</span><span class="z-badge z-badge--virtual">Virtual</span>
+    </div>
+    <div class="z-stack" style="margin-top: var(--z-space-4); max-width: 40rem">
+      <div class="z-banner"><svg class="z-icon" aria-hidden="true"><use href="#i-info"/></svg><p class="z-banner__title">Info banner</p><p class="z-banner__body">Effective settings differ from the request.</p></div>
+      <div class="z-banner z-banner--warning"><svg class="z-icon" aria-hidden="true"><use href="#i-alert-triangle"/></svg><p class="z-banner__title">Warning banner</p><p class="z-banner__body">Something needs attention but nothing failed.</p></div>
+      <div class="z-banner z-banner--danger"><svg class="z-icon" aria-hidden="true"><use href="#i-alert-circle"/></svg><p class="z-banner__title">Danger banner</p><p class="z-banner__body">A scan or export failed.</p></div>
+      <div class="z-banner z-banner--success"><svg class="z-icon" aria-hidden="true"><use href="#i-check"/></svg><p class="z-banner__title">Success banner</p><p class="z-banner__body">Zilo updated.</p></div>
+      <div class="z-progress" role="progressbar" aria-label="Determinate progress sample" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="--value:0.4"><div class="z-progress__bar"></div></div>
+      <div class="z-progress z-progress--indeterminate" role="progressbar" aria-label="Indeterminate progress sample"><div class="z-progress__bar"></div></div>
+    </div>
+
+    <h2>Host theming</h2>
+    <p>The host sets public tokens on the component element. Here a host uses a violet accent, larger radii and its own font. Hover and subtle tints derive from the accent with <code>color-mix()</code>. If the host's accent is light, it must also set <code>--zilo-color-on-accent</code> and keep 4.5:1.</p>
+    <div class="host-demo">
+<pre>/* Host app CSS */
+zilo-scan-dialog {
+  --zilo-color-accent: #5b3cc4;
+  --zilo-color-on-accent: #ffffff;
+  --zilo-radius-md: 10px;
+  --zilo-radius-lg: 16px;
+  --zilo-font-sans: Georgia, serif;
+}
+.app-dark zilo-scan-dialog {
+  --zilo-color-accent: #b9a6ff;
+  --zilo-color-on-accent: #1d1246;
+}
+&lt;zilo-scan-dialog theme="auto"&gt;</pre>
+      <div class="zilo card" id="host-demo">
+        <p class="z-banner__title">Host-themed footer</p>
+        <div class="z-segmented" role="radiogroup" aria-label="Save as (host demo)">
+          <label><input type="radio" name="hf" checked><span>PDF</span></label><label><input type="radio" name="hf"><span>JPEG</span></label><label><input type="radio" name="hf"><span>PNG</span></label>
+        </div>
+        <div class="z-row"><button class="z-btn" type="button">Scan more</button><button class="z-btn z-btn--primary" type="button">Add 4 pages</button></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="assets/proto.js"></script>
+<script>
+(function () {
+  const COLORS = [
+    ["bg", "Dialog surface"], ["surface-sunken", "Panels, page grid, inputs' backdrop"], ["surface-raised", "Menus, popovers"],
+    ["text", "Body text"], ["text-muted", "Secondary text (4.5:1 min)"], ["border", "Dividers (decorative)"],
+    ["border-strong", "Control boundaries (3:1 min)"], ["accent", "Primary action, selection"], ["on-accent", "Text on accent"],
+    ["focus", "Focus ring (3:1 min)"], ["danger", "Errors"], ["danger-subtle", "Error banner fill"], ["warning", "Warnings"],
+    ["warning-subtle", "Warning fill"], ["success", "Success"], ["success-subtle", "Success fill"], ["info", "Info"],
+    ["info-subtle", "Info fill"], ["scrim", "Modal backdrop"],
+  ];
+  const TYPE = [["--z-text-2xl", "Empty-state headline"], ["--z-text-xl", "Dialog title"], ["--z-text-lg", "Origin in consent"], ["--z-text-md", "Body and controls"], ["--z-text-sm", "Secondary text"], ["--z-text-xs", "Badges, captions"]];
+  const SPACE = [1, 2, 3, 4, 5, 6, 8, 10];
+
+  window.PROTO = {
+    title: "Design tokens",
+    autofocus: false,
+    controls: [],
+    render() {
+      requestAnimationFrame(fill);
+    },
+  };
+
+  function fill() {
+    const root = document.getElementById("tok");
+    const probe = document.createElement("span");
+    root.appendChild(probe);
+    document.getElementById("colors").innerHTML = COLORS.map(([n, use]) => {
+      probe.style.color = `var(--z-${n})`;
+      const val = getComputedStyle(probe).color;
+      return `<tr><td><div class="sw" style="background:var(--z-${n})"></div></td><td><code>--z-${n}</code></td><td><code>--zilo-color-${n}</code></td><td><code>${val}</code></td><td>${use}</td></tr>`;
+    }).join("");
+    probe.remove();
+    document.getElementById("type").innerHTML = TYPE.map(([t, use]) =>
+      `<div class="scale__row"><code>${t}</code><span style="font-size:var(${t})">${use}: Scan documents</span></div>`).join("");
+    document.getElementById("space").innerHTML = SPACE.map((s) =>
+      `<div class="scale__row"><code>--z-space-${s}</code><div class="bar-s" style="width:var(--z-space-${s})"></div></div>`).join("");
+    document.getElementById("tiles").innerHTML = [["sm", 1], ["md", 2], ["lg", 3]].map(([r, e]) =>
+      `<div class="tile" style="border-radius:var(--z-radius-${r});box-shadow:var(--z-shadow-${e})">radius-${r}<br>shadow-${e}</div>`).join("");
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("move"), demo = document.getElementById("demo");
+    btn.addEventListener("click", () => { demo.dataset.moved = demo.dataset.moved === "true" ? "false" : "true"; });
+    // Re-read swatch values when the theme control changes.
+    document.addEventListener("change", () => requestAnimationFrame(fill));
+  });
+})();
+</script>
+</body>
+</html>

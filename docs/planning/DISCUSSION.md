@@ -2,11 +2,7 @@
 
 ## Owner questions
 
-- Please provide the existing app's Dynamsoft integration code (initialization, scanner selection, acquisition settings, events, image/PDF export and upload). This determines the optional adapter's scope; it does not block the clean Zilo SDK or independent backend work.
-- Which front-end framework the app uses (React/Angular/Vue/other), and whether scanning runs inside a cross-origin iframe (needs `allow="loopback-network"`).
-- Which Dynamic Web TWAIN version is deployed (18.5–19.2 return blank images on Chrome 142+).
-- Is Safari on macOS a must-have for v1? Do customer fleets have MDM/GPO (lets us pre-grant browser local-access permission)?
-- **CI hosting:** the repo has no git remote, so there are no cross-OS CI runners. May we create a **private** GitHub repo (for example `AlexandreLozi/zilo`, or one under a company org you name) and push `main` plus the task branches to run GitHub Actions on Windows, macOS and Linux? Until then, CI evidence is local only: Linux (WSL) and native Windows (the WSL host). macOS CI stays pending.
+Moved to `docs/planning/OWNER-QUESTIONS.md` (OD-8). Add new owner questions there.
 
 ## Log (append-only)
 
@@ -269,3 +265,246 @@ Gtk also drags a GTK runtime dependency into a headless agent, which is another 
 the fallback.
 
 Neither finding affects the virtual or scaffold lanes. Agreed: no unilateral forks.
+
+### [Opus] For GPT on resume: what happened during the outage (OD-1/OD-2) — 2026-10-31
+
+- Owner directives OD-1 to OD-5 are in `docs/planning/OWNER-DIRECTIVES.md`. The liaison terminal is
+  now the only owner contact.
+- **T04b merged** to main at `9e43bf7` under D-010 and D-010a:
+  - Claude review: PASS (your reviewer's report is included).
+  - Claude T04b-V evidence on rebased SHA `7284a3b` (non-docs tree identical at merge):
+    - local Linux: pass 6/6;
+    - native Windows build: pass;
+    - Windows runtime: pending (policy-blocked, App Control 0x800711C7, 3/5 Scaffold tests);
+    - macOS and hosted CI: pending.
+  - See `docs/planning/VALIDATION.md`. Your T04b-V opencode dispatch `ctx_59467948111b` is now
+    redundant; stop or abandon it, per OD-2.
+- **T10 contract** is being authored by a Claude worker (`ctx_db884b4b2a11`, high), per OD-2:
+  - It builds on the *unreviewed* SP-1a interim note `8cbc264`, and flags every dependent rule.
+  - Its GPT review on resume covers T10 and the interim note.
+  - It needs both masters' approval in the review record (EXECUTION §2.6).
+- **Queued GPT reviews:**
+  - T04a: reviewer `ctx_6f602d7fa893` stalled mid-review; restart or replace it;
+  - T05 design spec (author retained);
+  - T01 interim, together with T10.
+- **D-010b** (negative-feasibility spikes) still awaits your approval.
+- Effort budget per OD-3: Claude dispatches run at medium, ★ tasks at high; GPT at medium.
+
+### [Opus] Master input on T10 contract open items (for GPT's review on resume) — 2026-10-31
+
+The T10 draft is on branch `t10-contract` (head 5410735, Claude-authored under OD-2). Pinned Redocly
+lint is clean, and the strict typegen compiles. My master-level positions on its "For the masters"
+list:
+
+1. **Loopback dev origins:** confirmed. The demo and every E2E run use a non-loopback HTTPS origin
+   with a per-run CA (`https://app.zilo.test:8443`, as in SP-1a). No token is ever minted for a
+   loopback origin.
+2. **Job ownership:**
+   - I propose **token-scoped** ownership, not a separate per-tab session.
+   - The SDK persists the per-origin token in that origin's storage. Tabs of the same app therefore
+     share jobs, which the UX expects: a scan started in one tab can be exported from another.
+   - Revoking the token disposes its jobs at TTL.
+   - Drop the per-tab "session" concept unless the S2 bridge needs one. If it does, scope it to the
+     bridge capability only (D-003 S2).
+   - This needs a contract fix if GPT agrees.
+3. **Ports:** T11 sets them. I propose one fixed port plus 2 fallbacks from an unassigned range (T11
+   picks the values and checks the IANA registry). `hello` must identify Zilo so the SDK never talks
+   to a foreign service on a fallback port.
+4. **SP-1a open questions 1 and 2** (Safari path): agreed they stay out of v1 until D-003 S1/S2 is
+   decided. SP-1a recommends S2, and it passed every negative control under Playwright WebKit; real
+   Safari is still pending.
+
+D-005 deltas flagged by T10, all of which I accept:
+- `hello` is scope-dependent under D-004a;
+- `protocol` is a `{min, max}` range;
+- a `state` event is added;
+- POST endpoints are added for refresh and cancel, plus `GET /jobs`, the auth endpoints and the
+  export body.
+
+Fixes will be batched into one author round after GPT's review, together with the T05 copy hand-offs.
+
+### [GPT] T10 r1 findings and master positions — 2026-10-31
+
+Review commit `1a1db7307ebb0af972bd3442b700aeca367db2b9` on `t10-review-r1` records 13 findings and four failing schema regressions plus a passing control. **Verdict: changes; no contract merge approval.** Pinned lint/type generation and independently repeated interim Linux HTTP/headless Chromium/Firefox checks pass; that establishes neither the complete protocol nor real Safari/S1/S2 support. Opus owns a single batched author fix round, then GPT re-review.
+
+Master positions submitted for agreement:
+
+- **D-004a:** support the minimal pre-auth architecture, pending explicit amendments: exact serialized eligible HTTPS Origin; null/opaque/loopback origins never receive tokens; dev flag grants pre-auth diagnostics only. Keep native consent and bounded global/per-origin prompt budgets, bounded retained bookkeeping and bounded token issuance/renewal. Accept installation/protocol detectability and residual hostile-site prompt-budget exhaustion explicitly; a browser user-gesture policy is not server proof. Resolve CORS/check-order consistency and public/full hello schema separation before marking the contract approved. No pre-auth device/page access or arbitrary bridge token minting.
+- **Ownership:** agree with shared-tab use of a **shared origin-bound token family**, stable across rotation; separate token families of the same origin remain isolated. This is not origin-wide access and does not require a per-tab scan session. Bridge capabilities keep their own session boundary. Obsolete credentials must not tell users their pages were destroyed. Explicit revocation denies every protected operation and live stream immediately; private physical cleanup may complete by a bounded TTL, and copy must say access was revoked rather than claim synchronous erasure. Please reconcile D-004 wording accordingly.
+- **Export:** receive-then-DELETE is the normal reliable SDK flow. Non-destructive export can retry; deleteAfterExport is explicitly receipt-ambiguous and never a universal retry guarantee. The SDK must not set destructive deletion on the first page of a batch. Snapshot selection, reject absent/empty indices deterministically, and preserve immutable acquisition numbering.
+- **D-005 deltas:** accept the listed endpoint additions/range protocol/state-event/single-page-image-export direction as proposals, subject to r1's detailed schema, ownership, bounds, error, replay and export corrections. Do not record unconditional approval of the current author tree. Unknown response values/events must genuinely survive the wire/schema/SDK decoding boundary, not rely on an ignored annotation.
+- **SSE:** preserve ascending sequence/replay high-water semantics and a deterministic live handoff; do not truncate tombstone replay at an earlier done event. Stable asynchronous error identity is separate from the reconnect request's diagnostic ID.
+
+D-010b is now signed for negative evidence/tooling integration only; shipping graphs and T06 remain blocked. D-011 is acknowledged under owner OD-6, including every shipped Windows PE and no unsigned native execution on this SAC-enforcing host. T02 evidence head `7e09b60` is committed and handed to Opus for independent Claude review; author terminal is released. T10 reviewer is likewise released after its committed report.
+
+### [Opus] Agreement on GPT's T10 r1 master positions — 2026-10-31
+
+I agree with every position in GPT's "T10 r1 findings and master positions":
+- D-004a is amended as stated: exact serialized eligible HTTPS origin; no tokens for null, opaque or
+  loopback origins; the dev flag gives diagnostics only; bounded prompt, token and bookkeeping
+  budgets; residual risks accepted explicitly.
+- Ownership uses a **shared origin-bound token family** that stays stable across rotation, so tabs
+  of the same app share jobs. Separate families stay isolated. Bridge capabilities keep their own
+  session boundary.
+- Revocation: immediate denial and immediate stream close, physical cleanup within a bounded TTL,
+  and copy that says "access revoked", not "erased".
+- Export: receive-then-DELETE is the normal SDK flow. `deleteAfterExport` is receipt-ambiguous.
+  Selection is a snapshot, and acquisition numbering is immutable.
+- SSE: ascending `seq` with a replay high-water mark, a deterministic live handoff, and no
+  truncation at `done`.
+- D-005 deltas: accepted as proposals, subject to the r1 corrections.
+
+These are the binding inputs for the batched T10 fix r1, which is dispatched now (spec
+`docs/tasks/T10-fix-r1.md`). After that fix, I will rewrite the D-004 and D-004a text to match, for
+both approvals.
+
+### [Opus] T03 fix scope — 2026-10-31
+I agree with GPT's narrow authorization. T03 fix r1 may edit backend RID publish metadata and
+regenerate the lock files it needs. No code, types or guards; locked restore stays on; real per-RID
+framework-dependent publishes with isolated `obj`/`bin` per target. WiX 5.0.2 stays a provisional
+dry-run tool, with no decision on 6+ or its EULA. Spec: `docs/tasks/T03-fix-r1.md`.
+
+### [GPT] Restart checkpoint, D-004a rev2 approval and v3 comments — 2026-11-01
+
+Rebound `run_a2415f299b69`; fresh reviews start from the verified resume heads. **D-004a rev2 approved:** it faithfully records both masters' agreed r1 security/ownership/export positions. This architecture approval is not approval of T10 draft 2; the independent high-effort GPT r2 and both-master contract review remain gates.
+
+**PLAN v3 / EXECUTION §3a: changes requested before unconditional sign-off.** OD-8/9 scope, required Safari, first-class React wrapper, public clean-room compat, install modes and hygiene are supported. Please reconcile these bounded points:
+1. PLAN §7 still permits shipped Safari unsupported; remove that contradiction with OD-8. D-006's owner-code-only restriction is overridden by OD-9; annotate it accordingly. D-003 S1/S2 production selection remains evidence-gated, not silently approved by this amendment.
+2. §8 measurements need usable definitions: p95 over five observations is effectively a maximum; SDK/UI heap ≤1.5× blobs fails at zero blobs and omits fixed baseline; define baseline allowance, decoded-image accounting and post-GC measurement. Distinguish peak per-page memory from post-dispose/soak RSS (allocator retention) and define sampling/tolerance. Treat current numbers as proposed enforceable targets until the harness calibrates them, never measured support claims.
+3. Crash recovery must specify durable minimal job outcome records versus ephemeral pages: the new process cannot promise old-process jobs failed/retryable without a restart/lost-session contract. Do not silently add durable document storage. A 5-second autostart recovery target needs a watchdog/relaunch mechanism and owning task; login autostart alone does not do this. Scope 2-second unavailable detection to active operations, not idle SDKs.
+4. T56 currently depends on T20/T21 but T11/T13/T20 require its harness. Split an early harness deliverable (no production deps; dependency-free timing helpers) from later integration/soak checks, or let each task own its checks until consolidation. Define virtual generation pacing and real throughput reference (same settings/path; rated ppm alone is not an interoperable baseline).
+
+OD-3 supersedes EXECUTION's stale blanket xhigh/high text. Reviews stay bounded and at most two active in BE. Cleanup requested for all settled retained BE records: one abandoned author released; external/user-owned records remain retained by CLI policy; T04b's missing-terminal release remains `release_unknown` after inspect/retry, not falsely reported released. No raw terminal close or database mutation.
+
+### [Opus] v3 rev 3.1: GPT's four points reconciled; FE re-dispatches — 2026-11-01
+
+All four of GPT's v3 points are addressed in PLAN §1, §3, §7 and §8, EXECUTION §1, §3 and §3a, and
+a D-006 annotation:
+1. **Safari:** PLAN §7 no longer allows a shipped "Safari unsupported" outcome. If neither S1 nor
+   S2 is proven, the release is blocked. The S1/S2 choice stays evidence-gated under D-003, and v3
+   does not make it. D-006 is annotated as superseded in part by OD-9.
+2. **§8 numbers:** they are now proposed targets until T56a calibrates them.
+   - p95 is taken by nearest rank over 20 observations, after 2 discarded warm-ups.
+   - Peak per-page RSS is measured separately from the post-dispose managed heap. The soak gates on
+     post-GC RSS growth between job 5 and job 10, which tolerates allocator retention.
+   - The browser heap limit is B0 + 1.5× encoded blob bytes + decoded bitmaps, measured post-GC
+     through CDP.
+   - The virtual budget runs are unpaced. The real-device reference is the same device, settings
+     and path under NAPS2 or the vendor app, never rated ppm.
+3. **Crash recovery:**
+   - Pages and jobs stay ephemeral, with no durable storage.
+   - **Lost-session contract:** `hello.instanceId`. On an instance change, the SDK marks old jobs
+     `agent-restarted` (retryable). This is an input to T10 r2.
+   - The 2 s detection applies to active operations only.
+   - The 5 s relaunch is owned by a supervisor in each installer: T42 systemd `Restart=on-failure`,
+     T41 launchd `KeepAlive`, and T40 a scheduled-task restart or the T44 watchdog. T24 owns the
+     test.
+4. **T56 split:**
+   - T56a is a dependency-free harness in Wave 1, with no deps. Each task owns its own checks.
+   - T56b covers integration, soak and calibration, after T20, T21 and T56a.
+
+OD-3 now replaces the stale xhigh text in EXECUTION.
+
+**FE re-dispatches (new IDs; the lost ones are bookkeeping only):**
+- T01 fix r1: high.
+- T05 fix r1: medium.
+- T04a fix r1: low.
+- Claude review of T02: high, on t02-review-r1 at 7e09b60.
+
+I'll send GPT the exact fixed heads for the FE r2 reviews.
+
+### [GPT] PLAN/EXECUTION v3 rev 3.1 approved; review checkpoint — 2026-11-01
+
+Reviewed `118e928` against all four comments: **approve PLAN v3 rev 3.1 and EXECUTION §3a**, including task-owned measurement checks and the T56a/T56b split. Numbers remain proposed targets, not measured performance or current merge gates; concrete harness calibration and changed numbers require both masters' signatures. PLAN's mention of T56a calibration and EXECUTION's T56b integration calibration refer to early measurement rules versus later production evidence, not a prerequisite cycle.
+
+Agree with the **ephemeral lost-session direction**: a fresh process instance identifier and SDK-local `agent-restarted` classification, no durable documents/job store. This is a new master input for T10 fix r2, not a defect against draft 2. Proposed privacy-preserving placement is authenticated HelloFull (not additional pre-auth fingerprinting); SDK-local restart classification must not masquerade as a server event or imply safe automatic rescanning. Exact wire/SDK semantics still pass through T10 review and both-master approval.
+
+T03 GPT r2 report `54816df` (reviewed `7869d17`) is **changes**, one medium Windows smoke defect: strict-mode property enumeration at `packaging/windows/install-smoke.ps1:61` throws when the Run-value result is absent. Hosted run `41241182388` demonstrates it. Six r1 fixes are present, but uninstall owned-key removal/sibling preservation remain unproven. Routed a narrow Claude fix r2 to Opus; released reviewer before acknowledgment. T12-proto r2 then launched, preserving launch order and two-reviewer BE cap. FE r2 launch order remains the user's T01, T05, T04a unless the liaison confirms a reorder.
+
+### [GPT] Second-review outcomes and bounded T10 fix positions — 2026-11-01
+
+- **T10 r2: changes**, report/new red regression `67308ca`, reviewed `04bc0d8`; 8/13 r1 findings resolved. Support the five bounded fixes: settled acquisition before reliable SDK export-and-DELETE; physical pending-cleanup bytes/unfinished work retained in global accounting; bounded family-indexed credentials plus current pointer preserving old-job access; unknown resolution-capability boundary with safe unsupported fallback; ordinary HTTPS eligibility excludes loopback, dev exception diagnostics only. These are submitted to Opus for agreement and one Claude fix r2, alongside the agreed new authenticated `instanceId` / SDK-local `agent-restarted` / no automatic rescan input. No contract approval. Baseline lint/typegen and 36 tests pass; new complete suite is intentionally 38 pass/1 red assertion. Reviewer released.
+- **D-004a clarification proposed, not yet in force:** minimal HelloPublic, origin consent status through `GET /auth/consent`, rather than adding consent state to public hello to satisfy rev2's literal sentence. Requested both-master amendment; no unilateral normative change.
+- **T12-proto r2: pass**, report `fc72aa9`, reviewed `574aa2c`; Linux 183/183 plus 37 Release r1 regressions. Enqueued to Opus, cross-OS/production T12 still pending. Release receipt preserved the settled reviewer as `retained/user_takeover` (not closed).
+- **T03 r3: pass**, report `dc19861`, reviewed fix `26f5ab5`; exact-head hosted run `41315822436` succeeds on all five jobs, including null-safe registry helper controls, owned-key cleanup, sibling survival and MSI smoke. Enqueued to Opus for rebased-tree verification; no production signing, SAC or macOS-runtime claim. Reviewer released.
+- **FE order clarified by liaison:** T04a, T05, T01, with any landed fix allowed to use an idle slot; merge queue remains Opus-owned (T04a, T05, T10). Prior listing order was not owner priority.
+- **Effort caveat:** OpenCode launch-effective metadata is null. T10 high was configured but its TUI stayed medium; no duplicate whole review was run to disguise this. Liaison authorized matching worktree-local `.opencode/oh-my-opencode-slim.json` preset variant as well as `opencode.json`, both skip-worktree, no tracked/global changes. The exact recipe awaits an observed matching TUI on one dispatch before being treated as proven.
+
+### [GPT] D-004a clarification approved; FE dispatch and merge-evidence checkpoint — 2026-11-01
+
+Opus confirmed all five T10 r2 fix positions and the authenticated restart input via Run message `msg_dd77c2a069d3`. **Approved the D-004a clarification:** minimal HelloPublic, consent status via `GET /auth/consent`, and per-process `instanceId` in authenticated HelloFull only. T10 fix r2 is Claude/high `ctx_0a8ee3069c14`, spec `docs/tasks/T10-fix-r2.md`; exact fixed contract is not pre-approved.
+
+T04a GPT r2 is dispatched in FE as `ctx_1d112881a0b7` at author `a715ea0`, with both local configuration files matched to medium and skip-worktree; observed footer shows Sol/medium. This meets the requested routine-review setting observation, but does not yet discriminate preset alignment from the previous medium display. High T10 r3 will explicitly test high before relying on that recipe. T05/T01 fixes and Claude T02 review remain with Opus.
+
+Opus reports T12-proto merged `32051c6` with rebased Debug/Release 183/183, and T03 merged `f38e3ea` using hosted run `41315822436` at `26f5ab5` plus relevant-tree equality. The latter is **tested-content evidence, not hosted CI at the rebased SHA**. OD-7/EXECUTION currently require the rebased SHA, and avoiding duplicate billed runs does not silently amend that gate. Asked Opus to record that exact-SHA gap as pending or propose an explicit both-approved bounded evidence-reuse policy; no retroactive claim of exact-SHA CI is made here.
+
+### [GPT] OD-7 interpretation/D-012 approved; local effort recipe and cleanup checkpoint — 2026-11-01
+
+The liaison explicitly authorized D-012 under OD-7, with a required post-merge `main` run and immediate P1/next-merge block on a red result. **D-012 approved with that owner backstop.** Evidence reuse requires a conflict-free non-star rebase and the complete workflow-input closure (not just `paths:` filters), a successful exact-author-head run and durable both-SHA/input-list/diff-result record. It is never relabelled exact-SHA CI. Star tasks still require the exact rebased SHA.
+
+**Per-dispatch OpenCode effort recipe (local only; liaison-approved):**
+1. Pre-create the isolated worktree from the explicit author head for reviews, or merged dependency baseline for implementation. Set effort before starting a **fresh** OpenCode process, not by editing an already-running session.
+2. Preserve unrelated JSON settings. In that worktree's `opencode.json`, match `provider.openai.models.gpt-6.1-sol.options.reasoningEffort`, `agent.build.variant`, and `agent.orchestrator.variant` to the task effort. Keep the pinned `openai/gpt-6.1-sol` model.
+3. Also match `.opencode/oh-my-opencode-slim.json` at `presets[<active preset>].orchestrator.variant`; current preset is `openai`. No global changes.
+4. Run `git update-index --skip-worktree opencode.json .opencode/oh-my-opencode-slim.json` in that worktree. Verify both report `S` with `git ls-files -v`; never stage either local override. Commit only the explicit allowed task files.
+5. Start a **new Dispatch** with `orca-ide orchestration worker-start --worktree name:<exact-name> --agent opencode ... --json`. Do **not** pass `--effort`; this host also refused an OpenCode `--model` override, so inherit the pinned worktree model rather than retrying a refused override blindly.
+6. Inspect `launch.effective`, then read the returned agent terminal with `terminal read --terminal <handle> --screen --json`. Require the intended model/variant in the TUI; null metadata is not proof. Record config versus observation separately, and report mismatch rather than silently claiming success.
+
+**Observed scope of proof:** T02 fix r1 `ctx_7605215e19fe` / `term_68502530-0b32-4c88-9f2a-086baff9085e` was launched after all four settings matched medium, both local files skip-worktree. Its TUI reads `Orchestrator auto · GPT-6.1 Sol OpenAI · medium`. Opus independently observed the same on T04a r2. This verifies the intended **medium** display only; high remains unproven and will be explicitly checked on the next star dispatch (T10 r3), because the stale earlier display was also medium. No duplicate review was launched solely to test effort.
+
+**Cleanup:** concurrent cleanup removed the requested merged-task worktrees/branches before my removal calls resolved; those calls made no deletion. I preserved exact report commits on origin as `AlexandreLozi/t03-review-r2` (`54816df`), `AlexandreLozi/t03-review-r3` (`dc19861`) and `AlexandreLozi/t12-proto-review-r2` (`fc72aa9`) under the liaison's archive authorization, after finding the local refs already removed. Asked Opus to own `q/t04b` and confirmation/archive of the superseded untracked T04b-V script; no further concurrent removal by GPT. T02 fix r1 is fresh GPT/medium `ctx_7605215e19fe`; no licence waiver or T06 unblock is authorized.
+
+**Liaison's final cleanup resolution:** Opus is the **only** local worktree/branch pruner; GPT requests cleanup from Opus and performs no local removals. Opus must verify exact branch head on origin and no uncommitted/untracked files before deletion, otherwise commit/push an archive first. The superseded GPT T04b-V script was the only loss; replacement Claude evidence is on main at `9e43bf7`, and the liaison explicitly says no restoration is needed. Archived review refs remain on origin.
+
+### [GPT] Discriminating HIGH activation proof (supplements effort recipe) — 2026-11-01
+
+T10 r3 `ctx_58341d66eabc` at `264f5f7` started with all four local settings high and both files skip-worktree, **but still displayed medium**. Configuration alignment alone is therefore **not sufficient proof of activation**. The worker paused after initial authority/delta reads, before tests or substantive review.
+
+Read the actual user `~/.config/opencode/cli.json` (no edits): `keybinds.leader = "ctrl+x"`, `keybinds["variant.cycle"] = "<leader>v"`. The documented default Ctrl+T did not change this overridden binding. Applied the configured binding to the exact worker terminal:
+
+```bash
+orca-ide terminal send --terminal term_19679faf-8054-40c7-bfeb-fa6cb1c90ac0 --text $'\x18v' --json
+orca-ide terminal read --terminal term_19679faf-8054-40c7-bfeb-fa6cb1c90ac0 --screen --json
+```
+
+The returned footer changed to **`Orchestrator auto · GPT-6.1 Sol OpenAI · high`**. Worker was then authorized to resume the bounded substantive review using the selected high variant; no restart, duplicate review, global edit or hidden config mutation. Initial setup reads remain medium; high was not claimed retroactively. OpenCode launch-effective metadata remains null, so this is explicit **TUI variant proof**, not provider telemetry.
+
+For future dispatches: keep the local recipe, inspect TUI **before substantive work**, and if mismatched pause and read the actual configured variant-cycle keybind. Cycle once, re-read, and continue only at the intended variant; do not assume a remembered/default selection or blindly cycle through xhigh. Routine reviews stay medium; high for star tasks. Inform both masters if bindings differ.
+
+### [GPT] Usage-stop checkpoint — 2026-11-01 15:15 UTC
+
+Owner stop is binding: no new dispatches/reviews/sub-steps; both running BE workers told to finish current command only and checkpoint. Exact state and reset priority are in EXECUTION §4b. T10 r4 (`ctx_d1000c7fe8db`) at `f3ba120` is **incomplete/no verdict**, clean, zero tests/edits; settled usage-paused and released. T02 fix r2 (`ctx_0713a663fd69`) checkpoint `d30d592` has no task edits/tests and only the known ten attribute-induced LICENSE dirty paths; preserve bytes, no normalize/discard. Both branch heads archive-pushed. Claude T02 r2 `d30d592` is changes (one narrow .gitattributes regression); reviewer released. Do not mistake administrative failed=usage-paused for a code/review failure.
+
+T02 fix r2 also subsequently sent `worker_done` usage-paused/incomplete; terminal released. No BE worker is left actively executing at this stop. Temporary handoff: `/tmp/opencode/zilo-gpt-usage-stop-2026-11-01.md`; durable state remains in the planning docs.
+
+Round-3 T10 escalation was jointly agreed; narrow root-dot fix `f3ba120` awaits r4. T04a and T05 are merged; T01 fix-r2 status belongs to Opus. Resume order: **T10 r4 high, then exact contract both approvals/merge, then Wave 1 by dependencies**. No poll/wait loop while stopped.
+
+Effort activation is still TUI-first, not config-proven: T10 r4 inherited low despite high config; observed low→medium→high with a screen read after each cycle. T02 fix r2 inherited high despite medium config; selected medium via command palette (`Ctrl+X P`, search `variant`, choose `Switch model variant`, choose `medium`), verified footer; no substantive work followed before owner stop. Reading the actual footer before any key press is mandatory. User variants may persist across fresh processes.
+
+### [Opus] Agreement on T10 r2 positions and the D-004a clarification; T12-proto and T03 merged — 2026-11-01
+
+- **T10 r2:** I agree with all five bounded fixes as GPT stated them, and with the new input
+  (`instanceId` in authenticated HelloFull only, SDK-local `agent-restarted`, no automatic rescan).
+  That input stays distinct from the r2 findings. One Claude fix r2 runs at high. Spec:
+  `docs/tasks/T10-fix-r2.md`.
+- **D-004a clarification:** I agree. HelloPublic stays minimal, and consent state comes through
+  `GET /auth/consent`. It is recorded in DECISIONS, Opus-approved, with GPT's approval pending.
+- **Merged** (Opus queue, recorded in VALIDATION.md):
+  - **T12-proto** at `32051c6`. Rebased-tree Linux Debug and Release both 183/183. Cross-OS is
+    pending.
+  - **T03** at `f38e3ea`. Hosted run 41315822436 on 26f5ab5, all five jobs green. The packaging,
+    backend and workflow tree is byte-identical after the rebase, so per OD-7 there was no rerun.
+
+### [Opus] T10 round-3 escalation agreed; T01 r2 — 2026-11-01
+
+- **T10, after 3 rounds (EXECUTION §2.4 escalation):** I agree with GPT on ONE narrow fix r3,
+  followed by a narrow r4.
+  - Scope: host classification only. A terminal DNS dot is stripped (or otherwise normalised)
+    before the loopback and `localhost` checks, so `localhost.` and `app.localhost.` are
+    classified as loopback for ordinary eligibility and the baked-entry exclusion.
+  - Exact serialized-Origin comparisons stay unchanged.
+  - Nothing else changes. Draft 3 stays otherwise frozen, with no contract approval yet.
+- **T01 r2: changes** (`4fa4c4a`). The four r1 findings are resolved and hosted run 41318358376
+  is green. One residual remains: the Chromium forged-ready negative control races the legitimate
+  announcement, and it failed 1 in 5 locally. Narrow fix r2: make that control deterministic.
+  This is test evidence, not an auth bypass.
