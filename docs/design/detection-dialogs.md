@@ -6,29 +6,55 @@ detection state; the Install, Permission-help and Update "dialogs" are states of
 between them.
 
 Decisions honoured: D-008 (detection order, `unreachable-or-blocked`, 2 s re-check only while open, signed updates),
-D-003 (Safari S2 properties, the "not yet supported" state, probing only on a user gesture), D-004 (consent and
-tokens).
+D-003 (Safari S2 properties, the interim Safari state, probing only on a user gesture), D-004 (consent and
+tokens), OD-8 (Safari required). Provisional: D-004a and the T10 contract draft (consent request and polling,
+public/full `hello`, blocking).
 
 ## 1. Flow
 
+**Provisional (fix r1):** the consent and update branches follow D-004a and the T10 contract draft (R-A1 to R-A3,
+R-A13, §1 `hello`), which are not yet approved. If either changes, this flow changes with it.
+
 ```
 Scan click (user gesture)
+  ├─ page origin not https ──────────────────────────────▶ Page can't connect (insecure-origin); no probe
   └─ permissions.query('loopback-network')  (try/catch → unknown)
        ├─ denied ───────────────────────────────▶ Permission denied (per-browser help)
        └─ granted | prompt | unknown
-            └─ probe hello  (prompt: show "Choose Allow in your browser")
-                 ├─ answers, protocol OK, origin allowed ──▶ Scan dialog
-                 ├─ answers, origin unknown to agent ──────▶ Waiting for consent ─┬─ allowed ▶ Scan dialog
-                 │                                                               └─ denied  ▶ unauthorized-origin
-                 ├─ answers, version < required ───────────▶ Update ─▶ Updating ─┬─ ok ▶ Scan dialog
-                 │                                                               └─ fail ▶ Update failed
-                 ├─ token rejected ────────────────────────▶ token-revoked
-                 └─ no answer ─────────────────────────────▶ Install (unreachable-or-blocked)
-                                                               re-probe every 2 s while open, cap 5 min
+            └─ GET hello (public: product, protocol range, capabilities; no version)
+               (prompt: show "Choose Allow in your browser")
+                 ├─ no answer ─────────────────────────────▶ Install (unreachable-or-blocked)
+                 │                                             re-probe every 2 s while open, cap 5 min
+                 ├─ protocol range or capabilities don't fit ▶ Update (pre-auth: no version shown)
+                 └─ fits ─▶ token held? ─ yes ─▶ Scan dialog
+                              └─ no ─▶ POST auth/consent (same user gesture; the only call that can prompt)
+                                   ├─ 200 granted (or baked) ─▶ POST auth/token ─▶ Scan dialog
+                                   ├─ 202 pending ─▶ Waiting for consent
+                                   │     poll GET auth/consent every pollAfterSeconds, only while open
+                                   │     ├─ granted ─▶ POST auth/token ─▶ Scan dialog
+                                   │     ├─ denied  ─▶ consent-denied (cool-down)
+                                   │     ├─ blocked ─▶ consent-denied.blocked
+                                   │     ├─ none    ─▶ consent-expired ─ Ask again (new gesture) ─▶ POST auth/consent
+                                   │     └─ unknown state, Cancel, navigation ─▶ stop polling
+                                   ├─ 403 consent-denied ─▶ consent-denied (cool-down) | .blocked (permanent)
+                                   ├─ 429 rate-limited ──▶ rate-limited (another site's prompt open, or limits)
+                                   └─ 403 unauthorized-origin ─▶ unauthorized-origin (Ask again)
+After authorisation: full hello carries version ─▶ if below the site's minimum: Update (authorised, with versions)
+Authenticated call fails:
+  401 token-invalid ─▶ silent renew and retry once (R-A10)
+  401 token-revoked, or TypeError then hello OK and consent none/denied/blocked (R-A13) ─▶ token-revoked ("access revoked")
 Safari (macOS): S2 approved by SP-1 ▶ Open Zilo window ▶ (blocked | closed | unavailable)
-                no approved path    ▶ Safari not yet supported
+                no path yet (interim test builds only, OD-8) ▶ Use another browser for now
 ```
 
+- **Consent needs an explicit request.** A successful `hello` never opens the native prompt. The SDK sends
+  `POST /auth/consent` from the Scan click that started detection (an active user interaction, R-A1). If the prompt
+  expires or is dismissed, it asks again only from the user's "Ask again" click.
+- **Versions only after authorisation (D-004a).** Public `hello` has no `version`, so the pre-auth Update state names no
+  installed version and decides only from `protocol` and `capabilities`. The authorised variant shows installed and
+  needed versions. "Latest" comes from the signed `latest.json`, never from the agent. Agent self-update
+  (`agent.self-update`) is reserved, so the primary action is the download; the `updating` state is kept for when
+  self-update is approved.
 - **Nothing shows if detection succeeds quickly.** The Connect dialog opens only after 400 ms of checking; on success it
   goes straight to the Scan dialog. This avoids a flash on every scan.
 - The dialog is modal, 32rem wide (36rem for the permission help), with a 3rem state icon, a heading, a lede and actions.
@@ -46,16 +72,22 @@ Safari (macOS): S2 approved by SP-1 ▶ Open Zilo window ▶ (blocked | closed |
 | Unreachable or blocked | `unreachable` | "Connect Zilo to scan". **Download for {OS}** (primary), **Start Zilo** (`zilo://start`), the browser-open hint, a live "Waiting for Zilo" status, an "Other systems" picker, and a "Zilo is running but this still shows?" troubleshooting disclosure. | Download, Start Zilo, Close (×) |
 | Re-check stopped | `unreachable-stopped` | Same dialog after the 5-minute cap, with a static "Not checking" status. | **Check again**, Start Zilo |
 | Waiting for consent | `awaiting-consent` | "Approve this site in Zilo", the exact origin in a chip, a live "Waiting for your answer in Zilo…" and where to find the window. | Cancel |
-| Site not allowed | `unauthorized-origin` | The user chose Deny in the tray prompt. Explains how to allow. During the D-004 cool-down the primary is disabled: "Ask again in 9 min". | **Ask again**, Close |
-| Access removed | `token-revoked` | The token was revoked or expired. States plainly that earlier pages are gone (jobs are owned by the token). | **Connect again**, Close |
-| Outdated | `outdated` | "Update Zilo to continue", with installed, needed and latest versions. | **Update Zilo** (agent self-update, if `hello` advertises it), Download update |
-| Updating | `updating` | Determinate progress while downloading ("18 of 29 MB"), then indeterminate "Installing…". Closing does not stop the update. On success, focus moves to the Scan dialog and "Zilo updated to 1.4.2" is announced. | Close |
+| Consent expired | `consent-expired` | The poll returned `none`: the prompt expired or was dismissed. | **Ask again** (new user action → `POST auth/consent`), Close |
+| Site not allowed | `unauthorized-origin` | No consent on record. Explains how to allow. | **Ask again**, Close |
+| Denied, cool-down | `consent-denied` | The user chose Deny. The primary is disabled during the cool-down from `retryAfterSeconds`: "Ask again in 9 min". | Ask again (disabled), Close |
+| Blocked | `consent-blocked` | `consent-denied` with `blocked: true`. Permanent: no countdown, no Ask again. Says how to unblock in Zilo, Allowed sites, Blocked sites. | Close |
+| Zilo busy | `rate-limited` | `429`: another site's prompt is open, or a limit was hit. Try again is disabled until `Retry-After` ends. | Try again in N s |
+| Access revoked | `token-revoked` | The site's access was revoked in Zilo (R-A12). Says access was **revoked**; never that pages were erased or are gone. Expired or obsolete tokens are `token-invalid`, which is silent. | **Connect again**, Close |
+| Page not on https | `insecure-origin` | The page origin is not `https`. No probe, no prompt. User copy plus a developer note (HTTPS test host such as `https://app.zilo.test:8443`; loopback is never allowed). | Close |
+| Outdated, before authorisation | `outdated` | "Update Zilo to continue". No installed version (public `hello` has none); latest version from `latest.json`. | **Download update**, Close |
+| Outdated, after authorisation | `outdated-authorized` | Installed, needed and latest versions (full `hello`). | **Download update**, Close |
+| Updating | `updating` | Self-update only, reserved (`agent.self-update`) until approved. Determinate progress while downloading ("18 of 29 MB"), then indeterminate "Installing…". Closing does not stop the update. On success, focus moves to the Scan dialog and "Zilo updated to 1.4.2" is announced. | Close |
 | Update failed | `update-failed` | Says nothing was changed and which version remains (D-008: verify, atomic replace, recover). | **Try again**, Download update |
 | Safari: open window | `safari-bridge` | Explains the small Zilo window before opening it. The button click is the user gesture for `window.open`. | **Open Zilo window**, Cancel |
 | Safari: popup blocked | `safari-bridge-blocked` | `window.open` returned null. Points to Safari Settings, Websites, Pop-up Windows. | **Open Zilo window** |
 | Safari: window closed | `safari-bridge-closed` | The popup closed or navigated away. Pages already scanned are kept. | **Reopen Zilo window** |
 | Safari: page can't use window | `safari-bridge-unavailable` | The opener link is cut (COOP) or the page is framed. User copy plus a developer note. We never weaken COOP silently (D-003). | **Copy page link**, Close |
-| Safari not yet supported | `safari-unsupported` | Explicit state when neither S1 nor S2 is proven on this machine (D-003). Suggests Chrome, Edge or Firefox and offers to copy the page link. | **Copy page link**, Close |
+| Safari: interim, no path yet | `safari-unsupported` | **Interim test state only (OD-8).** Safari is required for v1 and the T25 path is release-blocking, so this never ships as the outcome. Never silent (D-003). "Use another browser for now", copy page link. | **Copy page link**, Close |
 | Bridge window | `bridge-window` | The popup page itself, served from `127.0.0.1`: wordmark, "Zilo is connected to" plus the **verified** opener origin, "Keep this window open", the current activity and Disconnect. | Disconnect |
 
 ## 3. Install dialog details
@@ -104,8 +136,9 @@ Safari (macOS): S2 approved by SP-1 ▶ Open Zilo window ▶ (blocked | closed |
 - **S1 (local trust), if SP-1 picks it instead:** it needs an extra "Trust Zilo for Safari" flow in the tray app
   (explicit user approval, never silent; D-003). It is **not designed here**, because S1 is not approved. It would be a
   follow-up task.
-- **Neither proven:** `safari-unsupported`. This is never a silent failure and never the Install dialog (that would send
-  Safari users into an install loop).
+- **Neither available yet:** `safari-unsupported`, an **interim test state** (OD-8: Safari is required for v1, so no
+  shipped build ends here). It is never a silent failure and never the Install dialog (that would send Safari users
+  into an install loop).
 
 ## 6. Focus and announcements
 

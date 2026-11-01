@@ -44,9 +44,12 @@ web page cannot draw it, style it or put text in it.
 4. **IDN:** if any host label is punycode (`xn--`), show the **ASCII form** in the box, outline the box in the warning
    colour, and add "Check this address carefully". The note gives the ASCII form and says the address may look like the
    Unicode form in the browser. The Unicode form is never the main display.
-5. **Insecure scheme:** `http://` origins (local development only, e.g. `http://localhost:5173`) get a warning note. The
-   agent may refuse non-HTTPS origins entirely in release builds; that is the BE lane's call under D-003 ("the public
-   app must be HTTPS").
+5. **Only HTTPS origins are ever prompted (fix r1).** Non-`https` origins get no CORS and no token, and loopback origins
+   (`http://localhost:*`, `127.0.0.1`, `[::1]`) are never allowed, even with the agent's dev flag, which gives pre-auth
+   diagnostics only (D-003; D-004a and T10 R-T3, provisional until approved). So there is **no** http consent variant:
+   the earlier "only allow it if you are testing your own site" note advertised an Allow that could never work and is
+   removed. The web side shows `state.insecure-origin` with developer guidance to use an HTTPS test host
+   (`https://app.zilo.test:8443` with a per-run CA, as the demo app and E2E runs do).
 6. **Click and key safety:**
    - Both buttons are disabled for the first **1 s** after the window appears, and again for 1 s after it regains focus.
      This stops click-through from a page that tricks the user into double-clicking.
@@ -55,15 +58,21 @@ web page cannot draw it, style it or put text in it.
 7. **Placement:** centred on the active display, above other windows, without stealing focus from a text field the user
    is typing in (Windows: a topmost window that flashes the taskbar button; macOS: a floating panel; GNOME: a normal
    dialog plus an urgency hint).
-8. **Rate limit and cool-down (D-004):** one prompt per origin at a time. Repeat requests join the open prompt. Deny is
-   remembered for a cool-down (default 10 min), and during it no prompt appears; the web side shows
-   `unauthorized-origin` with "Ask again in N min". Prompts not answered within 2 minutes close as dismissed.
+8. **Trigger, rate limit and cool-down (D-004; T10 R-A1 to R-A4, provisional):** only the site's user-initiated
+   `POST /auth/consent` opens a prompt; `hello` and `GET /auth/consent` never do. At most one prompt is open on the
+   machine: repeat requests from the same origin join it, and another origin gets `429 rate-limited` (web copy
+   `rate-limited`). Deny is remembered for a cool-down (default 10 min), and during it no prompt appears; the web side
+   shows `consent-denied` with a disabled "Ask again in N min". Prompts not answered within 2 minutes close as
+   dismissed.
 
 ### Outcomes
 
 - **Allow:** the origin goes on the allowlist and a token is issued (D-004). The web Connect dialog continues by itself.
-- **Deny:** remembered denial with cool-down; the web side shows `unauthorized-origin`.
-- **Dismissed or timed out:** the web side returns to "Approve this site in Zilo" with an "Ask again" action.
+- **Deny:** remembered denial with cool-down; the web side shows `consent-denied` (timed).
+- **Dismissed or timed out:** the consent state returns to `none`; the web side shows `state.consent-expired` with an
+  "Ask again" action (a new user action, so it may prompt again).
+- **Blocked** (from the Allowed sites window, §2): the web side shows `consent-denied.blocked`, with no countdown and no
+  Ask again, because the agent never prompts for that origin again.
 
 ## 2. Allowed sites window
 
@@ -72,13 +81,20 @@ Opened from the tray menu ("Allowed sites…") and from the main window.
 - **List:** one row per allowed origin. The full origin is in monospace and wraps, never truncated. Under it: the date
   allowed and the last use. The action is on the right.
 - **Remove:** a danger button labelled "Remove" with the accessible name "Remove for https://…". It asks for
-  confirmation ("Remove access for {origin}?"; Cancel has focus). Remove **revokes every token for that origin** at
-  once (D-004), so in-flight jobs for that origin fail with `token-revoked`.
+  confirmation ("Remove access for {origin}?"; Cancel has focus). Remove **revokes the origin's token families** at
+  once (D-004, T10 R-A12): access ends immediately, open streams close and active jobs are cancelled; pages are cleaned
+  up within the bound. The site then shows the `token-revoked` copy, which says access was **revoked**, never that pages
+  were erased.
 - **Installer-baked origins:** marked with a "Managed" badge. Their action is "Reset access": it revokes tokens, but the
   origin stays allowed, so it reconnects without a prompt (D-004: baking skips consent, not authentication). They cannot
   be removed from the UI.
-- **Recently denied:** a second list of origins in cool-down, with "Forget". Forget clears the denial so the site can
-  ask again.
+- **Recently denied:** a second list of origins in cool-down, showing the time left, with **Forget** and **Block**.
+  Forget clears the denial so the site can ask again now. Block asks for confirmation ("Block {origin}?"; Cancel has
+  focus) and moves the origin to Blocked sites. This is the timed denial (`consent-denied` without `blocked`).
+- **Blocked sites (fix r1):** a third list of permanently blocked origins, with **Unblock**. A blocked site gets
+  `403 consent-denied` with `blocked: true` and is never prompted again (T10 R-A2 "Block this site", provisional under
+  D-004a). Unblock clears the block and any cool-down but does not allow the site: its next scan asks again. Prototype
+  views: `sites`, `block-confirm`.
 - **Empty state:** "No sites yet. When a website asks to use your scanners, Zilo asks you first."
 
 ## 3. Tray / menu-bar menu

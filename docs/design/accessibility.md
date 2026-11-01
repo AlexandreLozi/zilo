@@ -2,7 +2,9 @@
 
 Target: **WCAG 2.2 level AA** for every web surface (`@zilo/ui`) and the equivalent platform guidance for the native agent
 (PLAN §6). The prototypes implement the patterns below and pass an axe scan (`design/prototypes/check/run.sh`: WCAG
-2.0, 2.1 and 2.2 A and AA plus best-practice rules, every state, light and dark). axe is necessary but not sufficient:
+2.0, 2.1 and 2.2 A and AA plus best-practice rules, light and dark). "Every state" means each prototype's explicit
+matrix: every Connect and tray state, and every Scan dialog state including one `state=error&code=…` per banner code;
+the check fails if a banner code is not rendered. axe is necessary but not sufficient:
 T15 and T22 add component tests and a manual screen-reader pass (§9).
 
 ## 1. Dialog semantics
@@ -43,7 +45,8 @@ T15 and T22 add component tests and a manual screen-reader pass (§9).
 | Connect: denied | Try again |
 | Connect: unreachable-or-blocked | Download for {OS} |
 | Connect: Safari states | The primary action |
-| Connect: `unauthorized-origin` in cool-down | Close (the primary is `aria-disabled`) |
+| Connect: `consent-denied` cool-down, `consent-denied.blocked`, `insecure-origin` | Close (the primary is `aria-disabled` or absent) |
+| Connect: `rate-limited` | Close (×); Try again is `aria-disabled` until `Retry-After` ends |
 | Native consent | **Deny**; there is no default button (see [tray-agent.md](tray-agent.md)) |
 
 - **State changes:** when the Connect dialog changes state (for example unreachable → consent wait), focus moves to the

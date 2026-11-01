@@ -10,7 +10,8 @@
  *   primary   primary action label ('' = none)
  *   secondary secondary action label ('' = none)
  *   announce  live-region politeness: polite | assertive | none (dialog titles are read on open)
- *   t10       contract status: "planned" = listed in T05, waiting for T10 to confirm the wire code
+ *   t10       contract status: "confirmed" = T10 confirmed the wire code under this name;
+ *             "added" = a code T10 added, copy written in T05 fix r1; "n/a" = UI-only state
  *   notes     behaviour that the copy depends on
  *
  * Voice: plain, calm, second person. Say what happened and the next step. No blame, no jargon,
@@ -100,29 +101,43 @@
       kind: "detection-state", surface: "Connect dialog",
       title: "Approve this site in Zilo",
       body: "Zilo is asking if {origin} can use your scanners. Look for the Zilo window on your computer and choose Allow.",
-      primary: "", secondary: "Cancel", announce: "polite", t10: "planned",
-      notes: "Agent answered `hello` but this origin is not yet allowed (D-004 consent).",
+      primary: "", secondary: "Cancel", announce: "polite", t10: "confirmed",
+      notes: "Provisional (D-004a/T10 R-A1 to R-A3). Shown after the user-initiated `POST /auth/consent` returns `202 pending`, or a token request returns `403 consent-pending`. Polls `GET /auth/consent` every `pollAfterSeconds` only while open; stops on granted, denied, blocked, none, an unknown state, Cancel or navigation.",
+    },
+    "state.consent-expired": {
+      kind: "detection-state", surface: "Connect dialog",
+      title: "Zilo didn't get an answer",
+      body: "The Zilo window closed before you chose Allow. Select Ask again to open it again.",
+      primary: "Ask again", secondary: "Close", announce: "polite", t10: "n/a",
+      notes: "Provisional (R-A3). Poll returned `none`: the prompt expired or was dismissed. Ask again is a new user action, so it may send `POST /auth/consent` again.",
     },
     "state.outdated": {
       kind: "detection-state", surface: "Update dialog",
       title: "Update Zilo to continue",
+      body: "This site needs a newer version of Zilo. Download the update and install it, then try again.",
+      primary: "Download update", secondary: "Close", announce: "none", t10: "n/a",
+      notes: "Provisional, before authorisation (D-004a). Public `hello` has no `version`, so the SDK decides from `protocol` and `capabilities` and names no version. No self-update button: `agent.self-update` is reserved (T10 §1.3).",
+    },
+    "state.outdated.authorized": {
+      kind: "detection-state", surface: "Update dialog",
+      title: "Update Zilo to continue",
       body: "This site needs Zilo {required} or later. This computer has Zilo {version}.",
-      primary: "Update Zilo", secondary: "Download update", announce: "none", t10: "n/a",
-      notes: "\"Update Zilo\" asks the agent to self-update; shown only if `hello` advertises it. Otherwise the download is primary.",
+      primary: "Download update", secondary: "Close", announce: "none", t10: "n/a",
+      notes: "Provisional, after authorisation only: full `hello` carries `version`. \"Update Zilo\" (self-update) replaces the download as primary only once `agent.self-update` is approved and advertised.",
     },
     "state.updating": {
       kind: "detection-state", surface: "Update dialog",
       title: "Updating Zilo…",
       body: "Zilo restarts when the update is installed. This window continues by itself.",
       primary: "", secondary: "Close", announce: "polite", t10: "n/a",
-      notes: "Closing does not stop the update.",
+      notes: "Closing does not stop the update. Reached only through agent self-update, which stays reserved (`agent.self-update`, T10 §1.3) until approved.",
     },
     "state.update-failed": {
       kind: "detection-state", surface: "Update dialog",
       title: "Zilo couldn't update",
-      body: "Zilo {version} is still installed and nothing was changed. Try again, or download the update and install it yourself.",
+      body: "Your current version of Zilo is still installed and nothing was changed. Try again, or download the update and install it yourself.",
       primary: "Try again", secondary: "Download update", announce: "assertive", t10: "n/a",
-      notes: "Signature, hash or install failure (D-008 recovery).",
+      notes: "Signature, hash or install failure (D-008 recovery). Needs no version, so it is safe before authorisation.",
     },
     "state.safari-bridge": {
       kind: "detection-state", surface: "Safari dialog",
@@ -154,10 +169,17 @@
     },
     "state.safari-unsupported": {
       kind: "detection-state", surface: "Safari dialog",
-      title: "Safari isn't supported on this Mac yet",
-      body: "Zilo can't reach your scanners from Safari on this Mac. To scan, open this page in Chrome, Edge or Firefox.",
+      title: "Use another browser for now",
+      body: "Scanning from Safari isn't ready in this version of the site. To scan now, open this page in Chrome, Edge or Firefox.",
       primary: "Copy page link", secondary: "Close", announce: "none", t10: "n/a",
-      notes: "D-003 fallback when neither S1 nor S2 is available. Never a silent failure.",
+      notes: "Interim test state only (OD-8): Safari is required for v1 and the T25 path is release-blocking, so this never ships as the final outcome. Never a silent failure (D-003).",
+    },
+    "state.insecure-origin": {
+      kind: "detection-state", surface: "Connect dialog",
+      title: "This page can't connect to Zilo",
+      body: "Zilo works only with secure sites, whose address starts with https. Open this site at its https address to scan.",
+      primary: "", secondary: "Close", announce: "none", t10: "n/a",
+      notes: "SDK-side, before any probe, when the page origin is not https (D-003, D-004a): such origins get no CORS and no token, and loopback origins are never allowed, even with the dev flag. Includes a developer note (HTTPS test host). Replaces the old tray http consent example.",
     },
     "state.bridge-window": {
       kind: "detection-state", surface: "Bridge popup (127.0.0.1)",
@@ -228,7 +250,7 @@
       kind: "scan-state", surface: "Scan dialog, pages",
       title: "Your scanner used different settings",
       body: "Scanned at {actual}. You chose {requested}, which {device} doesn't support.",
-      primary: "", secondary: "", announce: "polite", t10: "planned",
+      primary: "", secondary: "", announce: "polite", t10: "confirmed",
       notes: "From effective settings in job events (D-005).",
     },
     "scan.page-deleted": {
@@ -256,80 +278,131 @@
       kind: "error", surface: "Scan dialog banner",
       title: "Scanner is busy",
       body: "{device} is in use by another app or scan. Finish or close that, then try again.",
-      primary: "Try again", secondary: "Choose another scanner", announce: "assertive", t10: "planned", notes: "",
+      primary: "Try again", secondary: "Choose another scanner", announce: "assertive", t10: "confirmed", notes: "",
     },
     "feeder-empty": {
       kind: "error", surface: "Scan dialog banner",
       title: "The document feeder is empty",
       body: "Load pages into the feeder of {device}, then scan again.",
-      primary: "Scan", secondary: "Use flatbed", announce: "assertive", t10: "planned",
+      primary: "Scan", secondary: "Use flatbed", announce: "assertive", t10: "confirmed",
       notes: "Only when no page was fed. Running out after at least one page is a normal end of scan.",
     },
     "paper-jam": {
       kind: "error", surface: "Scan dialog banner",
       title: "Paper jam",
       body: "Clear the jammed page from {device}. The {count} pages scanned before the jam are kept. Put the remaining pages back in the feeder, then scan again.",
-      primary: "Scan remaining pages", secondary: "", announce: "assertive", t10: "planned", notes: "",
+      primary: "Scan remaining pages", secondary: "", announce: "assertive", t10: "confirmed", notes: "",
     },
     "cover-open": {
       kind: "error", surface: "Scan dialog banner",
       title: "Scanner cover is open",
       body: "Close the cover or feeder lid on {device}, then try again.",
-      primary: "Try again", secondary: "", announce: "assertive", t10: "planned", notes: "",
+      primary: "Try again", secondary: "", announce: "assertive", t10: "confirmed", notes: "",
     },
     "timeout": {
       kind: "error", surface: "Scan dialog banner",
       title: "The scanner stopped responding",
       body: "{device} didn't respond in time. Check that it's on and connected, then try again.",
-      primary: "Try again", secondary: "Choose another scanner", announce: "assertive", t10: "planned", notes: "",
+      primary: "Try again", secondary: "Choose another scanner", announce: "assertive", t10: "confirmed", notes: "",
     },
     "disconnected": {
       kind: "error", surface: "Scan dialog banner",
       title: "Scanner disconnected",
       body: "{device} was disconnected. Pages scanned before that are kept. Reconnect it, then refresh the list.",
-      primary: "Refresh scanners", secondary: "", announce: "assertive", t10: "planned", notes: "",
+      primary: "Refresh scanners", secondary: "", announce: "assertive", t10: "confirmed", notes: "",
     },
     "permission": {
       kind: "error", surface: "Scan dialog banner",
       title: "Zilo isn't allowed to use this scanner",
       body: "This computer's settings stop Zilo from using {device}. On a work computer, ask your IT team. On Linux, your account may need scanner access.",
-      primary: "Try again", secondary: "Get help", announce: "assertive", t10: "planned",
+      primary: "Try again", secondary: "Get help", announce: "assertive", t10: "confirmed",
       notes: "OS-level device access. Browser blocking is `state.denied`, never this code.",
     },
     "unauthorized-origin": {
       kind: "error", surface: "Connect dialog",
       title: "This site isn't allowed to use Zilo",
       body: "{origin} wasn't approved in Zilo. To allow it, select Ask again and choose Allow in the Zilo window.",
-      primary: "Ask again", secondary: "Close", announce: "assertive", t10: "planned",
-      notes: "After a denial Zilo waits before asking again (D-004 cool-down); then the button shows \"Ask again in {minutes} min\" and is disabled.",
+      primary: "Ask again", secondary: "Close", announce: "assertive", t10: "confirmed",
+      notes: "No consent on record (or the site was removed). Ask again sends `POST /auth/consent` from this user action (R-A1). A denial with cool-down is `consent-denied`; a block is `consent-denied.blocked`.",
     },
     "token-revoked": {
       kind: "error", surface: "Connect dialog",
-      title: "Access to Zilo was removed",
-      body: "This site's access was removed in Zilo, or it expired. Connect again to keep scanning. Pages from the earlier scan are no longer available.",
-      primary: "Connect again", secondary: "Close", announce: "assertive", t10: "planned",
-      notes: "Jobs are owned by the token (D-004), so old pages are gone. Say so.",
+      title: "Access to Zilo was revoked",
+      body: "This site's access to Zilo was revoked, so any scan in progress stopped. Connect again to keep scanning.",
+      primary: "Connect again", secondary: "Close", announce: "assertive", t10: "confirmed",
+      notes: "Revocation (R-A12, R-A13): say access was revoked, never that pages were erased or are gone. An expired or obsolete token is `token-invalid`, which is silent (R-A10) and never shows this copy.",
     },
     "export-failed": {
       kind: "error", surface: "Scan dialog banner",
       title: "Couldn't create the {format}",
       body: "Your scanned pages are still here. Try again, or save in a different format.",
-      primary: "Try again", secondary: "Change format", announce: "assertive", t10: "planned",
+      primary: "Try again", secondary: "Change format", announce: "assertive", t10: "confirmed",
       notes: "Pages are retained after a failed export (D-004).",
     },
     "limits-exceeded": {
       kind: "error", surface: "Scan dialog banner",
       title: "This scan is too large",
       body: "It goes over Zilo's limit for pages, size or time. Scan fewer pages at once, or choose a lower resolution.",
-      primary: "Change settings", secondary: "", announce: "assertive", t10: "planned",
+      primary: "Change settings", secondary: "", announce: "assertive", t10: "confirmed",
       notes: "Pages already scanned are kept if the agent returned them.",
     },
     "unknown": {
       kind: "error", surface: "Scan dialog banner",
       title: "Something went wrong",
       body: "Zilo ran into a problem. Try again. If it keeps happening, quit and restart Zilo from its icon in the {trayArea}.",
-      primary: "Try again", secondary: "Copy details", announce: "assertive", t10: "planned",
-      notes: "Details = code, request ID, Zilo and SDK versions. Never document content.",
+      primary: "Try again", secondary: "Copy details", announce: "assertive", t10: "confirmed",
+      notes: "Details = code, request ID, Zilo and SDK versions. Never document content. Also used for `invalid-request` and `invalid-state` (client bugs) and for any code this UI version does not know.",
+    },
+
+    /* ---------------- Error codes added by T10 (copy written in T05 fix r1) ---------------- */
+    "consent-denied": {
+      kind: "error", surface: "Connect dialog",
+      title: "This site isn't allowed to use Zilo",
+      body: "You chose Deny for {origin} in Zilo. Zilo can ask again in {minutes} minutes.",
+      primary: "Ask again in {minutes} min", secondary: "Close", announce: "assertive", t10: "added",
+      notes: "`403 consent-denied` without `blocked`: cool-down from `retryAfterSeconds` (R-A2). The primary stays disabled (`aria-disabled`) until the cool-down ends, then reads \"Ask again\".",
+    },
+    "consent-denied.blocked": {
+      kind: "error", surface: "Connect dialog",
+      title: "This site is blocked in Zilo",
+      body: "Zilo was set to never allow {origin}, so it won't ask again. To use this site, open Zilo, choose Allowed sites, and unblock it under Blocked sites.",
+      primary: "", secondary: "Close", announce: "assertive", t10: "added",
+      notes: "`403 consent-denied` with `blocked: true` (R-A2). Permanent: no countdown and no Ask again, because the agent never prompts again. Unblocking happens only in the tray (`tray.sites.blocked`).",
+    },
+    "rate-limited": {
+      kind: "error", surface: "Connect dialog or Scan dialog banner",
+      title: "Zilo is busy",
+      body: "Zilo has too many requests right now, or it is waiting for an answer about another site. Try again in {seconds} seconds.",
+      primary: "Try again in {seconds} s", secondary: "", announce: "assertive", t10: "added",
+      notes: "`429 rate-limited`, `Retry-After` (R-A2, R-L4). The SDK retries silently once when `Retry-After` is 2 s or less; it shows this copy only after that. The primary is disabled until the wait ends, then reads \"Try again\".",
+    },
+    "invalid-settings": {
+      kind: "error", surface: "Scan dialog banner",
+      title: "These settings can't be used",
+      body: "Zilo can't scan with these settings, for example a resolution or page size that is too large. Choose different settings, then scan again.",
+      primary: "Change settings", secondary: "", announce: "assertive", t10: "added",
+      notes: "`422 invalid-settings` (R-J5). Change settings moves focus to the first field named in `errors[].field`, which gets `aria-invalid`. Nothing was scanned.",
+    },
+    "unsupported-capability": {
+      kind: "error", surface: "Scan dialog banner",
+      title: "This scanner can't use these settings",
+      body: "{device} doesn't offer one of the options you chose. Choose a different option, or another scanner, then scan again.",
+      primary: "Change settings", secondary: "Choose another scanner", announce: "assertive", t10: "added",
+      notes: "`422 unsupported-capability`: strict mismatch, or a source or colour mode the device lacks (R-J5). The UI only offers caps values, so this means the caps changed since they were read: re-read caps on Change settings.",
+    },
+    "not-found": {
+      kind: "error", surface: "Scan dialog banner",
+      title: "This scan is no longer available",
+      body: "Zilo can't find this scan any more. Start a new scan to continue. Pages already added to this site aren't affected.",
+      primary: "Scan again", secondary: "", announce: "assertive", t10: "added",
+      notes: "`404 not-found` (R-J1). Non-disclosing: identical for an unknown, disposed or ended job and for one owned by another family or origin. Never say why, who owns it, or that pages were deleted.",
+    },
+    "agent-unavailable": {
+      kind: "error", surface: "Scan dialog banner",
+      title: "Zilo isn't ready",
+      body: "Zilo is starting, updating or closing. Wait a moment, then try again. Pages already shown here are kept.",
+      primary: "Try again", secondary: "", announce: "assertive", t10: "added",
+      notes: "`503 agent-unavailable`, retryable. The SDK retries after `Retry-After` while the dialog is open and shows this copy only if that fails. If `hello` stops answering, detection takes over (`state.unreachable-or-blocked`).",
     },
 
     /* ---------------- Tray / menu-bar agent ---------------- */
@@ -345,12 +418,6 @@
       title: "Check this address carefully",
       body: "It uses international characters and is shown as {ascii}. Some addresses look like well-known sites but aren't.",
       primary: "", secondary: "", announce: "none", t10: "n/a", notes: "Shown when the host has a punycode label.",
-    },
-    "tray.consent.insecure": {
-      kind: "tray", surface: "Consent window (native)",
-      title: "This website doesn't use a secure connection",
-      body: "Its address starts with http. Only allow it if you are testing your own site.",
-      primary: "", secondary: "", announce: "none", t10: "n/a", notes: "",
     },
     "tray.sites": {
       kind: "tray", surface: "Allowed sites window",
@@ -369,7 +436,28 @@
       title: "Remove access for {origin}?",
       body: "The site stops working with your scanners right away. It has to ask again next time.",
       primary: "Remove", secondary: "Cancel", announce: "none", t10: "n/a",
-      notes: "Revokes all tokens for the origin (D-004).",
+      notes: "Revokes the origin's token families (D-004, R-A12): access ends at once; pages are cleaned up within the bound. The site sees `token-revoked` copy (\"access revoked\").",
+    },
+    "tray.sites.denied": {
+      kind: "tray", surface: "Allowed sites window",
+      title: "Recently denied",
+      body: "Zilo waits before asking these sites again. Forget lets a site ask now. Block stops it from ever asking.",
+      primary: "Block", secondary: "Forget", announce: "none", t10: "n/a",
+      notes: "Timed denial with cool-down (`consent-denied` without `blocked`, R-A2). Rows show the time left.",
+    },
+    "tray.sites.block": {
+      kind: "tray", surface: "Allowed sites window, confirm",
+      title: "Block {origin}?",
+      body: "Zilo won't ask about this site again, and it can't use your scanners. You can unblock it here later.",
+      primary: "Block", secondary: "Cancel", announce: "none", t10: "n/a",
+      notes: "\"Block this site\" (R-A2): the site then gets `consent-denied` with `blocked: true`.",
+    },
+    "tray.sites.blocked": {
+      kind: "tray", surface: "Allowed sites window",
+      title: "Blocked sites",
+      body: "Zilo never asks about these sites. Unblock a site to let it ask again the next time you scan there.",
+      primary: "Unblock", secondary: "", announce: "none", t10: "n/a",
+      notes: "Permanent until unblocked. Unblock clears the block and any cool-down; it does not allow the site: the next scan asks again.",
     },
     "tray.sites.managed": {
       kind: "tray", surface: "Allowed sites window",
@@ -411,6 +499,13 @@
       "state.updating", "state.safari-bridge", "state.safari-unsupported"],
     errorCodes: ["device-busy", "feeder-empty", "paper-jam", "cover-open", "timeout", "disconnected",
       "permission", "unauthorized-origin", "token-revoked", "export-failed", "limits-exceeded", "unknown"],
+    /* T10 hand-off (api/CONTRACT.md "For T05"): copy for the codes T10 added. */
+    addedCodes: ["consent-denied", "consent-denied.blocked", "rate-limited", "invalid-settings",
+      "unsupported-capability", "not-found", "agent-unavailable"],
+    /* Codes shown as a Scan dialog banner. The rest replace the Scan dialog with the Connect dialog. */
+    scanBannerCodes: ["device-busy", "feeder-empty", "paper-jam", "cover-open", "timeout", "disconnected",
+      "permission", "export-failed", "limits-exceeded", "unknown", "rate-limited", "invalid-settings",
+      "unsupported-capability", "not-found", "agent-unavailable"],
   };
 
   function format(text, vars) {

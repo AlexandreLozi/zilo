@@ -189,20 +189,31 @@
   };
   const VIRTUAL = { id: "virtual", name: "Zilo Virtual Scanner", driver: "Virtual", conn: "virtual", where: "Test pages", caps: "all" };
 
-  const ERROR_CODES = ZILO_COPY_REQUIRED.errorCodes.filter((c) => !["unauthorized-origin", "token-revoked"].includes(c));
+  /* Banner codes only; consent and revocation codes replace this dialog with the Connect dialog. */
+  const ERROR_CODES = ZILO_COPY_REQUIRED.scanBannerCodes;
+  const STATES = [
+    ["ready", "Ready (no pages yet)"], ["loading", "Loading scanners"], ["empty", "No scanners"],
+    ["virtual-only", "Only virtual scanner"], ["caps-loading", "Reading capabilities"],
+    ["scanning", "Scanning (pages arriving)"], ["refreshing", "Refreshing scanners"], ["pages", "Pages scanned"],
+    ["deleted", "Page deleted (undo)"], ["exporting", "Exporting"], ["error", "Error"], ["discard", "Close with unsaved pages"],
+  ];
+  const OSES = [["windows", "Windows"], ["macos", "macOS"], ["linux", "Linux"]];
 
   window.PROTO = {
     title: "Scan dialog",
     controls: [
-      { name: "state", label: "State", options: [
-        ["ready", "Ready (no pages yet)"], ["loading", "Loading scanners"], ["empty", "No scanners"],
-        ["virtual-only", "Only virtual scanner"], ["caps-loading", "Reading capabilities"],
-        ["scanning", "Scanning (pages arriving)"], ["pages", "Pages scanned"], ["deleted", "Page deleted (undo)"],
-        ["exporting", "Exporting"], ["error", "Error"], ["discard", "Close with unsaved pages"],
-      ] },
+      { name: "state", label: "State", options: STATES },
       { name: "code", label: "Error code", options: ERROR_CODES.map((c) => [c, c]) },
-      { name: "os", label: "OS", options: [["windows", "Windows"], ["macos", "macOS"], ["linux", "Linux"]] },
+      { name: "os", label: "OS", options: OSES },
     ],
+    /* Explicit matrix for the checks: every state, every banner code, every OS device list. */
+    matrix() {
+      return [
+        ...STATES.filter(([s]) => s !== "error").map(([s]) => ({ state: s })),
+        ...ERROR_CODES.map((code) => ({ state: "error", code })),
+        ...OSES.slice(1).map(([os]) => ({ state: "ready", os })),
+      ];
+    },
     render,
   };
 
@@ -222,8 +233,15 @@
       list.setAttribute("aria-disabled", "true");
       return;
     }
-    el.removeAttribute("aria-busy");
-    list.removeAttribute("aria-disabled");
+    // Refresh = POST devices/refresh, then GET devices (T10 R-D1). Existing rows stay while it runs.
+    const refreshing = state === "refreshing";
+    el.toggleAttribute("aria-busy", refreshing);
+    if (refreshing) el.setAttribute("aria-busy", "true");
+    list.toggleAttribute("aria-disabled", refreshing);
+    if (refreshing) list.setAttribute("aria-disabled", "true");
+    list.innerHTML = refreshing
+      ? `<span class="z-spinner" aria-hidden="true"></span>Refreshing…`
+      : `<svg class="z-icon z-icon--sm" aria-hidden="true"><use href="#i-refresh"/></svg>Refresh`;
     if (state === "empty") {
       const c = C("scan.no-devices");
       el.innerHTML = `<div class="devices__empty"><h4>${c.title}</h4><p class="z-small z-muted">${c.body}</p>
@@ -361,24 +379,24 @@
     const head = document.getElementById("pages-h");
     let banner = "";
     if (state === "error") {
-      const vars = { device: "Canon DR-C225 II", count: 2, format: "PDF", trayArea: "notification area" };
+      const vars = { device: "Canon DR-C225 II", count: 2, format: "PDF", trayArea: "notification area", seconds: 30 };
       const c = C(code, vars);
       banner = `<div class="z-banner z-banner--danger" role="alert">
         ${icon("alert-circle")}
         <p class="z-banner__title">${c.title}</p>
         <p class="z-banner__body">${c.body}</p>
         <div class="z-banner__actions">
-          ${c.primary ? `<button class="z-btn z-btn--sm" type="button">${c.primary}</button>` : ""}
+          ${c.primary ? `<button class="z-btn z-btn--sm" type="button" ${code === "rate-limited" ? 'aria-disabled="true"' : ""}>${c.primary}</button>` : ""}
           ${c.secondary ? `<button class="z-btn z-btn--sm z-btn--ghost" type="button">${c.secondary}</button>` : ""}
           <span class="z-error-code" style="align-self:center;margin-left:auto">Code: ${code}</span>
         </div>
       </div>`;
     }
-    const pagesKept = { "paper-jam": 2, "disconnected": 2, "export-failed": 4, "limits-exceeded": 3, "unknown": 0 };
+    const pagesKept = { "paper-jam": 2, "disconnected": 2, "export-failed": 4, "limits-exceeded": 3, "unknown": 0, "agent-unavailable": 3 };
     if (state === "error") model.pages = samplePages(pagesKept[code] || 0, { duplex: false });
     const pages = model.pages;
     let grid = "";
-    if (["loading", "empty", "virtual-only", "ready", "caps-loading"].includes(state) || (state === "error" && !pages.length)) {
+    if (["loading", "empty", "virtual-only", "ready", "refreshing", "caps-loading"].includes(state) || (state === "error" && !pages.length)) {
       const c = C("scan.no-pages");
       grid = state === "error" ? "" : `<div class="pages-empty">${icon("file", "z-icon--xl")}<h4>${c.title}</h4><p>${c.body}</p></div>`;
     } else {

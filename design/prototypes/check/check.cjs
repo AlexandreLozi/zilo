@@ -53,12 +53,25 @@ for (const key of [...REQUIRED.detectionStates, ...REQUIRED.errorCodes]) {
 for (const [k, c] of Object.entries(COPY)) {
   if (/not installed/i.test(c.title + " " + c.body)) fail(`${k} says "not installed" (forbidden by D-008)`);
 }
+// T10 hand-off: the 12 original codes are confirmed; the added codes have copy.
+for (const key of REQUIRED.errorCodes) if (COPY[key] && COPY[key].t10 !== "confirmed") fail(`${key} must be t10: "confirmed"`);
+for (const key of REQUIRED.addedCodes || []) {
+  const c = COPY[key];
+  if (!c) fail(`copy.js has no entry for T10-added code ${key}`);
+  else if (c.kind !== "error" || c.t10 !== "added" || !c.title || !c.body) fail(`${key} must be kind error, t10 "added", with a title and body`);
+}
+// Revocation says "access revoked", never that pages were erased or are gone (T10 R-A12; masters' agreement).
+const rv = COPY["token-revoked"];
+if (rv && (!/revoked/i.test(rv.title + rv.body) || /eras|delet|gone|no longer available/i.test(rv.title + " " + rv.body))) fail("token-revoked must say access was revoked, not that pages were erased");
+// OD-8: Safari is required; "unsupported" is never shipped copy.
+for (const [k, c] of Object.entries(COPY)) if (/safari/i.test(c.title + c.body) && /unsupported|isn't supported|not supported/i.test(c.title + " " + c.body)) fail(`${k} calls Safari unsupported (OD-8)`);
+ok(`T10 alignment: ${REQUIRED.errorCodes.length} codes confirmed, ${(REQUIRED.addedCodes || []).length} added-code entries, revocation and Safari wording`);
 const block = currentBlock();
 if (!block) fail("docs/design/copy.md has no generated copy-table block");
 else if (block !== generate()) fail("docs/design/copy.md is out of date: run node design/prototypes/check/copy-table.cjs --write");
 else ok(`copy.md in sync; ${REQUIRED.detectionStates.length} required states and ${REQUIRED.errorCodes.length} error codes covered (${Object.keys(COPY).length} keys total)`);
 const md = fs.readFileSync(path.join(ROOT, "docs/design/copy.md"), "utf8");
-for (const key of [...REQUIRED.detectionStates, ...REQUIRED.errorCodes]) {
+for (const key of [...REQUIRED.detectionStates, ...REQUIRED.errorCodes, ...(REQUIRED.addedCodes || [])]) {
   if (!md.includes("`" + key + "`")) fail(`copy.md does not list ${key}`);
 }
 
@@ -95,6 +108,12 @@ for (const key of [...REQUIRED.detectionStates, ...REQUIRED.errorCodes]) {
       for (const c of rest) for (const [v] of c.options.slice(1)) out.push({ [c.name]: v });
       return out;
     });
+    // Review r1 #5: every scan-banner code must be rendered (state=error&code=…), not just the default code.
+    if (file === "scan-dialog.html") {
+      const missing = REQUIRED.scanBannerCodes.filter((code) => !combos.some((c) => c.state === "error" && c.code === code));
+      if (missing.length) fail(`scan-dialog.html matrix does not render error banners: ${missing.join(", ")}`);
+      else ok(`scan-dialog.html renders all ${REQUIRED.scanBannerCodes.length} scan-banner error codes`);
+    }
     let fileViolations = 0;
     for (const combo of combos) {
       for (const theme of ["light", "dark"]) {

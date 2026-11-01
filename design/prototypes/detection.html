@@ -87,12 +87,15 @@
     ["checking", "Checking"], ["permission-prompt", "Checking, browser prompt open"],
     ["denied", "Permission denied"], ["unreachable", "Unreachable or blocked (Install)"],
     ["unreachable-hint", "Unreachable, troubleshooting open"], ["unreachable-stopped", "Unreachable, re-check stopped"],
-    ["awaiting-consent", "Waiting for consent in Zilo"], ["unauthorized-origin", "Site not allowed (denied in Zilo)"],
-    ["unauthorized-cooldown", "Site not allowed, cool-down"], ["token-revoked", "Access removed"],
-    ["outdated", "Outdated (Update)"], ["updating", "Updating"], ["update-failed", "Update failed"],
+    ["awaiting-consent", "Waiting for consent in Zilo"], ["consent-expired", "Consent prompt expired"],
+    ["unauthorized-origin", "Site not allowed (no consent)"], ["consent-denied", "Denied in Zilo, cool-down"],
+    ["consent-blocked", "Blocked in Zilo (permanent)"], ["rate-limited", "Zilo busy (rate limited)"],
+    ["token-revoked", "Access revoked"], ["insecure-origin", "Page not on https"],
+    ["outdated", "Outdated, before authorisation"], ["outdated-authorized", "Outdated, after authorisation"],
+    ["updating", "Updating (self-update, reserved)"], ["update-failed", "Update failed"],
     ["safari-bridge", "Safari: open Zilo window"], ["safari-bridge-blocked", "Safari: popup blocked"],
     ["safari-bridge-closed", "Safari: window closed"], ["safari-bridge-unavailable", "Safari: page can't use window"],
-    ["safari-unsupported", "Safari not yet supported"], ["bridge-window", "Safari: the Zilo window itself"],
+    ["safari-unsupported", "Safari: interim, no path yet (test builds)"], ["bridge-window", "Safari: the Zilo window itself"],
   ];
   const BROWSERS = [["chrome", "Chrome"], ["edge", "Edge"], ["firefox", "Firefox"]];
   const OSES = [["windows-x64", "Windows x64"], ["windows-arm64", "Windows ARM64"], ["macos", "macOS"], ["linux", "Linux"]];
@@ -220,12 +223,14 @@
     return shell({ body, describedBy: "det-desc", role: opts.role, footer: footer(c.primary, c.secondary, opts) });
   }
 
-  function outdated() {
+  /* Before authorisation, public `hello` has no version (D-004a): the SDK knows only that the protocol range or the
+     capabilities don't fit, so no installed version is shown. "Latest" comes from the signed latest.json, not the agent. */
+  function outdated(authorized) {
     const extra = `<dl class="z-small" style="display:grid;grid-template-columns:auto 1fr;gap:4px 16px">
-        <dt class="z-muted">Installed</dt><dd class="ver">Zilo 1.2.0</dd>
-        <dt class="z-muted">Needed</dt><dd class="ver">Zilo 1.4.0 or later</dd>
+        ${authorized ? `<dt class="z-muted">Installed</dt><dd class="ver">Zilo 1.2.0</dd>
+        <dt class="z-muted">Needed</dt><dd class="ver">Zilo 1.4.0 or later</dd>` : ""}
         <dt class="z-muted">Latest</dt><dd class="ver">Zilo 1.4.2 · signed, 38 MB</dd></dl>`;
-    return simple("state.outdated", "info", "download", { extra });
+    return simple(authorized ? "state.outdated.authorized" : "state.outdated", "info", "download", { extra });
   }
 
   function updating() {
@@ -237,13 +242,23 @@
     return shell({ body, describedBy: "det-desc", footer: footer("", c.secondary, { secondaryFocus: true }) });
   }
 
-  function unauthorized(cooldown) {
-    const c = C("unauthorized-origin", { origin: ORIGIN });
+  /* key: unauthorized-origin (no consent), consent-denied (cool-down), consent-denied.blocked (permanent). */
+  function unauthorized(key) {
+    const c = C(key, { origin: ORIGIN, minutes: 9 });
     Z.announce(c.title, "assertive");
-    const body = head({ title: c.title, body: c.body.replace(ORIGIN, `<span class="origin-chip">${esc(ORIGIN)}</span>`) }, "danger", "lock") +
-      (cooldown ? `<p class="det__hint" id="cooldown">You chose Deny recently. Zilo can ask again in 9 minutes.</p>` : "");
-    const primary = cooldown ? "Ask again in 9 min" : c.primary;
-    return shell({ body, describedBy: "det-desc", footer: footer(primary, c.secondary, cooldown ? { primaryAttrs: 'aria-disabled="true" aria-describedby="cooldown"', secondaryFocus: true } : {}) });
+    const body = head({ title: c.title, body: c.body.replace(ORIGIN, `<span class="origin-chip">${esc(ORIGIN)}</span>`) }, "danger", "lock");
+    const opts = key === "consent-denied" ? { primaryAttrs: 'aria-disabled="true" aria-describedby="det-desc"', secondaryFocus: true }
+      : !c.primary ? { secondaryFocus: true } : {};
+    return shell({ body, describedBy: "det-desc", footer: footer(c.primary, c.secondary, opts) });
+  }
+
+  function rateLimited() {
+    return simple("rate-limited", "warning", "alert-triangle", { vars: { seconds: 30 }, primaryAttrs: 'aria-disabled="true"', secondaryFocus: true });
+  }
+
+  function insecure() {
+    return simple("state.insecure-origin", "warning", "lock", { secondaryFocus: true,
+      extra: `<p class="det__hint">For the site's developers: Zilo never allows http or localhost pages, even with its developer setting. Serve the app over https on a test host name with a local certificate, for example <span class="origin-chip">https://app.zilo.test:8443</span>.</p>` });
   }
 
   function awaiting() {
@@ -283,10 +298,15 @@
       "unreachable-hint": () => unreachable(v.os, { hint: true }),
       "unreachable-stopped": () => unreachable(v.os, { stopped: true }),
       "awaiting-consent": awaiting,
-      "unauthorized-origin": () => unauthorized(false),
-      "unauthorized-cooldown": () => unauthorized(true),
+      "consent-expired": () => simple("state.consent-expired", "warning", "window"),
+      "unauthorized-origin": () => unauthorized("unauthorized-origin"),
+      "consent-denied": () => unauthorized("consent-denied"),
+      "consent-blocked": () => unauthorized("consent-denied.blocked"),
+      "rate-limited": rateLimited,
       "token-revoked": () => simple("token-revoked", "danger", "lock"),
-      outdated,
+      "insecure-origin": insecure,
+      outdated: () => outdated(false),
+      "outdated-authorized": () => outdated(true),
       updating,
       "update-failed": () => simple("state.update-failed", "danger", "alert-circle"),
       "safari-bridge": () => simple("state.safari-bridge", "info", "window"),
