@@ -8,6 +8,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj" />
+    <Project Path="tests/Zilo.Core.Tests/Zilo.Core.Tests.csproj" />
     <Project Path="tests/Zilo.Scaffold.Tests/Zilo.Scaffold.Tests.csproj" />
   </Folder>
 </Solution>
