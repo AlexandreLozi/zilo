@@ -198,13 +198,22 @@ export class ZiloDialog extends ZiloElement {
   readonly #close: HTMLButtonElement;
   readonly #body: HTMLDivElement;
   readonly #footer: HTMLElement;
+  readonly #footerSlot: HTMLSlotElement;
   readonly #polite: HTMLDivElement;
   readonly #assertive: HTMLDivElement;
   readonly #scrim: HTMLDivElement;
 
   #isOpen = false;
+  /** Set once connectedCallback ran; upgrades call attributeChangedCallback before it. */
+  #connected = false;
   #opener: Element | null = null;
   #inerted: HTMLElement[] = [];
+  readonly #resize =
+    typeof ResizeObserver === 'function'
+      ? new ResizeObserver(() => {
+          this.#syncScrollable();
+        })
+      : null;
 
   constructor() {
     super(css);
@@ -268,8 +277,9 @@ export class ZiloDialog extends ZiloElement {
     this.#descriptionSlot.addEventListener('slotchange', () => {
       this.#syncDescription();
     });
+    this.#footerSlot = footerSlot;
     footerSlot.addEventListener('slotchange', () => {
-      this.#footer.classList.toggle('has-content', footerSlot.assignedNodes().length > 0);
+      this.#syncFooter();
     });
     // On the host: keydowns from slotted content and from the shadow tree both reach it.
     this.addEventListener('keydown', this.#onKeydown);
@@ -353,16 +363,21 @@ export class ZiloDialog extends ZiloElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
-    if (this.open && !this.#isOpen) this.#openNow();
+    this.#connected = true;
+    // Wait a microtask so slotted children parsed with this element are upgraded first.
+    queueMicrotask(() => {
+      if (this.open && !this.#isOpen && this.isConnected) this.#openNow();
+    });
   }
 
   disconnectedCallback(): void {
+    this.#connected = false;
     if (this.#isOpen) this.#teardown();
   }
 
   attributeChangedCallback(name: string): void {
     if (name === 'open') {
-      if (this.open && !this.#isOpen && this.isConnected) this.#openNow();
+      if (this.open && !this.#isOpen && this.#connected) this.#openNow();
       else if (!this.open && this.#isOpen) this.#finishClose('api');
       return;
     }
@@ -392,8 +407,15 @@ export class ZiloDialog extends ZiloElement {
     writeAttr(this.#dialog, 'aria-describedby', has ? this.#description.id : null);
   }
 
+  #syncFooter(): void {
+    this.#footer.classList.toggle('has-content', this.#footerSlot.assignedNodes().length > 0);
+  }
+
   #openNow(): void {
     this.#isOpen = true;
+    // slotchange is async; settle slot-dependent layout before choosing initial focus.
+    this.#syncFooter();
+    this.#syncDescription();
     this.#opener = deepActiveElement(this.ownerDocument);
     lockScroll(this.ownerDocument);
     if (typeof this.#dialog.showModal === 'function') {
@@ -406,20 +428,32 @@ export class ZiloDialog extends ZiloElement {
     }
     openStack.push(this);
     this.ownerDocument.addEventListener('focusin', this.#onDocumentFocusIn);
+    this.#syncScrollable();
+    this.#resize?.observe(this.#body);
     this.#focusInitial();
     this.emit('zilo-open', null);
   }
 
   #focusInitial(): void {
-    const autofocus = this.querySelector<HTMLElement>('[autofocus]');
     const candidates: (HTMLElement | null | undefined)[] = [
       this.initialFocus,
-      autofocus,
-      this.#contentTabStops()[0],
+      this.querySelector<HTMLElement>('[autofocus]'),
+      ...this.#contentTabStops(),
       this.hideClose ? null : this.#close,
+      this.#heading,
     ];
-    const target = candidates.find((el): el is HTMLElement => el != null && canReceiveFocus(el));
-    (target ?? this.#heading).focus();
+    for (const el of candidates) {
+      if (el == null || !canReceiveFocus(el)) continue;
+      el.focus();
+      const active = deepActiveElement(this.ownerDocument);
+      if (active !== null && containsComposed(el, active)) return;
+    }
+  }
+
+  /** A body that scrolls must be reachable by keyboard (WCAG 2.1.1); it becomes a tab stop. */
+  #syncScrollable(): void {
+    const scrolls = this.#body.scrollHeight > this.#body.clientHeight + 1;
+    writeAttr(this.#body, 'tabindex', scrolls ? '0' : null);
   }
 
   #contentTabStops(): HTMLElement[] {
@@ -440,6 +474,7 @@ export class ZiloDialog extends ZiloElement {
 
   #teardown(): void {
     this.#isOpen = false;
+    this.#resize?.disconnect();
     const index = openStack.indexOf(this);
     if (index !== -1) openStack.splice(index, 1);
     this.ownerDocument.removeEventListener('focusin', this.#onDocumentFocusIn);
@@ -472,13 +507,7 @@ export class ZiloDialog extends ZiloElement {
   }
 
   #containsDeep(el: Element): boolean {
-    let node: Node | null = el;
-    while (node) {
-      if (node === this) return true;
-      const root = node.getRootNode();
-      node = node.parentNode ?? (root instanceof ShadowRoot ? root.host : null);
-    }
-    return false;
+    return containsComposed(this, el);
   }
 
   readonly #onKeydown = (event: KeyboardEvent): void => {
@@ -517,6 +546,17 @@ export class ZiloDialog extends ZiloElement {
     const first = this.#contentTabStops()[0] ?? this.#heading;
     first.focus();
   };
+}
+
+/** True when `node` is `ancestor` or inside it, crossing shadow boundaries. */
+function containsComposed(ancestor: Node, node: Node): boolean {
+  let current: Node | null = node;
+  while (current) {
+    if (current === ancestor) return true;
+    const root = current.getRootNode();
+    current = current.parentNode ?? (root instanceof ShadowRoot ? root.host : null);
+  }
+  return false;
 }
 
 /** Marks every sibling of `el` and of each composed ancestor `inert`; returns what it changed. */

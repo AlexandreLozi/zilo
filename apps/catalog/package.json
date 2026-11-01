@@ -1,0 +1,23 @@
+{
+  "name": "@zilo/catalog",
+  "version": "0.0.0",
+  "description": "Zilo component catalog: one page per component state and theme; the axe and keyboard E2E target.",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p e2e/tsconfig.json --noEmit",
+    "lint": "eslint . && prettier --check . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "test": "vitest run",
+    "e2e": "playwright test -c e2e/playwright.config.ts"
+  },
+  "dependencies": {
+    "@zilo/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0"
+  }
+}

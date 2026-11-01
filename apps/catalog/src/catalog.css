@@ -1,0 +1,48 @@
+/* Catalog page chrome only; components carry their own styles. */
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  line-height: 1.45;
+}
+body.theme-light {
+  background: #ffffff;
+  color: #1a1d21;
+  color-scheme: light;
+}
+body.theme-dark {
+  background: #1a1c20;
+  color: #e9ebee;
+  color-scheme: dark;
+}
+body.theme-light a {
+  color: #0e6f68;
+}
+body.theme-dark a {
+  color: #4fd1c1;
+}
+main {
+  max-inline-size: 48rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+.specimen {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.specimen > zilo-banner,
+.specimen > zilo-progress {
+  align-self: stretch;
+}
+.host-override {
+  display: flex;
+  gap: 0.5rem;
+  --zilo-color-accent: #5b3cc4;
+  --zilo-color-on-accent: #ffffff;
+  --zilo-radius-md: 2px;
+}
+.theme-dark .host-override {
+  --zilo-color-accent: #c9b8ff;
+  --zilo-color-on-accent: #1d1238;
+}

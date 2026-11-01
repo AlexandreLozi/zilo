@@ -38,6 +38,16 @@ afterEach(() => {
 });
 
 describe('<zilo-dialog>', () => {
+  it('focuses a slotted [autofocus] Zilo element when parsed open', async () => {
+    document.body.innerHTML = `
+      <zilo-dialog heading="Discard?" alert open>
+        <zilo-button slot="footer" id="keep" autofocus>Keep pages</zilo-button>
+      </zilo-dialog>`;
+    await Promise.resolve();
+    expect(idOf(focused())).toBe('keep>button');
+    document.querySelector('zilo-dialog')?.close();
+  });
+
   it('is registered and exposes dialog semantics', () => {
     const { dialog } = setup();
     expect(customElements.get('zilo-dialog')).toBe(ZiloDialog);
@@ -182,12 +192,13 @@ describe('<zilo-dialog>', () => {
     }
   });
 
-  it('opens when connected with the open attribute and closes when removed', () => {
+  it('opens when connected with the open attribute and closes when removed', async () => {
     const before = scrollLockCount();
     const dialog = document.createElement('zilo-dialog');
     dialog.setAttribute('open', '');
     dialog.heading = 'Late';
     document.body.append(dialog);
+    await Promise.resolve();
     expect(nativeDialog(dialog).open).toBe(true);
     dialog.remove();
     expect(scrollLockCount()).toBe(before);
