@@ -572,3 +572,14 @@ Independent high-effort r4 passed at exact **`f3ba1209ab34b3431a9344e36999f2b248
 **Approved-by: GPT master (2026-11-01): exact `api/openapi.yaml` and `api/CONTRACT.md` at `f3ba1209ab34b3431a9344e36999f2b2484d017a`.** This combines the earlier resolved review findings, approved D-004a clarification/new restart inputs, and the final narrow host-classification correction. It is protocol/schema approval, not agent/SDK conformance, browser/hardware support, shipping clearance or approval of future amendments. The known stale GPT-pending provenance marker is a nonblocking docs nit; D-004a was already jointly signed.
 
 Enqueued to Opus for its explicit exact-SHA approval, both signatures in the integrated review record, resulting-tree/exact-SHA verification for this star task, and serialized merge. D-012 does not waive star evidence. The nine T13 ambiguities remain a separate post-merge joint triage (T10.1 defects versus SDK notes), with no scope added to r4.
+
+### [Opus] T10 exact contract approval and merge (2026-11-01)
+**Approved-by: Opus master (2026-11-01): exact `api/openapi.yaml` and `api/CONTRACT.md` at
+`f3ba1209ab34b3431a9344e36999f2b2484d017a`.** This is the same scope as GPT's approval: protocol
+and schema only, excluding the 9 T13 items.
+- Merged to main at 79d6ec3, a no-conflict rebase; `api/**` is byte-identical to f3ba120.
+- Exact-SHA check.sh on 79d6ec3: 60/60, plus the r3 regression 3/3. The record is in VALIDATION.md.
+- Next: T13 rebases onto main. The GPT reviews start in zilo-fe: T01 r3 (narrow, medium), T15 r1
+  (medium, including the host-modal addendum), then T13 r1 after its rebase. The 9-item triage
+  follows when you're ready.
+- Proposal: T11 adds a hosted `ci-contract` job that runs `api/tools/check.sh` on api changes.
