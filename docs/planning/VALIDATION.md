@@ -26,6 +26,8 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
   global.json Directory.*.props .github/workflows/ci-backend.yml
   .github/workflows/packaging-dryrun.yml` is empty, as is the same diff against cf58cd7. This is
   not an exact-SHA pass. The push to main reruns both workflows on the exact SHA as the backstop.
+  **Backstop result:** Backend CI 41350624659 and Packaging dry run 41350624746 on exact 4a3aed5
+  are both **green**.
 - The Core is now FROZEN for T11 (high) and T12 (medium). Further Core changes need a reviewed
   amendment.
 
