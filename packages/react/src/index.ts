@@ -62,7 +62,7 @@ export const ZiloDialog = createZiloComponent<
   ZiloDialogElement,
   typeof dialogDefaults,
   typeof dialogEvents
->('zilo-dialog', 'ZiloDialog', dialogDefaults, dialogEvents);
+>('zilo-dialog', 'ZiloDialog', dialogDefaults, dialogEvents, ['open']);
 
 const buttonDefaults = {
   variant: 'secondary' as ZiloButtonVariant,

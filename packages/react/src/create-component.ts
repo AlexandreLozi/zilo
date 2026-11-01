@@ -49,8 +49,12 @@ function assignRef<T>(ref: Ref<T> | undefined, value: T | null): void {
  *   prop is omitted. They are assigned as **properties** (not attributes) in a layout effect, so
  *   booleans and object values (for example `initialFocus`) work and the element sees them before
  *   the browser paints.
- * - `events` maps callback props to Zilo `CustomEvent` names; listeners are attached once and always
- *   call the latest callback.
+ * - `transitions` names the properties that change state (a dialog's `open`). They are assigned
+ *   after every other property of the same update, so opening and closing see the configuration
+ *   (`initialFocus`, heading, `returnFocus`…) of that update.
+ * - `events` maps callback props to Zilo `CustomEvent` names; listeners are attached once, before
+ *   any property is assigned (so an event fired by the first assignment, such as `zilo-open` when
+ *   mounting with `open`, is delivered), and always call the latest callback.
  * - `ref` is forwarded to the element (React 19 passes `ref` as a prop).
  */
 export function createZiloComponent<
@@ -62,8 +66,14 @@ export function createZiloComponent<
   displayName: string,
   defaults: P,
   events: M,
+  transitions: readonly (keyof P & string)[] = [],
 ): (props: ZiloComponentProps<E, P, M>) => ReactElement {
-  const propNames = Object.keys(defaults) as (keyof P & string)[];
+  const propNames = [
+    ...(Object.keys(defaults) as (keyof P & string)[]).filter(
+      (name) => !transitions.includes(name),
+    ),
+    ...transitions,
+  ];
   const eventEntries = Object.entries(events) as [keyof M & string, keyof ZiloEventDetailMap][];
 
   function Component(props: ZiloComponentProps<E, P, M>): ReactElement {
@@ -91,16 +101,7 @@ export function createZiloComponent<
       [ref],
     );
 
-    useLayoutEffect(() => {
-      const el = elementRef.current as Record<string, unknown> | null;
-      if (!el) return;
-      for (const name of propNames) {
-        const value = ownProps[name];
-        const next: unknown = value === undefined ? defaults[name] : value;
-        if (el[name] !== next) el[name] = next;
-      }
-    });
-
+    // Declared first: layout effects run in order, so listeners exist before any property is set.
     useLayoutEffect(() => {
       const el = elementRef.current;
       if (!el) return;
@@ -116,6 +117,16 @@ export function createZiloComponent<
         for (const [type, listener] of listeners) el.removeEventListener(type, listener);
       };
     }, []);
+
+    useLayoutEffect(() => {
+      const el = elementRef.current as Record<string, unknown> | null;
+      if (!el) return;
+      for (const name of propNames) {
+        const value = ownProps[name];
+        const next: unknown = value === undefined ? defaults[name] : value;
+        if (el[name] !== next) el[name] = next;
+      }
+    });
 
     return createElement(
       tagName,
