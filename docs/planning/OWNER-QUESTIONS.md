@@ -32,10 +32,13 @@ or tells the liaison terminal. Masters: add new owner questions **here**, not in
 16. **Pain points with Dynamsoft today.** Install failures, certificate or HTTPS problems, slow
     scans, browser breakages? These are the reliability targets Zilo should beat.
 
-## Open: product and governance
-17. **Open-source ownership.** Is Zilo yours personally or your employer's? Does publishing it
-    need sign-off? This decides who holds the copyright line and the CLA/DCO choice before the
-    first public release.
-18. **Licence preference** for the open-source release: permissive (MIT/Apache-2.0) or
-    copyleft (LGPL/MPL)? The masters will propose one (OD-9). NAPS2 is LGPL, which works with
-    either.
+## Product and governance
+- **Q17, ownership: answered 2026-11-01.** Zilo is the owner's **personal project**: Alexandre Lozi
+  holds the copyright, and there is no employer sign-off. Copyright lines and any CLA or DCO name
+  him.
+- **Q18, licence: deferred by the owner.** It is not decided now. Bring it back **after a functional
+  app is working and the owner has approved it**. It is a gate on the open-source release, on the
+  roadmap as a later milestone, not current work.
+  - At that point the masters bring a short comparison: MIT vs Apache-2.0 (patent grant) vs
+    MPL/LGPL (copyleft), and what each means given NAPS2 is LGPL.
+  - Until then, add no LICENSE file and keep the repo private.
