@@ -34,6 +34,11 @@ resolution kind, side, adjustment field/reason, and error code) are strings: unk
 round-trips. Resolution kinds `list` and `range` have convenience factories, but `ResolutionCaps` does
 not reject a future kind.
 
+These constructors are not full wire validators: T11 validates outbound capability snapshots against
+T10 (including nonempty collections and positive ranges/dimensions). Record equality on
+`ImmutableArray<T>` members is backing-array equality, not structural sequence equality; compare
+elements explicitly when checking whether equivalent snapshots changed.
+
 `Page.Bytes` contains a complete encoded original image, not a borrowed vendor raster. The final
 optional constructor parameter `string ContentType = "image/png"` identifies that encoding
 (`image/png` for the virtual backend; real backends may supply `image/jpeg`). The property is get-only;
@@ -45,14 +50,51 @@ arrays, objects, and booleans are rejected. `Page` copies both `Bytes` and `Adju
 `AppliedSettings` plus per-page adjustments, allowing a driver to report a refinement on each emitted
 page without mutating the request.
 
-`AppliedSettings == null` means unchanged; a non-null value is a complete replacement snapshot.
-`Adjustments` is the delta associated with that page (not cumulative); the job owner accumulates it
-and publishes the effective-setting event before publishing the page. Before a first page exists,
-a backend must reject unsupported settings with a typed failure rather than silently coerce them.
+`AppliedSettings == null` means unchanged from the latest effective snapshot (initially the request);
+a non-null value is a complete replacement snapshot. Drivers may refine only `resolution`, `colorMode`,
+`pageSize`, and `pageSizeMm`. `Source` and `MaxPages` remain identical to the request throughout the
+stream, preserving R-J8 completion semantics. Every refinement must satisfy the selected `SourceCaps`
+(including supported resolution/color mode and R-J5 page-size rules), `DeviceCaps.Limits`, and all
+`AcquisitionLimits`; otherwise fail with a typed error rather than emit an invalid page or snapshot.
+Before a first page exists, reject unsupported settings with a typed failure, not silent coercion;
+an actual device-applied refinement is reported with that first page's snapshot.
 
-`ScanFailureException` carries a `ScanError` and non-negative `PagesKept`. It is the typed scanner
-failure path. Cancellation is the standard `OperationCanceledException` path and must not be translated
-to `ScanFailureException`.
+`Adjustments` is the delta associated with that page (not cumulative), with reason `device-applied`.
+For scalar `resolution`, `colorMode`, or changed `pageSize` IDs, the driver's `Requested` is the prior
+effective value, not the user's original request (which the driver does not receive). T11 retains that
+original request and rewrites each published adjustment's `requested` to the original field value,
+or null when omitted, while retaining the reported effective value and reason.
+`PageSizeMm` changes travel only in the full `AppliedSettings` snapshot: no object-valued adjustment
+or new adjustment-field convention is introduced. A scalar `pageSize` adjustment accompanies an ID
+change, not a dimensions-only change. The job owner accumulates deltas and publishes the updated
+effective-setting state event before the page, including for dimensions-only refinements (R-J6).
+Each page's actual `Resolution` and `ColorMode` are authoritative for that page; later snapshots never
+reinterpret previously yielded pages.
+
+## Shared typed failures
+
+Every method uses `ScanFailureException` carrying safe `ScanError` data for backend/scanner failures,
+not raw vendor exceptions. `PagesKept` is 0 outside acquisition and before the first yielded page;
+within acquisition it counts previously yielded pages. Cancellation remains the standard
+`OperationCanceledException` path, never translated to `ScanFailureException` (including refresh waits).
+Argument/programming errors are not scanner failures. The following production codes use T10's
+existing meanings; open response strings do not authorize inventing new codes.
+
+| Method | Applicable typed failure codes / result |
+|---|---|
+| `ListDevicesAsync` | Cached result without probing; `unknown` for an otherwise unclassified backend failure. No per-device busy/disconnection/timeout failure. |
+| `RefreshDevicesAsync` | Partial discovery result for driver timeouts (see below); `unknown` for a backend-wide failure that prevents returning a snapshot. No blanket `timeout` for discovery. |
+| `GetDeviceCapsAsync` | `not-found` for an unknown/already vanished route; `device-busy` when held; `disconnected` if it disappears during access; `timeout` for an unresponsive device; `permission` for OS access denial; `unknown` otherwise. |
+| `AcquireAsync` (including before page 0 and failures from `MoveNextAsync`/enumerator disposal) | `not-found`, `device-busy`, `disconnected`, `timeout`, `permission`, `unsupported-capability`, `invalid-settings`, `feeder-empty`, `paper-jam`, `cover-open`, `limits-exceeded`, or `unknown`, according to the cause. |
+| `DisposeAsync` | `unknown` for an otherwise unclassified backend resource-release failure; `PagesKept` is 0, and yielded pages remain valid. |
+
+For acquisition, an unknown route is `not-found`; loss of a device during access is `disconnected`.
+`unsupported-capability` means the selected device/source does not support a setting (R-J5), whereas
+`invalid-settings` means a well-formed but invalid value such as an unknown page-size ID, dimensions
+beyond `MaxAreaMm`, or resolution above the configured limit. A runtime resource-bound breach is
+`limits-exceeded`, not a capability mismatch. T11 owns malformed request rejection (`invalid-request`),
+pre-job validation/coercion and HTTP mapping; a failure after job creation is a job failure, not a new
+HTTP create response. Auth, job-state, export, and agent lifecycle errors remain upper-owner concerns.
 
 ## Lifetime, cancellation, and backpressure
 
@@ -61,6 +103,13 @@ owns discovery refresh coalescing for a backend instance: concurrent callers awa
 and receive equivalent immutable snapshots. The backend owns only this cache/coalescing and driver
 resources; the caller owns request/job authorization, identity, and any policy around refresh frequency.
 `GetDeviceCapsAsync` addresses one opaque route and does not create job state.
+
+The refresh bound comes from construction-time configuration matching T10's
+`limits.discoveryTimeoutSeconds`, not a new method parameter. A timed-out discovery driver keeps its
+last-known devices and is recorded in `Discovery.IncompleteDrivers`; other drivers' results still
+return normally. That timeout is incomplete discovery, not a blanket exception or caller cancellation.
+Backends do not own Zilo job state: `Device.Busy` may reflect observed external driver contention (or
+default false); T11 overlays active Zilo-job busy state on the returned immutable snapshot.
 
 `AcquireAsync` receives already-resolved `EffectiveSettings`; the upper job owner validates closed
 request enums/capabilities, applies defaults, and supplies mandatory positive `AcquisitionLimits`.
