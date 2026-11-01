@@ -1,28 +1,37 @@
 # Zilo wire contract, `/zilo/v1`
 
-**Status:** draft 2 (T10 ★, fix round r1). Claude wrote it under OD-2. Draft 1 got a GPT review
-(`docs/reviews/T10-r1.md`, 13 findings, verdict "changes"). This draft resolves all 13 and
-applies the agreed master positions in `docs/planning/DISCUSSION.md` ("[GPT] T10 r1 findings
-and master positions" and "[Opus] Agreement on GPT's T10 r1 master positions"). It is queued for
-GPT re-review and for approval by both masters, and it is not in force until both happen. See
-[r1 resolution](#r1-resolution) for the finding-by-finding map.
+**Status:** draft 3 (T10 ★, fix round r2). Claude wrote it under OD-2. Draft 1 got a GPT review
+(`docs/reviews/T10-r1.md`, 13 findings, verdict "changes"); draft 2 resolved them. Draft 2 got a
+bounded GPT re-review (`docs/reviews/T10-r2.md`, verdict "changes", 8 of 13 resolved, 5
+residual findings). This draft fixes the five r2 residuals as agreed in
+`docs/planning/DISCUSSION.md` ("[GPT] Second-review outcomes and bounded T10 fix positions" and
+"[Opus] Agreement on T10 r2 positions and the D-004a clarification", 2026-11-01), and adds two
+new master inputs that are not r2 findings: the agent-restart contract (§12) and the D-004a
+clarification. It is queued for GPT re-review and for approval by both masters, and it is not
+in force until both happen. See [r1 resolution](#r1-resolution) and [Fix r2](#fix-r2) for the
+finding-by-finding maps.
 
 **Normative files:** this file and [`openapi.yaml`](openapi.yaml). They bind the agent (GPT lane,
 T11/T20) and `@zilo/sdk` (FE lane, T13/T21). The schemas, paths and status codes are in the
 OpenAPI file. This file holds the rules that OpenAPI cannot express. If the two disagree, raise
 it as a contract bug; neither file wins silently.
 
-**Implements:** D-003, D-004, D-005, D-007, D-008 and D-010, and the provisional
-**D-004a (Proposed; GPT approval pending)** as amended by the agreed r1 master positions
-(§3.0). It also takes in the T05 hand-offs on branch `t05-design-spec`, and the SP-1a interim
-note (commit `8cbc264`), whose evidence the r1 review checked but which is not yet approved.
+**Implements:** D-003, D-004, D-005, D-007, D-008 and D-010, and **D-004a revision 2** (in force
+since 2026-11-01; both masters approved it as architecture, which is not approval of this
+contract), with its **2026-11-01 clarification** (minimal public `hello`, consent state through
+`GET /auth/consent`, authenticated per-process `instanceId`; Opus-approved, GPT approval
+pending) (§3.0). It also takes in the T05 hand-offs on branch `t05-design-spec`, and the SP-1a
+interim note (commit `8cbc264`), whose evidence the r1 review checked but which is not yet
+approved.
 
 **Markers:**
 - **[SP-1a]** marks a rule that depends on the SP-1a interim note. In the YAML it carries
   `x-zilo-source: SP-1a-interim (unreviewed)`.
-- **[D-004a]** marks a rule that depends on D-004a as amended, or on the agreed D-004
-  reconciliation of ownership and revocation (§3.2 to §3.4). Neither is in force yet. In the YAML
-  it carries `x-zilo-source: D-004a (pending GPT)`.
+- **[D-004a]** marks a rule that depends on D-004a revision 2, which records the agreed D-004
+  reconciliation of ownership and revocation (§3.2 to §3.4). In the YAML it carries
+  `x-zilo-source: D-004a rev 2 (in force)`. Rules that also depend on the 2026-11-01
+  clarification carry `x-zilo-source: D-004a clarification 2026-11-01 (GPT approval pending)`
+  as well.
 
 Both kinds are listed in [Unreviewed inputs](#unreviewed-inputs). A passing lint or this review
 does not remove a marker; the masters' approvals do.
@@ -32,8 +41,8 @@ directory outside the repo, runs pinned `openapi-typescript`, compiles the resul
 `tsc --strict`, and runs the schema and rule tests in `api/tests/` with pinned `yaml`, `ajv` and
 `ajv-formats`. The run is headless (OD-4).
 
-Rule IDs (`R-…`) are stable, so tests and reviews can cite them. Draft 2 adds IDs; it renumbers
-none.
+Rule IDs (`R-…`) are stable, so tests and reviews can cite them. Drafts 2 and 3 add IDs; they
+renumber none. Draft 3 adds R-X7, R-L5 and R-R1 to R-R3.
 
 ---
 
@@ -54,10 +63,11 @@ A **breaking change** is any of the following:
 - `HelloPublic`: `product` (`"zilo"`), `scope: public`, `protocol` and `capabilities[]`. It
   **must not** carry `version`, `os`, `arch`, `instanceId` or `limits`; the schema forbids them,
   so the pre-auth disclosure boundary is machine-checkable. Unknown additional fields are
-  tolerated. **[D-004a]**
+  tolerated. It stays **minimal**: it carries no consent state. The calling origin's consent
+  state comes only from `GET /auth/consent` (§3.1). **[D-004a]** (clarification of 2026-11-01)
 - `HelloFull`: the same, with `scope: full`, plus `version` (SemVer), `os`, `arch`,
   `instanceId` and `limits`, **all required**. Only a valid bearer token of an *allowed* origin
-  gets it.
+  gets it. `instanceId` is the per-process restart marker of §12; it never appears pre-auth.
 
 `protocol` is `{min, max}` in `major.minor` form. Both majors equal the path version, and
 `min <= max` in numeric order. The minor counts additive changes. An invalid token on `hello`
@@ -83,8 +93,12 @@ The tolerance is in the schemas, not in an annotation:
 - Requests use the closed `…Known` enums, so request validation stays strict (R-V5).
   `ScanSettings` (request) and `RequestedSettings` (its echo in responses) are separate schemas
   for that reason.
-- Two response discriminators are **closed** on purpose, so generated types narrow:
+- **Exactly two** response discriminators are **closed** on purpose, so generated types narrow:
   `Hello.scope` and the `type` of a known event in `JobEvent`.
+- Every other response union is **open**. The one other discriminated response union,
+  `SourceCaps.resolutions` (`ResolutionCaps`), discriminates on `kind`: `list` and `range` are
+  validated strictly, and any other `kind` validates as `ResolutionUnknown`. The client applies
+  the safe fallback of R-D4 instead of rejecting the caps response.
 - SSE `data` lines are decoded in two steps. Step 1, `JobEventEnvelope`, accepts any `type`.
   Step 2, `JobEvent`, is applied only to known types. This is the explicit known-event decoding
   boundary; unknown events never reach step 2.
@@ -137,22 +151,45 @@ gets `403 host-denied`, a problem+json body and **no CORS headers**, on **every*
 `OPTIONS` included. This check runs before any other (§2.1). The allowlist itself is D-004.
 **[SP-1a]** The `host-denied` response shape comes from the interim note.
 
-**R-T3 Origin classes.** The agent classifies the request `Origin` as one of:
+**R-T3 Origin classes.** The agent first serialises the request `Origin` (scheme, lower-case
+host with punycode for IDN, IP literals in their canonical serialised form, and port with the
+default port elided), then classifies the host, then the origin.
+
+**Loopback host classification.** A serialised host is **loopback** when it is any of:
+- `localhost`, or any name ending in `.localhost` (RFC 6761; browsers resolve them to loopback);
+- an IPv4 literal in `127.0.0.0/8`, or the unspecified `0.0.0.0`;
+- the IPv6 literal `[::1]`, the unspecified `[::]`, or an IPv4-mapped literal
+  `[::ffff:127.x.y.z]` or `[::ffff:0.0.0.0]` (serialised by the browser as `[::ffff:7f00:1]` and
+  similar; the agent compares the parsed address).
+
+The classification uses only the serialised host, for **every scheme**: `https://localhost:8443`
+and `https://127.0.0.1:8443` are loopback exactly like their `http` forms. The agent does not
+resolve DNS for this check.
 
 | Class | Definition |
 |---|---|
 | *absent* | No `Origin` header (non-browser, or a same-origin GET). |
-| *ineligible* | `null`, opaque, malformed, or a non-`https` scheme. |
-| *dev-eligible* | `http://127.0.0.1:*`, `http://localhost:*` or `http://[::1]:*`, **only** while the agent runs with its dev flag. Otherwise these are *ineligible*. **[D-004a]** |
-| *eligible* | A well-formed `https://host[:port]` origin, compared as an exact serialised origin. |
-| *allowed* | *Eligible*, and either consented (state `granted`) or installer-baked. Loopback origins are **never** allowed, dev flag or not. **[D-004a]** |
+| *ineligible* | `null`, opaque, malformed, a non-`https` scheme on a non-loopback host, or **any loopback origin** (any scheme, any port) while the dev flag is off. |
+| *dev-eligible* | A loopback origin with scheme `http` or `https`, **only** while the agent runs with its dev flag. Otherwise it is *ineligible*. **[D-004a]** |
+| *eligible* | A well-formed `https://host[:port]` origin whose host is **not loopback**. |
+| *allowed* | *Eligible*, and either consented (state `granted`) or installer-baked. A loopback origin is never *eligible*, so it is **never** allowed, dev flag or not. **[D-004a]** |
 
-Origins are compared as exact serialised origins: scheme, lower-case host (punycode for IDN) and
-port, with the default port elided.
+After classification, origins are compared as **exact serialised origins**: the consent
+record, the baked list, the token's bound origin and the CORS reflection all use the same
+serialised form, so `https://app.example.com` and `https://app.example.com:443` are the same
+origin and `https://App.Example.com` is serialised to it.
 
-The dev flag grants **pre-auth diagnostics only** (D-004a amendment). A *dev-eligible* origin
-can read `GET /hello` (always `scope: public`) and `GET /auth/consent` (always `none`). It never
-triggers a prompt, never gets a token, and never reaches a protected endpoint.
+**Installer-baked loopback origins** are rejected when the agent loads its configuration: the
+agent logs the rejected entry and does not treat it as baked. A baked list can therefore never
+make a loopback origin allowed.
+
+The dev flag grants **pre-auth diagnostics only** (D-004a), for loopback `http` and `https`
+origins alike. A *dev-eligible* origin can read `GET /hello` (always `scope: public`) and
+`GET /auth/consent` (always `none`) with CORS. It never triggers a prompt
+(`POST /auth/consent` answers `403 unauthorized-origin`, without CORS per R-T4), never gets a
+token (`POST /auth/token` answers the same), and never reaches a protected endpoint (§2.1
+step 4). With the dev flag off, a loopback origin is *ineligible* on every endpoint and
+gets no CORS at all, including on `GET /hello` and the consent endpoints.
 
 **R-T4 Exact-origin CORS.** When CORS applies, the response carries:
 - `Access-Control-Allow-Origin: <the request Origin, exactly>`, never `*`;
@@ -247,7 +284,9 @@ response says the same. R-A13 tells the SDK how to recognise that case.
 
 These amendments are binding inputs of this draft. Masters record them in D-004a and D-004.
 1. Tokens and consent are for an **exact serialised eligible HTTPS origin** only.
-2. `null`, opaque and loopback origins **never** receive tokens, with or without the dev flag.
+2. `null`, opaque and loopback origins (any scheme, per the R-T3 loopback host
+   classification) **never** receive tokens, with or without the dev flag. With the dev flag
+   off they get no CORS either; ordinary HTTPS eligibility excludes loopback hosts.
 3. The **dev flag** grants pre-auth diagnostics only (R-T3).
 4. Native consent stays, with bounded global and per-origin prompt budgets (R-A4), bounded
    retained bookkeeping (R-A14, R-L4), and bounded token issuance and renewal (R-A9, R-A11).
@@ -281,7 +320,7 @@ item 5 that is not a server control. `GET` never prompts.
 | A per-origin or global prompt rate limit is hit | `429 rate-limited` | `Retry-After`. |
 | Denied, cool-down running | `403 consent-denied` | `Retry-After` and `retryAfterSeconds` give the cool-down left. |
 | Blocked from the tray ("Block this site") | `403 consent-denied` | `blocked: true`, no `Retry-After`. The agent never prompts again. |
-| Origin absent, ineligible or dev-eligible | `403 unauthorized-origin` | No CORS for absent or ineligible origins. |
+| Origin absent, ineligible or dev-eligible (any loopback origin, R-T3) | `403 unauthorized-origin` | No CORS: `POST /auth/consent` reflects only *eligible* origins (R-T4). |
 
 `ConsentStatus` makes the state-dependent fields required: `pending` requires
 `pollAfterSeconds` and `promptExpiresAt`, `denied` requires `retryAfterSeconds`, `granted`
@@ -351,10 +390,10 @@ renewed from it. It has a `familyId` (not a credential) and an absolute deadline
 `familyExpiresAt = issuance + limits.familyMaxSeconds` (default 24 h).
 - **Ownership:** jobs belong to the origin and the family (R-J1). Renewal keeps the family, so
   jobs and pages survive rotation.
-- **Shared tabs:** tabs of one app share jobs by sharing the family's current token through the
-  SDK's shared same-origin storage (R-A15). This is not origin-wide access: separately issued
-  families of the same origin stay isolated from each other, and there is no per-tab scan
-  session.
+- **Shared tabs:** tabs of one app share jobs by sharing each family's current token through
+  the SDK's shared same-origin storage, indexed by family (R-A15). This is not origin-wide
+  access: separately issued families of the same origin stay isolated from each other, and
+  there is no per-tab scan session.
 - **The bridge** (S2, if ever approved) keeps its own session boundary (§11); it is not a token
   family.
 - **A family ends** on any of these:
@@ -366,15 +405,19 @@ renewed from it. It has a `familyId` (not a credential) and an absolute deadline
   When a family ends, every protected operation with its tokens is denied at once, its open
   event streams close, its active jobs are cancelled, and its jobs and pages are deleted
   physically within `limits.revocationCleanupSeconds` (agent exit: by the startup sweep,
-  R-L3). Only revocation is reported as `token-revoked`; the other ends make the tokens
-  `token-invalid` (R-A10).
+  R-L3). Until they are actually freed, they keep their physical reservations (R-L5). Only
+  revocation is reported as `token-revoked`; the other ends make the tokens `token-invalid`
+  (R-A10).
 - **Bounds:** an origin may hold `limits.maxFamiliesPerOrigin` live families (default 16), and
   the agent `limits.maxFamiliesTotal` (default 64). A new issuance beyond the per-origin bound
   revokes (R-A12) the least recently used family of that origin **that has no non-disposed
   job**. If there is none, or the global bound is reached, the call returns
   `429 limits-exceeded` with `limit.name`. One origin never evicts another origin's family.
-- `Job.expiresAt` is never later than the owning family's `familyExpiresAt`. An SDK that is near
-  the family deadline should start a new family before a new scan, or accept the shorter
+- `Job.expiresAt` is never later than the owning family's `familyExpiresAt`. The SDK's
+  rollover rule (R-A15) is deterministic: it starts a new family for a **new scan** when the
+  current family's token is **final** (its `expiresAt` equals `familyExpiresAt`), and it keeps
+  the old family's credential for the old family's jobs until they are disposed or the family
+  ends. Before the token is final, a new scan uses the current family and gets the shorter
   deadline that `Job.expiresAt` shows.
 
 ### 3.3 Presenting and renewing
@@ -387,12 +430,17 @@ Failures distinguish an **obsolete credential** from **revoked access**:
   the token is unknown (for example after an agent restart); it belongs to another origin; it
   expired; it was superseded and its grace is over; or its family lapsed or reached its
   deadline. The agent does not say which. **It says nothing about pages.** The SDK recovers
-  silently:
-  1. it re-reads its shared storage, and if another tab stored a different current token, it
+  silently. Let F be the family whose credential the failed request used (R-A15):
+  1. it re-reads its shared storage, and if another tab stored a different token **for F**, it
      retries the request once with it;
-  2. otherwise it acquires a token as in R-A15 (a new family, if needed) and retries once;
-  3. a job it was tracking that is then `404 not-found` is gone for this caller; the SDK reports
-     it with the `not-found` copy, never with "your pages were deleted" from the 401 itself.
+  2. otherwise, for a request that is not about an existing job (devices, caps, full `hello`,
+     a new scan), it acquires a token for the current family as in R-A15 (a new family, if the
+     rollover rule says so) and retries once. For a request about a job of F, a new family
+     cannot help (R-J1), so it does not retry; it drops F's entry and goes to step 3;
+  3. a job it was tracking that is then unreachable (`404 not-found`, or its family's
+     credential is gone) is gone for this caller. The SDK reports it with the `not-found` copy,
+     or as `agent-restarted` when §12 applies, never with "your pages were deleted" from the
+     401 itself.
 - `401 token-revoked`: the token's family was **revoked** (R-A12). Access to its jobs ended at
   once; physical deletion follows within the bound. The SDK shows the T05 `token-revoked` copy,
   which must say that **access was revoked**, not that pages were erased.
@@ -410,9 +458,13 @@ its successor in the **same family**: jobs and pages stay.
 - The old token stays valid for `limits.tokenRenewGraceSeconds` (default 60 s, at most 300 s)
   after the renewal, never past its own `expiresAt`, so in-flight requests can finish. A token
   in its grace cannot be renewed.
-- Renewal never extends the family past `familyExpiresAt`. When the current token already
-  expires at `familyExpiresAt`, renewal returns `409 invalid-state`. The client then starts a new
-  family with `POST /auth/token`; the new family starts without jobs.
+- Renewal never extends the family past `familyExpiresAt`. A token whose `expiresAt` equals
+  `familyExpiresAt` is **final**: renewal returns `409 invalid-state`. The final token stays
+  valid until its `expiresAt`, so the family's jobs stay reachable with it until the deadline.
+  The SDK tells this 409 from the concurrent-renewal 409 by its own record (the stored token is
+  final). It then applies the rollover rule of R-A15: new scans go to a new family started
+  with `POST /auth/token` (which starts without jobs), and the old family's credential stays in
+  storage for the old jobs.
 - Bound: with `renewAfter` at three quarters of the lifetime and one successor per token, a
   family renews at most `ceil(familyMaxSeconds / (0.75 × tokenTtlSeconds))` times (32 with the
   defaults).
@@ -432,7 +484,14 @@ gets `401 token-revoked` from then on, every open event stream of the family is 
 without a further event, and active jobs are cancelled. **Physical cleanup** of pages and temp
 files completes within `limits.revocationCleanupSeconds` (default 60 s). Copy, retention (R-L2)
 and quotas describe this same choice: access is revoked now; the bytes are gone within the
-bound. Revoked jobs count against no quota from the moment of revocation.
+bound.
+
+Quotas distinguish **logical ownership quotas** from **physical reservations** (R-L5). From the
+moment of revocation, revoked jobs leave every logical quota (per-family and per-origin
+counts). Their physical reservations, meaning stored and staging bytes, still-running export
+workers, a device that has not yet stopped, and job records, stay counted in the agent's
+global accounting until the resource is **actually** freed. Revocation itself is never delayed
+for accounting: denial and stream close stay immediate.
 
 **R-A13 Detecting removal.** Once the site is removed, the origin is no longer *allowed*, so
 protected endpoints answer `403 unauthorized-origin` without CORS (§2.1 step 4) and the SDK sees a
@@ -460,26 +519,66 @@ A baked site that is reset stays allowed, so it gets a readable `401 token-revok
 - Request rate-limit counters live in a fixed-size table. Evicting a counter can only make the
   agent more permissive, never deny a valid request.
 
-**R-A15 Shared-tab coordination (SDK obligations).** These rules bind `@zilo/sdk` (T13/T21).
-- The SDK keeps one record per origin, `{token, familyId, expiresAt, renewAfter,
-  familyExpiresAt}`, in storage shared by the app's same-origin tabs. Choosing that storage
-  mechanism and reviewing its security is T13's job; this contract does not approve a
-  browser-storage technology.
-- **Acquisition** and **renewal** run under cross-tab mutual exclusion. The tab holding the
-  exclusion re-reads storage first, acts only if storage still holds the token it saw, and
-  writes the result to storage before releasing. Two tabs therefore never start two families
-  by accident.
+**R-A15 Shared-tab coordination and family rollover (SDK obligations).** These rules bind
+`@zilo/sdk` (T13/T21).
+- **Family-indexed credentials.** The SDK keeps, per origin, in storage shared by the app's
+  same-origin tabs:
+  - a **map** `familyId → {token, expiresAt, renewAfter, familyExpiresAt}`, holding each
+    family's current token;
+  - a **current-family pointer** `current: familyId`, naming the family used for new scans and
+    for requests that are not about an existing job;
+  - for each job it tracks, the job's `familyId` (and the `instanceId` of §12).
+
+  Choosing that storage mechanism and reviewing its security is T13's job; this contract does
+  not approve a browser-storage technology.
+- **Per-job family selection.** Every request about a job (events, pages, export, cancel,
+  dispose, `GET /jobs/{id}`) uses the credential of **that job's family**, never the current
+  family's. `GET /jobs` is issued per family and the results are merged.
+- **Renewal** applies to every family in the map that has a token, not just the current one: a
+  non-final token is renewed from its `renewAfter`. Renewal never changes the pointer.
+- **Rollover rule (deterministic).** The SDK starts a new family with `POST /auth/token`, and
+  moves `current` to it, only when one of these holds at the moment it needs the current family:
+  1. there is no current entry, or the current entry is unusable (its family ended, or its
+     token expired or was answered `401` and re-reading storage found no other token for it);
+  2. it is about to **create a new scan** and the current token is **final** (`expiresAt` equals
+     `familyExpiresAt`; renewal would return `409`).
+
+  It never starts a new family to reach an existing job, and never because of a `409` alone. A
+  new family never replaces another family's entry: the old entry stays in the map.
+- **Removing an entry.** An entry other than `current` is removed when its family ended (its
+  token got `401` and storage holds no other token for it, its `familyExpiresAt` passed, or it
+  got `token-revoked`), or when the SDK no longer tracks any non-disposed job of it. The current
+  entry is replaced only by the rollover rule.
+- **Bound.** The map holds at most `limits.maxFamiliesPerOrigin` entries (default 16), the same
+  bound the agent enforces. In normal use it holds one or two: a family lives up to
+  `familyMaxSeconds` and the rollover rule starts a new one only when the current token is
+  final. When the map is full, the SDK removes entries without tracked jobs first; if every
+  entry still has tracked jobs, the new issuance meets the agent's own bound (R-A9: eviction of
+  a family without non-disposed jobs, else `429 limits-exceeded`), and the SDK surfaces that
+  error rather than dropping an entry that still owns jobs.
+- **Mutual exclusion.** Acquisition, renewal and pointer moves run under cross-tab mutual
+  exclusion. The tab holding the exclusion re-reads storage first, acts only if storage still
+  holds the token (or pointer) it saw, and writes the result to storage before releasing. Two
+  tabs therefore never start two families by accident: the second tab finds the pointer already
+  moved and uses the new family.
 - A tab that gets `409 invalid-state` from renewal, or `401 token-invalid`, re-reads storage
   before doing anything else (R-A10).
-- The SDK starts a new family only when storage holds no usable token of a live family.
 - If a tab dies between receiving a successor and storing it, the family can lapse. That loses
   access to its jobs, which the SDK then reports as in R-A10 step 3. This is accepted.
+
+Worked example (two tabs, defaults): family F1 was issued 23 h 30 min ago, so its current
+token, issued now, is final (`expiresAt` = `familyExpiresAt`, 30 min away). Tab A has a live
+job J1 of F1. Tab B starts a new scan: under the exclusion it sees the final token, starts F2,
+moves `current` to F2, and keeps the F1 entry. Tab A's renewal of the F1 token returns `409`;
+A re-reads storage, sees the token is final, and keeps using it for J1 until F1's deadline.
+Tab A's next new scan uses F2 from the pointer, without issuing a third family. J1 stays
+reachable for the full 30 minutes, not just until the final token's `renewAfter`.
 
 **R-A16 Long-lived streams.** An event stream is authenticated when it opens and is then bound to
 the token **family**, not to that token. Renewal and the expiry of the token that opened it do
 not affect an open stream. Revocation or the end of the family closes it at once (R-A12).
-On reconnect the client presents its current token, so a closed stream surfaces the reason as a
-401 (`token-revoked` or `token-invalid`).
+On reconnect the client presents the current token of the **job's family** (R-A15), so a closed
+stream surfaces the reason as a 401 (`token-revoked` or `token-invalid`).
 
 ---
 
@@ -508,8 +607,16 @@ devices** (T05 scan-dialog: routes are not merged).
 **R-D4 Caps.** `GET /zilo/v1/devices/{id}/caps` returns one `SourceCaps` per source the device
 offers. Each one gives:
 - `source`: `flatbed`, `feeder` or `duplex`;
-- `resolutions`: a list, or a `{min, max, step}` range whose values are `min + k × step` up to
-  `max`;
+- `resolutions`: a list (`kind: list`), or a `{min, max, step}` range (`kind: range`) whose
+  values are `min + k × step` up to `max`. `kind` is an **open** discriminator (R-V4): a future
+  agent may send another `kind`, which validates as `ResolutionUnknown`. **Safe fallback:** a
+  client that does not know the `kind` treats the source's resolution capability as
+  unsupported. It offers only `defaults.resolution` (always present), omits `resolution` from
+  the scan request so the agent applies that default (R-J7), and still uses every other field
+  of the caps. It never rejects the caps response, and never guesses values from the unknown
+  payload. A new `kind` is an additive change (R-V3) advertised by a capability flag; an agent
+  that has it sends it to every client, and clients that do not know it apply this fallback. A
+  v1.0 agent sends only `list` or `range`;
 - `colorModes` (`color`, `gray`, `bw`);
 - `pageSizes`, **at least one**: IDs plus portrait millimetres, each fitting within `maxAreaMm`
   as given. When the driver lists none, the agent lists `max`, the whole `maxAreaMm`;
@@ -864,7 +971,9 @@ The response carries:
   after any failure, do partial exports and export many times in any format. The same explicit
   selection always yields the same decoded content.
 - A failure returns `500 export-failed` (retryable), and the pages stay.
-- An active job may export the pages in its snapshot.
+- An active job may export the pages in its snapshot. Such an export is always
+  non-destructive: the wire refuses `deleteAfterExport` on it (R-X5), and the SDK never deletes
+  after it (R-X7).
 - These retry guarantees do **not** cover `deleteAfterExport: true` (R-X5).
 
 **R-X5 `deleteAfterExport` is receipt-ambiguous** (opt-in, default false).
@@ -879,11 +988,47 @@ The response carries:
   headers they answer `404 not-found`; after, their connection closes early (a short body).
 - **SDK flow (normative for `@zilo/sdk`):** the SDK **never** sends `deleteAfterExport: true`,
   on the first page of a batch or anywhere else. Its "export and delete" is
-  **receive-then-DELETE**: export non-destructively (one request for PDF/TIFF, one per page for
-  JPEG/PNG), receive every body completely and verify its length, then `DELETE /jobs/{id}`. If
-  any export fails, it does not delete, and the caller can retry.
+  **receive-then-DELETE** behind a **settled acquisition boundary** (R-X7): settle the job
+  first, then export non-destructively (one request for PDF/TIFF, one per page for JPEG/PNG),
+  receive every body completely and verify its length, then `DELETE /jobs/{id}`. If any export
+  fails, it does not delete, and the caller can retry.
 - The wire flag stays for clients that accept the ambiguity in exchange for one round trip
   (D-004 opt-in).
+
+**R-X7 Settled acquisition boundary for export-and-delete (normative for `@zilo/sdk`).** An
+active job can still acquire pages while an export renders or transfers, so receive-then-DELETE
+on an active job could delete a page that the export did not contain. The SDK therefore:
+1. **Settles first.** Its export-and-delete operation starts only on a **terminal** job
+   (`completed`, `failed` or `cancelled`). On an active job (`queued`, `scanning`) it does one
+   of two things, chosen by the caller:
+   - by default it **refuses** (no request is sent, nothing is deleted) and reports that the job
+     is still scanning;
+   - when the caller explicitly asks it to stop the scan, it sends `POST /jobs/{id}/cancel`
+     **without** `discardPages` (pages kept, R-J2) and waits until the job is terminal: a
+     `done` event, or `GET /jobs/{id}` showing a terminal state.
+2. **Fixes the selection after settlement.** Only once the job is terminal does it read the
+   page list (`GET /jobs/{id}/pages`, or `done.pageCount`) and build the export requests. A
+   terminal job acquires no more pages, so the agent's selection snapshot (R-X1) equals the
+   settled page set.
+3. **Never deletes a page silently.** With `pages` omitted, every settled page is exported, so
+   the DELETE removes only exported pages. With an explicit selection, unselected pages are
+   deleted only as an **intentional discard**: the caller built the selection from a page list
+   that includes every settled page. If the settled job has a page the caller's selection did
+   not consider (an index at or beyond the page count the caller had seen, such as a page
+   acquired while the caller was choosing), the SDK exports but does **not** DELETE, and
+   reports the extra pages so the app can show them.
+4. Then receives and verifies every body, and only then sends `DELETE /jobs/{id}` (R-X5).
+
+Explicit discard stays explicit: `DELETE`, cancel with `discardPages: true`, and the
+receipt-ambiguous wire flag on a terminal job keep their own semantics (R-J2, R-J3, R-X5).
+
+Acceptance vector (SDK conformance, T13/T21; no SDK runtime is claimed here): a feeder job is
+`scanning` with pages 0 to 2. The caller asks for export-and-delete without stopping: the SDK
+refuses, sends nothing and deletes nothing. The caller asks again with stop: the SDK cancels
+with pages kept; page 3 is stored before the device stops; `done{cancelled, pageCount: 4}`
+arrives; the SDK exports pages 0 to 3, verifies the body, and only then deletes. A caller
+whose explicit selection was built from pages 0 to 2 gets the export, no DELETE, and a report
+of page 3.
 
 **R-X6 Limits.**
 - An output larger than `limits.maxExportBytes` (default 1 GiB) returns `413 limits-exceeded`
@@ -893,6 +1038,9 @@ The response carries:
 - Export staging and output files count against `limits.maxStoreBytes` with the stored pages. If
   staging an export would exceed it, the call returns `429 limits-exceeded`
   (`limit.name: maxStoreBytes`, retryable once other exports finish or jobs are disposed).
+- `maxConcurrentExportsTotal` and `maxStoreBytes` are physical reservations (R-L5): an aborted
+  export (dispose, revocation, family end) holds its worker slot and its staging bytes until
+  the worker has actually stopped and the files are deleted.
 
 ---
 
@@ -967,7 +1115,7 @@ The code list below is **frozen for the T05 alignment**: r1 added no code and re
 | `disconnected` | 503 | yes | The device disappeared. Pages are kept. | `disconnected` ✔ |
 | `permission` | 403 | no | The OS denies device access (ACL, group, policy). Never used for browser blocking. | `permission` ✔ |
 | `export-failed` | 500 | yes | Rendering failed. Pages are kept. | `export-failed` ✔ |
-| `limits-exceeded` | 413 (size, pages, pixels, duration, store) or 429 (concurrency quota, export staging) | no for 413, yes for 429 | A resource bound was hit (§10). For a job, the pages already scanned are kept. | `limits-exceeded` ✔ |
+| `limits-exceeded` | 413 (size, pages, pixels, duration, store) or 429 (concurrency quota, export staging, reservations pending cleanup, R-L5) | no for 413, yes for 429 | A resource bound was hit (§10). For a job, the pages already scanned are kept. | `limits-exceeded` ✔ |
 | `agent-unavailable` | 503 | yes | The agent is starting, updating or shutting down. | **new** |
 | `unknown` | 500 | yes | Any other failure. | `unknown` ✔ |
 
@@ -1004,7 +1152,7 @@ operation's declaration is **never** permission to skip the guard that produces 
 | Pixels per page | 150 MP | `422 invalid-settings` at create if predictable, else job failure |
 | Resolution | 1200 dpi | `422 invalid-settings` |
 | Stored bytes per job | 2 GiB | Job failure `limits-exceeded`, pages kept |
-| Stored bytes of the user: pages **and** export staging/output | 8 GiB | New jobs get `413 limits-exceeded`; active jobs fail with pages kept; a new export gets `429 limits-exceeded` |
+| Stored bytes of the user: pages **and** export staging/output, **including bytes pending cleanup** (R-L5) | 8 GiB | New jobs get `413 limits-exceeded`, or `429 limits-exceeded` (retryable, `Retry-After`) when bytes pending cleanup would free enough; active jobs fail with pages kept; a new export gets `429 limits-exceeded` |
 | Export size | 1 GiB | `413 limits-exceeded` |
 | Concurrent exports | 2 per family, 4 in total | `429 limits-exceeded` |
 | Scan duration per job | 30 min | Job failure `limits-exceeded`, pages kept |
@@ -1029,7 +1177,7 @@ operation's declaration is **never** permission to skip the guard that produces 
 | Terminal job | Disposed after **60 min idle** (no request touches it), **8 h** after creation, or at the family's end, whichever comes first. `Job.expiresAt` gives the current deadline. |
 | Active job | Bound by the scan-duration limit, not the TTL; cancelled at the family's end |
 | Tombstone | 300 s, possibly less under R-L4 |
-| Revoked family's pages | Access denied at once; physically deleted within 60 s (`revocationCleanupSeconds`) |
+| Revoked family's pages | Access denied at once; physically deleted within 60 s (`revocationCleanupSeconds`); counted in `maxStoreBytes` until deleted (R-L5) |
 | Revoked-token hash | Until that token's `expiresAt`, bounded by R-A14 |
 | Consent grant | Until removed in the tray |
 | Denial cool-down | 10 min, doubling, capped at 24 h (R-A4) |
@@ -1058,6 +1206,36 @@ multiply without end:
   one `progress` event.
 - Auth and consent records are bounded by R-A14.
 
+**R-L5 Logical quotas versus physical reservations.** Every bound in R-L1 and §5.4 is one of
+two kinds:
+
+| Kind | Bounds | Released |
+|---|---|---|
+| **Logical ownership quota** | `maxJobsPerFamily`, `maxActiveJobsPerOrigin`, `maxConcurrentExportsPerFamily`, `maxFamiliesPerOrigin`, `maxFamiliesTotal`, `maxEventStreamsPerJob`, `maxEventStreamsTotal` (streams close at once) | At the moment of revocation or family end. |
+| **Physical reservation** | `maxStoreBytes` (page, staging and output bytes), `maxConcurrentExportsTotal` (running export workers), one active job per device (until the device has stopped), `maxJobRecordsTotal` (records pending cleanup) | Only when the resource is actually freed: the files are deleted, the worker has stopped, the device has stopped, the record is gone. |
+
+Consequences:
+- **Conservation.** At every instant, all page, staging and output bytes on disk, live or
+  pending cleanup, total at most `maxStoreBytes`; running export workers number at most
+  `maxConcurrentExportsTotal`. A revoke-and-refill burst cannot exceed either: the cleanup
+  backlog is inside the bound, not beside it.
+- **Retryable denial during cleanup.** If a new job or export is refused only because of
+  reservations that are pending cleanup, the answer is `429 limits-exceeded` with the
+  reservation's `limit.name`, `retryable: true` and `Retry-After` at most the remaining
+  `revocationCleanupSeconds`. A refusal the cleanup cannot cure keeps its R-L1 status.
+- **Cleanup is bounded.** The agent completes physical cleanup within
+  `revocationCleanupSeconds`; a reservation never outlives that bound plus the time the device
+  or worker needs to stop.
+- **Revocation is not delayed.** Denial (`token-revoked`), stream close and job cancellation
+  stay immediate (R-A12); only the accounting waits for the physical release.
+
+Acceptance vector (defaults; T11 conformance): family F1 fills the store to 8 GiB and has 4
+exports running; F1 is revoked. Immediately, F1's tokens get `401 token-revoked`. A new family
+F2 that creates a job or starts an export gets `429 limits-exceeded`
+(`maxStoreBytes` or `maxConcurrentExportsTotal`, `Retry-After` ≤ 60 s) until F1's files are
+deleted and its workers stopped. After that, F2 can fill the store again. Bytes on disk never
+exceed 8 GiB at any point.
+
 ---
 
 ## 11. Safari path (placeholder)
@@ -1081,6 +1259,63 @@ shapes are evidence, not contract. When a Safari path is approved, it is added u
 above, with its own security rules: D-003 S2 properties, consent bound to the opener origin
 (D-004), and **its own session boundary**, separate from token families (§3.2). No pre-auth or
 arbitrary bridge token minting is allowed (§3.0).
+
+---
+
+## 12. Agent restart (lost-session contract) [new master input]
+
+This section is a **new master input** for draft 3 (DISCUSSION, 2026-11-01: PLAN v3 rev 3.1
+crash recovery, agreed by both masters as a direction). It is not a fix of an r2 finding. Its
+exact wire and SDK semantics still need both masters' contract approval. Its `instanceId`
+placement depends on the D-004a clarification of 2026-11-01 (GPT approval pending).
+
+**R-R1 `instanceId`.** `HelloFull.instanceId` is an opaque random value of at least 128 bits,
+chosen when the agent process starts and kept for the life of that process. Every start
+(crash, supervisor relaunch, update, login) chooses a new value. It is never derived from the
+machine, the user or the install, so it is not a stable identifier.
+- It appears **only** in the authenticated `HelloFull`. `HelloPublic` forbids it (R-V2), so it
+  adds no pre-auth fingerprint. **[D-004a]** (clarification of 2026-11-01)
+- It is not a credential and grants nothing.
+
+**R-R2 Ephemeral jobs; what the wire says after a restart.** Jobs, pages, events and token
+families live only in the agent process; there is **no durable job or document store**. When
+the process exits, they end (R-A9 item 4), and the next process deletes the leftover files at
+startup (R-L3). After a restart:
+- every old token is unknown, so it gets `401 token-invalid` (R-A10);
+- every old job ID is unknown, so any request about it, with any valid token, gets the typed
+  `404 not-found` problem (R-J1). Job IDs are random and never reused, so an old ID never names
+  a new job;
+- the agent sends **no** event, problem code or other wire signal about the restart. The only
+  wire signal is the changed `instanceId`.
+
+**R-R3 SDK-local `agent-restarted` (normative for `@zilo/sdk`).**
+- **Recording.** Before it creates its first job with a family's credential, the SDK reads the
+  full `hello` with that credential and records the `instanceId`. Each job it tracks stores
+  the `instanceId` current at its creation, next to its `familyId` (R-A15).
+- **Detection.** The SDK compares instance IDs whenever it reads a full `hello`, and at least on
+  every recovery path: a transport failure, a dead event stream (R-E6), or `401 token-invalid`.
+  On those paths it re-acquires a credential as in R-A10 (a granted origin keeps its consent
+  across restarts, R-A6, so no prompt appears) and reads the full `hello`.
+- **Classification.** When the observed `instanceId` differs from a tracked job's recorded one,
+  the SDK marks that job **`agent-restarted`**: the job and its pages are gone, and the outcome
+  is **retryable** in the R-ER3 sense: the user can scan again. This classification takes
+  precedence over the `not-found` copy for such jobs. The SDK drops every family entry it held
+  (R-A15), because those families ended with the old process.
+- **SDK-local only.** `agent-restarted` is an SDK outcome code, not a wire code: it is not in
+  `ErrorCodeKnown` (whose list stays frozen), never appears in an SSE event, a `done` payload or
+  a problem body, and the SDK must not present it as if the agent had reported it.
+- **No automatic rescan.** "Retryable" never means "retry automatically" (R-ER3). The SDK never
+  starts a new scan, re-sends a job, or re-runs an export on its own after `agent-restarted`; it
+  surfaces the outcome, and the app or the user decides.
+- **Unknown job, same instance.** A tracked job that gets `404 not-found` while the
+  `instanceId` is unchanged is reported as `not-found` (R-A10 step 3), not `agent-restarted`.
+
+Acceptance vector (SDK conformance, T13/T21): the SDK tracks jobs J1 (completed) and J2
+(scanning), both recorded under instance `A`. The agent restarts. The event stream of J2 dies;
+the SDK's request gets `401 token-invalid`; it acquires a new family, reads `hello` with
+`instanceId: B`, marks J1 and J2 `agent-restarted` (retryable), drops the old family entries,
+sends no scan or export request on its own, and shows the restart outcome. A request about J1
+with the new token would get `404 not-found`.
 
 ---
 
@@ -1112,14 +1347,22 @@ not-yet-allowed origin, and DELETE, `Last-Event-ID`, `If-None-Match` and the 600
 preflight, are contract design (D-004a or this file), not browser observations of the interim
 stub.
 
-**B. D-004a (Proposed; GPT approval pending), with the agreed r1 amendments and the D-004
-reconciliation.** In the YAML: `x-zilo-source: D-004a (pending GPT)`.
+**B. D-004a revision 2 (in force since 2026-11-01) and its 2026-11-01 clarification (GPT
+approval pending).** Revision 2 records the agreed r1 amendments and the D-004 reconciliation;
+both masters approved it as architecture, which is not approval of this contract. The
+clarification (minimal `HelloPublic`, consent state through `GET /auth/consent`, authenticated
+per-process `instanceId`) is Opus-approved only. In the YAML: `x-zilo-source: D-004a rev 2 (in
+force)`, plus `x-zilo-source: D-004a clarification 2026-11-01 (GPT approval pending)` on
+`getHello`, `getConsent`, `Hello`, `HelloPublic` and `HelloFull`. Draft 2's "pending GPT"
+wording for revision 2 is reconciled here; the markers stay until both masters approve the
+contract.
 
 | Rule | What depends on it |
 |---|---|
 | §3.0 | The amendment list itself |
-| R-V2, §1.3 | Public versus full `hello`, as separate schemas |
-| R-T3 | The *eligible* and *dev-eligible* classes; the dev flag as diagnostics only; "loopback never allowed" |
+| R-V2, §1.3 | Public versus full `hello`, as separate schemas; minimal public `hello` with consent state only from `GET /auth/consent` (clarification) |
+| R-R1, §12 | `instanceId` in the authenticated `HelloFull` only (clarification) |
+| R-T3 | The *eligible* and *dev-eligible* classes; the loopback host classification for every scheme; the dev flag as diagnostics only; "loopback never allowed" |
 | R-T4, R-T5 | CORS and preflight tiers for eligible, not-yet-allowed origins on pre-auth endpoints |
 | §3.1 (R-A1 to R-A6) | The consent endpoints, coalescing, global and per-origin limits, `Retry-After` cool-down, block |
 | R-A7 | Token eligibility (no loopback, null or opaque origins); issuance budget |
@@ -1139,8 +1382,9 @@ this draft. They are not recorded as unconditional approval of this tree.
 
 **Changes:**
 1. **`hello` is scope-dependent [D-004a].** D-005 lists `hello` as (product, version, protocol,
-   os, arch, capabilities). Here, `version`, `os` and `arch` appear only in `HelloFull`, and
-   `protocol` is a `{min, max}` range rather than a single value.
+   os, arch, capabilities). Here, `version`, `os` and `arch` appear only in `HelloFull`, which
+   also adds `instanceId` (§12) and `limits`, and `protocol` is a `{min, max}` range rather than
+   a single value. `HelloPublic` stays minimal; consent state comes from `GET /auth/consent`.
 2. **Events add `state`.** D-005 lists `progress, page, error, done`. The T10 spec requires
    `state`, so the full set is `state, progress, page, error, done`.
 
@@ -1183,6 +1427,11 @@ earlier "disposes its jobs at TTL" wording.
   - `agent-unavailable`.
 - `token-revoked` copy must say that **access was revoked**, never that pages were erased or
   that the session's pages are gone (R-A10, R-A12). `token-invalid` stays silent.
+- **New SDK-local outcome `agent-restarted`** (§12, R-R3): copy that says Zilo restarted and the
+  scan must be done again, with a user-initiated "Scan again" action and no automatic retry. It
+  is not a wire code and does not change the frozen code list.
+- Export-and-delete on a scanning job (R-X7): copy for "still scanning" (refused) and for "new
+  pages were added; nothing was deleted".
 - The rest need no UI copy: `host-denied` and `token-invalid` are unreachable or silent, and
   `invalid-request` and `invalid-state` map to `unknown`.
 - Consent-pending signal: `202 {state: pending}` and `403 consent-pending` (§3.1).
@@ -1198,9 +1447,16 @@ earlier "disposes its jobs at TTL" wording.
   - Do not advertise self-update or Safari flags before the corresponding approved
     implementation exists.
 
-**For T13/T21 (SDK):** R-A10, R-A15 and R-A16 (shared token family), R-V4 (two-step event
-decoding), R-E5 (resume from the last processed `seq`), R-X3 (verify `Content-Length`) and R-X5
-(receive-then-DELETE; never send `deleteAfterExport`).
+**For T13/T21 (SDK):** R-A10, R-A15 and R-A16 (family-indexed credentials, current pointer,
+deterministic rollover, per-job family selection), R-V4 (two-step event decoding) and R-D4
+(unknown `ResolutionCaps.kind` fallback), R-E5 (resume from the last processed `seq`), R-X3
+(verify `Content-Length`), R-X5 and R-X7 (settled receive-then-DELETE; never send
+`deleteAfterExport`), and R-R1 to R-R3 (record `instanceId`, SDK-local `agent-restarted`, no
+automatic rescan). Each has a worked acceptance vector to reuse.
+
+**For T11 (agent):** R-T3 (loopback host classification, baked loopback entries rejected),
+R-L5 (physical reservations held until actually freed; retryable `429` during cleanup) and
+R-R1/R-R2 (per-process `instanceId`, no wire restart signal).
 
 **For the masters:**
 1. **Loopback dev origins (D-004a).** Confirmed by Opus and agreed: the demo app and the E2E runs
@@ -1237,3 +1493,34 @@ implementation. T11 and T13 should reuse its vectors in their conformance tests.
 | 11 | P2 export selection | R-X1 snapshot at a defined instant; `page-unavailable` (422), `duplicate-index` (422), `no-pages` (409); `ExportRequest` encodes exactly one entry for JPEG/PNG; R-P1 immutable numbering. | `F11 ExportRequest encodes the one-image selection`; `F11 rule model: selection snapshot` |
 | 12 | P2 undeclared global errors | R-ER4 and `x-zilo-global-errors`; every operation declares 429/500/503 and `default`, every POST/DELETE declares 413; `MethodNotAllowed` shared 405; consistent problem headers. | `F12 every operation declares the global errors`; `F12 problem responses carry request ID and CORS headers`; `F12 the error-code list is frozen for T05` |
 | 13 | P3 TIFF quality | R-X2 and `ExportRequest.quality`: quality applies to JPEG output and PDF colour/grey images, and is ignored for TIFF and PNG. | `F13 quality is not described as applying to TIFF` |
+
+---
+
+## Fix r2
+
+Each residual finding of `docs/reviews/T10-r2.md` (which reviewed `04bc0d8`), the change that
+fixes it as agreed by both masters (DISCUSSION, 2026-11-01), and the tests that cover it. Test
+files are in `api/tests/`: `t10-r2-schema.test.mjs` is the reviewer's file, unchanged;
+`t10-fix-r2.test.mjs` is the author's. Rule-model tests check the rule's acceptance vectors for
+self-consistency; they are not agent or SDK runtime tests. The new master inputs follow in their
+own table: they are not r2 findings.
+
+### r2 findings
+
+| # | Finding (r2) | Change | Test |
+|---|---|---|---|
+| r2-1 | P1 receive-then-DELETE needs a settled acquisition boundary | New R-X7: the SDK's export-and-delete starts only on a terminal job; on an active job it refuses by default, or cancels with pages kept and waits for `done` when asked to stop; it fixes the selection after settlement and never deletes a page its selection did not consider. R-X4: an active-job export is always non-destructive. R-X5 keeps the terminal-only, receipt-ambiguous wire flag. YAML `exportJob` says the same. | `r2-1 rule model: export-and-delete waits for a settled acquisition boundary`; `r2-1 R-X7 is normative` |
+| r2-2 | P2 revocation freed physical quotas before physical cleanup | New R-L5: logical ownership quotas are released at revocation; physical reservations (`maxStoreBytes` bytes including pending cleanup, `maxConcurrentExportsTotal` workers, device occupancy, job records) only when actually freed; retryable `429` with `Retry-After` during cleanup; revocation itself stays immediate. R-A12, R-A9, R-X6, R-L1, R-L2, §9 and YAML `Limits`/`revokeToken` aligned. | `r2-2 rule model: revoke and refill before cleanup never exceeds the physical bound`; `r2-2 R-L5 separates logical quotas` |
+| r2-3 | P2 final-family rollover contradicted shared-token rules | R-A15: bounded family-indexed credential map plus a current-family pointer; per-job family selection; deterministic rollover (new family only when the current entry is unusable, or before a new scan when the current token is final); an old family keeps access to its jobs until they are disposed or the family ends. R-A9, R-A10, R-A11 and YAML `issueToken`/`renewToken` aligned, with a two-tab worked example. | `r2-3 rule model: two tabs, a live old job`; `r2-3 rule model: no early rollover`; `r2-3 R-A9, R-A11, R-A15 and the YAML state one rollover policy` |
+| r2-4 | P2 `ResolutionCaps.kind` was an undeclared closed discriminator | `ResolutionCaps` is an open union: `list`, `range` and `ResolutionUnknown` (any other `kind`), with no closed OpenAPI discriminator. Safe fallback (R-D4): offer only `defaults.resolution` and omit `resolution` from the request. R-V4 and the YAML now say exactly two closed response discriminators remain. | `r2 R-V4: unknown response ResolutionCaps.kind survives decoding`; `r2 control`; `r2-4 an unknown resolution kind keeps the whole caps response decodable`; `r2-4 exactly two closed response discriminators remain`; `r2-4 rule model: unknown kind falls back` |
+| r2-5 | P2 HTTPS loopback origins entered ordinary pre-auth eligibility | R-T3: a loopback host classification (`localhost`, `*.localhost`, `127.0.0.0/8`, `0.0.0.0`, `[::1]`, `[::]`, IPv4-mapped forms) for every scheme; ordinary *eligible* excludes loopback; *dev-eligible* covers loopback `http` and `https` for pre-auth diagnostics only (no prompt, no token); baked loopback entries are rejected at load; exact serialised comparison afterwards. §3.0 item 2, R-A2 and YAML `Origin` aligned. | `r2-5 rule model: ordinary HTTPS eligibility excludes loopback`; `r2-5 R-T3 classifies loopback for every scheme` |
+
+### New inputs
+
+These are new master inputs for draft 3, not r2 findings. Their exact wire and SDK semantics
+still need both masters' contract approval.
+
+| # | Input | Change | Test |
+|---|---|---|---|
+| N1 | Agent restart (lost-session contract), PLAN v3 rev 3.1, agreed in DISCUSSION 2026-11-01 | New §12: R-R1 per-process random `instanceId` in the authenticated `HelloFull` only; R-R2 ephemeral jobs (no durable store), old tokens `401 token-invalid`, old job IDs the typed `404 not-found`, no wire restart signal; R-R3 SDK-local `agent-restarted` (retryable), never a wire code or event, never an automatic rescan. YAML `HelloFull.instanceId` aligned; T05 copy hand-off added. | `N1 instanceId is authenticated-only`; `N1 rule model: SDK-local agent-restarted` |
+| N2 | D-004a clarification of 2026-11-01 (Opus-approved, GPT approval pending) | `HelloPublic` stays minimal (no consent state); consent state comes from `GET /auth/consent` (R-V2). Provenance reconciled: D-004a revision 2 is marked in force; the clarification has its own pending marker on `getHello`, `getConsent`, `Hello`, `HelloPublic` and `HelloFull`. | `N2 HelloPublic stays minimal` |

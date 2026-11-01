@@ -81,3 +81,28 @@ export const consent: S["ConsentStatus"] = {
 export function familyOf(t: S["Token"]): string {
   return `${t.familyId} until ${t.familyExpiresAt}, renew after ${t.renewAfter}`;
 }
+
+// R-D4 / R-V4: ResolutionCaps is an open union. Known kinds narrow through guards; any other kind
+// takes the safe fallback (offer only the default, omit `resolution` from the request).
+function isResolutionList(r: S["ResolutionCaps"]): r is S["ResolutionList"] {
+  return r.kind === "list";
+}
+function isResolutionRange(r: S["ResolutionCaps"]): r is S["ResolutionRange"] {
+  return r.kind === "range";
+}
+export function resolutionOffer(c: S["SourceCaps"]): { values: readonly number[]; sendResolution: boolean } {
+  const r = c.resolutions;
+  if (isResolutionList(r)) return { values: r.values, sendResolution: true };
+  if (isResolutionRange(r)) {
+    const values: number[] = [];
+    for (let v = r.min; v <= r.max; v += r.step) values.push(v);
+    return { values, sendResolution: true };
+  }
+  return { values: [c.defaults.resolution], sendResolution: false };
+}
+export const futureResolution: S["ResolutionCaps"] = { kind: "future-list" };
+
+// R-R1: instanceId is only reachable after narrowing to the full hello.
+export function instanceOf(h: HelloOk): string | undefined {
+  return h.scope === "full" ? h.instanceId : undefined;
+}
