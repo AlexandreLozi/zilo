@@ -21,7 +21,15 @@ export const HTTP_CONTROL_ORIGIN = `http://${APP_HOST}:${APP_HTTP_PORT}`;
 /** The S2 bridge origin (top-level popup on loopback). The port is part of the origin. */
 export const BRIDGE_ORIGIN = `http://127.0.0.1:${AGENT_PORT}`;
 
-export const ALLOWED_APP_ORIGINS = [APP_ORIGIN, HTTP_CONTROL_ORIGIN];
+/**
+ * Manual real-Safari step only (docs/spikes/SP-1a.md): a genuinely public HTTPS origin, such as an
+ * HTTPS tunnel or public host in front of the page server, whose hostname resolves to a public IP.
+ * The `/etc/hosts` mapping of app.zilo.test to 127.0.0.1 puts the page in the loopback address space,
+ * so it cannot exercise public -> loopback. Unset in every automated run.
+ */
+export const PUBLIC_APP_ORIGIN = process.env.ZILO_PUBLIC_APP_ORIGIN ? new URL(process.env.ZILO_PUBLIC_APP_ORIGIN).origin : null;
+
+export const ALLOWED_APP_ORIGINS = [APP_ORIGIN, HTTP_CONTROL_ORIGIN, ...(PUBLIC_APP_ORIGIN ? [PUBLIC_APP_ORIGIN] : [])];
 
 /**
  * Spike-only stand-in for a D-004 per-origin bearer token. Tests type it into the page;
@@ -30,10 +38,22 @@ export const ALLOWED_APP_ORIGINS = [APP_ORIGIN, HTTP_CONTROL_ORIGIN];
 export const APP_TOKENS: Record<string, string> = {
   [APP_ORIGIN]: env('ZILO_SPIKE_APP_TOKEN', 'spike-app-token-6b1f0f6e3c5d4a2e9b7c'),
   [HTTP_CONTROL_ORIGIN]: env('ZILO_SPIKE_HTTP_TOKEN', 'spike-http-token-0d9c8b7a6f5e4d3c2b1a'),
+  ...(PUBLIC_APP_ORIGIN ? { [PUBLIC_APP_ORIGIN]: env('ZILO_SPIKE_PUBLIC_TOKEN', 'spike-public-token-3e8a1c5b7d9f2a4c6e0b') } : {}),
 };
 
 export const MAX_BLOB_BYTES = 16 * 1024 * 1024;
 export const MAX_BRIDGE_BYTES = 8 * 1024 * 1024;
+/**
+ * S2 bridge flow control (T01 fix r1). A binary reply holds the bridge's single binary slot until the
+ * app acknowledges it; at most BRIDGE_EVENT_WINDOW relayed events may be unacknowledged, and a
+ * consumer that does not acknowledge within BRIDGE_ACK_TIMEOUT_MS is cut off (`consumer-stalled`).
+ * So the bytes queued toward a slow or stalled app are bounded by MAX_BRIDGE_BYTES plus a few events.
+ */
+export const BRIDGE_EVENT_WINDOW = 2;
+export const BRIDGE_ACK_TIMEOUT_MS = 2000;
+/** App-side liveness: ping interval and the silence after which a bound bridge is reported lost. */
+export const BRIDGE_PING_MS = 500;
+export const BRIDGE_LOST_AFTER_MS = 1500;
 export const EVENT_TICKS = 5;
 export const EVENT_INTERVAL_MS = 200;
 

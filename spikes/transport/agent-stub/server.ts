@@ -13,7 +13,7 @@ import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   AGENT_PORT, ALLOWED_APP_ORIGINS, APP_TOKENS, AUDIT_LOG, BRIDGE_ORIGIN, EVENT_INTERVAL_MS,
-  EVENT_TICKS, MAX_BLOB_BYTES, MAX_BRIDGE_BYTES,
+  EVENT_TICKS, MAX_BLOB_BYTES, MAX_BRIDGE_BYTES, BRIDGE_ACK_TIMEOUT_MS, BRIDGE_EVENT_WINDOW,
 } from '../config.ts';
 
 const HOST_ALLOWLIST = new Set([`127.0.0.1:${AGENT_PORT}`, `localhost:${AGENT_PORT}`, `[::1]:${AGENT_PORT}`]);
@@ -36,7 +36,10 @@ writeFileSync(AUDIT_LOG, '');
 const here = dirname(fileURLToPath(import.meta.url));
 const bridgeHtml = readFileSync(`${here}/bridge.html`, 'utf8').replace(
   '__ZILO_BRIDGE_CONFIG__',
-  JSON.stringify({ allowedOrigins: [...ORIGIN_ALLOWLIST], maxBytes: MAX_BRIDGE_BYTES, protocol: 1 }),
+  JSON.stringify({
+    allowedOrigins: [...ORIGIN_ALLOWLIST], maxBytes: MAX_BRIDGE_BYTES, protocol: 1,
+    eventWindow: BRIDGE_EVENT_WINDOW, ackTimeoutMs: BRIDGE_ACK_TIMEOUT_MS,
+  }),
 );
 const bridgeJs = readFileSync(`${here}/bridge.js`, 'utf8');
 
@@ -111,6 +114,9 @@ function authorize(req: http.IncomingMessage, caller: Caller): { ok: true; princ
     if (!s) return { ok: false, code: 'bad-bridge-capability' };
     if (s.revoked) return { ok: false, code: 'stale-bridge-session' };
     if (Date.now() - s.createdAt > BRIDGE_SESSION_TTL_MS) return { ok: false, code: 'expired-bridge-session' };
+    // The capability is bound to one session: the bridge must name that session on every call.
+    const sid = req.headers['x-zilo-bridge-session'];
+    if (typeof sid !== 'string' || !safeEqual(sid, s.sessionId)) return { ok: false, code: 'bridge-session-mismatch' };
     return { ok: true, principal: `bridge:${s.appOrigin}:${s.sessionId}` };
   }
   return { ok: false, code: 'caller-not-authorizable' };

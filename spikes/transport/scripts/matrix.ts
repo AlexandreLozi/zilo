@@ -14,6 +14,8 @@ function note(ev: Ev): string {
   const o = ev.observed ?? {};
   const mixed = (ev.console ?? []).some((l) => l.includes('[blocked]') && l.includes('insecure content'));
   switch (ev.scenario) {
+    case 'env':
+      return String(o.addressSpace ?? '').startsWith('public') ? 'address space public (forced)' : 'secure context only; public address space **unproven**';
     case 'hello-tas': case 'hello-plain': case 'sse-fetch-stream': case 'blob':
       if (o.result?.ok) return o.result.incremental ? `200, spread ${o.result.spreadMs} ms` : '200';
       return mixed ? 'mixed-content blocked, never sent' : `${o.result?.error}`;
@@ -38,7 +40,7 @@ function note(ev: Ev): string {
 }
 
 const ROWS: Array<[string, string]> = [
-  ['env', 'HTTPS page on a public non-loopback origin is a secure context'],
+  ['env', 'HTTPS page on a non-loopback hostname is a secure context (public address space only where forced)'],
   ['hello-tas', "fetch `hello` with `targetAddressSpace:'loopback'` (granted where grantable)"],
   ['hello-plain', 'fetch `hello` without the option (granted where grantable)'],
   ['sse-fetch-stream', 'SSE over fetch streaming with `Authorization`, 5 incremental ticks'],
@@ -48,6 +50,9 @@ const ROWS: Array<[string, string]> = [
   ['perm-denied', 'Permission **denied**: refused fast'],
   ['s2-bridge', 'S2 bridge: handshake + typed `hello` + 1 MiB ArrayBuffer transfer + SSE relay + bounds'],
   ['s2-closure', 'S2 bridge: window closure detected'],
+  ['s2-session-envelope', 'S2 envelope (fix r1): version, unique request ID and bound session required; mismatches refused'],
+  ['s2-backpressure', 'S2 backpressure (fix r1): binary slot held until ack; stalled event consumer cut off'],
+  ['s2-navigation-reconnect', 'S2 navigation/reload (fix r1): bound state invalidated; reload re-handshakes; reopen recovers'],
   ['s2-coop', 'S2 with COOP `same-origin`: explicit `coop-severed` failure, nothing minted'],
   ['s2-coop-allow-popups', 'S2 with COOP `same-origin-allow-popups`: bridge still works'],
   ['s2-hostile-opener', 'S2 hostile opener: no ready, forced hello rejected, nothing minted'],
@@ -59,6 +64,9 @@ const ROWS: Array<[string, string]> = [
   ['neg-http-control', 'Control: HTTP (insecure) page → loopback (browser policy only)'],
   ['control-no-override', 'Method control: page on loopback address space is not LNA-gated'],
 ];
+
+/** Rows added in T01 fix r1, after OD-6 stopped native Windows runs. */
+const FIX_R1_ROWS = new Set(['s2-session-envelope', 's2-backpressure', 's2-navigation-reconnect']);
 
 const COLUMNS: Array<[string, string, string]> = [
   ['linux', 'chromium', 'Chromium'],
@@ -81,12 +89,12 @@ const version = (os: string, project: string): string => {
   return 'pending';
 };
 
-const header = ['Scenario', ...COLUMNS.map(([os, p, label]) => `${label} ${version(os, p)}`), 'Real Safari 26'];
+const header = ['Scenario', ...COLUMNS.map(([os, p, label]) => `${label} ${version(os, p)}${os === 'win32' ? ' (observed before OD-6)' : ''}`), 'Real Safari 26'];
 const lines = [`| ${header.join(' | ')} |`, `|${header.map(() => '---').join('|')}|`];
 for (const [scenario, title] of ROWS) {
   const cells = COLUMNS.map(([os, project]) => {
     const ev = load(os, project, scenario);
-    if (!ev) return os === 'darwin' ? 'pending' : 'n/a';
+    if (!ev) return os === 'darwin' ? 'pending' : os === 'win32' && FIX_R1_ROWS.has(scenario) ? 'not run (OD-6)' : 'n/a';
     const path = `evidence/${os}/${project}/${scenario}`;
     const n = note(ev);
     return `${ev.outcome}${n ? ` · ${n}` : ''} ([json](../../spikes/transport/${path}.json))`;
