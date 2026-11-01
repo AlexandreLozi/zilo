@@ -219,13 +219,15 @@ Dispatches lost in the restart are bookkeeping only and are never reused.
 |---|---|---|---|---|---|---|
 | T04a | **merged** (r2 Node pass, r3 format-scope pass; D-012 reuse of ci-web 41319600327; main backstop ci-web 41320055013) | — | fix r1 ctx_cd74bcad8bc0, fix r2 ctx_e53b3cb5f39b | r2 ctx_1d112881a0b7, r3 ctx_15fbb7f49d56 (GPT) | pass | 4639340 |
 | T05 | **merged** (r2 pass; rebased checks: 190 states, 0 axe violations) | — | fix r1 ctx_11403c9933fe | r2 ctx_e5c59cb532bb (GPT) | pass | f22eb2e |
-| T01 | fix r2 DONE @83df7dd (pushed; harness-only determinism fix 17accfa; suite 60/5/0; forged-ready 20x in 3 browsers 60/0). Author settled and closed. Next after reset: check the push-triggered spike-transport run, then GPT r3 (narrow, medium) | t01-transport-spike | fix r1 ctx_7a373faedbc2; fix r2 ctx_18d2b7435bfb (claude medium) | r2 ctx_48f38cafb0c0 (GPT high) | changes -> r3 pending | |
+| T01 | fix r2 DONE @83df7dd; hosted spike-transport 41320440243 green. **Queued: GPT r3 (narrow, medium) at GPT return (~16:10)**, in zilo-fe | t01-transport-spike | fix r2 ctx_18d2b7435bfb (settled) | r2 ctx_48f38cafb0c0 | r3 queued | |
 | T10 ★ (Claude author) | r3 changes (root-dot loopback); round-3 escalation agreed; fix r3 done f3ba120; GPT r4 next (BE run) | t10-contract | fix r2 ctx_0a8ee3069c14, fix r3 ctx_062ede7e79cc | GPT (BE run) | pending r4 | |
 | T03 (Claude author) | **merged**; exact-SHA main runs green | — | fix r2 ctx_b6c1ba2bdb7e | GPT r3 (BE) | pass | f38e3ea |
 | T12-proto (Claude author) | **merged**; Linux 183/183 rebased; cross-OS pending | — | — | GPT r2 (BE) | pass | 32051c6 |
+| T15 | authoring (Claude medium, auto mode verified); owns pnpm-lock.yaml for now; may minimally edit 3 apps/demo files (approved) | t15-ui-foundation | task spec docs/tasks/T15.md / ctx_23881374964a | GPT (after author) | | |
+| T13 | PRE-AUTHORING against t10-contract @f3ba120 (Claude medium, auto mode verified); rebase after the T10 merge; no new deps | AlexandreLozi/t13-sdk-core | docs/tasks/T13.md / ctx_812c4ec6d10b | GPT (after the T10 merge) | | |
 | T02 (GPT) | Claude r1 changes (8895977); GPT fix r1 5bc5a05; Claude r2 in BE run | AlexandreLozi/t02-fix-r1 | GPT | r1 ctx_5c6b3170b2f8; r2 BE ctx_b125dedba577 | r2 pending | |
 
-**USAGE STOP (2026-11-01, liaison).** No new dispatches. Mid-flight in zilo-fe: none (T01 fix r2 settled at 83df7dd). Resume order after the reset:
+**USAGE STOP (2026-11-01, liaison).** No new dispatches. Mid-flight in zilo-fe (post-reset, GPT-independent): T15 ctx_23881374964a, T13 ctx_812c4ec6d10b. Main backstop ci-web 41320496824 green (covers T04a). Resume order after the reset:
 1. GPT T10 r4 (high) of f3ba120, BE run.
 2. The T10 merge (Opus queue), after both masters approve the contract.
 3. Wave 1 (T11/T12/T13/T15/T56a) by dependency order.
