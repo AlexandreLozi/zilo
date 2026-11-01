@@ -125,16 +125,15 @@ export function decodeCaps(body: unknown): DeviceCaps {
   for (const s of sources) {
     const src = obj(s, 'source');
     str(src, 'source', 'source');
-    // `resolutions.kind` is an open discriminator: only the known kinds are checked (R-D4).
+    // `resolutions.kind` is an open discriminator: only the known kinds are checked (R-D4), with
+    // the same guards `resolutionChoice` uses, so a malformed `list` or `range` stays invalid.
     const res = obj(src.resolutions, 'source.resolutions');
     const kind = str(res, 'kind', 'source.resolutions');
-    if (kind === 'list') {
-      const values = arr(res, 'values', 'source.resolutions');
-      if (values.length === 0 || !values.every((v) => Number.isInteger(v) && (v as number) >= 1)) {
-        throw new ZiloProtocolError('source.resolutions.values: expected positive integers');
-      }
-    } else if (kind === 'range') {
-      for (const key of ['min', 'max', 'step']) int(res, key, 'source.resolutions');
+    if (kind === 'list' && !isResolutionList(res)) {
+      throw new ZiloProtocolError('source.resolutions.values: expected positive integers');
+    }
+    if (kind === 'range' && !isResolutionRange(res)) {
+      throw new ZiloProtocolError('source.resolutions: expected positive integer min, max, step');
     }
     arr(src, 'colorModes', 'source');
     if (arr(src, 'pageSizes', 'source').length === 0) {
@@ -154,10 +153,36 @@ export function decodeJob(body: unknown): Job {
   return o as unknown as Job;
 }
 
+const positiveInt = (v: unknown): v is number => Number.isInteger(v) && (v as number) >= 1;
+
 /**
- * What a client may offer for a source's resolution (R-D4). For an unknown `kind`, the safe
- * fallback is to treat resolution as unsupported: offer only `defaults.resolution` and omit
- * `resolution` from the scan request, so the agent applies its default (R-J7).
+ * Runtime guard for `ResolutionList` (R-D4): `kind: list` and a non-empty array of integers >= 1.
+ * The generated `ResolutionUnknown` (`kind: string`) overlaps the known kinds, so TypeScript cannot
+ * narrow on `kind` alone (triage #6): the payload's shape is checked, never cast.
+ */
+export function isResolutionList(value: unknown): value is ResolutionList {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as { kind?: unknown; values?: unknown };
+  return (
+    v.kind === 'list' &&
+    Array.isArray(v.values) &&
+    v.values.length > 0 &&
+    v.values.every(positiveInt)
+  );
+}
+
+/** Runtime guard for `ResolutionRange` (R-D4): `kind: range` and integer `min`, `max`, `step` >= 1. */
+export function isResolutionRange(value: unknown): value is ResolutionRange {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as { kind?: unknown; min?: unknown; max?: unknown; step?: unknown };
+  return v.kind === 'range' && positiveInt(v.min) && positiveInt(v.max) && positiveInt(v.step);
+}
+
+/**
+ * What a client may offer for a source's resolution (R-D4). Anything that is not a well-formed
+ * known kind (an unknown `kind`, or a value that never went through `decodeCaps`) gets the safe
+ * fallback: resolution is unsupported, offer only `defaults.resolution` and omit `resolution`
+ * from the scan request, so the agent applies its default (R-J7).
  */
 export type ResolutionChoice =
   | { kind: 'list'; values: number[] }
@@ -165,11 +190,13 @@ export type ResolutionChoice =
   | { kind: 'unsupported'; wireKind: string; defaultResolution: number };
 
 export function resolutionChoice(source: SourceCaps): ResolutionChoice {
-  const res: { kind: string } = source.resolutions;
-  if (res.kind === 'list') return { kind: 'list', values: [...(res as ResolutionList).values] };
-  if (res.kind === 'range') {
-    const { min, max, step } = res as ResolutionRange;
-    return { kind: 'range', min, max, step };
-  }
-  return { kind: 'unsupported', wireKind: res.kind, defaultResolution: source.defaults.resolution };
+  const res: unknown = source.resolutions;
+  if (isResolutionList(res)) return { kind: 'list', values: [...res.values] };
+  if (isResolutionRange(res)) return { kind: 'range', min: res.min, max: res.max, step: res.step };
+  const wire = (res as { kind?: unknown } | null | undefined)?.kind;
+  return {
+    kind: 'unsupported',
+    wireKind: typeof wire === 'string' ? wire : '',
+    defaultResolution: source.defaults.resolution,
+  };
 }

@@ -208,7 +208,8 @@ describe('consent (R-A1 to R-A3)', () => {
     ['denied', 'consent-denied'],
     ['blocked', 'consent-blocked'],
     ['none', 'consent-expired'],
-    ['some-future-state', 'consent-expired'],
+    // Triage #4: an unknown state is not an expiry; it keeps its typed cause.
+    ['some-future-state', 'auth-unavailable'],
   ] as const)('stops polling on %s -> %s', async (polled, expected) => {
     const h = setup({ consent: 'none' });
     h.agent.pollScript = [polled];
@@ -217,8 +218,15 @@ describe('consent (R-A1 to R-A3)', () => {
     const snap = h.client.detection.snapshot;
     expect(snap.state).toBe(expected);
     if (polled === 'denied') expect(snap.retryAfterSeconds).toBe(600);
+    if (polled === 'some-future-state') {
+      expect(snap.cause).toEqual({
+        kind: 'consent-state-unknown',
+        consentState: 'some-future-state',
+      });
+    }
     await vi.advanceTimersByTimeAsync(20_000);
     expect(h.agent.ops('getConsent')).toBe(1);
+    expect(h.agent.ops('issueToken')).toBe(0); // never a token on a non-granted state
   });
 
   it('keeps polling with back-off when the poll is rate-limited', async () => {

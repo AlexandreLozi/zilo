@@ -16,6 +16,7 @@ export {
   type DetectionStateName,
   type DetectionSnapshot,
   type DetectionListener,
+  type AuthUnavailableCause,
   type DetectionDeps,
   type ProbeResult,
 } from './detection.js';
@@ -35,6 +36,7 @@ export {
   ZiloTransportError,
   ZiloTimeoutError,
   ZiloAbortError,
+  ZiloDisposedError,
   ZiloProtocolError,
   ZiloAgentRestartedError,
   ZiloAccessRevokedError,
@@ -49,10 +51,19 @@ export {
 } from './transport.js';
 export {
   queryLoopbackPermission,
+  queryLoopbackPermissionDetail,
+  LOOPBACK_PERMISSION_NAMES,
   type LoopbackPermission,
+  type LoopbackPermissionDetail,
+  type LoopbackPermissionName,
   type PermissionsLike,
 } from './permission.js';
-export { resolutionChoice, type ResolutionChoice } from './decode.js';
+export {
+  resolutionChoice,
+  isResolutionList,
+  isResolutionRange,
+  type ResolutionChoice,
+} from './decode.js';
 export {
   SDK_PROTOCOL,
   REQUIRED_PUBLIC_CAPABILITIES,

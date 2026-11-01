@@ -104,6 +104,17 @@ export class ZiloAbortError extends ZiloError {
   override name = 'ZiloAbortError';
 }
 
+/**
+ * The client was disposed (`ZiloClient.dispose()`, the host app's Unload). Every pending and later
+ * operation of that instance ends with this error; it is an abort, never an agent answer.
+ */
+export class ZiloDisposedError extends ZiloAbortError {
+  override name = 'ZiloDisposedError';
+  constructor() {
+    super('client disposed');
+  }
+}
+
 /** A response did not match the contract shape the SDK needs (or an error without a problem body). */
 export class ZiloProtocolError extends ZiloError {
   override name = 'ZiloProtocolError';

@@ -17,6 +17,7 @@ import {
   isProblem,
   ZiloAccessRevokedError,
   ZiloAgentRestartedError,
+  ZiloDisposedError,
   ZiloError,
   ZiloProtocolError,
   ZiloTransportError,
@@ -27,8 +28,9 @@ import { HttpTransport, type FetchLike, type HttpResponse } from './transport.js
 import type { CreateJobRequest, DeviceCaps, DeviceList, HelloFull, Job } from './types.js';
 
 /**
- * Placeholder agent ports: the fixed port and its two fallbacks (R-T1). T11 sets the real numbers;
- * the OpenAPI server variable only gives `48100` as a placeholder default.
+ * **Placeholder** agent ports: the fixed port and its two fallbacks (R-T1). They stay a
+ * placeholder until T11 publishes the shared port tuple, which then replaces these numbers (no
+ * divergent SDK and agent constants); the OpenAPI server variable only gives `48100` as a default.
  */
 export const DEFAULT_PORTS: readonly number[] = [48100, 48101, 48102];
 
@@ -87,15 +89,23 @@ export function detectSafari(userAgent: string | undefined): boolean {
   );
 }
 
-interface CallOptions {
+interface RecoveryOptions {
+  signal?: AbortSignal | undefined;
+  /** The request is about this tracked job: use its family's credential (R-A15). */
+  job?: TrackedJob | undefined;
+  /** A new scan: the rollover rule may start a new family, once per request (R-A15). */
+  newScan?: boolean;
+  /** Read the full `hello` with the family before its first use (R-R3 recording). */
+  recordInstance?: boolean;
+  /** `use` itself reads the full `hello`, so recovery does not read it a second time. */
+  readsHello?: boolean;
+}
+
+interface CallOptions extends RecoveryOptions {
   op: string;
   method: 'GET' | 'POST' | 'DELETE';
   path: string;
   body?: unknown;
-  signal?: AbortSignal | undefined;
-  /** The request is about this tracked job: use its family's credential (R-A15). */
-  job?: TrackedJob | undefined;
-  newScan?: boolean;
 }
 
 export class ZiloClient {
@@ -113,6 +123,8 @@ export class ZiloClient {
   /** `instanceId` read with each family's credential (R-R3 recording). */
   private readonly familyInstance = new Map<string, string>();
   private readonly lostListeners = new Set<JobsLostListener>();
+  /** Aborted by `dispose()`: every request of this instance, in flight or later, aborts. */
+  private readonly life = new AbortController();
 
   constructor(options: ZiloClientOptions = {}) {
     const g = globalThis as { location?: { origin?: string }; navigator?: { userAgent?: string } };
@@ -129,10 +141,7 @@ export class ZiloClient {
       store: options.store ?? new MemoryCredentialStore(),
       transport: () => this.agent(),
       now,
-      familiesWithJobs: () =>
-        new Set(
-          [...this.jobs.values()].filter((j) => j.outcome === undefined).map((j) => j.familyId),
-        ),
+      closed: () => this.life.signal.aborted,
     });
     this.detection = new Detector({
       origin: this.origin,
@@ -151,6 +160,7 @@ export class ZiloClient {
 
   /** Starts detection; call it from a user gesture (D-008, R-A1). */
   connect(): Promise<DetectionSnapshot> {
+    if (this.disposed) return Promise.reject(new ZiloDisposedError());
     return this.detection.start();
   }
 
@@ -160,8 +170,35 @@ export class ZiloClient {
 
   /** Called with the jobs the SDK classified as `agent-restarted` (R-R3). Never triggers a rescan. */
   onJobsLost(listener: JobsLostListener): () => void {
+    if (this.disposed) return () => false;
     this.lostListeners.add(listener);
     return () => this.lostListeners.delete(listener);
+  }
+
+  /** True once `dispose()` ran. */
+  get disposed(): boolean {
+    return this.life.signal.aborted;
+  }
+
+  /**
+   * Full teardown, for the host app's Unload (every dialog close): cancels detection, its re-check
+   * and consent polling, aborts every in-flight request, drops every subscriber and the local job
+   * registry, and makes every later call fail with `ZiloDisposedError`. A grant that arrives later
+   * never makes this instance issue a token. Idempotent and synchronous.
+   *
+   * It does not revoke: the stored credentials belong to the `CredentialStore`, so a new instance
+   * over the same store (the next Load) reuses the family without a new issuance. Call
+   * `disconnect()` first to revoke.
+   */
+  dispose(): void {
+    if (this.disposed) return;
+    this.life.abort();
+    this.detection.dispose();
+    this.lostListeners.clear();
+    this.jobs.clear();
+    this.familyInstance.clear();
+    this.transport = undefined;
+    this.log('client.disposed', {});
   }
 
   get trackedJobs(): readonly TrackedJob[] {
@@ -169,6 +206,7 @@ export class ZiloClient {
   }
 
   private agent(): HttpTransport {
+    if (this.disposed) throw new ZiloDisposedError();
     if (this.transport === undefined)
       throw new ZiloTransportError('not connected: no agent was detected');
     return this.transport;
@@ -179,6 +217,7 @@ export class ZiloClient {
       fetch: this.fetchImpl,
       timeoutMs: this.requestTimeoutMs,
       logger: this.logger,
+      lifetime: this.life.signal,
     });
   }
 
@@ -206,6 +245,7 @@ export class ZiloClient {
           return { port, hello, transport: t };
         }),
       );
+      if (this.disposed) throw new ZiloDisposedError();
       this.transport = found.transport;
       this.log('probe.found', { port: found.port, ms: Date.now() - started });
       return { port: found.port, hello: found.hello };
@@ -218,13 +258,26 @@ export class ZiloClient {
     }
   }
 
+  /**
+   * Detection's authorisation: the current family's credential and the full `hello`, through the
+   * same recovery as every protected call (a renewal `401` after an agent restart recovers).
+   */
   private async authorize(signal: AbortSignal): Promise<HelloFull> {
-    const cred = await this.auth.currentCredential({ signal });
-    return this.readFullHello(cred, signal);
+    const { value } = await this.withRecovery({ signal, readsHello: true }, async (c) => {
+      const { hello, cred } = await this.readFullHello(c, signal);
+      return { value: hello, cred };
+    });
+    return value;
   }
 
-  /** Reads the full `hello` with a family's credential and runs the instance comparison (R-R3). */
-  private async readFullHello(cred: FamilyCredential, signal?: AbortSignal): Promise<HelloFull> {
+  /**
+   * Reads the full `hello` with a family's credential and runs the instance comparison (R-R3).
+   * Returns the credential that read it: a different one when the first was no longer valid.
+   */
+  private async readFullHello(
+    cred: FamilyCredential,
+    signal?: AbortSignal,
+  ): Promise<{ hello: HelloFull; cred: FamilyCredential }> {
     let current = cred;
     for (let attempt = 0; attempt < 2; attempt++) {
       const res = await this.agent().request({
@@ -239,7 +292,7 @@ export class ZiloClient {
       if (hello.scope === 'full') {
         this.familyInstance.set(current.familyId, hello.instanceId);
         await this.observeInstance(hello.instanceId, current.familyId);
-        return hello;
+        return { hello, cred: current };
       }
       // An invalid token on hello falls back to public (R-V2): treat it as token-invalid (R-A10).
       const other = await this.auth.recoverInvalid(current.familyId, current.token);
@@ -280,62 +333,99 @@ export class ZiloClient {
   private async jobGone(
     job: TrackedJob,
     signal: AbortSignal | undefined,
-    cause: unknown,
+    cause?: unknown,
   ): Promise<never> {
     try {
       await this.checkInstance(signal);
     } catch {
       // The check itself failed; report what we know.
     }
+    if (this.disposed) throw new ZiloDisposedError();
     if (job.outcome === 'agent-restarted') throw new ZiloAgentRestartedError(job.id);
     this.jobs.delete(job.id);
     if (isProblem(cause, 'not-found')) throw cause;
     throw new ZiloJobLostError(job.id);
   }
 
-  /** An authenticated call with the R-A10 / R-A13 / R-R3 recovery paths. */
-  private async call(o: CallOptions): Promise<{ res: HttpResponse; cred: FamilyCredential }> {
+  /**
+   * Runs `use` with a credential under the R-A10 / R-A12 / R-A13 / R-R3 recovery paths. Credential
+   * acquisition and renewal are inside the same path as the protected request: a renewal that
+   * fails with `401`, `token-revoked` or a transport error recovers exactly like the request.
+   * The credential is selected once per attempt and kept through the request, so one new scan
+   * applies the rollover rule once (R-A15).
+   */
+  private async withRecovery<T>(
+    o: RecoveryOptions,
+    use: (cred: FamilyCredential) => Promise<{ value: T; cred: FamilyCredential }>,
+  ): Promise<{ value: T; cred: FamilyCredential }> {
     const { job, signal } = o;
+    const newScan = o.newScan === true;
     if (job?.outcome === 'agent-restarted') throw new ZiloAgentRestartedError(job.id);
-    let cred = job
-      ? await this.auth.freshCredential(job.familyId, signal)
-      : await this.auth.currentCredential({ newScan: o.newScan === true, signal });
-    if (cred === undefined) return this.jobGone(job as TrackedJob, signal, undefined);
-    const send = (c: FamilyCredential): Promise<HttpResponse> =>
-      this.agent().request({
+    let cred: FamilyCredential | undefined;
+    let recovered = false;
+    for (;;) {
+      let used = cred;
+      try {
+        if (cred === undefined) {
+          const acquired = job
+            ? await this.auth.freshCredential(job.familyId, signal)
+            : await this.auth.currentCredential({ newScan, signal });
+          if (acquired === undefined) return await this.jobGone(job as TrackedJob, signal);
+          cred = acquired;
+        }
+        if (o.recordInstance === true && !this.familyInstance.has(cred.familyId)) {
+          used = cred;
+          cred = (await this.readFullHello(cred, signal)).cred;
+        }
+        used = cred;
+        return await use(cred);
+      } catch (err) {
+        if (err instanceof ZiloAgentRestartedError || err instanceof ZiloJobLostError) throw err;
+        if (this.disposed) throw new ZiloDisposedError();
+        // A renewal failure names the credential renewal presented; otherwise the request's.
+        const failed = this.auth.renewalCredential(err) ?? used;
+        if (isProblem(err, 'token-invalid') && !recovered && failed !== undefined) {
+          recovered = true;
+          const other = await this.auth.recoverInvalid(failed.familyId, failed.token);
+          if (other !== undefined) {
+            cred = other;
+            continue;
+          }
+          if (job !== undefined) return await this.jobGone(job, signal, err);
+          // R-A10 step 2 and R-R3: a credential for the current family (rollover rule), and the
+          // full hello, which re-checks the instance.
+          cred = await this.auth.currentCredential({ newScan, signal });
+          if (o.readsHello !== true) cred = (await this.readFullHello(cred, signal)).cred;
+          continue;
+        }
+        if (isProblem(err, 'token-revoked')) {
+          if (failed !== undefined) await this.auth.dropFamily(failed.familyId);
+          this.detection.markRevoked();
+          throw new ZiloAccessRevokedError('access revoked', { cause: err });
+        }
+        if (isProblem(err, 'not-found') && job !== undefined) {
+          return await this.jobGone(job, signal, err);
+        }
+        if (err instanceof ZiloTransportError) await this.afterTransportFailure(job, signal, err);
+        throw err;
+      }
+    }
+  }
+
+  /** An authenticated call with the recovery paths of `withRecovery`. */
+  private async call(o: CallOptions): Promise<{ res: HttpResponse; cred: FamilyCredential }> {
+    const { value, cred } = await this.withRecovery(o, async (c) => {
+      const res = await this.agent().request({
         op: o.op,
         method: o.method,
         path: o.path,
         body: o.body,
         token: c.token,
-        signal,
+        signal: o.signal,
       });
-
-    for (let attempt = 0; ; attempt++) {
-      try {
-        return { res: await send(cred), cred };
-      } catch (err) {
-        if (isProblem(err, 'token-invalid') && attempt === 0) {
-          const other = await this.auth.recoverInvalid(cred.familyId, cred.token);
-          if (other !== undefined) {
-            cred = other;
-            continue;
-          }
-          if (job !== undefined) return this.jobGone(job, signal, err);
-          cred = await this.auth.currentCredential({ newScan: o.newScan === true, signal });
-          await this.readFullHello(cred, signal);
-          continue;
-        }
-        if (isProblem(err, 'token-revoked')) {
-          await this.auth.dropFamily(cred.familyId);
-          this.detection.markRevoked();
-          throw new ZiloAccessRevokedError('access revoked', { cause: err });
-        }
-        if (isProblem(err, 'not-found') && job !== undefined) return this.jobGone(job, signal, err);
-        if (err instanceof ZiloTransportError) await this.afterTransportFailure(job, signal, err);
-        throw err;
-      }
-    }
+      return { value: res, cred: c };
+    });
+    return { res: value, cred };
   }
 
   /** R-A13 and the R-R3 transport recovery path. Throws the classified error, or returns. */
@@ -377,7 +467,11 @@ export class ZiloClient {
 
   /** The full `hello` with the current family (re-checks the instance, R-R3). */
   async hello(signal?: AbortSignal): Promise<HelloFull> {
-    return this.readFullHello(await this.auth.currentCredential({ signal }), signal);
+    const { value } = await this.withRecovery({ signal, readsHello: true }, async (c) => {
+      const { hello, cred } = await this.readFullHello(c, signal);
+      return { value: hello, cred };
+    });
+    return value;
   }
 
   /** `GET /devices`: the cached list; never starts discovery (R-D1). */
@@ -391,7 +485,10 @@ export class ZiloClient {
     return decodeDeviceList(res.body);
   }
 
-  /** `POST /devices/refresh`: runs discovery now and returns the list after it (R-D1). */
+  /**
+   * `POST /devices/refresh`: runs discovery now and returns the `DeviceList` of that response
+   * (R-D1), without a second `GET`; incomplete-driver and timeout fields are kept as sent.
+   */
   async refreshDevices(signal?: AbortSignal): Promise<DeviceList> {
     const { res } = await this.call({
       op: 'refreshDevices',
@@ -410,12 +507,11 @@ export class ZiloClient {
   }
 
   /**
-   * `POST /jobs`. Before the first job of a family, reads the full `hello` with that family's
+   * `POST /jobs`. Selects the new-scan credential once (rollover rule, R-A15) and keeps it through
+   * the request. Before the first job of a family, reads the full `hello` with that family's
    * credential to record the `instanceId` (R-R3). The job is tracked with its family.
    */
   async createJob(request: CreateJobRequest, signal?: AbortSignal): Promise<Job> {
-    const cred = await this.auth.currentCredential({ newScan: true, signal });
-    if (!this.familyInstance.has(cred.familyId)) await this.readFullHello(cred, signal);
     const { res, cred: used } = await this.call({
       op: 'createJob',
       method: 'POST',
@@ -423,12 +519,13 @@ export class ZiloClient {
       body: request,
       signal,
       newScan: true,
+      recordInstance: true,
     });
-    if (!this.familyInstance.has(used.familyId)) await this.readFullHello(used, signal);
     const job = decodeJob(res.body);
     const instanceId = this.familyInstance.get(used.familyId);
     if (instanceId === undefined)
       throw new ZiloProtocolError('no instanceId recorded for the job family');
+    if (this.disposed) throw new ZiloDisposedError();
     this.jobs.set(job.id, { id: job.id, familyId: used.familyId, instanceId });
     return job;
   }
@@ -468,8 +565,14 @@ export class ZiloClient {
     this.jobs.delete(id);
   }
 
-  /** `DELETE /auth/token`: revokes the current family (R-A12). */
+  /**
+   * Stops detection (re-check and consent polling, as on dismiss), then revokes the current family
+   * with `DELETE /auth/token` (R-A12). The instance stays usable: a later call issues a new
+   * family. For teardown, use `dispose()`.
+   */
   async disconnect(signal?: AbortSignal): Promise<void> {
+    if (this.disposed) throw new ZiloDisposedError();
+    this.detection.cancel();
     await this.auth.revokeCurrent(signal);
   }
 }

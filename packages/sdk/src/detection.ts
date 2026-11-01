@@ -1,11 +1,13 @@
 // D-008 detection state machine. State names are the T05 detection states
 // (docs/design/detection-dialogs.md §2), so `@zilo/ui` maps them one to one. Every move goes
-// through `TRANSITIONS`; an undeclared move is a bug and throws.
+// through `TRANSITIONS`; an undeclared move is a bug and throws. Two SDK states have no T05 copy
+// yet (`sdk-too-old`, `auth-unavailable`); the UI shows a safe generic message for them.
 import { compareSemver, publicFit, type Fit } from './compat.js';
-import { isProblem, ZiloAbortError, ZiloProblemError } from './errors.js';
+import { isProblem, ZiloAbortError, ZiloDisposedError, ZiloProblemError } from './errors.js';
 import {
-  queryLoopbackPermission,
+  queryLoopbackPermissionDetail,
   type LoopbackPermission,
+  type LoopbackPermissionName,
   type PermissionsLike,
 } from './permission.js';
 import type { ConsentStatus, HelloFull, HelloPublic } from './types.js';
@@ -18,6 +20,7 @@ export type DetectionStateName =
   | 'unreachable-or-blocked'
   | 'unreachable-stopped'
   | 'outdated'
+  | 'sdk-too-old'
   | 'awaiting-consent'
   | 'consent-expired'
   | 'unauthorized-origin'
@@ -28,12 +31,14 @@ export type DetectionStateName =
   | 'token-revoked'
   | 'insecure-origin'
   | 'safari-unsupported'
+  | 'auth-unavailable'
   | 'ready';
 
 /** Where the flow can land once a probe or an auth step has an answer. */
 const OUTCOMES = [
   'unreachable-or-blocked',
   'outdated',
+  'sdk-too-old',
   'awaiting-consent',
   'consent-expired',
   'unauthorized-origin',
@@ -42,6 +47,7 @@ const OUTCOMES = [
   'rate-limited',
   'outdated-authorized',
   'token-revoked',
+  'auth-unavailable',
   'ready',
 ] as const satisfies readonly DetectionStateName[];
 
@@ -58,6 +64,7 @@ export const TRANSITIONS: Readonly<Record<DetectionStateName, readonly Detection
   ],
   'unreachable-stopped': ['checking'],
   outdated: ['checking'],
+  'sdk-too-old': ['checking'],
   'awaiting-consent': OUTCOMES.filter((s) => s !== 'awaiting-consent'),
   'consent-expired': ['checking'],
   'unauthorized-origin': ['checking'],
@@ -68,6 +75,7 @@ export const TRANSITIONS: Readonly<Record<DetectionStateName, readonly Detection
   'token-revoked': ['checking'],
   'insecure-origin': [],
   'safari-unsupported': [],
+  'auth-unavailable': ['checking'],
   ready: ['checking', 'token-revoked', 'unreachable-or-blocked'],
 };
 
@@ -75,14 +83,36 @@ export function canTransition(from: DetectionStateName, to: DetectionStateName):
   return to === 'idle' || TRANSITIONS[from].includes(to);
 }
 
+/**
+ * Why detection stopped in `auth-unavailable`, kept typed (triage #4). Neither is a consent
+ * expiry or a rate limit, and neither ever leads to a token request.
+ */
+export type AuthUnavailableCause =
+  /** `GET`/`POST /auth/consent` returned a state this SDK does not know (R-A2: not usable yet). */
+  | { kind: 'consent-state-unknown'; consentState: string }
+  /** A real resource bound (`limits-exceeded`, §10), for example the family bound of R-A9. */
+  | { kind: 'limits-exceeded'; error: ZiloProblemError<'limits-exceeded'> };
+
 export interface DetectionSnapshot {
   state: DetectionStateName;
+  /** The `loopback-network` permission; `unknown` when only an unverified name answered. */
   permission?: LoopbackPermission | undefined;
+  /**
+   * The answer of the unverified legacy name (`local-network-access`), for diagnostics only:
+   * never proof of the loopback permission (triage #7).
+   */
+  permissionHint?: { name: LoopbackPermissionName; state: LoopbackPermission } | undefined;
   /** Port of the agent that answered `hello`. */
   port?: number | undefined;
   hello?: HelloPublic | HelloFull | undefined;
-  /** For `outdated`: why the public `hello` does not fit. */
+  /**
+   * For `outdated` (`agent-too-old`, `missing-capabilities`: update Zilo) and `sdk-too-old`
+   * (`sdk-too-old`: the agent is newer than this SDK; the site or app must be updated, never the
+   * agent).
+   */
   fit?: Fit | undefined;
+  /** For `auth-unavailable`: the typed cause. */
+  cause?: AuthUnavailableCause | undefined;
   /** For `outdated-authorized`: the installed and required versions. */
   agentVersion?: string | undefined;
   requiredVersion?: string | undefined;
@@ -94,6 +124,9 @@ export interface DetectionSnapshot {
 
 /** Snapshot fields carried across states of one detection run. */
 type SnapshotBase = Omit<DetectionSnapshot, 'state'>;
+
+/** The permission fields of a run's snapshots. */
+type PermissionBase = Pick<DetectionSnapshot, 'permission' | 'permissionHint'>;
 
 export interface ProbeResult {
   port: number;
@@ -125,16 +158,34 @@ const DEFAULT_RECHECK_MS = 2_000;
 const DEFAULT_RECHECK_CAP_MS = 5 * 60_000;
 const DEFAULT_POLL_SECONDS = 2;
 
+/** Read through a call, so a check after an `await` is not narrowed away. */
+const isAborted = (signal: AbortSignal): boolean => signal.aborted;
+
+/** One detection run: one user gesture (`start()`), its overall deadline and its consent request. */
+interface Run {
+  readonly ctl: AbortController;
+  /** When the run started; the overall re-check cap counts from here, across auth retries. */
+  readonly since: number;
+  /**
+   * Set once this run sent `POST /auth/consent`. A run sends it at most once (R-A1, triage #3):
+   * a later re-probe of the same run reads the state with `GET`, which never prompts.
+   */
+  asked: boolean;
+}
+
 /**
  * Runs detection. `start()` must be called from a user gesture (Scan click, Try again, Ask again,
- * Check again, Connect again): it is the only path that sends `POST /auth/consent` (R-A1).
- * `cancel()` is the dialog being dismissed: it stops the re-check and consent polling.
+ * Check again, Connect again): it is the only path that sends `POST /auth/consent` (R-A1), at most
+ * once per call. A run continues on its own only while its dialog is shown and its overall
+ * deadline (`recheckCapMs`) has not passed: `cancel()` is the dialog being dismissed, `dispose()`
+ * the page or host dialog going away (navigation, Unload); both stop the re-check and polling.
  */
 export class Detector {
   private snap: DetectionSnapshot = { state: 'idle' };
   private readonly listeners = new Set<DetectionListener>();
-  private run: AbortController | undefined;
+  private run: Run | undefined;
   private timer: ReturnType<typeof setTimeout> | undefined;
+  private disposed = false;
   private readonly d: DetectionDeps;
 
   constructor(deps: DetectionDeps) {
@@ -146,12 +197,14 @@ export class Detector {
   }
 
   subscribe(listener: DetectionListener): () => void {
+    if (this.disposed) return () => false;
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   }
 
   /** Moves the machine; throws on an undeclared transition. */
   private go(next: DetectionSnapshot): void {
+    if (this.disposed) return;
     if (!canTransition(this.snap.state, next.state)) {
       throw new Error(`detection: illegal transition ${this.snap.state} -> ${next.state}`);
     }
@@ -161,6 +214,7 @@ export class Detector {
 
   /** External report (from an authenticated call) that the site's access was revoked. */
   markRevoked(): void {
+    if (this.disposed) return;
     this.stop();
     if (this.snap.state !== 'token-revoked' && canTransition(this.snap.state, 'token-revoked')) {
       this.go({ ...this.snap, state: 'token-revoked' });
@@ -178,8 +232,20 @@ export class Detector {
     if (this.snap.state !== 'ready' && this.snap.state !== 'idle') this.go({ state: 'idle' });
   }
 
+  /**
+   * Teardown (idempotent): cancels the run, its timers and pending requests, and drops every
+   * subscriber. A disposed detector never moves, notifies or starts again.
+   */
+  dispose(): void {
+    if (this.disposed) return;
+    this.stop();
+    this.disposed = true;
+    this.listeners.clear();
+    this.snap = { state: 'idle' };
+  }
+
   private stop(): void {
-    this.run?.abort();
+    this.run?.ctl.abort();
     this.run = undefined;
     if (this.timer !== undefined) clearTimeout(this.timer);
     this.timer = undefined;
@@ -187,8 +253,9 @@ export class Detector {
 
   /** Starts (or restarts) detection. Resolves with the state the flow settles in first. */
   async start(): Promise<DetectionSnapshot> {
+    if (this.disposed) throw new ZiloDisposedError();
     this.stop();
-    const run = new AbortController();
+    const run: Run = { ctl: new AbortController(), since: Date.now(), asked: false };
     this.run = run;
     if (this.snap.state !== 'idle' && !canTransition(this.snap.state, 'checking'))
       this.go({ state: 'idle' });
@@ -203,74 +270,85 @@ export class Detector {
       return this.snap;
     }
     this.go({ state: 'checking' });
-    const permission = await queryLoopbackPermission(this.d.permissions);
-    if (run.signal.aborted) return this.snap;
-    if (permission === 'denied') {
-      this.go({ state: 'denied', permission });
+    const detail = await queryLoopbackPermissionDetail(this.d.permissions);
+    if (run.ctl.signal.aborted) return this.snap;
+    // Only a `loopback-network` answer is acted on; the legacy name is a hint (triage #7).
+    const perm: PermissionBase = detail.verified
+      ? { permission: detail.state }
+      : {
+          permission: 'unknown',
+          permissionHint:
+            detail.name === undefined ? undefined : { name: detail.name, state: detail.state },
+        };
+    if (perm.permission === 'denied') {
+      this.go({ state: 'denied', ...perm });
       return this.snap;
     }
-    if (permission === 'prompt') this.go({ state: 'permission-prompt', permission });
-    await this.probeAndContinue(run, permission, Date.now());
+    if (perm.permission === 'prompt') this.go({ state: 'permission-prompt', ...perm });
+    await this.probeAndContinue(run, perm);
     return this.snap;
   }
 
-  private async probeAndContinue(
-    run: AbortController,
-    permission: LoopbackPermission,
-    since: number,
-  ): Promise<void> {
+  private async probeAndContinue(run: Run, perm: PermissionBase): Promise<void> {
+    const signal = run.ctl.signal;
     let found: ProbeResult | undefined;
     try {
-      found = await this.d.probe(run.signal);
+      found = await this.d.probe(signal);
     } catch (err) {
-      if (err instanceof ZiloAbortError || run.signal.aborted) return;
+      if (err instanceof ZiloAbortError || signal.aborted) return;
       found = undefined;
     }
-    if (run.signal.aborted) return;
+    if (signal.aborted) return;
     if (found === undefined) {
       if (this.snap.state !== 'unreachable-or-blocked')
-        this.go({ state: 'unreachable-or-blocked', permission });
-      this.scheduleRecheck(run, permission, since);
+        this.go({ state: 'unreachable-or-blocked', ...perm });
+      this.scheduleRecheck(run, perm);
       return;
     }
     const fit = publicFit(found.hello);
     if (!fit.fits) {
-      this.go({ state: 'outdated', permission, port: found.port, hello: found.hello, fit });
+      // The SDK being too old is not an agent problem: never "update Zilo" (triage #5).
+      const state = fit.reason === 'sdk-too-old' ? 'sdk-too-old' : 'outdated';
+      this.go({ state, ...perm, port: found.port, hello: found.hello, fit });
       return;
     }
-    const base = { permission, port: found.port, hello: found.hello };
+    const base: SnapshotBase = { ...perm, port: found.port, hello: found.hello };
     try {
       if (await this.d.hasToken()) {
         await this.authorized(run, base);
         return;
       }
-      const consent = await this.d.requestConsent(run.signal);
+      if (isAborted(signal)) return; // dismissed while the token check ran
+      let consent: ConsentStatus;
+      if (run.asked) {
+        consent = await this.d.readConsent(signal);
+      } else {
+        run.asked = true;
+        consent = await this.d.requestConsent(signal);
+      }
       await this.onConsent(run, base, consent);
     } catch (err) {
       this.onAuthError(run, base, err);
     }
   }
 
-  private scheduleRecheck(
-    run: AbortController,
-    permission: LoopbackPermission,
-    since: number,
-  ): void {
+  /** Re-probes while the run's overall deadline allows another attempt; then stops. */
+  private scheduleRecheck(run: Run, perm: PermissionBase): void {
     const interval = this.d.recheckIntervalMs ?? DEFAULT_RECHECK_MS;
     const cap = this.d.recheckCapMs ?? DEFAULT_RECHECK_CAP_MS;
-    if (Date.now() + interval - since > cap) {
-      this.go({ state: 'unreachable-stopped', permission });
+    if (Date.now() + interval - run.since > cap) {
+      this.go({ state: 'unreachable-stopped', ...perm });
       return;
     }
     this.timer = setTimeout(() => {
       this.timer = undefined;
-      if (!run.signal.aborted) void this.probeAndContinue(run, permission, since);
+      if (!run.ctl.signal.aborted) void this.probeAndContinue(run, perm);
     }, interval);
   }
 
-  private async authorized(run: AbortController, base: SnapshotBase): Promise<void> {
-    const full = await this.d.authorize(run.signal);
-    if (run.signal.aborted) return;
+  private async authorized(run: Run, base: SnapshotBase): Promise<void> {
+    const full = await this.d.authorize(run.ctl.signal);
+    if (run.ctl.signal.aborted) return;
     const required = this.d.minAgentVersion;
     if (required !== undefined && compareSemver(full.version, required) < 0) {
       this.go({
@@ -285,12 +363,8 @@ export class Detector {
     this.go({ ...base, state: 'ready', hello: full });
   }
 
-  private async onConsent(
-    run: AbortController,
-    base: SnapshotBase,
-    consent: ConsentStatus,
-  ): Promise<void> {
-    if (run.signal.aborted) return;
+  private async onConsent(run: Run, base: SnapshotBase, consent: ConsentStatus): Promise<void> {
+    if (run.ctl.signal.aborted) return;
     switch (consent.state) {
       case 'granted':
         await this.authorized(run, base);
@@ -307,20 +381,28 @@ export class Detector {
       case 'blocked':
         this.go({ ...base, state: 'consent-blocked' });
         return;
-      default:
-        // `none` (the prompt expired or was dismissed) or an unknown future state, which means
-        // "not usable yet" (R-A2, R-A3): stop polling; Ask again needs a new user action.
+      case 'none':
+        // The prompt expired or was dismissed: stop polling; Ask again needs a new user action.
         this.go({ ...base, state: 'consent-expired' });
+        return;
+      default:
+        // An unknown future state means "not usable yet" (R-A2, R-A3): stop polling, never ask
+        // for a token, and keep the state as the typed cause (triage #4).
+        this.go({
+          ...base,
+          state: 'auth-unavailable',
+          cause: { kind: 'consent-state-unknown', consentState: consent.state },
+        });
     }
   }
 
-  private schedulePoll(run: AbortController, base: SnapshotBase, seconds: number): void {
+  private schedulePoll(run: Run, base: SnapshotBase, seconds: number): void {
     this.timer = setTimeout(() => {
       this.timer = undefined;
-      if (run.signal.aborted) return;
+      if (run.ctl.signal.aborted) return;
       void (async () => {
         try {
-          await this.onConsent(run, base, await this.d.readConsent(run.signal));
+          await this.onConsent(run, base, await this.d.readConsent(run.ctl.signal));
         } catch (err) {
           if (isProblem(err, 'rate-limited')) {
             // GET /auth/consent is limited to 2/s per origin (R-A3): back off and keep polling.
@@ -333,8 +415,8 @@ export class Detector {
     }, seconds * 1000);
   }
 
-  private onAuthError(run: AbortController, base: SnapshotBase, err: unknown): void {
-    if (run.signal.aborted || err instanceof ZiloAbortError) return;
+  private onAuthError(run: Run, base: SnapshotBase, err: unknown): void {
+    if (run.ctl.signal.aborted || err instanceof ZiloAbortError) return;
     if (err instanceof ZiloProblemError) {
       switch (err.code) {
         case 'consent-pending':
@@ -351,8 +433,16 @@ export class Detector {
           );
           return;
         case 'rate-limited':
-        case 'limits-exceeded':
           this.go({ ...base, state: 'rate-limited', retryAfterSeconds: err.retryAfterSeconds });
+          return;
+        case 'limits-exceeded':
+          // A resource bound, not a rate limit (triage #4): keep the typed cause.
+          this.go({
+            ...base,
+            state: 'auth-unavailable',
+            retryAfterSeconds: err.retryAfterSeconds,
+            cause: { kind: 'limits-exceeded', error: err as ZiloProblemError<'limits-exceeded'> },
+          });
           return;
         case 'unauthorized-origin':
           this.go({ ...base, state: 'unauthorized-origin' });
@@ -364,10 +454,15 @@ export class Detector {
           break;
       }
     }
-    // Transport failures, timeouts and anything else: the agent cannot be used right now.
+    // Transport failures, timeouts and anything else: the agent cannot be used right now. The
+    // re-check keeps the run's original deadline, so the overall cap is always reached.
+    const perm: PermissionBase = {
+      permission: base.permission ?? 'unknown',
+      permissionHint: base.permissionHint,
+    };
     if (this.snap.state !== 'unreachable-or-blocked') {
-      this.go({ state: 'unreachable-or-blocked', permission: base.permission });
+      this.go({ state: 'unreachable-or-blocked', ...perm });
     }
-    this.scheduleRecheck(run, base.permission ?? 'unknown', Date.now());
+    this.scheduleRecheck(run, perm);
   }
 }

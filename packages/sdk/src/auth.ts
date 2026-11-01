@@ -2,7 +2,7 @@
 // that keeps the family, deterministic family rollover and per-origin credential storage (R-A15).
 import type { CredentialStore, FamilyCredential, OriginCredentials } from './credentials.js';
 import { decodeConsent, decodeToken } from './decode.js';
-import { isProblem } from './errors.js';
+import { isProblem, ZiloDisposedError } from './errors.js';
 import type { HttpTransport } from './transport.js';
 import type { ConsentStatus } from './types.js';
 import { version as sdkVersion } from './version.js';
@@ -12,8 +12,8 @@ export interface AuthOptions {
   store: CredentialStore;
   transport: () => HttpTransport;
   now: () => number;
-  /** Families that still own a tracked, non-disposed job; they are never pruned. */
-  familiesWithJobs: () => ReadonlySet<string>;
+  /** True once the owning client was disposed: nothing is stored after that. */
+  closed?: (() => boolean) | undefined;
 }
 
 const time = (iso: string): number => Date.parse(iso);
@@ -25,9 +25,23 @@ export function isFinal(c: FamilyCredential): boolean {
 
 export class AuthClient {
   private readonly o: AuthOptions;
+  /** Renewal failures, mapped to the stored credential the renewal presented (R-A10). */
+  private readonly renewalFailures = new WeakMap<object, FamilyCredential>();
 
   constructor(options: AuthOptions) {
     this.o = options;
+  }
+
+  /**
+   * The credential a failed renewal presented, when `err` came from renewal. The caller runs the
+   * same R-A10 / R-A12 / R-A13 recovery for it as for a failed protected request.
+   */
+  renewalCredential(err: unknown): FamilyCredential | undefined {
+    return typeof err === 'object' && err !== null ? this.renewalFailures.get(err) : undefined;
+  }
+
+  private assertOpen(): void {
+    if (this.o.closed?.() === true) throw new ZiloDisposedError();
   }
 
   /** `POST /auth/consent` (R-A1): the only call that can prompt. Only from a user gesture. */
@@ -110,6 +124,7 @@ export class AuthClient {
         signal,
       });
       const t = decodeToken(res.body);
+      this.assertOpen();
       const next: FamilyCredential = {
         familyId: entry.familyId, // renewal keeps the family (R-A11)
         token: t.token,
@@ -124,6 +139,7 @@ export class AuthClient {
       // 409: another tab renewed first (storage was re-read under the lock) or the token is final;
       // 429: too early. Either way the stored token stays usable until its expiry.
       if (isProblem(err, 'invalid-state') || isProblem(err, 'rate-limited')) return entry;
+      if (typeof err === 'object' && err !== null) this.renewalFailures.set(err, entry);
       throw err;
     }
   }
@@ -137,6 +153,7 @@ export class AuthClient {
       signal,
     });
     const t = decodeToken(res.body);
+    this.assertOpen();
     const entry: FamilyCredential = {
       familyId: t.familyId,
       token: t.token,
@@ -152,14 +169,18 @@ export class AuthClient {
   }
 
   /**
-   * Before a new family becomes current: drops every entry that ended or no longer owns a tracked
-   * job (the old current entry included). Entries that still own jobs are never dropped, so with a
-   * full map the agent's own bound answers instead (R-A9, R-A15).
+   * Before a new family becomes current: drops only the entries whose family **provably ended**,
+   * by time: its deadline passed, or its stored token expired without a stored successor (lapse,
+   * R-A9 item 2; a successor stored by any tab would have replaced it). Storage is shared by
+   * clients this one cannot see, and the local job registry says nothing about their jobs, so a
+   * live entry is never dropped here: the old current entry included, it stays for jobs of other
+   * clients (R-A15) and ends by its own deadline. Other ended families are dropped where their end
+   * is observed: `401 token-invalid` with no other stored token, `token-revoked`, or an agent
+   * restart. With a full map, the agent's own bound answers (R-A9).
    */
   private prune(rec: OriginCredentials): void {
-    const withJobs = this.o.familiesWithJobs();
     for (const [id, c] of Object.entries(rec.families)) {
-      if (!this.usable(c) || !withJobs.has(id)) Reflect.deleteProperty(rec.families, id);
+      if (!this.usable(c)) Reflect.deleteProperty(rec.families, id);
     }
   }
 

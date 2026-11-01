@@ -22,6 +22,11 @@ export interface TransportOptions {
   /** Default per-request timeout. */
   timeoutMs?: number | undefined;
   logger?: DebugLogger | undefined;
+  /**
+   * The owner's lifetime: once aborted (the client was disposed), every in-flight request is
+   * aborted and every later one fails at once with `ZiloAbortError`.
+   */
+  lifetime?: AbortSignal | undefined;
 }
 
 export interface RequestOptions {
@@ -49,6 +54,7 @@ export class HttpTransport {
   private readonly fetchImpl: FetchLike;
   private readonly timeoutMs: number;
   private readonly log: DebugLogger;
+  private readonly lifetime: AbortSignal | undefined;
 
   constructor(port: number, options: TransportOptions = {}) {
     this.port = port;
@@ -56,11 +62,15 @@ export class HttpTransport {
     this.fetchImpl = options.fetch ?? ((input, init) => fetch(input, init));
     this.timeoutMs = options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
     this.log = createLogger(options.logger);
+    this.lifetime = options.lifetime;
   }
 
   async request(options: RequestOptions): Promise<HttpResponse> {
     const timeoutMs = options.timeoutMs ?? this.timeoutMs;
     const started = Date.now();
+    const lifetime = this.lifetime;
+    const aborted = (): boolean => options.signal?.aborted === true || lifetime?.aborted === true;
+    if (aborted()) throw new ZiloAbortError('aborted');
     const controller = new AbortController();
     const flags = { timedOut: false };
     const timer = setTimeout(() => {
@@ -70,11 +80,8 @@ export class HttpTransport {
     const onAbort = (): void => {
       controller.abort();
     };
-    if (options.signal?.aborted === true) {
-      clearTimeout(timer);
-      throw new ZiloAbortError('aborted');
-    }
     options.signal?.addEventListener('abort', onAbort, { once: true });
+    lifetime?.addEventListener('abort', onAbort, { once: true });
 
     const headers: Record<string, string> = { Accept: 'application/json' };
     if (options.token !== undefined) headers.Authorization = `Bearer ${options.token}`;
@@ -94,7 +101,7 @@ export class HttpTransport {
 
     const fail = (err: unknown): never => {
       if (flags.timedOut) throw new ZiloTimeoutError(timeoutMs);
-      if (options.signal?.aborted === true) throw new ZiloAbortError('aborted');
+      if (aborted()) throw new ZiloAbortError('aborted');
       if (err instanceof ZiloProtocolError) throw err;
       throw new ZiloTransportError('request failed', { cause: err });
     };
@@ -115,7 +122,10 @@ export class HttpTransport {
     } finally {
       clearTimeout(timer);
       options.signal?.removeEventListener('abort', onAbort);
+      lifetime?.removeEventListener('abort', onAbort);
     }
+    // Disposed while the body was read: drop the answer instead of acting on it.
+    if (lifetime?.aborted === true) throw new ZiloAbortError('aborted');
 
     const body = parseBody(text, response);
     const status = response.status;
