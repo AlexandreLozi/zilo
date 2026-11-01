@@ -70,6 +70,14 @@ Still not established locally (OD-6): the MSI compile and install/uninstall, the
 build and pkg, and any runtime behaviour on Windows or macOS. The hosted run on the fix-r1 SHA is
 the evidence for those.
 
+
+## Fix r2 (review T03-r2)
+
+Input: `docs/reviews/T03-r2.md` (`54816df`, merged fast-forward).
+
+| # | Finding | Fix | Evidence |
+|---|---|---|---|
+| R2-1 (medium) | `install-smoke.ps1:61` read `(Get-ItemProperty …).PSObject.Properties.Name` under strict mode; an absent/empty Run result threw instead of counting as "value gone", so the owned-key and sibling-sentinel checks never ran | The check is now `Test-RegValuePresent` in `packaging/windows/smoke-lib.ps1` (strict mode kept): absent key or null item -> not present; otherwise a property-name match. A retained `ZiloAgent` value still fails the smoke. `smoke-lib-selftest.ps1` covers (a) key absent, (b) key without `ZiloAgent`, (c) key retaining it. The workflow runs it with `-Registry` on a throwaway `HKCU\Software\ZiloSmokeSelfTest` key before the MSI step (no install). | `docs/validation/logs/T03/fix-r2/selftest-linux.log`: (a)/(b) continue, (c) fails as expected; negative control shows the old expression throws under strict mode. The hosted Windows job on the pushed head holds the registry self-test and the full MSI smoke. |
 ## What was built
 
 | Artifact | Tool | Layout |

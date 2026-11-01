@@ -185,6 +185,11 @@ jobs:
             throw 'relative-path MSI missing'
           }
           Remove-Item -Recurse -Force artifacts/relative-check
+      - name: Smoke helper self-test (throwaway HKCU key, no install)
+        shell: pwsh
+        run: |
+          pwsh packaging/windows/smoke-lib-selftest.ps1 -Registry
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Install / verify / uninstall smoke
         shell: pwsh
         run: |
