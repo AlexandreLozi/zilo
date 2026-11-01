@@ -42,3 +42,22 @@ or tells the liaison terminal. Masters: add new owner questions **here**, not in
   - At that point the masters bring a short comparison: MIT vs Apache-2.0 (patent grant) vs
     MPL/LGPL (copyleft), and what each means given NAPS2 is LGPL.
   - Until then, add no LICENSE file and keep the repo private.
+
+## Open: things only the owner can provide (each has a lead time, so start early)
+19. **Test hardware.** Which machines and scanners can you test on?
+    - **A Mac with Safari** is needed. Safari is required for v1, and only a real Mac proves it
+      (SP-1b); WebKit in CI isn't enough.
+    - Which Windows PCs (x64, or ARM such as Snapdragon), and any Linux box?
+    - Which physical scanners (models) can you reach: USB TWAIN/WIA, network AirPrint/eSCL? These
+      feed the M3/M6 hardware matrix (T34).
+20. **Code-signing identities, needed for release (D-011, M6). Don't buy yet; just confirm you're
+    willing.**
+    - **Windows:** Smart App Control blocks unsigned apps on customer PCs. Options:
+      - Azure Trusted Signing: about US$10/month, with identity verification. Check whether it's
+        available to individuals in your country.
+      - An OV code-signing certificate: about US$200–400/year.
+    - **macOS:** an Apple Developer Program account (US$99/year) for signing and notarization.
+    - Verification can take days to weeks, so it is the long pole for M6.
+21. **A test pass in your real app (later, around M2/M5):** whether you're willing to run the
+    `@zilo/dwt-compat` adapter in a local or staging build of your app, on the patient Documents
+    Scan button. That is the real-world acceptance test.
