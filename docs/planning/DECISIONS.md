@@ -326,6 +326,20 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
     installer.
   - Test-key signing cannot satisfy Smart App Control.
 - **Applies to:** SP-4b, T03, T40, T53. The GPT lane owns implementation.
+- **Rev 2 (owner Q20, 2026-11-01; `docs/context/code-signing-research.md`):**
+  - "Shipped" means a build released for clinic or end users. That is the signed build after the
+    M7 public release.
+  - **Pre-M7 tester builds are unsigned or test-key signed,** and they never claim Smart App
+    Control compatibility.
+  - Tester instructions: a Windows VM, or a dedicated test PC whose owner has chosen Smart App
+    Control off or evaluation mode; on macOS, "Open Anyway".
+  - Agents still never run unsigned binaries on the owner's SAC host, and never ask the owner to
+    turn SAC off (OD-6 unchanged). The instructions are for human testers' own machines.
+  - The signing source at M7: SignPath Foundation (free OSS; needs an OSI licence, a public repo
+    and a first release). Fallbacks: Azure Artifact Signing (re-check eligibility for Brazil) or a
+    commercial OV certificate.
+  - macOS uses the Apple Developer Program (US$99/year).
+  - Rev 2 recorded by Opus (2026-11-01); GPT acknowledgement pending.
 - **Corollary for dev evidence:** agents never run unsigned binaries natively on the SAC-enforcing
   host. Windows runtime rows are `blocked-by-host-SAC` (pending) until hosted Windows CI or a VM
   exists.
@@ -343,7 +357,8 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
   - SP-3 (joint): virtual end-to-end, 3 pages duplex to PDF. This is the M2 exit criterion.
 - **Release readiness** (pending ≠ pass; never blocks independent lanes):
   - SP-1b: real Safari 26 (owner checklist or a proven safaridriver lane).
-  - SP-4b: signing and notarization with owner credentials.
+  - SP-4b: signing and notarization, at M7 (D-011 rev 2: SignPath for Windows, Apple Developer
+    Program for macOS).
   - Hardware matrix.
   - Legal review.
 

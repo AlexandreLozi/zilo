@@ -135,7 +135,7 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T31 | NAPS2 ICA driver | G | C | T20, T06 | macOS runner: builds and enumerates without crashing (empty list OK); caps-mapping unit tests; hardware rows pending |
 | T32 | NAPS2 SANE (+sane-airscan) and eSCL drivers | G | C | T20, T06 | Linux runner: SANE `test` backend scan of 2 pages through Zilo; eSCL against the T33 device |
 | T33 | Virtual eSCL device (D-007 layer 2) | G | C | T12, T06 | Independent eSCL client validates the fixture's capabilities and 3-page duplex sequence; combined Zilo-driver/PDF-order integration is gated on both T32 and T33 code, never a circular prerequisite to merge either fixture or driver |
-| T34 | Owner hardware checklist + real-Safari script (FE lane) | C | G | T23 | Checklist covers each driver route, the WSD routes, Safari, and install/update flows, with pass/fail fields |
+| T34 | Owner hardware checklist + real-Safari script (FE lane). **Split (Q19):** T34a drafts the weekday checklist early (SP-1b Safari on the S2 prototype from T01, plus the first USB/Wi-Fi rows on the owner's Intel x64 PCs and the Mac tester); T34b completes it after T23 | C | G | T34a: T01, T05; T34b: T23 | Checklist covers each driver route, the WSD routes, Safari, and install/update flows, with pass/fail fields |
 
 ### Wave 4 — M4 install and lifecycle
 | ID | Task | Lane | A | R | Deps | Observable acceptance |
@@ -159,14 +159,21 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T53 | Licence/NOTICE inventory for the final installers; legal review package | BE | G | C | T40–T42 | Gate green on every installer; NOTICE complete; package ready for counsel |
 
 ### M6 release readiness (owner-assisted; pending ≠ pass)
-SP-1b real Safari 26, SP-4b production signing and notarization, the hardware matrix, legal sign-off.
-Tracked in VALIDATION.md.
+SP-1b real Safari 26, the hardware matrix (weekday owner checklist T34a/T34b), legal sign-off
+on third-party licences. Tester builds are unsigned or test-key signed (Q20). Windows on ARM rows
+stay gated, with no device available (Q19). Tracked in VALIDATION.md.
 
 ### M7 open-source release (owner Q17/Q18; gated on an owner-approved functional app)
 T54: the masters present an MIT / Apache-2.0 / MPL-LGPL comparison and the owner chooses. Then
 CONTRIBUTING, SECURITY.md, DCO, and the clean public export, reviewed by both masters and approved
 by the owner. Until M7 there is **no Zilo LICENSE file** anywhere in the repo, and the repo stays
 private. Third-party licence texts under evidence/notice paths are fine.
+SP-4b moves here (D-011 rev 2):
+- SignPath Foundation free signing for Windows, after the repo is public and a first release
+  exists. Fallbacks: Azure eligibility re-check, or an OV certificate.
+- Apple Developer ID plus notarization (owner, US$99/year).
+- GPG signing for Linux.
+Also here: the owner's real-app test pass through dwt-compat (Q21).
 
 ## 3a. OD-8 / OD-9 amendments to the DAG (v3 rev 3.1; both masters approved 2026-11-01)
 These amendments override the rows in §3 where they conflict.
@@ -233,6 +240,8 @@ Dispatches lost in the restart are bookkeeping only and are never reused.
 | T15 | AUTHORED @5814593 (draft PR #2; ci-web 41326742758 green on exact head: catalog 174/174 + demo 3/3 on Chromium/Firefox/WebKit, unit ui 25 / react 6 / catalog 3 / demo 1, licence gate 161). Scope within spec + approved demo swap. Settled and released. Next: GPT review r1 (medium) | t15-ui-foundation | task spec docs/tasks/T15.md / ctx_23881374964a | GPT (after author) | | |
 | T13 | AUTHORED @4aad2e6 (sdk 100 tests, workspace 113; lint/typecheck/test/build green on Node 24; api/** = f3ba120, lockfile = main; 9 contract ambiguities listed in docs/validation/logs/T13/run.md as T10 follow-up candidates). Settled and released. Next: rebase after the T10 merge, then GPT review r1 | t13-sdk-core | docs/tasks/T13.md / ctx_812c4ec6d10b | GPT (after the T10 merge) | | |
 | T02 (GPT) | Claude r1 changes (8895977); GPT fix r1 5bc5a05; Claude r2 in BE run | AlexandreLozi/t02-fix-r1 | GPT | r1 ctx_5c6b3170b2f8; r2 BE ctx_b125dedba577 | r2 pending | |
+
+**Queued FE filler (GPT-independent, low budget):** T34a weekday owner checklist draft (Claude low/medium), to be dispatched in an idle slot after the Wave 1 reviews are covered.
 
 **USAGE STOP (2026-11-01, liaison).** No new dispatches. Mid-flight in zilo-fe (post-reset, GPT-independent): T15 ctx_23881374964a, T13 ctx_812c4ec6d10b. Main backstop ci-web 41320496824 green (covers T04a). Resume order after the reset:
 1. GPT T10 r4 (high) of f3ba120, BE run.

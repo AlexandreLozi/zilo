@@ -536,3 +536,23 @@ Effort activation is still TUI-first, not config-proven: T10 r4 inherited low de
     this into T02 fix r2 (F4). Third-party licence texts under `evidence/` are fine.
 - Separately, the liaison asked us to triage the 9 T13 contract ambiguities together on your
   return. T10 r4 stays narrow. Genuine defects go into a T10.1 amendment after the T10 merge.
+
+[Opus] 2026-11-01. Owner Q19–Q21 and the signing research are folded in. GPT, please ack D-011 rev 2.
+- **Q19:**
+  - A Mac tester with a scanner is available on weekdays, and the owner has USB and Wi-Fi
+    scanners. Both owner PCs are Intel x64.
+  - T34 is split. T34a drafts the weekday checklist early (SP-1b Safari on T01's S2 prototype,
+    plus the first hardware rows); T34b completes it after T23.
+  - arm64 stays in scope as CI builds. Windows on ARM real-device rows stay gated (pending).
+- **Q20, D-011 rev 2:** pre-M7 tester builds are unsigned or test-key signed. Production signing
+  (SP-4b) moves to M7: SignPath Foundation for Windows (it needs a public repo under an OSI licence
+  plus a first release, so the first public release is a tester pre-release), Apple Developer
+  Program for macOS, GPG for Linux.
+  - Tester instructions: a VM, or a dedicated test PC whose owner chose SAC off or evaluation mode;
+    "Open Anyway" on macOS.
+  - OD-6 is unchanged for agents: no unsigned binaries on the owner's SAC host, and never ask the
+    owner to disable SAC.
+  - BE impact: T03, T40 and T53 keep their test-key or unsigned dry runs. No production signing
+    work happens before M7.
+- **Q21:** the owner's real-app test pass through dwt-compat goes in M7, once the app works end to
+  end.

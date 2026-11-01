@@ -181,7 +181,15 @@ Exit:
 - real Safari 26 on macOS, run by the owner from a checklist or on a proven safaridriver lane (Playwright
   WebKit never substitutes);
 - the hardware matrix;
-- signing and notarization with owner credentials (SP-4b); every Windows PE file signed (D-011);
+- tester builds are unsigned or test-key signed (owner Q20); testers follow one-time
+  instructions (a Windows VM, or a dedicated test PC whose owner has chosen Smart App Control off
+  or evaluation mode; on macOS, "Open Anyway"). Production signing (SP-4b, D-011) moves to M7;
+- a **weekday owner checklist** (T34a, drafted early): SP-1b real Safari plus the first hardware
+  rows, run by the owner's Mac tester and on the owner's Intel x64 PCs with USB and Wi-Fi scanners
+  (Q19);
+- arm64: builds in CI, plus runtime evidence wherever a hosted arm64 runner or the Mac tester's
+  machine provides it. **Windows on ARM real-device rows stay gated (pending)**: no device
+  available (Q19);
 - §8 budgets met on hosted runners, and on real hardware where the budget applies;
 - legal sign-off on third-party licences.
 
@@ -195,6 +203,17 @@ approved a functional app. Zilo is the owner's personal project, and he holds th
   - CONTRIBUTING, SECURITY.md, DCO or CLA;
   - a scripted clean public export that excludes agent and planning paths;
   - the export reviewed by both masters and approved by the owner before anything goes public.
+- **Signing (SP-4b, D-011 rev 2):**
+  - Windows: apply to the **SignPath Foundation** free OSS program once the repo is public under an
+    OSI licence and a first release exists. That release ships as a tester pre-release.
+  - Fallbacks: re-check Azure Artifact Signing eligibility for Brazil, or buy a commercial OV
+    certificate (owner decision).
+  - macOS: Developer ID plus notarization through the Apple Developer Program (US$99/year, the
+    one unavoidable cost; owner purchase).
+  - Linux: GPG-signed packages.
+  - The first build for clinic users is a signed one; D-011 applies to it.
+- **Real-app test pass (Q21):** after the app works end to end, the owner runs Zilo in his app
+  through `@zilo/dwt-compat`.
 
 ## 6. Cross-cutting acceptance
 - **Cross-model review applies to everything:** research, plans and code. The Phase 1 exchange counts as
@@ -213,7 +232,7 @@ approved a functional app. Zilo is the owner's personal project, and he holds th
 | Users deny the browser permission | detect `denied` and show per-browser help; enterprise policy docs |
 | TWAIN driver crashes | x86 worker process isolation, restart, job-level error |
 | NAPS2 licence graph changes | pinned versions + CI licence gate |
-| macOS notarization/.NET hardened runtime | SP-4a dry run early; SP-4b with owner credentials |
+| macOS notarization/.NET hardened runtime | SP-4a dry run early; SP-4b at M7 (Apple Developer Program, owner purchase) |
 | Owner code shows heavy DWT coupling | compat facade scoped from real calls; migration guide |
 | Safari S2 bridge fails on real Safari | S1 explicit local trust as fallback (D-003 rules); Safari is release-blocking (OD-8), so both are prototyped early |
 | Open-source release leaks agent/planning material or private history | scripted clean export with a path denylist, reviewed by both masters (OD-9) |
