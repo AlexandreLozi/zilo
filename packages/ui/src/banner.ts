@@ -168,12 +168,12 @@ export class ZiloBanner extends ZiloElement {
     this.setAttribute('variant', value);
   }
 
-  /** The effective politeness (the attribute, else the variant's default). */
+  /** The effective politeness (the attribute, else the variant's default). `null` clears it. */
   get live(): ZiloBannerLive {
     return readEnum(this, 'live', lives, defaultLive[this.variant]);
   }
-  set live(value: ZiloBannerLive) {
-    this.setAttribute('live', value);
+  set live(value: ZiloBannerLive | null) {
+    writeAttr(this, 'live', value);
   }
 
   get dismissible(): boolean {

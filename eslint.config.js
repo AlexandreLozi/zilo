@@ -17,7 +17,7 @@ export default defineConfig(
   },
   js.configs.recommended,
   {
-    files: ['**/*.ts'],
+    files: ['**/*.{ts,tsx}'],
     extends: [tseslint.configs.strictTypeChecked],
     languageOptions: {
       parserOptions: {
