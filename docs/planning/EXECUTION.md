@@ -229,9 +229,9 @@ Dispatches lost in the restart are bookkeeping only and are never reused.
 | T02-L | author settled; terminal released; integration handed to T02 | t02-license-gate | ctx_8d851f7ca858 | combined T02 Claude review | author reports 65 tests pass; review pending | |
 | T04b | merged under D-010a; old terminal cleanup release_unknown | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce | Claude code PASS; Windows runtime blocked-by-host-SAC; macOS/hosted CI pending | 9e43bf7 |
 | T04b-V | abandoned/superseded by Claude evidence; old resource released | t04b-native-validation | ctx_59467948111b | masters reviewed replacement evidence | no resumed Windows runtime execution (OD-6) | |
-| T10 | r1 fix @04bc0d8; GPT r2 active | t10-contract; AlexandreLozi/t10-review-r2 | Claude fix r1 complete | task_9fbb6eb65531 / ctx_665c57dfe75a | r2 pending; D-004a rev2 in force; contract approval pending | |
-| T03 | r2 changes @54816df; narrow Claude fix r2 requested | t03-packaging-dryrun; AlexandreLozi/t03-review-r2 | Claude fix r1 @7869d17 | task_9fac299622ee / ctx_b76a6ca1d52e (released) | Windows uninstall absence assertion fails exact-head CI 41241182388; Linux/macOS build evidence improves | |
-| T12-proto | r1 fix @574aa2c; GPT r2 active | t12-proto-pages; AlexandreLozi/t12-proto-review-r2 | Claude fix r1 complete | task_b312bc4653ca / ctx_f5c436f16f0e | r2 pending | |
+| T10 | r2 changes @67308ca; single Claude fix r2 requested | t10-contract; AlexandreLozi/t10-review-r2 | Claude fix r1 @04bc0d8 | task_9fbb6eb65531 / ctx_665c57dfe75a (released) | 5 residual findings, 38 pass + 1 intentionally red schema assertion; D-004a rev2 in force, contract not approved | |
+| T03 | r3 PASS @dc19861; enqueued to Opus | t03-packaging-dryrun; AlexandreLozi/t03-review-r3 | Claude fix r2 @26f5ab5 | task_f3300d311cb8 / ctx_d21e2a135b45 (released) | exact-head hosted run 41315822436 all 5 jobs green; production signing/macOS runtime pending | |
+| T12-proto | r2 PASS @fc72aa9; enqueued to Opus | t12-proto-pages; AlexandreLozi/t12-proto-review-r2 | Claude fix r1 @574aa2c | task_b312bc4653ca / ctx_f5c436f16f0e (settled; release retained/user_takeover) | Linux 183/183 + 37 Release r1 regressions; standalone prototype only; cross-OS pending | |
 | T06 | blocked on joint ICA/worker/image strategy and T11 guard retirement | | | | shipping graph blocked | |
 
 ## 5. Concurrency bounds
