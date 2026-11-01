@@ -1,0 +1,55 @@
+{
+  "scenario": "s2-session-envelope",
+  "outcome": "pass",
+  "expectation": "wrong or missing session -> session-mismatch, no bytes; missing version -> bad-version; reused id -> duplicate-request-id; valid request -> 8 bytes with the bound session id",
+  "observed": {
+    "bridgeOk": true,
+    "wrongSession": [
+      {
+        "ok": false,
+        "code": "session-mismatch",
+        "sessionId": "fe2e473d60ce6a4d",
+        "v": 1
+      }
+    ],
+    "noSession": [
+      {
+        "ok": false,
+        "code": "session-mismatch",
+        "sessionId": "fe2e473d60ce6a4d",
+        "v": 1
+      }
+    ],
+    "noVersion": [
+      {
+        "ok": false,
+        "code": "bad-version",
+        "sessionId": "fe2e473d60ce6a4d",
+        "v": 1
+      }
+    ],
+    "valid": [
+      {
+        "ok": true,
+        "seq": 1,
+        "sessionId": "fe2e473d60ce6a4d",
+        "v": 1,
+        "bytes": 8
+      }
+    ],
+    "duplicate": [
+      {
+        "ok": false,
+        "code": "duplicate-request-id",
+        "sessionId": "fe2e473d60ce6a4d",
+        "v": 1
+      }
+    ]
+  },
+  "console": [],
+  "project": "firefox",
+  "os": "linux",
+  "browserVersion": "157.0",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-11-01T14:49:21.920Z"
+}

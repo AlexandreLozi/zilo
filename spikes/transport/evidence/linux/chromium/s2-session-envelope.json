@@ -1,0 +1,55 @@
+{
+  "scenario": "s2-session-envelope",
+  "outcome": "pass",
+  "expectation": "wrong or missing session -> session-mismatch, no bytes; missing version -> bad-version; reused id -> duplicate-request-id; valid request -> 8 bytes with the bound session id",
+  "observed": {
+    "bridgeOk": true,
+    "wrongSession": [
+      {
+        "ok": false,
+        "code": "session-mismatch",
+        "sessionId": "745d210bbf1d9f5c",
+        "v": 1
+      }
+    ],
+    "noSession": [
+      {
+        "ok": false,
+        "code": "session-mismatch",
+        "sessionId": "745d210bbf1d9f5c",
+        "v": 1
+      }
+    ],
+    "noVersion": [
+      {
+        "ok": false,
+        "code": "bad-version",
+        "sessionId": "745d210bbf1d9f5c",
+        "v": 1
+      }
+    ],
+    "valid": [
+      {
+        "ok": true,
+        "seq": 1,
+        "sessionId": "745d210bbf1d9f5c",
+        "v": 1,
+        "bytes": 8
+      }
+    ],
+    "duplicate": [
+      {
+        "ok": false,
+        "code": "duplicate-request-id",
+        "sessionId": "745d210bbf1d9f5c",
+        "v": 1
+      }
+    ]
+  },
+  "console": [],
+  "project": "chromium",
+  "os": "linux",
+  "browserVersion": "156.0.8078.4",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-11-01T14:48:24.590Z"
+}

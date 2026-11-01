@@ -9,14 +9,14 @@
       "error": "TypeError",
       "message": "Failed to fetch",
       "timedOut": false,
-      "ms": 17
+      "ms": 13
     },
     "blob": {
       "ok": false,
       "error": "TypeError",
       "message": "Failed to fetch",
       "timedOut": false,
-      "ms": 12
+      "ms": 13
     },
     "audit": [
       [
@@ -43,5 +43,5 @@
   "os": "linux",
   "browserVersion": "156.0.8078.4",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:26:47.111Z"
+  "recordedAt": "2026-11-01T14:48:44.597Z"
 }

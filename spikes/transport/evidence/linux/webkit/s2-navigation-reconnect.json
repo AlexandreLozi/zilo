@@ -1,0 +1,81 @@
+{
+  "scenario": "s2-navigation-reconnect",
+  "outcome": "pass",
+  "expectation": "reload -> bridge-lost (pagehide notice, or the re-announcement) then bridge-reconnect with a new session; navigation to about:blank -> state lost within 2.5 s (popup still open); a new click rebinds; with the pagehide notice suppressed, the ping deadline reports lost (no-pong); three distinct sessions, three 201 mints",
+  "observed": {
+    "firstOk": true,
+    "reloaded": {
+      "state": "bound",
+      "lost": {
+        "reason": "pagehide",
+        "sessionId": "45629d3ba60ff28d",
+        "ms": 1079
+      },
+      "reconnect": {
+        "ok": true,
+        "previousSessionId": "45629d3ba60ff28d",
+        "sessionId": "78d0f79543f2f50b",
+        "nonceFresh": true,
+        "hello": true
+      }
+    },
+    "navigated": {
+      "state": "lost",
+      "lost": {
+        "reason": "pagehide",
+        "sessionId": "78d0f79543f2f50b",
+        "ms": 1103
+      },
+      "reconnect": {
+        "ok": true,
+        "previousSessionId": "45629d3ba60ff28d",
+        "sessionId": "78d0f79543f2f50b",
+        "nonceFresh": true,
+        "hello": true
+      },
+      "detectMs": 10,
+      "popupOpen": true
+    },
+    "again": {
+      "ok": true,
+      "sessionId": "91100626d786e01f"
+    },
+    "silent": {
+      "state": "lost",
+      "lost": {
+        "reason": "no-pong",
+        "sessionId": "91100626d786e01f",
+        "ms": 11074
+      },
+      "reconnect": {
+        "ok": true,
+        "previousSessionId": "45629d3ba60ff28d",
+        "sessionId": "78d0f79543f2f50b",
+        "nonceFresh": true,
+        "hello": true
+      },
+      "detectMs": 1821,
+      "suppressedAt": "http://127.0.0.1:47613/bridge"
+    },
+    "sessions": [
+      "45629d3ba60ff28d",
+      "78d0f79543f2f50b",
+      "91100626d786e01f"
+    ],
+    "mintStatuses": [
+      201,
+      201,
+      201
+    ]
+  },
+  "console": [
+    "error: Unable to post message to http://app.zilo.test:8080. Recipient has origin https://app.zilo.test:8443.\n",
+    "error: Unable to post message to http://app.zilo.test:8080. Recipient has origin https://app.zilo.test:8443.\n",
+    "error: Unable to post message to http://app.zilo.test:8080. Recipient has origin https://app.zilo.test:8443.\n"
+  ],
+  "project": "webkit",
+  "os": "linux",
+  "browserVersion": "27.2",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-11-01T14:50:39.508Z"
+}
