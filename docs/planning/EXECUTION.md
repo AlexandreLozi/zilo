@@ -115,14 +115,14 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T12 | Virtual driver (D-007 layer 1) against the T10 neutral model. A standalone page-generator prototype may start earlier under `spikes/` | BE | G | C | T10, T04b | Golden-image tests (decoded pixels, QR payload); failure-variant tests |
 | T13 | SDK core: D-008 detection state machine, permission query, HTTP transport, typed errors, devices/caps, unknown-field tolerance with redacted debug logs | FE | C | G | T04a, T10 | Unit tests against an OpenAPI-generated mock server |
 | T14 | Demo app device list, integrated with the real agent | FE | C | G | T13, T11, T12 | Linux CI job starts the agent and the demo lists "Zilo Virtual Scanner" over real HTTP (M1 exit) |
-| T15 | UI foundation: Web Components base, tokens, dialog primitive (focus trap, ARIA), themes, React wrapper | FE | C | G | T04a, T05 | Component catalog page; axe checks pass in Playwright |
+| T15 | UI foundation: Web Components base, tokens, dialog primitive (focus trap, ARIA), themes, React wrapper | FE | C | G | T04a, T05 | Component catalog page; axe checks pass in Playwright; **host-modal fixture**: the dialog works inside a Radix Dialog with no host hacks (nested focus trap and return, pointer-events, portal and z-index, Escape and outside-click ownership). Added in T15 fix r1 (PLAN §1, owner inventory) |
 
 ### Wave 2 — M2 virtual end-to-end
 | ID | Task | Lane | A | R | Deps | Observable acceptance |
 |---|---|---|---|---|---|---|
 | T20 ★ | Agent jobs: state machine, SSE with `seq`/replay, pages, export (PDF, TIFF, JPEG, PNG) with retry, cancel, dispose, TTL, user-private temp | BE | G | C | T11, T12 | Contract tests for every job endpoint and transition; export golden tests; temp-permission tests on Linux and Windows |
 | T21 | SDK jobs/events/pages/export. **Two gates:** (a) unit tests on the mock; (b) a real-agent integration test, enabled only once T20 has merged | FE | C | G | T13 (a), T20 (b) | (a) mock suite green; (b) integration suite green in `ci-web` against the agent |
-| T22 | Scan dialog v1 (device list with driver badges, settings bound to caps, live thumbnails, rotate/reorder/delete, export) | FE | C | G | T15, T21a, T05 | Component tests + axe |
+| T22 | Scan dialog v1 (device list with driver badges, settings bound to caps, live thumbnails, rotate/reorder/delete, export) | FE | C | G | T15, T21a, T05 | Component tests + axe; thumbnail strip with drag reorder and keyboard control, current-page selection and themeable colours (the owner's P0 viewer); a Radix host-modal fixture |
 | T24 ★ | Security suite: hostile origin, bad Host, replayed pairing challenges, expired and revoked tokens (valid bearer reuse allowed), cross-origin job access, GET safety, resource bounds | BE | G | C | T20 | Suite in `ci-backend`; each case shown failing against a deliberately weakened build, then passing |
 | T25-BE ★ | Safari path, agent side, per the SP-1a result. **S2:** bridge capability minting bound to the verified app-origin handshake and pairing, plus session lifecycle and bridge page serving with CSP and no framing. **S1:** trust tooling, rotation, uninstall. **Neither:** an explicit capability flag | BE | G | C | T01, T20 | Hostile-opener, forged-origin, wrong-nonce and stale-session tests (S2); unrelated-hostname, rotation and uninstall tests (S1) |
 | T25-FE ★ | Safari path, SDK and UI side: S2 relay (typed ops, bounded binary, exact `targetOrigin`, COOP, popup-blocker and closure handling) or the explicit Safari-unsupported state | FE | C | G | T21a, T25-BE | Playwright WebKit tests of handshake failures and the unsupported state |
@@ -135,7 +135,7 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T31 | NAPS2 ICA driver | G | C | T20, T06 | macOS runner: builds and enumerates without crashing (empty list OK); caps-mapping unit tests; hardware rows pending |
 | T32 | NAPS2 SANE (+sane-airscan) and eSCL drivers | G | C | T20, T06 | Linux runner: SANE `test` backend scan of 2 pages through Zilo; eSCL against the T33 device |
 | T33 | Virtual eSCL device (D-007 layer 2) | G | C | T12, T06 | Independent eSCL client validates the fixture's capabilities and 3-page duplex sequence; combined Zilo-driver/PDF-order integration is gated on both T32 and T33 code, never a circular prerequisite to merge either fixture or driver |
-| T34 | Owner hardware checklist + real-Safari script (FE lane) | C | G | T23 | Checklist covers each driver route, the WSD routes, Safari, and install/update flows, with pass/fail fields |
+| T34 | Owner hardware checklist + real-Safari script (FE lane). **Split (Q19):** T34a drafts the weekday checklist early (SP-1b Safari on the S2 prototype from T01, plus the first USB/Wi-Fi rows on the owner's Intel x64 PCs and the Mac tester); T34b completes it after T23 | C | G | T34a: T01, T05; T34b: T23 | Checklist covers each driver route, the WSD routes, Safari, and install/update flows, with pass/fail fields |
 
 ### Wave 4 — M4 install and lifecycle
 | ID | Task | Lane | A | R | Deps | Observable acceptance |
@@ -145,13 +145,13 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T42 | Linux `.deb`/`.rpm`, `systemd --user`, XDG handler | BE | G | C | T03, T32 | Container installs on Ubuntu LTS and Fedora: dependencies resolve, the user unit starts, `xdg-mime` query, purge is clean |
 | T43 ★ | Signed `latest.json` + updater | BE | G | C | T11 | Tests: tampered manifest rejected, hash mismatch rejected, downgrade rejected, interrupted update rolls back, success path updates atomically (test keys) |
 | T44 | Tray/menu-bar shells: consent prompt, revocation, status, logs (to the T05 design) | BE | G | C | T11, T05 | Per-OS UI automation or a scripted harness shows prompt → allow/deny → token issued/denied, and revocation invalidates tokens |
-| T45 | Install, Permission-help, Update and Safari-state dialogs; bounded polling; `zilo://start` | FE | C | G | T22, T43, T25-FE | Playwright: each D-008 state renders the right dialog; polling stops on dismiss and navigation; a11y passes |
-| T46 | Download page consuming `latest.json` | FE | C | G | T43 | Picks OS/arch correctly in the browser matrix; rejects a manifest with a bad signature (SDK verification) |
+| T45 | Install, Permission-help, Update and Safari-state dialogs; bounded polling; `zilo://start` | FE | C | G | T22, T43, T25-FE | Playwright: each D-008 state renders the right dialog; polling stops on dismiss and navigation; a11y passes; the Install and Permission dialogs work inside a Radix host modal with no hacks (owner inventory: DWT's install dialog breaks theirs) |
+| T46 | Download page consuming `latest.json`; Zilo self-hosts the installers (the owner's app uses Dynamsoft's demo CDN today) | FE | C | G | T43 | Picks OS/arch correctly in the browser matrix; rejects a manifest with a bad signature (SDK verification) |
 
 ### Wave 5 — M5 compat + hardening
 | ID | Task | Lane | A | R | Deps | Observable acceptance |
 |---|---|---|---|---|---|---|
-| T50 | `@zilo/dwt-compat` from the owner's call inventory (**blocked on owner**) | FE | C | G | T21b, owner code | Contract tests replaying each owner call sequence |
+| T50 | `@zilo/dwt-compat`. P0 = the owner's call inventory (`docs/context/dwt-integration-inventory.md`, incl. built-in viewer + `createThumbnailViewer`); P1 = the common public API. Owner unblocked 2026-11-01 | FE | C | G | T21b, T22 (viewer) | Contract tests replaying each owner call sequence; 20 consecutive `Load`/`Unload` cycles are idempotent with no leak and stay within the §8 detection budget |
 | T51 | Diagnostics endpoint + support bundle | BE | G | C | T20 | Test asserts no page data, tokens or file paths outside the allowlist appear in the bundle |
 | T52-C ★ | Threat-model review, Claude-authored, independent | joint | C | — | T24, T25-*, T43 | `docs/reviews/T52-claude.md` |
 | T52-G ★ | Threat-model review, GPT-authored, independent (does not read T52-C before finishing) | joint | G | — | T24, T25-*, T43 | `docs/reviews/T52-gpt.md` |
@@ -159,8 +159,21 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T53 | Licence/NOTICE inventory for the final installers; legal review package | BE | G | C | T40–T42 | Gate green on every installer; NOTICE complete; package ready for counsel |
 
 ### M6 release readiness (owner-assisted; pending ≠ pass)
-SP-1b real Safari 26, SP-4b production signing and notarization, the hardware matrix, legal sign-off.
-Tracked in VALIDATION.md.
+SP-1b real Safari 26, the hardware matrix (weekday owner checklist T34a/T34b), legal sign-off
+on third-party licences. Tester builds are unsigned or test-key signed (Q20). Windows on ARM rows
+stay gated, with no device available (Q19). Tracked in VALIDATION.md.
+
+### M7 open-source release (owner Q17/Q18; gated on an owner-approved functional app)
+T54: the masters present an MIT / Apache-2.0 / MPL-LGPL comparison and the owner chooses. Then
+CONTRIBUTING, SECURITY.md, DCO, and the clean public export, reviewed by both masters and approved
+by the owner. Until M7 there is **no Zilo LICENSE file** anywhere in the repo, and the repo stays
+private. Third-party licence texts under evidence/notice paths are fine.
+SP-4b moves here (D-011 rev 2):
+- SignPath Foundation free signing for Windows, after the repo is public and a first release
+  exists. Fallbacks: Azure eligibility re-check, or an OV certificate.
+- Apple Developer ID plus notarization (owner, US$99/year).
+- GPG signing for Linux.
+Also here: the owner's real-app test pass through dwt-compat (Q21).
 
 ## 3a. OD-8 / OD-9 amendments to the DAG (v3 rev 3.1; both masters approved 2026-11-01)
 These amendments override the rows in §3 where they conflict.
@@ -197,8 +210,9 @@ These amendments override the rows in §3 where they conflict.
   public-docs-only API names, and the owner's answers re-rank it.
 
 **New tasks:**
-- **T54 (FE lane, docs/tooling), open-source hygiene:**
-  - a licence proposal (masters propose, owner decides; recorded in OWNER-QUESTIONS.md #18);
+- **T54 (FE lane, docs/tooling), open-source hygiene. It is in M7 and gated on an
+  owner-approved functional app (Q17/Q18). No LICENSE file is added before then.**
+  - an MIT / Apache-2.0 / MPL-LGPL comparison (masters present it, the owner decides);
   - CONTRIBUTING, SECURITY.md, DCO;
   - a scripted clean public export that excludes CLAUDE.md, `.claude/`, `opencode.json`,
     `.opencode/`, `docs/planning`, `docs/tasks` and `docs/reviews`, keeps the product docs, and
@@ -219,13 +233,17 @@ Dispatches lost in the restart are bookkeeping only and are never reused.
 |---|---|---|---|---|---|---|
 | T04a | **merged** (r2 Node pass, r3 format-scope pass; D-012 reuse of ci-web 41319600327; main backstop ci-web 41320055013) | — | fix r1 ctx_cd74bcad8bc0, fix r2 ctx_e53b3cb5f39b | r2 ctx_1d112881a0b7, r3 ctx_15fbb7f49d56 (GPT) | pass | 4639340 |
 | T05 | **merged** (r2 pass; rebased checks: 190 states, 0 axe violations) | — | fix r1 ctx_11403c9933fe | r2 ctx_e5c59cb532bb (GPT) | pass | f22eb2e |
-| T01 | fix r2 DONE @83df7dd (pushed; harness-only determinism fix 17accfa; suite 60/5/0; forged-ready 20x in 3 browsers 60/0). Author settled and closed. Next after reset: check the push-triggered spike-transport run, then GPT r3 (narrow, medium) | t01-transport-spike | fix r1 ctx_7a373faedbc2; fix r2 ctx_18d2b7435bfb (claude medium) | r2 ctx_48f38cafb0c0 (GPT high) | changes -> r3 pending | |
-| T10 ★ (Claude author) | r3 changes (root-dot loopback); round-3 escalation agreed; fix r3 done f3ba120; GPT r4 next (BE run) | t10-contract | fix r2 ctx_0a8ee3069c14, fix r3 ctx_062ede7e79cc | GPT (BE run) | pending r4 | |
+| T01 | fix r2 DONE @83df7dd; hosted spike-transport 41320440243 green. **Queued: GPT r3 (narrow, medium) at GPT return (~16:10)**, in zilo-fe | t01-transport-spike | fix r2 ctx_18d2b7435bfb (settled) | r2 ctx_48f38cafb0c0 | r3 queued | |
+| T10 ★ (Claude author) | **MERGED 79d6ec3** (r4 PASS e939912; both masters approved the exact f3ba120 contract; exact-SHA check.sh 60/60 + 3/3 on 79d6ec3). Follow-ups: joint triage of the 9 T13 ambiguities, then T10.1 if needed (incl. stale status markers); hosted ci-contract job | t10-contract | fix r2 ctx_0a8ee3069c14, fix r3 ctx_062ede7e79cc | GPT (BE run) | pending r4 | |
 | T03 (Claude author) | **merged**; exact-SHA main runs green | — | fix r2 ctx_b6c1ba2bdb7e | GPT r3 (BE) | pass | f38e3ea |
 | T12-proto (Claude author) | **merged**; Linux 183/183 rebased; cross-OS pending | — | — | GPT r2 (BE) | pass | 32051c6 |
+| T15 | AUTHORED @5814593 (draft PR #2; ci-web 41326742758 green on exact head: catalog 174/174 + demo 3/3 on Chromium/Firefox/WebKit, unit ui 25 / react 6 / catalog 3 / demo 1, licence gate 161). Scope within spec + approved demo swap. Settled and released. Next: GPT review r1 (medium) | t15-ui-foundation | task spec docs/tasks/T15.md / ctx_23881374964a | GPT (after author) | | |
+| T13 | AUTHORED @4aad2e6 (sdk 100 tests, workspace 113; lint/typecheck/test/build green on Node 24; api/** = f3ba120, lockfile = main; 9 contract ambiguities listed in docs/validation/logs/T13/run.md as T10 follow-up candidates). Settled and released. Next: rebase after the T10 merge, then GPT review r1 | t13-sdk-core | docs/tasks/T13.md / ctx_812c4ec6d10b | GPT (after the T10 merge) | | |
 | T02 (GPT) | Claude r1 changes (8895977); GPT fix r1 5bc5a05; Claude r2 in BE run | AlexandreLozi/t02-fix-r1 | GPT | r1 ctx_5c6b3170b2f8; r2 BE ctx_b125dedba577 | r2 pending | |
 
-**USAGE STOP (2026-11-01, liaison).** No new dispatches. Mid-flight in zilo-fe: none (T01 fix r2 settled at 83df7dd). Resume order after the reset:
+**Queued FE filler (GPT-independent, low budget):** T34a weekday owner checklist draft (Claude low/medium), to be dispatched in an idle slot after the Wave 1 reviews are covered.
+
+**USAGE STOP (2026-11-01, liaison).** No new dispatches. Mid-flight in zilo-fe (post-reset, GPT-independent): T15 ctx_23881374964a, T13 ctx_812c4ec6d10b. Main backstop ci-web 41320496824 green (covers T04a). Resume order after the reset:
 1. GPT T10 r4 (high) of f3ba120, BE run.
 2. The T10 merge (Opus queue), after both masters approve the contract.
 3. Wave 1 (T11/T12/T13/T15/T56a) by dependency order.
@@ -241,7 +259,7 @@ Wave 1 (T11, T12, T13, T15, T56a) starts once T10 merges. T04a and T05 are alrea
 | T02-L | author settled; terminal released; integration handed to T02 | t02-license-gate | ctx_8d851f7ca858 | combined T02 Claude review | author reports 65 tests pass; review pending | |
 | T04b | merged under D-010a; old terminal cleanup release_unknown | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce | Claude code PASS; Windows runtime blocked-by-host-SAC; macOS/hosted CI pending | 9e43bf7 |
 | T04b-V | abandoned/superseded by Claude evidence; old resource released | t04b-native-validation | ctx_59467948111b | masters reviewed replacement evidence | no resumed Windows runtime execution (OD-6) | |
-| T10 | **USAGE-PAUSED; FIRST ON RESET:** narrow GPT r4 of f3ba120 (high). No substantive review/tests/edits performed. Then both-master exact contract approval and Opus merge | t10-contract @f3ba120; origin/AlexandreLozi/t10-review-r4 @f3ba120; worktree t10-review-r4 clean | Claude fix r3 ctx_062ede7e79cc done; joint round-3 escalation agreed | task_98de4952c49d / ctx_d1000c7fe8db settled failed=usage-paused/incomplete, released; no verdict | r3 report255b3e5: one root-dot localhost residual; fix f3ba120 author reports60/60. r4 not done, contract NOT approved. Fresh/retry dispatch only after reset authorization, verify TUI high | |
+| T10 | **R4 PASS; GPT master approves exact f3ba120 contract.** Enqueued to Opus for its exact approval and serialized merge | t10-contract @f3ba120; AlexandreLozi/t10-review-r4 @e939912 | Claude fix r3 ctx_062ede7e79cc done | task_98de4952c49d / ctx_30230df02424 succeeded/released | pinned acceptance60/60 +unchanged reviewer3/3; high TUI verified. No runtime/support clearance; nine T13 items triaged after merge | |
 | T03 | r3 PASS @dc19861; merged by Opus; exact-SHA main CI gap closed | archived on origin; locals pruned by Opus | Claude fix r2 @26f5ab5 | task_f3300d311cb8 / ctx_d21e2a135b45 (released) | main f38e3ea packaging41316990218 +backend41316990194 success; signing/macOS runtime pending | f38e3ea |
 | T12-proto | r2 PASS @fc72aa9; merged by Opus | t12-proto-pages; AlexandreLozi/t12-proto-review-r2 | Claude fix r1 @574aa2c | task_b312bc4653ca / ctx_f5c436f16f0e (settled; release retained/user_takeover) | rebased Linux Debug/Release 183/183 reported by Opus; prototype only; cross-OS pending | 32051c6 |
 | T06 | blocked on joint ICA/worker/image strategy and T11 guard retirement | | | | shipping graph blocked | |
@@ -254,6 +272,12 @@ Both exact checkpoint branch heads are pushed to origin. No polling or wait loop
 After reset authorization: **T10 r4 high → both-master contract approval + Opus T10 merge → Wave 1
 (T11/T12/T13/T15/T56a) in dependency order**. T02 fix r2/Claude r3 and T01 follow at lower priority.
 No contract approval, shipping graph clearance, or T06 unblock is implied by a usage checkpoint.
+
+**RESUME authorized by liaison (2026-11-01; GPT acted 19:12 UTC):** T10 r4 high first;
+exact contract joint approval/Opus merge; post-merge T13 ambiguity triage; GPT reviews T01,
+T15, T13 in FE with Opus; T02 fix r2; BE T11 high and T12 medium by merged dependencies.
+T02 fix r2 must also remove the premature first-party MIT LICENSE per owner M7 deferral,
+without inventing a licence or weakening third-party default-deny/evidence hashes.
 
 ## 5. Concurrency bounds
 - **Per lane at once:** at most 4 live authors, 2 live reviewers, and 1 fix dispatch per task.

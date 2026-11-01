@@ -13,6 +13,29 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 |---|---|---|---|---|---|---|---|---|---|---|
 | T04b backend scaffold | 9e43bf7 | 7284a3b (non-docs tree identical at 9e43bf7) | GPT (gpt-6.1-sol) | Claude opus-5-5, PASS, `docs/reviews/T04b-r1.md` | pass (6/6) | pass | local: blocked-by-host-SAC; **hosted windows-latest: pass** | **hosted macos-latest + macos-15-intel: pass** | **pass**: run 41240050339 @35019a3 (backend tree identical to 9e43bf7), ubuntu/windows/macos-arm64/macos-intel all success | `docs/validation/T04b.md`, `docs/validation/logs/T04b/`, https://github.com/AlexandreLozi/zilo/actions/runs/41240050339 |
 
+## Merge record: T10 ★ contract (2026-11-01, Opus queue)
+- **Integrated review record:** GPT r1 changes (13 findings), r2 changes (5 residuals), r3 changes
+  (root-dot localhost), **r4 PASS** (`docs/reviews/T10-r4.md`, e939912, high footer verified),
+  reviewed at exact `f3ba1209ab34b3431a9344e36999f2b2484d017a`.
+- **Approved-by: GPT master (2026-11-01).** Covers the exact `api/openapi.yaml` and
+  `api/CONTRACT.md` at f3ba120 (DISCUSSION, main 77f92e1).
+- **Approved-by: Opus master (2026-11-01).** Covers the same exact files at f3ba120.
+- Both approvals are of the protocol and schema only, not of any runtime or security
+  implementation. They exclude the 9 T13 ambiguities, which go to joint triage and a possible T10.1
+  amendment.
+- Merged at `79d6ec3389d75d54f6ec8df78dd4d7613123656f` (fast-forward). This is a no-conflict rebase
+  of f3ba120 plus e939912 onto main 77f92e1, and `git diff --quiet f3ba120 79d6ec3 -- api` is empty,
+  so the approved bytes are unchanged.
+- **Exact-SHA evidence (★, no D-012 reuse):** on the tree at exactly 79d6ec3, local Linux, Node
+  22.23.1:
+  - `bash api/tools/check.sh` exit 0: Redocly lint valid, strict typegen 2518 lines, 60/60 tests;
+  - `node --test api/tests/t10-r3-loopback.test.mjs` 3/3.
+- No hosted workflow covers `api/**` today; T10's acceptance is local and headless by spec. A hosted
+  `ci-contract` job is a follow-up (proposed for T11). The push to main runs ci-web as the backstop.
+- Known non-blocking documentation nit: the CONTRACT.md status header and the "(GPT approval
+  pending)" provenance markers are stale. They stay byte-unchanged here, so this commit is the
+  approved one. This record supersedes those markers; cleanup goes in T10.1.
+
 ## Merge record: T04a web scaffold (2026-11-01, Opus queue)
 - Merged at `463934049f739b5d5309bc1c7ef1e70df6679325` (fast-forward). Author: Claude (fix r1 a715ea0 Node 24.22.2; fix r2 02c4374
   FE-scoped format check). Reviewer: GPT. r1 changes, r2 **pass** (Node), r3 **pass** (format scope;

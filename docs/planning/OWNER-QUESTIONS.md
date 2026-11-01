@@ -8,66 +8,19 @@ or tells the liaison terminal. Masters: add new owner questions **here**, not in
   bridge per T01) is release-blocking, not optional.
 - **Front-end framework:** the owner left this to the agents. The decision is in OD-8.
 - **CI hosting:** private GitHub repo, AlexandreLozi/zilo (OD-7).
+- **Dynamsoft integration, Q1–Q13:** **answered 2026-11-01** from the app's code. The full call
+  inventory is in **`docs/context/dwt-integration-inventory.md`** (T50 input). Headline facts:
+  - dwt 19.4.2 from npm, React + Radix.
+  - The built-in viewer plus a drag-reorder thumbnail strip.
+  - GetDevicesAsync, SelectDeviceAsync and AcquireImageAsync (ADF on by default, optional
+    duplex).
+  - ConvertToBase64 to one multi-page PDF, posted to the app's own API.
+  - No add-ons and no HTTPUpload.
+  - No COOP/COEP; the CSP allows loopback.
+  - X-Frame-Options SAMEORIGIN, so **no iframe**.
+  - One known issue: the install dialog conflicts with the Radix modal.
 
-## Open: Dynamsoft integration (check in the app repo)
-Each answer narrows what `@zilo/dwt-compat` must emulate. Because Zilo is meant to become open
-source (OD-9), the adapter will also cover the commonly used DWT API. Your answers set the priority
-order and the test cases.
-
-1. **Version.** Which Dynamic Web TWAIN version is deployed? Check the `dwt` version in
-   `package.json`, or the version in `Resources/dynamsoft.webtwain.initiate.js`. Versions 18.5–19.2
-   return blank images on Chrome 142+.
-2. **How it's loaded.**
-   - Is it the npm `dwt` package or `<script>` tags?
-   - Is there a `dynamsoft.webtwain.config.js`, and which settings does it change (`ResourcesPath`,
-     `AutoLoad`, `Containers`, `ServiceInstallerLocation`, ports)?
-3. **Initialization.**
-   - Which of these does the app call: `Dynamsoft.DWT.CreateDWTObjectEx`, `Dynamsoft.DWT.Load`,
-     `GetWebTwain`, or `RegisterEvent('OnWebTwainReady')`?
-   - Is the licence key set in code (`Dynamsoft.DWT.ProductKey`)?
-4. **Scanner selection.**
-   - Which of `GetSourceNames`, `GetDevicesAsync`, `SelectSource` / `SelectSourceAsync`,
-     `SelectDeviceAsync` or `OpenSource` does it use?
-   - Does it show Dynamsoft's source picker, or its own list?
-5. **Acquisition.**
-   - `AcquireImage` or `AcquireImageAsync`, and with which options: `IfShowUI`, `PixelType`,
-     `Resolution`, `IfFeederEnabled`, `IfDuplexEnabled`, `PageSize`,
-     `IfAutoDiscardBlankpages`, `IfCloseSourceAfterAcquire`?
-   - Does it read or set capabilities directly (`getCapabilities` / `setCapabilities`)?
-   - Does it show the driver's own UI?
-6. **Viewer and editing.**
-   - Does the app use Dynamsoft's **built-in viewer** (a container div, `Viewer.bind`, thumbnails)
-     or the `ImageEditor`?
-   - Or does it only take the images and render them itself?
-
-   This is the largest single factor in the adapter's scope.
-7. **Buffer operations.** Which of these does it use: `HowManyImagesInBuffer`, `RemoveAllImages`,
-   `RemoveImage`, `RotateLeft`/`RotateRight`, `SwitchImage`, `MoveImage`, `CurrentImageIndexInBuffer`,
-   `SelectImages`, crop, blank-page detection?
-8. **Output and upload.**
-   - Which output calls: `ConvertToBlob`, `ConvertToBase64`, `SaveAsPDF`/`SaveAllAsPDF`,
-     `HTTPUpload` (and which URL/fields), `OutputSelectedAreaAsync`, or `GetImageURL`?
-   - Which formats: PDF, JPEG, PNG or TIFF?
-   - Does it use multi-page PDF or TIFF, and what compression or quality settings?
-9. **Events.** Which does it use: `OnPostTransfer`, `OnPostAllTransfers`, `OnBufferChanged`,
-   `OnBitmapChanged` or `OnTopImageInTheViewChanged`? Any error callbacks?
-10. **Add-ons.** Does it use the PDF Rasterizer (loading existing PDFs into the buffer), the Webcam
-    add-on, barcode/OCR, `LoadImageEx` (loading local files), or RemoteScan?
-11. **Install flow.** Does it customize Dynamsoft's install dialog (`dynamsoft.webtwain.install.js`,
-    `Dynamsoft.OnWebTwainNotFound`, its own download link)? Where are installers hosted?
-12. **Hosting and security headers** (for the web app page that scans):
-    - **CSP** `connect-src`: does it allow `http://127.0.0.1:*`/`localhost`? Dynamsoft's service
-      needed an allowance too.
-    - **COOP/COEP** headers. These matter for the Safari pop-up bridge.
-13. **iframe.** Does the scanning UI run inside an `<iframe>`? This covers two cases: your app
-    embeds the scan page from another domain, or your whole app is embedded in someone else's
-    portal (for example an EHR or customer portal).
-    - **Why it matters:** browsers now gate requests from a web page to the local machine (Local
-      Network Access). In a cross-origin iframe, the parent page must explicitly delegate that
-      permission (`<iframe allow="loopback-network">`; the legacy `local-network-access` name should not
-      be relied on), or every
-      call to the Zilo agent is blocked.
-    - If scanning happens in your own top-level page, this doesn't apply.
+## Open: customers and field data (needs product or support data, not code)
 14. **Customers' environment.**
     - Which OS and browser mix do they use (rough %)?
     - Do users have **admin rights** to install software, or do we need a per-user install with
@@ -79,10 +32,48 @@ order and the test cases.
 16. **Pain points with Dynamsoft today.** Install failures, certificate or HTTPS problems, slow
     scans, browser breakages? These are the reliability targets Zilo should beat.
 
-## Open: product and governance
-17. **Open-source ownership.** Is Zilo yours personally or your employer's? Does publishing it
-    need sign-off? This decides who holds the copyright line and the CLA/DCO choice before the
-    first public release.
-18. **Licence preference** for the open-source release: permissive (MIT/Apache-2.0) or
-    copyleft (LGPL/MPL)? The masters will propose one (OD-9). NAPS2 is LGPL, which works with
-    either.
+## Product and governance
+- **Q17, ownership: answered 2026-11-01.** Zilo is the owner's **personal project**: Alexandre Lozi
+  holds the copyright, and there is no employer sign-off. Copyright lines and any CLA or DCO name
+  him.
+- **Q18, licence: deferred by the owner.** It is not decided now. Bring it back **after a functional
+  app is working and the owner has approved it**. It is a gate on the open-source release, on the
+  roadmap as a later milestone, not current work.
+  - At that point the masters bring a short comparison: MIT vs Apache-2.0 (patent grant) vs
+    MPL/LGPL (copyleft), and what each means given NAPS2 is LGPL.
+  - Until then, add no LICENSE file and keep the repo private.
+
+## Owner-provided resources (answered 2026-11-01)
+- **Q19, test hardware:**
+  - The owner has **a person with a Mac and a scanner** for weekday tests (SP-1b real Safari, the
+    hardware matrix).
+  - Both owner PCs are **Intel x64**. AMD is optional: it runs the same x64 code. **Windows on ARM**
+    is the case that matters, and it is still unavailable.
+  - **USB and Wi-Fi scanners** are reachable during the week.
+  - Linux: WSL2 is available, and a native install is possible if needed (see below).
+- **Q20, signing:**
+  - The owner prefers **free**. He is willing to try about US$10/month, but that option likely
+    isn't available to individuals in Brazil.
+  - See **`docs/context/code-signing-research.md`**. Plan: unsigned or test-key builds for testers
+    now; SignPath Foundation free OSS signing at the M7 public release; the US$99/year Apple
+    account is the one unavoidable cost if macOS should install without warnings.
+- **Q21, a real-app test pass:** **yes**, once the app works end to end.
+
+## Original wording of Q19-Q21
+19. **Test hardware.** Which machines and scanners can you test on?
+    - **A Mac with Safari** is needed. Safari is required for v1, and only a real Mac proves it
+      (SP-1b); WebKit in CI isn't enough.
+    - Which Windows PCs (x64, or ARM such as Snapdragon), and any Linux box?
+    - Which physical scanners (models) can you reach: USB TWAIN/WIA, network AirPrint/eSCL? These
+      feed the M3/M6 hardware matrix (T34).
+20. **Code-signing identities, needed for release (D-011, M6). Don't buy yet; just confirm you're
+    willing.**
+    - **Windows:** Smart App Control blocks unsigned apps on customer PCs. Options:
+      - Azure Trusted Signing: about US$10/month, with identity verification. Check whether it's
+        available to individuals in your country.
+      - An OV code-signing certificate: about US$200–400/year.
+    - **macOS:** an Apple Developer Program account (US$99/year) for signing and notarization.
+    - Verification can take days to weeks, so it is the long pole for M6.
+21. **A test pass in your real app (later, around M2/M5):** whether you're willing to run the
+    `@zilo/dwt-compat` adapter in a local or staging build of your app, on the patient Documents
+    Scan button. That is the real-world acceptance test.
