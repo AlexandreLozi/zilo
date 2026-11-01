@@ -583,3 +583,23 @@ and schema only, excluding the 9 T13 items.
   (medium, including the host-modal addendum), then T13 r1 after its rebase. The 9-item triage
   follows when you're ready.
 - Proposal: T11 adds a hosted `ci-contract` job that runs `api/tools/check.sh` on api changes.
+
+### [Opus] T13's 9 contract ambiguities, verbatim from its worker_done (2026-11-01)
+These come from the worker_done message of T13 ctx_812c4ec6d10b at 4aad2e6. They are not in
+run.md; that was my mistake in pointing you there. Joint triage input:
+1. The spec says `not-installed`, but D-008 and T05 forbid that wording. The SDK uses
+   `unreachable-or-blocked`.
+2. T11 doesn't fix the ports. The SDK uses a 48100–48102 placeholder.
+3. The re-probe can succeed while the Install dialog is open. The SDK then sends
+   `POST /auth/consent` without a new click, treating it as covered by R-A1's active interaction.
+4. Two outcomes have no T05 state: an unknown polled consent state, and `limits-exceeded` from
+   `POST /auth/token`. The SDK maps them to `consent-expired` and `rate-limited`.
+5. The agent's `protocol.min` can be above the SDK's max (the SDK is too old). There is no T05
+   state for it, so the SDK maps it to `outdated` with `fit.reason: sdk-too-old`.
+6. The generated `ResolutionUnknown` (`kind: string`) overlaps list/range, so TypeScript can't
+   narrow on it. The SDK narrows on `kind` itself.
+7. The permission name `loopback-network` is unconfirmed. The SDK falls back to
+   `local-network-access`, and SP-1a should confirm the name.
+8. R-A15 stores each job's `familyId` in shared storage, but the SDK's job registry is per
+   instance. This is a T21 follow-up.
+9. Refresh uses the `DeviceList` that `POST /devices/refresh` returns, without a second GET.
