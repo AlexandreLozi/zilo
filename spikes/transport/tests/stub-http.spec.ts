@@ -87,7 +87,7 @@ test.describe('agent stub rules', () => {
     expect(title(await req('GET', '/bridge', { Origin: APP_ORIGIN }))).toBe('bridge-not-subresource');
   });
 
-  test('bridge mint: bridge origin only, allowlisted app origin, valid token, single-use nonce; re-mint makes the old session stale', async () => {
+  test('bridge mint: bridge origin only, allowlisted app origin, valid token, single-use nonce; capability bound to its session; re-mint makes the old session stale', async () => {
     expect(title(await mint(nonce(), { origin: APP_ORIGIN }))).toBe('mint-requires-bridge-origin');
     expect(title(await mint(nonce(), { appOrigin: EVIL_ORIGIN }))).toBe('app-origin-not-allowed');
     expect(title(await mint(nonce(), { token: 'wrong' }))).toBe('bad-app-token');
@@ -96,16 +96,23 @@ test.describe('agent stub rules', () => {
     const first = await mint(n1);
     expect(first.status).toBe(201);
     expect(title(await mint(n1))).toBe('nonce-replayed');
-    const cap1 = JSON.parse(first.body).capability as string;
-    const asBridge = (cap: string) => req('GET', '/zilo/v1/blob?size=8', { 'Sec-Fetch-Site': 'same-origin', Authorization: `Bearer ${cap}` });
-    expect((await asBridge(cap1)).status).toBe(200);
+    const { capability: cap1, sessionId: sid1 } = JSON.parse(first.body) as { capability: string; sessionId: string };
+    const asBridge = (cap: string, sid?: string) => req('GET', '/zilo/v1/blob?size=8', {
+      'Sec-Fetch-Site': 'same-origin', Authorization: `Bearer ${cap}`, ...(sid ? { 'X-Zilo-Bridge-Session': sid } : {}),
+    });
+    expect((await asBridge(cap1, sid1)).status).toBe(200);
+    // Fix r1: the capability is bound to its session; the bridge must name that session.
+    expect(title(await asBridge(cap1))).toBe('bridge-session-mismatch');
+    expect(title(await asBridge(cap1, 'not-the-bound-session'))).toBe('bridge-session-mismatch');
     // A capability is only valid for bridge (same-origin) callers, not for the public app origin.
     expect(title(await req('GET', '/zilo/v1/blob?size=8', { Origin: APP_ORIGIN, Authorization: `Bearer ${cap1}` }))).toBe('bad-bearer');
     // ...and not for no-Origin callers that do not present Sec-Fetch-Site: same-origin.
     expect(title(await req('GET', '/zilo/v1/blob?size=8', { Authorization: `Bearer ${cap1}` }))).toBe('caller-not-authorizable');
     const second = await mint(nonce());
     expect(second.status).toBe(201);
-    expect(title(await asBridge(cap1))).toBe('stale-bridge-session');
-    expect((await asBridge(JSON.parse(second.body).capability)).status).toBe(200);
+    expect(title(await asBridge(cap1, sid1))).toBe('stale-bridge-session');
+    const s2 = JSON.parse(second.body) as { capability: string; sessionId: string };
+    expect(title(await asBridge(s2.capability, sid1))).toBe('bridge-session-mismatch');
+    expect((await asBridge(s2.capability, s2.sessionId)).status).toBe(200);
   });
 });

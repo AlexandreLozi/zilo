@@ -80,7 +80,8 @@ export default defineConfig({
     },
     {
       name: 'chromium',
-      testMatch: browserTests,
+      // review-s2.spec.ts: the T01-r1 reviewer's regression proofs (Chromium-only by construction).
+      testMatch: [...browserTests, '**/review-s2.spec.ts'],
       use: {
         browserName: 'chromium',
         // Full Chrome for Testing in new headless mode, not the headless shell.

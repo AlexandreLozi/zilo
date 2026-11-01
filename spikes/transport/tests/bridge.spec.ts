@@ -2,7 +2,7 @@
 // popup, handshakes (nonce, exact origins, event.source), gets a MessageChannel, then relays typed
 // ops and a bounded ArrayBuffer. No LNA permission is granted in any of these tests.
 import { test, type BrowserContext, type Page } from '@playwright/test';
-import { APP_ORIGIN, APP_TOKENS, EVIL_ORIGIN } from '../config.ts';
+import { APP_ORIGIN, APP_TOKENS, BRIDGE_ACK_TIMEOUT_MS, BRIDGE_EVENT_WINDOW, EVIL_ORIGIN } from '../config.ts';
 import { auditMark, auditSince, expect, openPage, saveEvidence, verified } from './helpers.ts';
 
 const TOKEN = APP_TOKENS[APP_ORIGIN];
@@ -27,6 +27,39 @@ async function openBridge(page: Page, context: BrowserContext, opts: Record<stri
   }
   const r = await page.evaluate(() => ({ bridge: (window as any).__zilo.results.bridge, rejections: (window as any).__zilo.rejections }));
   return { ...r, popup, popupState };
+}
+
+/**
+ * Keep a handle on the app's own MessageChannel port (test-side observation only; the app's
+ * protocol and handlers are unchanged). Must run before openPage.
+ */
+async function capturePort(page: Page) {
+  await page.addInitScript(() => {
+    const Native = window.MessageChannel;
+    window.MessageChannel = class extends Native {
+      constructor() {
+        super();
+        (window as any).__testPort = this.port1;
+      }
+    };
+  });
+}
+
+/** Send one raw envelope on the captured port and collect replies with that id until `until` holds. */
+function rawRequest(page: Page, msg: Record<string, unknown>, untilMs: number) {
+  return page.evaluate(([m, ms]) => new Promise<any[]>((resolve) => {
+    const port = (window as any).__testPort as MessagePort;
+    const got: any[] = [];
+    const onMsg = (ev: MessageEvent) => {
+      const d = ev.data;
+      if (d?.id !== (m as any).id) return;
+      got.push({ ok: d.ok, code: d.code, seq: d.seq, end: d.end, event: d.event, sessionId: d.sessionId, v: d.v, bytes: d.bytes?.byteLength });
+      if (!d.ok || d.end || d.bytes) { port.removeEventListener('message', onMsg); resolve(got); }
+    };
+    port.addEventListener('message', onMsg);
+    port.postMessage(m);
+    setTimeout(() => { port.removeEventListener('message', onMsg); resolve(got); }, ms as number);
+  }), [msg, untilMs] as const);
 }
 
 const mints = (entries: any[]) => entries.filter((e) => e.path === '/zilo/v1/bridge/session' && e.method === 'POST');
@@ -153,5 +186,123 @@ test.describe('S2 popup bridge', () => {
     expect(first.bridge.ok).toBe(true);
     expect(second.bridge.code).toBe('bridge-error:nonce-replayed');
     expect(entries.map((e) => e.status)).toEqual([201, 409]);
+  });
+
+  // ---- T01 fix r1 (review findings 2 and 3) ----
+
+  test('session envelope: every op needs version, unique id and the bound session; replies carry the session', async ({ page, context, browser, browserName }, info) => {
+    await capturePort(page);
+    await openPage(page, `${APP_ORIGIN}/`, TOKEN);
+    const { bridge } = await openBridge(page, context);
+    const sid = bridge.sessionId as string;
+    const strict = verified(browserName);
+    const wrongSession = await rawRequest(page, { v: 1, id: 900001, op: 'blob', sessionId: 'not-the-bound-session', args: { size: 8 } }, 3000);
+    const noSession = await rawRequest(page, { v: 1, id: 900002, op: 'hello' }, 3000);
+    const noVersion = await rawRequest(page, { id: 900003, op: 'hello', sessionId: sid }, 3000);
+    const valid = await rawRequest(page, { v: 1, id: 900004, op: 'blob', sessionId: sid, args: { size: 8 } }, 3000);
+    await page.evaluate((s) => (window as any).__testPort.postMessage({ v: 1, id: 900005, op: 'ack', sessionId: s, args: { request: 900004, seq: 1 } }), sid);
+    const duplicate = await rawRequest(page, { v: 1, id: 900004, op: 'hello', sessionId: sid }, 3000);
+    const observed = { bridgeOk: bridge.ok, wrongSession, noSession, noVersion, valid, duplicate };
+    const ok = bridge.ok
+      && wrongSession[0]?.code === 'session-mismatch' && wrongSession[0]?.bytes === undefined
+      && noSession[0]?.code === 'session-mismatch'
+      && noVersion[0]?.code === 'bad-version'
+      && valid[0]?.ok === true && valid[0]?.bytes === 8 && valid[0]?.sessionId === sid && valid[0]?.v === 1
+      && duplicate[0]?.code === 'duplicate-request-id';
+    await saveEvidence(info, page, browser, {
+      scenario: 's2-session-envelope',
+      outcome: strict ? (ok ? 'pass' : 'fail') : 'observed',
+      expectation: 'wrong or missing session -> session-mismatch, no bytes; missing version -> bad-version; reused id -> duplicate-request-id; valid request -> 8 bytes with the bound session id',
+      observed,
+    });
+    if (!strict) return;
+    expect(ok, JSON.stringify(observed)).toBe(true);
+  });
+
+  test('backpressure: an unacknowledged binary reply holds the slot; a stalled event consumer is cut off', async ({ page, context, browser, browserName }, info) => {
+    await capturePort(page);
+    await openPage(page, `${APP_ORIGIN}/`, TOKEN);
+    const { bridge, popup } = await openBridge(page, context);
+    const sid = bridge.sessionId as string;
+    const strict = verified(browserName);
+    const first = await rawRequest(page, { v: 1, id: 910001, op: 'blob', sessionId: sid, args: { size: 4096 } }, 3000);
+    // Not acknowledged yet: the bridge must refuse a second binary transfer.
+    const whileUnacked = await rawRequest(page, { v: 1, id: 910002, op: 'blob', sessionId: sid, args: { size: 4096 } }, 3000);
+    await page.evaluate((s) => (window as any).__testPort.postMessage({ v: 1, id: 910003, op: 'ack', sessionId: s, args: { request: 910001, seq: 1 } }), sid);
+    const afterAck = await rawRequest(page, { v: 1, id: 910004, op: 'blob', sessionId: sid, args: { size: 4096 } }, 3000);
+    // Events without any ack: at most BRIDGE_EVENT_WINDOW are posted, then consumer-stalled.
+    const t0 = Date.now();
+    const events = await rawRequest(page, { v: 1, id: 910005, op: 'events', sessionId: sid }, BRIDGE_ACK_TIMEOUT_MS + 6000);
+    const stalledAfterMs = Date.now() - t0;
+    const popupRejections = await popup?.evaluate(() => (window as any).__ziloBridge.rejections.map((r: any) => r.code)).catch(() => null);
+    const delivered = events.filter((e) => e.ok && e.event);
+    const last = events[events.length - 1];
+    const observed = { first, whileUnacked, afterAck, delivered: delivered.map((e) => e.seq), last, stalledAfterMs, popupRejections };
+    const ok = first[0]?.bytes === 4096 && whileUnacked[0]?.code === 'busy' && afterAck[0]?.bytes === 4096
+      && delivered.length === BRIDGE_EVENT_WINDOW && last?.code === 'consumer-stalled';
+    await saveEvidence(info, page, browser, {
+      scenario: 's2-backpressure',
+      outcome: strict ? (ok ? 'pass' : 'fail') : 'observed',
+      expectation: `second blob refused (busy) until the first is acked; after ack a blob is sent; with no event acks only ${BRIDGE_EVENT_WINDOW} events are posted, then consumer-stalled after ~${BRIDGE_ACK_TIMEOUT_MS} ms`,
+      observed,
+    });
+    if (!strict) return;
+    expect(ok, JSON.stringify(observed)).toBe(true);
+  });
+
+  test('navigation and reload: bound state is invalidated (notice or ping deadline); reload re-handshakes with a fresh session; reopen recovers', async ({ page, context, browser, browserName }, info) => {
+    const mark = auditMark();
+    await openPage(page, `${APP_ORIGIN}/`, TOKEN);
+    const first = await openBridge(page, context);
+    const popup = first.popup!;
+    const strict = verified(browserName);
+    const stateOf = () => page.evaluate(() => ({ state: (window as any).__zilo.bridgeState, lost: (window as any).__zilo.results['bridge-lost'], reconnect: (window as any).__zilo.results['bridge-reconnect'] }));
+    // 1. Reload: the old session is reported lost, then a fresh handshake binds a new session.
+    await popup.reload();
+    const reloaded = await page.waitForFunction(() => (window as any).__zilo.results['bridge-reconnect'], null, { timeout: 10_000 })
+      .then(() => stateOf()).catch(() => stateOf());
+    // 2. Navigation away (popup stays open): bound state must be invalidated quickly.
+    await page.evaluate(() => { delete (window as any).__zilo.results['bridge-lost']; });
+    await popup.goto('about:blank');
+    const tNav = Date.now();
+    await page.waitForFunction(() => (window as any).__zilo.bridgeState !== 'bound', null, { timeout: 2_500 }).catch(() => {});
+    const navigated = { ...(await stateOf()), detectMs: Date.now() - tNav, popupOpen: !popup.isClosed() };
+    // 3. Recovery: a new click reopens the bridge in the same window with a fresh handshake.
+    const again = await openBridge(page, context);
+    // 4. Fallback: with the bridge's pagehide notice suppressed, the ping deadline still detects it.
+    await page.evaluate(() => { delete (window as any).__zilo.results['bridge-lost']; });
+    // Test-side only: drop the bridge's `bridge-gone` notice, as if the page died without running it.
+    const suppressedAt = await popup.evaluate(() => {
+      const native = MessagePort.prototype.postMessage;
+      MessagePort.prototype.postMessage = function (this: MessagePort, m: any, t?: any) {
+        if (m && m.zilo === 'bridge-gone') return undefined;
+        return native.call(this, m, t);
+      } as typeof native;
+      return location.href;
+    });
+    await popup.goto('about:blank');
+    const tSilent = Date.now();
+    await page.waitForFunction(() => (window as any).__zilo.bridgeState !== 'bound', null, { timeout: 5_000 }).catch(() => {});
+    const silent = { ...(await stateOf()), detectMs: Date.now() - tSilent, suppressedAt };
+    const sessions = [first.bridge.sessionId, reloaded.reconnect?.sessionId, again.bridge.sessionId];
+    const minted = mints(auditSince(mark));
+    const observed = {
+      firstOk: first.bridge.ok, reloaded, navigated, again: { ok: again.bridge.ok, sessionId: again.bridge.sessionId }, silent,
+      sessions, mintStatuses: minted.map((m) => m.status),
+    };
+    const ok = first.bridge.ok
+      && reloaded.reconnect?.ok === true && ['pagehide', 'reannounced'].includes(reloaded.lost?.reason) && reloaded.state === 'bound'
+      && navigated.state === 'lost' && navigated.popupOpen
+      && again.bridge.ok === true
+      && silent.state === 'lost' && silent.lost?.reason === 'no-pong'
+      && new Set(sessions).size === 3 && minted.length === 3 && minted.every((m) => m.status === 201);
+    await saveEvidence(info, page, browser, {
+      scenario: 's2-navigation-reconnect',
+      outcome: strict ? (ok ? 'pass' : 'fail') : 'observed',
+      expectation: 'reload -> bridge-lost (pagehide notice, or the re-announcement) then bridge-reconnect with a new session; navigation to about:blank -> state lost within 2.5 s (popup still open); a new click rebinds; with the pagehide notice suppressed, the ping deadline reports lost (no-pong); three distinct sessions, three 201 mints',
+      observed,
+    });
+    if (!strict) return;
+    expect(ok, JSON.stringify(observed)).toBe(true);
   });
 });

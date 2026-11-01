@@ -9,15 +9,20 @@ import { auditMark, auditSince, chromiumDeny, expect, openPage, queryPermissions
 const TOKEN = APP_TOKENS[APP_ORIGIN];
 
 test.describe('loopback fetch from an HTTPS public origin', () => {
-  test('page is a secure context on a non-loopback public origin', async ({ page, browser, browserName }, info) => {
+  test('page is a secure context on a non-loopback hostname (public address space only where forced)', async ({ page, browser, browserName }, info) => {
     await openPage(page, `${APP_ORIGIN}/`, TOKEN);
     const env = await page.evaluate(() => (window as any).__zilo.results.env);
+    // How the page's address space is set. Only Chromium and Firefox have an override; WebKit's
+    // resolver proxy really connects to 127.0.0.1, so its page is NOT proven to be public (T01-r1 #4).
+    const addressSpace = browserName === 'webkit'
+      ? 'unproven: resolver proxy connects to 127.0.0.1; no public address-space override or diagnostic in WebKit'
+      : `public (forced: ${browserName === 'chromium' ? '--ip-address-space-overrides' : 'network.lna.address_space.public.override'})`;
     await saveEvidence(info, page, browser, {
       scenario: 'env',
       outcome: env.isSecureContext && env.origin === APP_ORIGIN ? 'pass' : 'fail',
-      expectation: 'page loads from https://app.zilo.test, isSecureContext=true',
-      observed: env,
-      notes: browserName === 'webkit' ? 'WebKit TLS: ignoreHTTPSErrors unless ZILO_WEBKIT_TRUST=system' : undefined,
+      expectation: 'page loads from https://app.zilo.test, isSecureContext=true. This row does not by itself prove the address space; see observed.addressSpace',
+      observed: { ...env, addressSpace },
+      notes: browserName === 'webkit' ? 'WebKit TLS: ignoreHTTPSErrors unless ZILO_WEBKIT_TRUST=system. A non-localhost URL alone does not make the source public.' : undefined,
     });
     expect(env.origin).toBe(APP_ORIGIN);
     expect(env.isSecureContext).toBe(true);

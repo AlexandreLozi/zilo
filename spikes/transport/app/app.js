@@ -146,7 +146,15 @@
   }
 
   // ---- S2 popup bridge ----
-  let bridge = null;
+  // T01 fix r1:
+  //  - window.open runs synchronously in the click handler, before any await, so the click's user
+  //    activation is still live; the COOP diagnostic runs afterwards and is bounded in time.
+  //  - every port request carries {v, id, sessionId}; replies must carry the bound session ID.
+  //  - binary and event replies are acknowledged after they are consumed (bridge flow control).
+  //  - liveness: a `bridge-gone` notice (bridge pagehide) or a missed ping marks the bridge lost; a
+  //    fresh `bridge-ready` from the same popup (reload) triggers a fresh handshake and session.
+  const COOP_PROBE_MS = 3000;
+  let bridge = null; // the current bridge instance; handlers of an older instance are inert
 
   function waitFor(predicateName, accept, timeoutMs, popup) {
     // Resolves with the accepted MessageEvent, or with a failure code. Every rejected message is
@@ -165,58 +173,19 @@
       window.addEventListener('message', onMsg);
     });
   }
+  const isReady = (d) => d && d.zilo === 'bridge-ready' && d.v === 1;
 
-  function portRequest(port, pending, op, args, timeoutMs = 8000) {
-    const id = pending.next++;
-    return new Promise((resolve) => {
-      const msgs = [];
-      const timer = setTimeout(() => { pending.map.delete(id); resolve({ ok: false, code: 'op-timeout', msgs }); }, timeoutMs);
-      pending.map.set(id, (m) => {
-        if (op === 'events' && m.ok && !m.end) { msgs.push(m); return; }
-        clearTimeout(timer);
-        pending.map.delete(id);
-        resolve(op === 'events' ? { ...m, msgs } : m);
-      });
-      port.postMessage({ id, op, args });
-    });
+  // Explicit COOP detection on our own document. Started after window.open, bounded in time.
+  function coopProbe() {
+    const probe = fetch(location.href, { method: 'HEAD', cache: 'no-store' })
+      .then((h) => h.headers.get('cross-origin-opener-policy'))
+      .catch((e) => `unknown:${e.name}`);
+    const limit = new Promise((resolve) => setTimeout(() => resolve('unknown:timeout'), COOP_PROBE_MS));
+    return Promise.race([probe, limit]);
   }
 
-  async function openBridge() {
-    const opts = window.__ziloOpts;
-    const t0 = now();
-    const steps = [];
-    const step = (s, extra) => steps.push({ s, ms: now() - t0, ...(extra || {}) });
-    const result = { ok: false, steps };
-    const done = (extra) => { Object.assign(result, extra); state.bridgeState = result.ok ? 'bound' : 'failed'; record('bridge', result); return result; };
-
-    // Explicit COOP detection on our own document before relying on the opener relationship.
-    try {
-      const h = await fetch(location.href, { method: 'HEAD', cache: 'no-store' });
-      result.coopHeader = h.headers.get('cross-origin-opener-policy');
-    } catch (e) {
-      result.coopHeader = `unknown:${e.name}`;
-    }
-
-    const nonce = opts.nonce || hex(16);
-    result.nonce = nonce;
-    state.bridgeState = 'opening';
-    let popup;
-    try {
-      popup = window.open(`${AGENT}/bridge`, 'zilo-bridge', 'popup=yes,width=480,height=360');
-    } catch (e) {
-      return done({ code: 'window-open-threw', ...errInfo(e) });
-    }
-    if (!popup) return done({ code: 'popup-blocked' });
-    step('opened', { closedImmediately: popup.closed });
-    if (opts.injectFakeReady) window.postMessage({ zilo: 'bridge-ready', v: 1 }, location.origin);
-
-    const ready = await waitFor('ready', (d) => d && d.zilo === 'bridge-ready' && d.v === 1, 5000, popup);
-    if (ready.fail && !opts.forceHello) {
-      const code = result.coopHeader === 'same-origin' ? 'coop-severed' : ready.fail === 'popup-closed' ? 'popup-closed' : 'bridge-timeout';
-      return done({ code, readyFail: ready.fail, popupClosed: popup.closed });
-    }
-    step(ready.fail ? `ready-${ready.fail}` : 'ready');
-
+  // Handshake on an already-open popup whose bridge-ready was accepted: hello + nonce + port.
+  async function handshake(popup, nonce) {
     const ch = new MessageChannel();
     const welcome = new Promise((resolve) => {
       const timer = setTimeout(() => resolve({ fail: 'timeout' }), 5000);
@@ -233,37 +202,185 @@
     try {
       popup.postMessage({ zilo: 'bridge-hello', v: 1, nonce, token: token() }, BRIDGE_ORIGIN, [ch.port2]);
     } catch (e) {
-      return done({ code: 'post-hello-threw', ...errInfo(e) });
+      return { fail: 'post-hello-threw', err: errInfo(e) };
     }
     const w = await welcome;
-    if (w.fail) return done({ code: ready.fail ? `no-ready-then-${w.fail}` : `welcome-${w.fail}` });
-    if (w.d.zilo === 'bridge-error') return done({ code: `bridge-error:${w.d.code}` });
-    step('welcome', { sessionId: w.d.sessionId });
+    if (w.fail) { ch.port1.close(); return { fail: w.fail }; }
+    if (w.d.zilo === 'bridge-error') { ch.port1.close(); return { error: w.d.code }; }
+    return { port: ch.port1, sessionId: w.d.sessionId };
+  }
 
-    const pending = { next: 1, map: new Map() };
-    ch.port1.onmessage = (ev) => { const cb = pending.map.get(ev.data && ev.data.id); if (cb) cb(ev.data); };
-    bridge = { popup, port: ch.port1, pending, sessionId: w.d.sessionId };
-    const watch = setInterval(() => { if (popup.closed) { state.bridgeState = 'closed'; clearInterval(watch); record('bridge-closed', { detected: true, ms: now() - t0 }); } }, 200);
+  // A bound bridge instance: request/reply correlation, session checks, acks, liveness.
+  function bindInstance(b, port, sessionId) {
+    b.port = port;
+    b.sessionId = sessionId;
+    b.pending = new Map();
+    b.lastSeen = now();
+    if (b.pingTimer) clearInterval(b.pingTimer);
+    port.onmessage = (ev) => {
+      if (bridge !== b || b.port !== port) return;
+      const d = ev.data;
+      if (d && d.zilo === 'bridge-gone' && d.v === 1 && d.sessionId === b.sessionId) return lose(b, d.reason || 'bridge-gone');
+      if (!d || d.v !== 1 || d.sessionId !== b.sessionId) return state.rejections.push({ at: 'reply', code: 'bad-session-or-schema' });
+      b.lastSeen = now();
+      const cb = b.pending.get(d.id);
+      if (cb) cb(d);
+    };
+    state.bridgeState = 'bound';
+    b.pingTimer = setInterval(() => {
+      if (bridge !== b || state.bridgeState !== 'bound') return;
+      if (now() - b.lastSeen > cfg.lostAfterMs) return lose(b, 'no-pong');
+      request(b, 'ping', undefined, cfg.lostAfterMs).catch(() => {});
+    }, cfg.pingMs);
+  }
 
-    const h = await portRequest(ch.port1, pending, 'hello');
-    step('op-hello', { ok: h.ok });
+  function request(b, op, args, timeoutMs = 8000) {
+    const id = b.next++;
+    const port = b.port;
+    return new Promise((resolve) => {
+      const msgs = [];
+      const finish = (m) => { clearTimeout(timer); b.pending.delete(id); resolve(op === 'events' ? { ...m, msgs } : m); };
+      const timer = setTimeout(() => finish({ ok: false, code: 'op-timeout' }), timeoutMs);
+      b.pending.set(id, (m) => {
+        if (op === 'events' && m.ok && !m.end) {
+          msgs.push(m);
+          // Consumed: acknowledge so the bridge may send more (its event window is small).
+          port.postMessage({ v: 1, id: b.next++, sessionId: b.sessionId, op: 'ack', args: { request: id, seq: m.seq } });
+          return;
+        }
+        finish(m);
+      });
+      port.postMessage({ v: 1, id, sessionId: b.sessionId, op, args });
+    });
+  }
+  const ack = (b, requestId) => { if (b.port) b.port.postMessage({ v: 1, id: b.next++, sessionId: b.sessionId, op: 'ack', args: { request: requestId, seq: 1 } }); };
+
+  function unbind(b) {
+    if (b.pingTimer) { clearInterval(b.pingTimer); b.pingTimer = null; }
+    if (b.port) { b.port.onmessage = null; b.port.close(); b.port = null; }
+    if (b.pending) for (const cb of [...b.pending.values()]) cb({ ok: false, code: 'bridge-lost' });
+  }
+
+  // Navigation, reload or a missed ping: the session is unusable and is reported as such.
+  function lose(b, reason) {
+    if (bridge !== b || !b.port) return;
+    const sessionId = b.sessionId;
+    unbind(b);
+    state.bridgeState = 'lost';
+    record('bridge-lost', { reason, sessionId, ms: now() - b.t0 });
+  }
+
+  // Closure watch and reload recovery for the lifetime of the popup window.
+  function watch(b) {
+    b.closeTimer = setInterval(() => {
+      if (bridge !== b) return clearInterval(b.closeTimer);
+      if (b.popup.closed) {
+        clearInterval(b.closeTimer);
+        unbind(b);
+        state.bridgeState = 'closed';
+        record('bridge-closed', { detected: true, ms: now() - b.t0 });
+      }
+    }, 200);
+    // A reloaded bridge announces itself again: re-handshake with a fresh nonce and a fresh session.
+    b.onReady = async (ev) => {
+      if (bridge !== b || ev.source !== b.popup || ev.origin !== BRIDGE_ORIGIN || !isReady(ev.data)) return;
+      if (b.port) lose(b, 'reannounced');
+      state.bridgeState = 'rebinding';
+      const previous = b.sessionId;
+      const nonce = hex(16);
+      const h = await handshake(b.popup, nonce);
+      if (bridge !== b) return;
+      if (!h.port) {
+        state.bridgeState = 'failed';
+        return record('bridge-reconnect', { ok: false, code: h.error ? `bridge-error:${h.error}` : `welcome-${h.fail}` });
+      }
+      bindInstance(b, h.port, h.sessionId);
+      const hello = await request(b, 'hello');
+      record('bridge-reconnect', { ok: hello.ok === true && h.sessionId !== previous, previousSessionId: previous, sessionId: h.sessionId, nonceFresh: nonce !== b.nonce, hello: hello.ok });
+    };
+    window.addEventListener('message', b.onReady);
+  }
+
+  function retire(b) {
+    if (!b) return;
+    unbind(b);
+    if (b.closeTimer) clearInterval(b.closeTimer);
+    if (b.onReady) window.removeEventListener('message', b.onReady);
+  }
+
+  async function openBridge() {
+    const opts = window.__ziloOpts;
+    const t0 = now();
+    const nonce = opts.nonce || hex(16);
+    // Retire any previous instance synchronously (no await before window.open).
+    retire(bridge);
+    bridge = null;
+    let popup;
+    let openError = null;
+    try {
+      popup = window.open(`${AGENT}/bridge`, 'zilo-bridge', 'popup=yes,width=480,height=360');
+    } catch (e) {
+      openError = e;
+    }
+    const coop = coopProbe(); // after window.open: never consumes the click's activation
+
+    const steps = [];
+    const step = (s, extra) => steps.push({ s, ms: now() - t0, ...(extra || {}) });
+    const result = { ok: false, steps, nonce };
+    const b = { popup, t0, nonce, next: 1, port: null };
+    const done = async (extra) => {
+      Object.assign(result, extra);
+      result.coopHeader = await coop;
+      if (bridge !== b && bridge !== null) { result.superseded = true; return result; } // a newer click owns the state
+      if (result.ok && b.port) state.bridgeState = 'bound';
+      else if (result.ok) result.lostDuringFlow = state.bridgeState;
+      else if (!['lost', 'closed'].includes(state.bridgeState)) state.bridgeState = 'failed';
+      record('bridge', result);
+      return result;
+    };
+    if (openError) return done({ code: 'window-open-threw', ...errInfo(openError) });
+    if (!popup) return done({ code: 'popup-blocked' });
+    bridge = b;
+    state.bridgeState = 'opening';
+    step('opened', { closedImmediately: popup.closed });
+    if (opts.injectFakeReady) window.postMessage({ zilo: 'bridge-ready', v: 1 }, location.origin);
+
+    const ready = await waitFor('ready', isReady, 5000, popup);
+    if (ready.fail && !opts.forceHello) {
+      const coopHeader = await coop;
+      const code = coopHeader === 'same-origin' ? 'coop-severed' : ready.fail === 'popup-closed' ? 'popup-closed' : 'bridge-timeout';
+      return done({ code, readyFail: ready.fail, popupClosed: popup.closed });
+    }
+    step(ready.fail ? `ready-${ready.fail}` : 'ready');
+
+    const h = await handshake(popup, nonce);
+    if (h.fail === 'post-hello-threw') return done({ code: 'post-hello-threw', ...h.err });
+    if (h.fail) return done({ code: ready.fail ? `no-ready-then-${h.fail}` : `welcome-${h.fail}` });
+    if (h.error) return done({ code: `bridge-error:${h.error}` });
+    step('welcome', { sessionId: h.sessionId });
+    bindInstance(b, h.port, h.sessionId);
+    watch(b);
+
+    const hr = await request(b, 'hello');
+    step('op-hello', { ok: hr.ok });
     const tb = now();
-    const b = await portRequest(ch.port1, pending, 'blob', { size: BLOB_SIZE });
-    const blobRes = b.ok
-      ? { ok: b.bytes instanceof ArrayBuffer && b.bytes.byteLength === BLOB_SIZE && patternOk(b.bytes), bytes: b.bytes.byteLength, ms: now() - tb }
-      : { ok: false, code: b.code };
+    const bl = await request(b, 'blob', { size: BLOB_SIZE });
+    const blobRes = bl.ok
+      ? { ok: bl.bytes instanceof ArrayBuffer && bl.bytes.byteLength === BLOB_SIZE && patternOk(bl.bytes), bytes: bl.bytes.byteLength, ms: now() - tb }
+      : { ok: false, code: bl.code };
+    if (bl.ok) ack(b, bl.id); // consumed: release the bridge's binary slot
     step('op-blob', { ok: blobRes.ok });
-    const big = await portRequest(ch.port1, pending, 'blob', { size: cfg.maxBridgeBytes + 1 });
+    const big = await request(b, 'blob', { size: cfg.maxBridgeBytes + 1 });
     step('op-blob-oversize', { code: big.code });
-    const ev = await portRequest(ch.port1, pending, 'events');
+    const ev = await request(b, 'events');
     const ticks = (ev.msgs || []).filter((m) => m.event === 'tick').map((m) => m.data.seq);
     step('op-events', { ticks: ticks.length });
-    const unknown = await portRequest(ch.port1, pending, 'fetch-arbitrary-url', { url: 'http://example.com/' });
+    const unknown = await request(b, 'fetch-arbitrary-url', { url: 'http://example.com/' });
 
     return done({
-      ok: h.ok && blobRes.ok && ticks.length === 5 && big.code === 'too-large' && unknown.code === 'unknown-op',
-      sessionId: w.d.sessionId,
-      hello: { ok: h.ok, product: h.body && h.body.product },
+      ok: hr.ok && blobRes.ok && ticks.length === 5 && big.code === 'too-large' && unknown.code === 'unknown-op',
+      sessionId: h.sessionId,
+      hello: { ok: hr.ok, product: hr.body && hr.body.product },
       blob: blobRes,
       oversize: { code: big.code },
       events: { ticks },

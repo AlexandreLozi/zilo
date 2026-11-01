@@ -3,14 +3,16 @@
 // names to this server (host-resolver-rules / Firefox DNS prefs / hosts file), so the page is never
 // served from localhost. `/coop` serves the page with Cross-Origin-Opener-Policy: same-origin and
 // `/coop-allow-popups` with same-origin-allow-popups. ZILO_LEAF_CERT/ZILO_LEAF_KEY override the leaf
-// (used by the manual S1 trust-scope step in docs/spikes/SP-1a.md).
+// (used by the manual S1 trust-scope step in docs/spikes/SP-1a.md). ZILO_PUBLIC_APP_ORIGIN adds the
+// Host of a genuinely public HTTPS front for the manual real-Safari public -> loopback step.
 import http from 'node:http';
 import https from 'node:https';
 import { readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  AGENT_PORT, APP_HOST, APP_HTTP_PORT, APP_HTTPS_PORT, EVIL_HOST, MAX_BRIDGE_BYTES,
+  AGENT_PORT, APP_HOST, APP_HTTP_PORT, APP_HTTPS_PORT, BRIDGE_LOST_AFTER_MS, BRIDGE_PING_MS, EVIL_HOST,
+  MAX_BRIDGE_BYTES, PUBLIC_APP_ORIGIN,
 } from '../config.ts';
 import { ensureCerts } from '../scripts/gen-certs.ts';
 
@@ -20,6 +22,8 @@ const pageTemplate = readFileSync(`${here}/index.html`, 'utf8');
 const appJs = readFileSync(`${here}/app.js`, 'utf8');
 
 const httpsHosts = new Set([`${APP_HOST}:${APP_HTTPS_PORT}`, `${EVIL_HOST}:${APP_HTTPS_PORT}`]);
+// Manual real-Safari step only: the Host a public HTTPS front (tunnel or host) forwards to this server.
+if (PUBLIC_APP_ORIGIN) httpsHosts.add(new URL(PUBLIC_APP_ORIGIN).host);
 const httpHosts = new Set([`${APP_HOST}:${APP_HTTP_PORT}`, `127.0.0.1:${APP_HTTP_PORT}`]);
 
 function handler(allowedHosts: Set<string>): http.RequestListener {
@@ -42,7 +46,7 @@ function handler(allowedHosts: Set<string>): http.RequestListener {
     const coop: Record<string, string> = { '/coop': 'same-origin', '/coop-allow-popups': 'same-origin-allow-popups' };
     if (url.pathname === '/' || url.pathname in coop) {
       if (coop[url.pathname]) headers['Cross-Origin-Opener-Policy'] = coop[url.pathname];
-      const cfg = { agentPort: AGENT_PORT, maxBridgeBytes: MAX_BRIDGE_BYTES, variant: url.pathname === '/' ? 'plain' : url.pathname.slice(1) };
+      const cfg = { agentPort: AGENT_PORT, maxBridgeBytes: MAX_BRIDGE_BYTES, pingMs: BRIDGE_PING_MS, lostAfterMs: BRIDGE_LOST_AFTER_MS, variant: url.pathname === '/' ? 'plain' : url.pathname.slice(1) };
       res.writeHead(200, { ...headers, 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(pageTemplate.replace('__ZILO_APP_CONFIG__', JSON.stringify(cfg)));
     }

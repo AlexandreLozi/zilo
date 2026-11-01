@@ -9,13 +9,13 @@ This is spike code, not a production package. Nothing here is imported by `packa
 | Path | What |
 |---|---|
 | `agent-stub/server.ts` | Loopback HTTP agent stub on `127.0.0.1:47613`. It enforces an exact Host allowlist, an exact Origin allowlist with CORS reflection, and a bearer check on everything except `hello`. Endpoints: `GET /zilo/v1/hello`, `/events` (5 SSE ticks), `/blob?size=N`, `POST /zilo/v1/bridge/session` (bridge capability mint) and `GET /bridge`. Each decision is written to `artifacts/agent-audit.jsonl`. |
-| `agent-stub/bridge.{html,js}` | S2 bridge page. It announces itself to allowlisted origins only, checks source, origin, schema and nonce, mints a capability, and relays typed ops over a `MessagePort`: `hello`, a bounded `blob` (transferred `ArrayBuffer`) and `events`. |
-| `app/server.ts`, `app/index.html`, `app/app.js` | Test page. It is served over HTTPS for `app.zilo.test` (allowed) and `evil.zilo.test` (hostile). `/coop` and `/coop-allow-popups` are the COOP variants. It is also served over HTTP on `:8080` as the insecure control. |
+| `agent-stub/bridge.{html,js}` | S2 bridge page. It announces itself to allowlisted origins only, checks source, origin, schema and nonce, mints a capability, and relays typed ops over a `MessagePort`: `hello`, a bounded `blob` (transferred `ArrayBuffer`) and `events`. Every op envelope needs `v`, a unique `id` and the bound `sessionId`; a binary reply holds the single binary slot until the app acks it, and events stop after 2 unacked (`consumer-stalled` after 2 s). It sends `bridge-gone` on `pagehide`. |
+| `app/server.ts`, `app/index.html`, `app/app.js` | Test page. The bridge popup is opened synchronously on the click (the COOP diagnostic runs afterwards, bounded to 3 s); a missed ping (1.5 s) or `bridge-gone` marks the bridge `lost`, and a reloaded bridge is re-handshaken with a fresh session. It is served over HTTPS for `app.zilo.test` (allowed) and `evil.zilo.test` (hostile). `/coop` and `/coop-allow-popups` are the COOP variants. It is also served over HTTP on `:8080` as the insecure control. |
 | `scripts/gen-certs.ts` | Per-run throwaway CA and leaf, written to `.certs/` (gitignored). |
 | `scripts/resolver-proxy.ts` | Maps `*.zilo.test` to 127.0.0.1 for WebKit, which has no host-resolver switch. It changes name resolution only. |
 | `scripts/gen-s1-certs.ts` | Material for the manual S1 name-constraint experiment, written to `.certs-s1/`. |
 | `scripts/matrix.ts` | Builds the SP-1a matrix from `evidence/`. |
-| `tests/*.spec.ts` | Playwright projects `stub` (no browser), `chromium`, `firefox` and `webkit`. |
+| `tests/*.spec.ts` | Playwright projects `stub` (no browser), `chromium`, `firefox` and `webkit`. `tests/review-s2.spec.ts` holds the T01-r1 reviewer's regression proofs and runs in the `chromium` project only. |
 | `evidence/<os>/<project>/<scenario>.{json,jpg}` | Committed evidence for each scenario and browser, written by the tests. |
 
 ## Run (Linux)
@@ -62,6 +62,7 @@ npm.cmd ci; npx.cmd playwright install webkit; npx.cmd playwright test --project
 | `ZILO_WEBKIT_VERIFIED` | Comma-separated OS list where WebKit expectations are asserted. Default: `linux,win32`. Other platforms are observe-only. |
 | `ZILO_WEBKIT_EXECUTABLE`, `ZILO_EXTRA_LD_PATH` | Local scratch-library WebKit only. CI never sets these. |
 | `ZILO_LEAF_CERT`, `ZILO_LEAF_KEY` | Override the page server's TLS leaf. Used by the manual S1 step. |
+| `ZILO_PUBLIC_APP_ORIGIN` | Manual real-Safari step only: the origin of a genuinely public HTTPS front (tunnel or host) for the page server. It is allowlisted in the stub, accepted as a Host by the page server, and gets the `spike-public-token-…` fixture (`ZILO_SPIKE_PUBLIC_TOKEN`). Never set in automated runs. |
 
 ## Rules this spike keeps
 - The test page is never served from localhost. The page server is mapped to a public address space
