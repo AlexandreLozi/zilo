@@ -156,19 +156,32 @@
   const COOP_PROBE_MS = 3000;
   let bridge = null; // the current bridge instance; handlers of an older instance are inert
 
-  function waitFor(predicateName, accept, timeoutMs, popup) {
+  function waitFor(predicateName, accept, timeoutMs, popup, holdForRejection) {
     // Resolves with the accepted MessageEvent, or with a failure code. Every rejected message is
     // recorded with the check that failed.
+    // T01 fix r2 (test harness only): with `holdForRejection` (the forged-ready negative control),
+    // an accepted message is held, and the listener stays active, until a message has been
+    // rejected at this step. That way the forged ready is always validated, whichever of the two
+    // arrives first. If the forged message is never rejected, the held message is released at
+    // timeout and the control fails because no rejection was recorded.
     return new Promise((resolve) => {
+      let held = null;
+      let rejectedHere = false;
+      const reject = (r) => {
+        state.rejections.push({ at: predicateName, ...r });
+        rejectedHere = true;
+        if (held) { cleanup(); resolve({ ev: held }); }
+      };
       const onMsg = (ev) => {
-        if (ev.source !== popup) return state.rejections.push({ at: predicateName, code: 'wrong-source' });
-        if (ev.origin !== BRIDGE_ORIGIN) return state.rejections.push({ at: predicateName, code: 'wrong-origin', origin: ev.origin });
-        if (!accept(ev.data)) return state.rejections.push({ at: predicateName, code: 'bad-schema' });
+        if (ev.source !== popup) return reject({ code: 'wrong-source' });
+        if (ev.origin !== BRIDGE_ORIGIN) return reject({ code: 'wrong-origin', origin: ev.origin });
+        if (!accept(ev.data)) return reject({ code: 'bad-schema' });
+        if (holdForRejection && !rejectedHere) { if (!held) held = ev; return; }
         cleanup();
         resolve({ ev });
       };
       const poll = setInterval(() => { if (popup.closed) { cleanup(); resolve({ fail: 'popup-closed' }); } }, 100);
-      const timer = setTimeout(() => { cleanup(); resolve({ fail: 'timeout' }); }, timeoutMs);
+      const timer = setTimeout(() => { cleanup(); resolve(held ? { ev: held } : { fail: 'timeout' }); }, timeoutMs);
       function cleanup() { window.removeEventListener('message', onMsg); clearInterval(poll); clearTimeout(timer); }
       window.addEventListener('message', onMsg);
     });
@@ -345,7 +358,7 @@
     step('opened', { closedImmediately: popup.closed });
     if (opts.injectFakeReady) window.postMessage({ zilo: 'bridge-ready', v: 1 }, location.origin);
 
-    const ready = await waitFor('ready', isReady, 5000, popup);
+    const ready = await waitFor('ready', isReady, 5000, popup, !!opts.injectFakeReady);
     if (ready.fail && !opts.forceHello) {
       const coopHeader = await coop;
       const code = coopHeader === 'same-origin' ? 'coop-severed' : ready.fail === 'popup-closed' ? 'popup-closed' : 'bridge-timeout';
