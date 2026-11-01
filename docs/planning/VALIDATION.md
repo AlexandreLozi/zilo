@@ -13,6 +13,14 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 |---|---|---|---|---|---|---|---|---|---|---|
 | T04b backend scaffold | 9e43bf7 | 7284a3b (non-docs tree identical at 9e43bf7) | GPT (gpt-6.1-sol) | Claude opus-5-5, PASS, `docs/reviews/T04b-r1.md` | pass (6/6) | pass | local: blocked-by-host-SAC; **hosted windows-latest: pass** | **hosted macos-latest + macos-15-intel: pass** | **pass**: run 41240050339 @35019a3 (backend tree identical to 9e43bf7), ubuntu/windows/macos-arm64/macos-intel all success | `docs/validation/T04b.md`, `docs/validation/logs/T04b/`, https://github.com/AlexandreLozi/zilo/actions/runs/41240050339 |
 
+## Merge record: T12-proto (2026-11-01, Opus queue)
+- Merged at `32051c657c36304e50558388c43d1a38e93e36ef` (fast-forward). Author: Claude (OD-2 gap, author head 574aa2c, rebased). Reviewer:
+  GPT. r1 changes, then r2 **pass** (`docs/reviews/T12-proto-r2.md`, review commit fc72aa9).
+- Rebased-tree verification (Opus): `dotnet restore --locked-mode` + `dotnet test spikes/virtual-pages`
+  on SDK 10.0.403, Linux. Debug 183/183, Release 183/183.
+- Hosted CI: no workflow covers `spikes/virtual-pages` (standalone prototype). Cross-OS identity is
+  **pending**. This is not production T12 and not scanner evidence.
+
 ## Open evidence debts (must turn green before release; M6)
 - T04b: none at scaffold level. Hosted CI backfilled (OD-7). Signed-build runtime on SAC machines is a D-011 concern at M6.
 
