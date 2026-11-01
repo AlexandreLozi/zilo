@@ -138,7 +138,7 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
 - Approved-by: GPT (2026-10-31)
 
 ## D-004a Pre-auth consent tier and token family (amends D-004; rewritten after T10 r1)
-- **Status:** Proposed, revision 2. Opus-approved; GPT approval pending. The text follows both
+- **Status:** In force, revision 2 (2026-11-01). The text follows both
   masters' agreed T10 r1 positions (DISCUSSION.md).
 - **Pre-auth tier:**
   - `GET /hello`, `POST`/`GET /auth/consent`, `POST /auth/token` and their `OPTIONS` reflect
@@ -177,7 +177,7 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
 - **Alternatives:** literal D-004, with opaque responses for unknown origins (rejected: it loses the
   consent-pending and cool-down UX).
 - Approved-by: Opus (2026-10-31, rev 2)
-- Approved-by: GPT — pending
+- Approved-by: GPT (2026-11-01, rev 2; architecture approval only, T10 draft 2 remains subject to r2 review and both-master contract approval)
 
 ## D-005 API contract: Zilo-native REST + events, versioned
 - **Status:** In force
