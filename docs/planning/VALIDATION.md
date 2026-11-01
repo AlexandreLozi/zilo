@@ -13,6 +13,16 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 |---|---|---|---|---|---|---|---|---|---|---|
 | T04b backend scaffold | 9e43bf7 | 7284a3b (non-docs tree identical at 9e43bf7) | GPT (gpt-6.1-sol) | Claude opus-5-5, PASS, `docs/reviews/T04b-r1.md` | pass (6/6) | pass | local: blocked-by-host-SAC; **hosted windows-latest: pass** | **hosted macos-latest + macos-15-intel: pass** | **pass**: run 41240050339 @35019a3 (backend tree identical to 9e43bf7), ubuntu/windows/macos-arm64/macos-intel all success | `docs/validation/T04b.md`, `docs/validation/logs/T04b/`, https://github.com/AlexandreLozi/zilo/actions/runs/41240050339 |
 
+## Merge record: T05 design spec (2026-11-01, Opus queue)
+- Merged at `f22eb2e216144471ac68805aa0fc0f84f3404539` (fast-forward). Author: Claude (fix r1 07ae1c6). Reviewer: GPT. r1 changes
+  (5 P2), then r2 **pass** (`docs/reviews/T05-r2.md`, 8f387ff).
+- Rebased-tree verification (Opus): `design/prototypes/check/run.sh` headless: 190 page states,
+  0 axe violations, AA contrast pass (lowest 3.39 light, 4.44 dark), copy table in sync.
+- Hosted CI: no workflow covers `docs/design/` or `design/prototypes/` (static, no build
+  integration). Consent, update and insecure-origin copy is marked Provisional until T10 is approved.
+  Follow-on: copy for `agent-restarted` and the T10 R-X7 outcomes (in T22 or a T05 follow-up).
+- Merged ahead of T04a. The two are independent; T04a is still on its format-scope fix r2.
+
 ## Merge record: T03 SP-4a packaging dry run (2026-11-01, Opus queue)
 - Merged at `f38e3ea89aaadb5cf130f371611123f2e39c6d32` (fast-forward). Author: Claude (OD-2 gap; fix r1 7869d17, fix r2 26f5ab5).
   Reviewer: GPT. r1 changes, r2 changes (1 medium), then r3 **pass** (`docs/reviews/T03-r3.md`,
