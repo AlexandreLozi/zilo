@@ -36,14 +36,14 @@ its lifecycle was settled/released by the master before this handoff.
 No .NET executable was initially on PATH. Official `https://dot.net/v1/dotnet-install.sh`
 was downloaded to `/tmp/opencode/zilo-t02-dotnet/install.sh` and actually run with
 `--channel 10.0 --install-dir /tmp/opencode/zilo-t02-dotnet/sdk --no-path`;
-it selected10.0.403 from `https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.403/dotnet-sdk-10.0.403-linux-x64.tar.gz`.
+it selected 10.0.403 from `https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.403/dotnet-sdk-10.0.403-linux-x64.tar.gz`.
 No sudo, system install or trust-store edit occurred. To reproduce exactly,
 use the same official script with **`--version 10.0.403`**, not a floating channel.
 
 Actual validation commands, from `spikes/naps2` unless noted:
 
 ```sh
-export DOTNET=/tmp/opencode/zilo-t02-dotnet/sdk/dotnet  # or installed dotnet10.0.403
+export DOTNET=/tmp/opencode/zilo-t02-dotnet/sdk/dotnet  # or installed dotnet 10.0.403
 python3 run.py
 DOTNET="$DOTNET" python3 -B -m unittest discover -s tests -v
 python3 -B -m unittest discover -s ../../tools/license-gate -p 'test_*.py' -v
@@ -78,22 +78,22 @@ Per-RID full publish logs: [`evidence/logs/`](../../spikes/naps2/evidence/logs/)
 
 | Check | Actual local result |
 |---|---|
-| Locked restore + cross-publish all5 RIDs | Exit0 each, no warnings/errors in captured publish logs |
-| Repeated locked restores | Exit0; original lock files unchanged |
-| Copied-project Fonts1.0.1→2.0.0 with original lock | Exit1, **NU1004** before accepting dependency drift; original files unchanged |
+| Locked restore + cross-publish all 5 RIDs | Exit 0 each, no warnings/errors in captured publish logs |
+| Repeated locked restores | Exit 0; original lock files unchanged |
+| Copied-project Fonts 1.0.1→2.0.0 with original lock | Exit 1, **NU1004** before accepting dependency drift; original files unchanged |
 | License tool suite | **65 tests passed**, rerun after recovery; [`gate-tests-recovery.log`](../../spikes/naps2/evidence/logs/gate-tests-recovery.log) |
 | Spike/integration suite | **18 tests passed**, including five new expected-outcome tests; [`spike-tests-recovery.log`](../../spikes/naps2/evidence/logs/spike-tests-recovery.log) |
 | D-010b exact gate outcomes | All five matched; actual gate exits **1/1/0/0/1**, not cleared; [`expected-outcomes.log`](../../spikes/naps2/evidence/logs/expected-outcomes.log) |
-| eSCL list | Exit0, count0; explicitly `acquisitionProven:false` |
-| Default Linux/SANE list | **Exit1**, missing `libsane.so.1`; not an empty-list pass |
-| Independent Python eSCL fixture | Real NAPS2 caps + POST job + PNG NextDocument + end-of-job; one32×24 page acquired; no physical scanner |
-| Fonts1.0.1 vector rendering | Actual assembly informational version `1.0.1+be8883caf13f364292508274d68c39c2455ec3e2`;14 glyph paths, width219, system IPAGothic font |
-| GTK raster import/PNG/PDF export | PNG136bytes, PDF2690bytes; format signatures asserted |
-| Workflow static validation | actionlint **1.7.12**, exit0 after expected-denial amendment; workflow itself **not run** |
+| eSCL list | Exit 0, count 0; explicitly `acquisitionProven:false` |
+| Default Linux/SANE list | **Exit 1**, missing `libsane.so.1`; not an empty-list pass |
+| Independent Python eSCL fixture | Real NAPS2 caps + POST job + PNG NextDocument + end-of-job; one 32×24 page acquired; no physical scanner |
+| Fonts 1.0.1 vector rendering | Actual assembly informational version `1.0.1+be8883caf13f364292508274d68c39c2455ec3e2`; 14 glyph paths, width 219, system IPAGothic font |
+| GTK raster import/PNG/PDF export | PNG 136 bytes, PDF 2690 bytes; format signatures asserted |
+| Workflow static validation | actionlint **1.7.12**, exit 0 after expected-denial amendment; workflow itself **not run** |
 
 Recovery validation reinstalled the same exact official SDK because the old
 temporary SDK had disappeared. `DOTNET=... python3 run.py` repeated all five locked
-restores/publishes, followed by `git diff --exit-code -- locks` (exit0); see
+restores/publishes, followed by `git diff --exit-code -- locks` (exit 0); see
 [`locked-publish-recovery.log`](../../spikes/naps2/evidence/logs/locked-publish-recovery.log).
 The original `runtime-local.json` remains historical evidence, not rewritten as a
 fresh observation. The eighteen-test rerun reacquired the independent eSCL page
@@ -118,11 +118,11 @@ Managed counts include satellite resources and the first-party DLL.
 
 | RID | NuGet packages | Managed / native / data files | Total files | Real metadata gate exit | Native execution |
 |---|---:|---|---:|---|---|
-| win-x64 |27|75 /1 /3|79|**exit1**,3 errors: worker package +2 dependent payloads|blocked-by-host-SAC; hosted CI pending|
-| win-arm64 |27|75 /0 /3|78|**exit1**,2 errors: worker package + marker DLL; EXE omitted|blocked-by-host-SAC; hosted CI pending|
+| win-x64 |27|75 /1 /3|79|**exit 1**, 3 errors: worker missing exact policy pin + 2 dependent payloads|blocked-by-host-SAC; hosted CI pending|
+| win-arm64 |27|75 /0 /3|78|**exit 1**, 2 errors: worker missing exact policy pin + marker DLL; EXE omitted|blocked-by-host-SAC; hosted CI pending|
 | osx-arm64 |26|74 /0 /3|77|**0**, supplied permissive/conditional-LGPL technical policy|Pending|
 | osx-x64 |26|74 /0 /3|77|**0**, same scope|Pending|
-| linux-x64 |31|78 /0 /3|81|**exit1**,14 errors:7 unapproved Gtk packages +7 DLLs|GTK + eSCL fixture only|
+| linux-x64 |31|78 /0 /3|81|**exit 1**, 14 errors: 7 unapproved Gtk packages + 7 DLLs|GTK + eSCL fixture only|
 
 Data files are the first-party PDB/deps/runtimeconfig, not hidden native assets.
 Only one published native binary was found: win-x64 `NAPS2.Worker.exe`.
@@ -135,7 +135,7 @@ libraries are not bundled or cleared by this framework-dependent inventory.
 
 NuGet `contentHash` is checked against assets and `.nupkg.metadata`; signed ZIP
 `archiveSha512` is computed independently and checked against its sidecar. They
-are not interchangeable. Example NAPS2.Sdk1.6.0 lock contentHash:
+are not interchangeable. Example NAPS2.Sdk 1.6.0 lock contentHash:
 `I1u+uTL8avIe3faCrTPWkWj8KEK9qnZI8E/9Bm7k0emCeFMsIVsQUn0d85aQJXmjtnpMh5b711v3u9863hCbTQ==`.
 Its signed ZIP SHA512 is:
 `Ay7Vjl/+/KBls8Vvfg/NXd/bkdt/88SLmkQCuX1Wk/9IzjOdf2g47JreLPdYtAoAX3JG0orln8z1ot7d+HbdDg==`.
@@ -159,16 +159,18 @@ URLs and SHA256s are in [`source/index.json`](../../spikes/naps2/evidence/source
 `policy.json` pins exact identity/version/NuGet hash and, for file-mapped
 licenses, exact filename/file hash/source plus evidence/obligations. Missing,
 restricted, disallowed or changed metadata fails closed. All seven Gtk binding
-packages are intentionally absent from approved pins.
+packages and the Windows worker are intentionally absent from approved pins.
+The wrapper independently rejects any pin for these eight denied identities,
+and requires empty exceptions and reviewed payloads even if raw outcomes stay unchanged.
 
 | Package(s), exact version | Evidence / technical interpretation |
 |---|---|
-| NAPS2.Sdk, Escl, Images, Internals, Images.Gdi/Gtk/Mac, Sdk.Worker.Win32 **1.6.0** | Each nupkg LICENSE expressly grants LGPL2.1-or-later; repository commit `f914a4ec2af090aca4fa55eb3242ec91641482c3`. Worker artifact still blocked by deployment policy. |
+| NAPS2.Sdk, Escl, Images, Internals, Images.Gdi/Gtk/Mac, Sdk.Worker.Win32 **1.6.0** | Each nupkg LICENSE expressly grants LGPL2.1-or-later; repository commit `f914a4ec2af090aca4fa55eb3242ec91641482c3`. Worker has no approval pin; non-replaceable single-file deployment remains an independent blocker. |
 | NAPS2.PdfSharp **1.0.2** | Nupkg LICENCE.md, MIT. |
 | NAPS2.Mdns **1.0.1**, NTwain **1.0.1**, Wia **2.0.3** | Nuspec MIT expressions; Wia also carries MIT text. |
 | GrpcDotNetNamedPipes **3.1.0** | Nupkg Apache2 LICENSE; declared repository commit captured in inventory. |
 | Makaretu.Dns **2.0.1** | No declared license; exact nuspec repository commit `701463d2091e6d98d4cc4490abb0e0ead8ae2985` LICENSE is MIT; source bytes/hash captured. |
-| SimpleBase **1.3.1** | Nuspec generic Apache URL corroborated by source commit `72ecb1de90918faade31351ece771e67f52d4d4a` Apache2 LICENSE and AssemblyInfo1.3.1 at publication era. Not a reproducibly rebuilt source-to-package attestation. |
+| SimpleBase **1.3.1** | Nuspec generic Apache URL corroborated by source commit `72ecb1de90918faade31351ece771e67f52d4d4a` Apache2 LICENSE and AssemblyInfo 1.3.1 at publication era. Not a reproducibly rebuilt source-to-package attestation. |
 | Eto.Forms, Eto.Platform.Mac64 **2.11.0** | Exact nupkg Eto-LICENSE is BSD3. Mac64 additionally includes MonoMac-LICENSE (MIT OR Apache2); record MIT option and preserve both component notices. Primary package label is not a claim that MonoMac itself is BSD3. |
 | SixLabors.Fonts **1.0.1**, ZXing.Net **0.16.11**, Grpc.Core.Api **2.67.0** | Nuspec Apache2 expressions; Fonts exact version/hash locked and exercised, no Split-version upgrade. |
 | Google.Protobuf **3.29.3** | Nuspec BSD3 expression. |
@@ -177,7 +179,7 @@ packages are intentionally absent from approved pins.
 | SharpZipLib **1.4.2**, StandardSocketsHttpHandler **2.2.0.10**, System.ValueTuple **4.6.2** | Nuspec MIT expressions. |
 | AtkSharp, CairoSharp, GLibSharp, GdkSharp, GioSharp, GtkSharp, PangoSharp **3.24.24.95** | **UNRESOLVED**: all seven nuspecs omit license metadata and immutable source commit. Publication-era GtkSharp root LICENSE is Library GPL2.0; this is candidate evidence, not permission to invent LGPL2.1 or map each binary. No approval; Linux gate denies. |
 
-The gate's65 tests cover default deny, seeded GPL/AGPL/Split/unknown packages,
+The original gate's 65 tests cover default deny, seeded GPL/AGPL/Split/unknown packages,
 exact-version/hash matching, file-evidence drift, native review/hash/path
 binding, malformed input, compound-expression restrictions, conditional LGPL,
 NAPS2 application/Dynamsoft/ImageSharp unconditional bans and synthetic reviewed
@@ -201,19 +203,28 @@ The exact nupkg worker SHA/version are in both Windows inventories and locks.
 Whole EXE SHA256:
 `9282bc3787eb3080a91008907d94394d0e19337377861372c357017942c046be`.
 [`worker-bundle.json`](../../spikes/naps2/evidence/worker-bundle.json) records
-**v6.0,147 entries**, their byte hashes, embedded `.deps.json` and runtimeconfig.
-It includes NAPS2 LGPL DLLs, Fonts1.0.1 and self-contained **.NET10.0.9**.
+**v6.0, 147 entries**, their byte hashes, embedded `.deps.json` and runtimeconfig.
+It includes NAPS2 LGPL DLLs, Fonts 1.0.1 and self-contained **.NET 10.0.9**.
 No ImageSharp dependency/file is listed; an `NAPS2.Images.ImageSharp` string
 alone is not evidence of shipping that package.
 
 Exact source `NAPS2.Sdk.Worker.Build.csproj` sets `SelfContained=true`,
 `PublishSingleFile=true`, `PublishTrimmed=true`, `TrimMode=partial`, `win-x86`.
-That is source evidence of publish settings, **not a conclusion that every
-individual NAPS2 DLL was trimmed**. The embedded SDK DLL is630272bytes and has
-its own recorded SHA256; the precise trimming effect would need a separate
-source/build audit. The indisputable bundled/nonreplaceable layout already
-conflicts with current D002 deployment policy; this is not a definitive legal
-noncompliance judgment and no policy waiver was made.
+That is source evidence of publish settings, **not evidence that the LGPL DLLs
+were trimmed**. The reviewer compared embedded SHA-256 hashes against matching
+1.6.0 `lib/net10.0` nupkg entries: NAPS2.Sdk, Escl, Images, Images.Gdi and
+Internals are byte-identical and untrimmed (the SDK DLL is 630,272 bytes).
+Google.Protobuf 3.29.3 and SharpZipLib 1.4.2 differ, consistent with partial
+trimming of those non-LGPL dependencies. The deployment projection therefore
+does not claim LGPL trimming. The bundled/non-replaceable layout still conflicts
+with D-002; this is not a definitive legal judgment or a new license exception.
+
+Static PE inspection found the worker EXE unsigned: PE32 i386 (`0x14c`), with
+Authenticode security directory `0/0`. D-011 forbids shipping it as-is; signing
+changes its bytes and invalidates an unmodified upstream EXE hash comparison.
+`NAPS2.Worker.dll` assembly version 8.6.0 matches no captured nupkg entry; its
+SDK-side LGPL provenance is inferred from Worker.Build.csproj, not established
+by captured worker source or a reproducible build. This provenance remains unresolved.
 
 The published `.targets` copy EXE only for `win-x86`, `win-x64`, .NET Framework,
 or a RID-less non-macOS target. **win-arm64 is omitted**: its marker DLL is
@@ -224,7 +235,7 @@ Do not implement a worker rebuild or change policy without joint follow-up.
 
 ### Published macOS SDK / ICA
 
-The SDK1.6.0 nupkg ships generic net10.0/net8.0/net462, **not net10.0-macos**.
+The SDK 1.6.0 nupkg ships generic net10.0/net8.0/net462, **not net10.0-macos**.
 The metadata probe finds eSCL/SANE/TWAIN/WIA types but **no AppleScanDriver** and
 no Microsoft.macOS/ImageCaptureCore reference. At the exact declared source
 commit, AppleScanDriver and its factory branch are `#if MAC`; MAC is defined
@@ -236,7 +247,7 @@ requires a follow-up decision, not an unsupported success claim.
 
 ### Platform imaging/system dependencies
 
-- Windows Gdi references System.Drawing.Common9.0.3 and Windows system APIs;
+- Windows Gdi references System.Drawing.Common 9.0.3 and Windows system APIs;
   WIA/TWAIN and worker launch remain pending native hosts/hardware.
 - macOS generic Images.Mac references Eto.Platform.Mac64/MonoMac; AppKit and
   OS framework/runtime compatibility, including arm64, remain untested. Managed
@@ -253,9 +264,12 @@ requires a follow-up decision, not an unsupported success claim.
 
 ## CI and remaining gates
 
-[`spike-naps2.yml`](../../.github/workflows/spike-naps2.yml) runs gate unit tests,
-all-five locked cross-publish/inventories and separately native runtime research
-on Linux x64, Windows x64/arm64, macOS arm64/x64. Runner labels were checked
+[`spike-naps2.yml`](../../.github/workflows/spike-naps2.yml) runs gate unit tests
+and all-five locked cross-publish/inventories on path-matched PRs, main pushes
+and manual dispatches. Docs-only edits do not trigger it. Pushes are main-only;
+the expensive native runtime matrix (Linux x64, Windows x64/arm64, macOS arm64/x64)
+is manual/main-push only, never duplicated on a PR. Concurrency cancels superseded
+runs on the same ref. Runner labels were checked
 against the official GitHub-hosted-runner documentation; OS/architecture are
 asserted before runtime evidence is labeled native. Artifacts are uploaded even
 when the actual license graph is denied. `expected_gate.py` runs the real gate,
@@ -263,10 +277,50 @@ asserts its exact exit/status/error multiset and package/payload counts, and fai
 on any drift, including an unexpected pass. **D-010b permits green evidence/tooling
 checks for these exact denials only; Windows/Linux shipping graphs remain
 blocked.** The macOS metadata passes are not ICA/runtime or release clearance.
-Static lint is not execution; this workflow has not been pushed/run.
-actionlint1.7.12 was downloaded from its official release and its archive SHA256
+Static lint is not execution; hosted execution of this revision remains pending.
+actionlint 1.7.12 was downloaded from its official release and its archive SHA256
 verified against release checksums:
 `8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8`.
+
+### Comparison contract and action pins (r1 fix)
+
+The three Claude r1 regressions were reproduced red immediately after the review
+fast-forward, before fixes. Final local validation passed **66 gate tests and 23
+spike tests**, including all three regressions, 16 denied-pin/exception mutation
+subcases, the hidden worker-payload waiver, LF checkout and unsupported
+application-code regressions. See [`r1-fix-summary.md`](../../spikes/naps2/evidence/logs/r1-fix-summary.md)
+and its adjacent test/outcome logs. The Linux locked restore/Release build used
+SDK 10.0.403 and had zero warnings/errors. No cross-publish was repeated: project,
+source, locks and package inventory inputs were unchanged; only the two Windows
+gate projections were regenerated from existing full inventories to correct the
+LGPL trimming claim. Hosted/native Windows/macOS and independent re-review remain pending.
+
+CI compares **exact gate outcomes**, not byte-identical regenerated evidence:
+exit code, status, package/payload counts and the full error multiset must match.
+Windows now reports `missing exact package policy pin (id/version/hash/expression)`
+for `NAPS2.Sdk.Worker.Win32@1.6.0`; dependent marker/EXE payload denials remain
+`exact approved inventory owner required` (3 errors on x64, 2 on arm64).
+Linux retains the seven missing-pin errors and seven dependent DLL denials.
+The macOS metadata outcomes remain passes; raw exits stay **1/1/0/0/1**.
+The wrapper additionally rejects denied-identity pins and any exception or payload
+review even if the raw gate still produces exactly the expected outcome.
+
+Only lock files are byte-compared in CI. Inventories remain uploaded evidence,
+not a byte-drift assertion: first-party DLL/PDB output hashes are path-dependent,
+and changes preserving gate counts/errors can pass. Deterministic/path-mapped
+builds and evidence byte comparison are deferred, not silently claimed here.
+The three source inputs to the first-party package pin are forced to LF by local
+`.gitattributes`; a `core.autocrlf=true` checkout regression checks the exact pin.
+
+On 2026-11-01, `git ls-remote https://github.com/actions/<name>.git refs/tags/<tag>`
+verified these official upstream refs before pinning every workflow action use:
+
+| Action | Verified tag | Commit SHA |
+|---|---|---|
+| checkout | v4 | `11d5960a326750d5838078e36cf38b85af677262` |
+| setup-python | v5 | `a26af69be951a213d495a4c3e4e4022e16d87065` |
+| setup-dotnet | v4 | `67a3573c9a986a3f9c594539f4ab511d57bb3ce9` |
+| upload-artifact | v4 | `ea165f8d65b6e75b540449e92b4886f43607fa02` |
 
 OD-6/D-011 explicitly prohibit executing **any unsigned Windows binaries** on
 the owner's SAC-enforcing Windows host. No native Windows execution was attempted
@@ -289,4 +343,4 @@ Remaining before claiming full T02/platform acceptance or unblocking T06:
    fulfillment and legal release sign-off. This spike is not a releasable installer.
 
 **Disposition: D-010b evidence/tooling implemented, feasibility acceptance partial/blocked;
-no merge, push, all-platform runtime pass or legal-clearance claim.**
+author-branch push is not merge approval, all-platform runtime proof or legal clearance.**

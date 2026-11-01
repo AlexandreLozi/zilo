@@ -12,10 +12,11 @@ import sys
 
 
 WORKER = [
-    "package NAPS2.Sdk.Worker.Win32@1.6.0: LGPL requires dynamic, separate, replaceable, untrimmed/unmerged DLL deployment",
+    "package NAPS2.Sdk.Worker.Win32@1.6.0: missing exact package policy pin (id/version/hash/expression)",
     "payload NAPS2.Sdk.Worker.Win32.dll: exact approved inventory owner required",
 ]
 GTK = ("AtkSharp", "CairoSharp", "GLibSharp", "GdkSharp", "GioSharp", "GtkSharp", "PangoSharp")
+DENIED_IDENTITIES = {name.casefold() for name in (*GTK, "NAPS2.Sdk.Worker.Win32")}
 EXPECTED = {
     "win-x64": (1, "denied", 28, 79, WORKER + ["payload NAPS2.Worker.exe: exact approved inventory owner required"]),
     "win-arm64": (1, "denied", 28, 78, WORKER),
@@ -35,6 +36,12 @@ def main():
     args = parser.parse_args()
     inventory = args.inventory or root / f"evidence/inventory/{args.rid}.gate.json"
     try:
+        # Outcome equality alone cannot reveal a waiver masked by another denial.
+        policy = json.loads((root / "policy.json").read_text())
+        if policy["exceptions"] != [] or policy["reviewedPayloads"] != []:
+            raise ValueError("D-010b forbids exceptions and reviewed payload waivers in this spike")
+        if any(pin["id"].casefold() in DENIED_IDENTITIES for pin in policy["packages"]):
+            raise ValueError("D-010b forbids approval pins for denied identities")
         if json.loads(inventory.read_text())["rid"] != args.rid:
             raise ValueError("Inventory RID differs from asserted RID")
         result = subprocess.run([sys.executable, str(root / "../../tools/license-gate/gate.py"),

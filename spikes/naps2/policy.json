@@ -469,32 +469,6 @@
       "source": "https://api.nuget.org/v3-flatcontainer/naps2.sdk/1.6.0/naps2.sdk.1.6.0.nupkg"
     },
     {
-      "id": "NAPS2.Sdk.Worker.Win32",
-      "version": "1.6.0",
-      "sha512": "c5elzapNU63cCm8V/S8R6lnSkXYK8bpBY1HJjF3N9YxiQCSEoX/qkVjvm6kZsWZlOQ9KTV3vmDrX84GaLcjk1A==",
-      "licenseExpression": "LGPL-2.1-or-later",
-      "review": {
-        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
-        "date": "2026-10-31",
-        "reference": "docs/spikes/SP-2a.md#license-evidence"
-      },
-      "obligations": [
-        "license-text",
-        "notice",
-        "source-offer",
-        "replaceable-dll"
-      ],
-      "provenance": [
-        "https://api.nuget.org/v3-flatcontainer/naps2.sdk.worker.win32/1.6.0/naps2.sdk.worker.win32.1.6.0.nupkg",
-        "NuGet lock contentHash: c5elzapNU63cCm8V/S8R6lnSkXYK8bpBY1HJjF3N9YxiQCSEoX/qkVjvm6kZsWZlOQ9KTV3vmDrX84GaLcjk1A==",
-        "Actual license bytes SHA256: 99c0d6be5f616c9f6941951bdca50a64c16b43ea4e141264115068e11fe2089d",
-        "licenses/naps2.sdk.worker.win32/1.6.0/LICENSE"
-      ],
-      "licenseFile": "LICENSE",
-      "licenseFileSha256": "99c0d6be5f616c9f6941951bdca50a64c16b43ea4e141264115068e11fe2089d",
-      "source": "https://api.nuget.org/v3-flatcontainer/naps2.sdk.worker.win32/1.6.0/naps2.sdk.worker.win32.1.6.0.nupkg"
-    },
-    {
       "id": "NAPS2.Wia",
       "version": "2.0.3",
       "sha512": "Za/pkCCVuUxD3Q00pTsFd3FRAi1HTBlM8uzDXaPpULMZ6MoqYaJKcE5fJmOz+fqNfQaMxv9dQeJ1GZ9uVtBM8g==",

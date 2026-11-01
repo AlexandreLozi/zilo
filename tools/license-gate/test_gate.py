@@ -89,6 +89,13 @@ class GateTests(unittest.TestCase):
     def test_permissive_exact_pin_passes(self):
         self.invoke()
 
+    def test_application_code_with_unsupported_owner_is_denied(self):
+        self.inventory["payloads"][0]["kind"] = "application-code"
+        # Neither an approved package nor an exact payload review clears this kind.
+        self.native_review()
+        result = self.invoke(code=1)
+        self.assertEqual(["payload lib/Example.dll: unsupported application-code owner"], result["errors"])
+
     def test_nuget_id_case_insensitive(self):
         self.policy["packages"][0]["id"] = "EXAMPLE.CORE"
         self.inventory["payloads"][0]["packageId"] = "example.core"
@@ -282,9 +289,9 @@ class GateTests(unittest.TestCase):
         self.native_review()
         self.invoke(code=1)
 
-    def test_other_application_code_owned_permissive_passes(self):
+    def test_other_application_code_owned_permissive_denied(self):
         self.inventory["payloads"][0]["kind"] = "application-code"
-        self.invoke()
+        self.invoke(code=1)
 
     def test_unsafe_payload_paths_rejected(self):
         for path in ["/tmp/a", "../a", "lib/../a", "./a", "lib//a", "C:/a", "a\\b", "a/", "a\u0000b"]:

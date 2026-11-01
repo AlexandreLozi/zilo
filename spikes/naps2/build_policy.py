@@ -15,7 +15,7 @@ FILE_INTERPRETATIONS = {
     ("Eto.Platform.Mac64", "2.11.0"): "BSD-3-Clause",
     **{(name, "1.6.0"): "LGPL-2.1-or-later" for name in (
         "NAPS2.Sdk", "NAPS2.Escl", "NAPS2.Images", "NAPS2.Internals",
-        "NAPS2.Images.Gdi", "NAPS2.Images.Gtk", "NAPS2.Images.Mac", "NAPS2.Sdk.Worker.Win32")},
+        "NAPS2.Images.Gdi", "NAPS2.Images.Gtk", "NAPS2.Images.Mac")},
 }
 ALLOWED = ["MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "ISC", "0BSD", "Zlib", "LGPL-2.1-or-later"]
 
@@ -33,6 +33,9 @@ def main():
             observed[identity] = package
     packages = []
     for identity, package in sorted(observed.items()):
+        if identity[0].casefold() == "naps2.sdk.worker.win32":
+            # D-010b: never emit an approval pin, even if upstream adds SPDX metadata.
+            continue
         expression = package["licenseExpression"] or FILE_INTERPRETATIONS.get(identity)
         if expression not in ALLOWED:
             # GtkSharp family deliberately remains unknown/unapproved, never guess LGPL2.1.

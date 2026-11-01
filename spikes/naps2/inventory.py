@@ -178,9 +178,9 @@ def gate_inventory(inventory):
         selected["deployment"] = {"linkage": "dynamic", "separateDll": True, "replaceable": True,
             "trimmed": False, "merged": False, "singleFile": False}
         if package["id"].lower() == "naps2.sdk.worker.win32":
-            # Exact-source Worker.Build project publishes a trimmed, self-contained single-file bundle.
-            # Do not confuse these upstream settings with proof of which individual DLLs were trimmed.
-            selected["deployment"].update(separateDll=False, replaceable=False, trimmed=True, singleFile=True)
+            # Bundled LGPL DLLs match their untrimmed nupkg bytes. The bundle is still
+            # single-file and non-replaceable; keep this independent deployment deny layer.
+            selected["deployment"].update(separateDll=False, replaceable=False, singleFile=True)
         packages.append(selected)
     return {"schemaVersion": 1, "rid": inventory["rid"], "packages": packages,
         "payloads": [{key: payload[key] for key in ("path", "sha256", "kind", "packageId", "packageVersion")}

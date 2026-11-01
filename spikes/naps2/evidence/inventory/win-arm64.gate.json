@@ -261,7 +261,7 @@
         "linkage": "dynamic",
         "separateDll": false,
         "replaceable": false,
-        "trimmed": true,
+        "trimmed": false,
         "merged": false,
         "singleFile": true
       }

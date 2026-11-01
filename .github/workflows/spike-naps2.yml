@@ -2,20 +2,25 @@ name: SP-2a NAPS2 feasibility (not release clearance)
 
 on:
   pull_request:
-    paths: ['spikes/naps2/**', 'tools/license-gate/**', '.github/workflows/spike-naps2.yml', 'docs/spikes/SP-2a.md']
+    paths: ['spikes/naps2/**', 'tools/license-gate/**', '.github/workflows/spike-naps2.yml']
   push:
-    paths: ['spikes/naps2/**', 'tools/license-gate/**', '.github/workflows/spike-naps2.yml', 'docs/spikes/SP-2a.md']
+    branches: [main]
+    paths: ['spikes/naps2/**', 'tools/license-gate/**', '.github/workflows/spike-naps2.yml']
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: spike-naps2-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   gate-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
       - name: Gate positive and seeded negative tests
@@ -25,6 +30,8 @@ jobs:
         run: |
           python -B -m unittest discover -s tests -p test_real_gate.py -v
           python -B -m unittest discover -s tests -p test_expected_gate.py -v
+          python -B -m unittest discover -s tests -p test_review_t02_r1.py -v
+          python -B -m unittest discover -s tests -p test_inventory.py -v
 
   published-inventory:
     runs-on: ubuntu-latest
@@ -36,11 +43,11 @@ jobs:
       run:
         working-directory: spikes/naps2
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           global-json-file: spikes/naps2/global.json
       - name: Locked restore, framework-dependent cross-publish, full inventory
@@ -51,7 +58,7 @@ jobs:
         run: python expected_gate.py --rid ${{ matrix.rid }}
       - name: Upload evidence even when the license graph is denied
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: naps2-inventory-${{ matrix.rid }}
           path: |
@@ -61,6 +68,8 @@ jobs:
 
   native-smoke:
     # Independent of license acceptance: these are runtime research probes, not releasable artifacts.
+    # Do not bill the native matrix on PRs or duplicate branch pushes (OD-7).
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     strategy:
       fail-fast: false
       matrix:
@@ -78,11 +87,11 @@ jobs:
     env:
       SPIKE_RID: ${{ matrix.rid }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           global-json-file: spikes/naps2/global.json
       - name: Prove runner OS and architecture before labeling runtime evidence
@@ -95,7 +104,7 @@ jobs:
         run: dotnet "bin/Release/net10.0/${SPIKE_RID}/Naps2Spike.dll" list Escl
       - name: Upload runtime probe outputs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: naps2-runtime-${{ matrix.rid }}
           path: |

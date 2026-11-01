@@ -358,8 +358,11 @@ def check(inventory, policy):
         if forbidden_identity(path) or (package_id is not None and forbidden_identity(package_id)):
             errors.append(f"payload {path}: unconditionally forbidden D-002 identity/path")
             continue
-        if payload["kind"] == "application-code" and package_id.casefold().split(".")[0] == "naps2":
-            errors.append(f"payload {path}: NAPS2 application code is never permitted")
+        if payload["kind"] == "application-code":
+            problem = ("NAPS2 application code is never permitted"
+                if package_id.casefold().split(".")[0] == "naps2"
+                else "unsupported application-code owner")
+            errors.append(f"payload {path}: {problem}")
             continue
         owner = None
         if payload["kind"] != "unowned":
