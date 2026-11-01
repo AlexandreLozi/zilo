@@ -82,6 +82,15 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
   - The Opus master pushes `main` after each merge.
   - Authors push their own task branch.
   - Do not push review-only branches unless they add tests.
+- **Interpretation (owner liaison, 2026-11-01):** OD-7 allows the **D-012 bounded evidence reuse**. A green
+  hosted run on the exact reviewed head stands in for a rebased-SHA rerun when:
+  - the task is not star-marked;
+  - the rebase had no conflicts;
+  - every workflow input is byte-identical (`git diff --quiet` over the full D-012 input set);
+  - VALIDATION.md labels it "evidence reuse".
+  - **Backstop:** the path-filtered workflows run again on `main` after the push. A red post-merge
+    run on `main` is an immediate P1 fix task and blocks the next merge in that lane.
+  - Star tasks always rerun on the exact rebased SHA.
 - Never make the repo public, add collaborators, or change repo settings without the owner.
 - **Actions minutes are billed on private repos** (Windows 2×, macOS 10×). Rules to keep the bill
   down:
