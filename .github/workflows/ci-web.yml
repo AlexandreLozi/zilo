@@ -63,8 +63,8 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm --filter @zilo/demo exec playwright install --with-deps chromium firefox webkit
 
-      - name: Playwright smoke (Chromium, Firefox, WebKit)
-        run: pnpm --filter @zilo/demo e2e
+      - name: Playwright E2E (Chromium, Firefox, WebKit; demo smoke, catalog axe + keyboard)
+        run: pnpm e2e
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
@@ -74,5 +74,7 @@ jobs:
           path: |
             apps/demo/playwright-report/
             apps/demo/test-results/
+            apps/catalog/playwright-report/
+            apps/catalog/test-results/
           retention-days: 14
           if-no-files-found: ignore

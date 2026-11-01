@@ -1,0 +1,136 @@
+Scope: all 8 workspace projects
+✓ Lockfile passes supply-chain policies (verified 4m ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+Done in 391ms using pnpm v11.17.0
+$ pnpm --filter @zilo/license-gate check
+$ node src/cli.ts
+Licence gate passed for 161 package(s) (MPL-2.0: 4, MIT: 123, Apache-2.0: 18, BSD-2-Clause: 7, BSD-3-Clause: 2, ISC: 6, BlueOak-1.0.0: 1).
+$ prettier --check .
+Checking formatting...
+All matched files use Prettier code style!
+Scope: 7 of 8 workspace projects
+packages/dwt-compat lint$ eslint . && prettier --check . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore
+packages/license-gate lint$ eslint . && prettier --check . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore
+packages/sdk lint$ eslint . && prettier --check . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore
+packages/ui lint$ eslint . && prettier --check . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore
+packages/sdk lint: Checking formatting...
+packages/dwt-compat lint: Checking formatting...
+packages/sdk lint: All matched files use Prettier code style!
+packages/sdk lint: Done
+packages/dwt-compat lint: All matched files use Prettier code style!
+packages/dwt-compat lint: Done
+packages/license-gate lint: Checking formatting...
+packages/license-gate lint: All matched files use Prettier code style!
+packages/license-gate lint: Done
+packages/ui lint: Checking formatting...
+packages/ui lint: All matched files use Prettier code style!
+packages/ui lint: Done
+apps/demo lint$ eslint . && prettier --check . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore
+packages/react lint$ eslint . && prettier --check . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore
+apps/catalog lint$ eslint . && prettier --check . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore
+packages/react lint: Checking formatting...
+packages/react lint: All matched files use Prettier code style!
+packages/react lint: Done
+apps/demo lint: Checking formatting...
+apps/demo lint: All matched files use Prettier code style!
+apps/demo lint: Done
+apps/catalog lint: Checking formatting...
+apps/catalog lint: All matched files use Prettier code style!
+apps/catalog lint: Done
+Scope: 7 of 8 workspace projects
+packages/dwt-compat typecheck$ tsc -p tsconfig.json --noEmit
+packages/license-gate typecheck$ tsc -p tsconfig.json --noEmit
+packages/sdk typecheck$ tsc -p tsconfig.json --noEmit
+packages/ui typecheck$ tsc -p tsconfig.json --noEmit
+packages/dwt-compat typecheck: Done
+packages/sdk typecheck: Done
+packages/license-gate typecheck: Done
+packages/ui typecheck: Done
+apps/catalog typecheck$ tsc -p tsconfig.json --noEmit && tsc -p e2e/tsconfig.json --noEmit
+apps/demo typecheck$ tsc -p tsconfig.json --noEmit && tsc -p e2e/tsconfig.json --noEmit
+packages/react typecheck$ tsc -p tsconfig.json --noEmit
+packages/react typecheck: Done
+apps/demo typecheck: Done
+apps/catalog typecheck: Done
+Scope: 7 of 8 workspace projects
+packages/dwt-compat test$ vitest run
+packages/license-gate test$ vitest run
+packages/sdk test$ vitest run
+packages/ui test$ vitest run
+packages/license-gate test:  RUN  v5.0.5 /home/alexandre/orca/workspaces/zilo/t15-ui-foundation/packages/license-gate
+packages/sdk test:  RUN  v5.0.5 /home/alexandre/orca/workspaces/zilo/t15-ui-foundation/packages/sdk
+packages/dwt-compat test:  RUN  v5.0.5 /home/alexandre/orca/workspaces/zilo/t15-ui-foundation/packages/dwt-compat
+packages/ui test:  RUN  v5.0.5 /home/alexandre/orca/workspaces/zilo/t15-ui-foundation/packages/ui
+packages/dwt-compat test:  Test Files  1 passed (1)
+packages/dwt-compat test:       Tests  1 passed (1)
+packages/dwt-compat test:    Start at  13:26:49
+packages/dwt-compat test:    Duration  98ms (transform 46%, tests 25%, import 20%, worker 8%)
+packages/sdk test:  Test Files  1 passed (1)
+packages/sdk test:       Tests  1 passed (1)
+packages/sdk test:    Start at  13:26:49
+packages/sdk test:    Duration  101ms (transform 67%, import 22%, worker 7%, tests 4%)
+packages/license-gate test:  Test Files  1 passed (1)
+packages/license-gate test:       Tests  10 passed (10)
+packages/license-gate test:    Start at  13:26:49
+packages/license-gate test:    Duration  108ms (transform 60%, import 20%, tests 14%, worker 6%)
+packages/dwt-compat test: Done
+packages/sdk test: Done
+packages/license-gate test: Done
+packages/ui test:  Test Files  3 passed (3)
+packages/ui test:       Tests  25 passed (25)
+packages/ui test:    Start at  13:26:49
+packages/ui test:    Duration  325ms (environment 61%, tests 25%, import 6%, transform 6%, worker 3%)
+packages/ui test: Done
+apps/catalog test$ vitest run
+packages/react test$ vitest run
+apps/demo test$ vitest run
+packages/react test:  RUN  v5.0.5 /home/alexandre/orca/workspaces/zilo/t15-ui-foundation/packages/react
+apps/demo test:  RUN  v5.0.5 /home/alexandre/orca/workspaces/zilo/t15-ui-foundation/apps/demo
+apps/catalog test:  RUN  v5.0.5 /home/alexandre/orca/workspaces/zilo/t15-ui-foundation/apps/catalog
+apps/catalog test:  Test Files  1 passed (1)
+apps/catalog test:       Tests  3 passed (3)
+apps/catalog test:    Start at  13:26:50
+apps/catalog test:    Duration  259ms (environment 67%, transform 18%, tests 7%, import 6%, worker 2%)
+apps/demo test:  Test Files  1 passed (1)
+apps/demo test:       Tests  1 passed (1)
+apps/demo test:    Start at  13:26:50
+apps/demo test:    Duration  279ms (environment 61%, transform 30%, import 6%, tests 2%, worker 2%)
+apps/catalog test: Done
+apps/demo test: Done
+packages/react test:  Test Files  1 passed (1)
+packages/react test:       Tests  6 passed (6)
+packages/react test:    Start at  13:26:50
+packages/react test:    Duration  378ms (environment 42%, transform 25%, import 18%, tests 14%, worker 1%)
+packages/react test: Done
+Scope: 7 of 8 workspace projects
+packages/dwt-compat build$ tsc -p tsconfig.build.json
+packages/sdk build$ tsc -p tsconfig.build.json
+packages/ui build$ tsc -p tsconfig.build.json
+packages/dwt-compat build: Done
+packages/sdk build: Done
+packages/ui build: Done
+apps/catalog build$ vite build
+packages/react build$ tsc -p tsconfig.build.json
+apps/demo build$ vite build
+apps/catalog build: vite v8.3.5 building client environment for production...
+apps/demo build: vite v8.3.5 building client environment for production...
+apps/catalog build: transforming...
+apps/demo build: transforming...
+apps/catalog build: ✓ 18 modules transformed.
+apps/demo build: ✓ 16 modules transformed.
+apps/catalog build: rendering chunks...
+apps/demo build: rendering chunks...
+apps/catalog build: computing gzip size...
+apps/catalog build: dist/index.html                  0.40 kB │ gzip:  0.27 kB
+apps/catalog build: dist/assets/index-DMS420vp.css   0.76 kB │ gzip:  0.37 kB
+apps/catalog build: dist/assets/index-CgWn9S3B.js   38.48 kB │ gzip: 11.01 kB
+apps/catalog build: ✓ built in 37ms
+apps/demo build: computing gzip size...
+apps/demo build: dist/index.html                 0.32 kB │ gzip: 0.23 kB
+apps/demo build: dist/assets/index-BWtVHN5N.js  31.48 kB │ gzip: 8.93 kB
+apps/demo build: ✓ built in 37ms
+apps/catalog build: Done
+apps/demo build: Done
+packages/react build: Done

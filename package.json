@@ -12,7 +12,7 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "build": "pnpm -r build",
-    "e2e": "pnpm --filter @zilo/demo e2e",
+    "e2e": "pnpm -r --workspace-concurrency=1 e2e",
     "license-check": "pnpm --filter @zilo/license-gate check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

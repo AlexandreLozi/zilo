@@ -1,0 +1,236 @@
+# CI=1 pnpm e2e on the WSL host, 2026-11-01 (trimmed from 6.2k lines: run headers, one WebKit launch error, failure summaries)
+# Result: catalog 116 passed (Chromium 58 + Firefox 58), 58 failed = every WebKit test, browser launch blocked by missing host libraries.
+#         demo 2 passed (Chromium, Firefox), 1 failed = WebKit, same cause. Hosted ci-web installs --with-deps and runs all three.
+Scope: all 8 workspace projects
+✓ Lockfile passes supply-chain policies (verified 5m ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+Done in 377ms using pnpm v11.17.0
+$ pnpm -r --workspace-concurrency=1 e2e
+Scope: 7 of 8 workspace projects
+$ playwright test -c e2e/playwright.config.ts
+
+Running 174 tests using 7 workers
+
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Missing libraries:                                   ║
+    ║     libgtk-4.so.1                                    ║
+    ║     libgraphene-1.0.so.0                             ║
+    ║     libevent-2.1.so.7                                ║
+    ║     libopus.so.0                                     ║
+    ║     libgstallocators-1.0.so.0                        ║
+    ║     libgstapp-1.0.so.0                               ║
+    ║     libgstpbutils-1.0.so.0                           ║
+    ║     libgstaudio-1.0.so.0                             ║
+    ║     libgsttag-1.0.so.0                               ║
+    ║     libgstvideo-1.0.so.0                             ║
+    ║     libgstgl-1.0.so.0                                ║
+    ║     libgstcodecparsers-1.0.so.0                      ║
+    ║     libgstfft-1.0.so.0                               ║
+    ║     libflite.so.1                                    ║
+    ║     libflite_usenglish.so.1                          ║
+    ║     libflite_cmu_grapheme_lang.so.1                  ║
+    ║     libflite_cmu_grapheme_lex.so.1                   ║
+    ║     libflite_cmu_indic_lang.so.1                     ║
+    ║     libflite_cmu_indic_lex.so.1                      ║
+    ║     libflite_cmulex.so.1                             ║
+    ║     libflite_cmu_time_awb.so.1                       ║
+    ║     libflite_cmu_us_awb.so.1                         ║
+    ║     libflite_cmu_us_kal16.so.1                       ║
+    ║     libflite_cmu_us_kal.so.1                         ║
+    ║     libflite_cmu_us_rms.so.1                         ║
+    ║     libflite_cmu_us_slt.so.1                         ║
+    ║     libwebpdemux.so.2                                ║
+    ║     libavif.so.16                                    ║
+    ║     libharfbuzz-icu.so.0                             ║
+    ║     libwebpmux.so.3                                  ║
+    ║     libmanette-0.2.so.0                              ║
+    ║     libenchant-2.so.2                                ║
+    ║     libsecret-1.so.0                                 ║
+    ║     libhyphen.so.0                                   ║
+    ║     libGLESv2.so.2                                   ║
+    ║     libx264.so                                       ║
+    ╚══════════════════════════════════════════════════════╝
+
+    Error Context: test-results/axe-catalog-index-has-no-axe-violations-webkit/error-context.md
+  58 failed
+    [webkit] › e2e/axe.spec.ts:20:1 › catalog index has no axe violations ──────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-secondary (light) ────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-primary (light) ──────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-ghost (light) ────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-danger (light) ───────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-small (light) ────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-disabled (light) ─────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-busy (light) ─────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-icon (light) ─────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-host-override (light) ────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: banner-info (light) ─────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: banner-success (light) ──────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: banner-warning (light) ──────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: banner-danger (light) ───────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: banner-dismissible (light) ──────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: progress-determinate (light) ────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: progress-indeterminate (light) ──────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: spinner-default (light) ─────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: spinner-visible-label (light) ───────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: dialog-trigger (light) ──────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: dialog-open (light) ─────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: dialog-description (light) ──────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: dialog-alert (light) ────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: dialog-scroll (light) ───────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-secondary (dark) ─────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-primary (dark) ───────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-ghost (dark) ─────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-danger (dark) ────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-small (dark) ─────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-disabled (dark) ──────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-busy (dark) ──────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-icon (dark) ──────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: button-host-override (dark) ─────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: banner-info (dark) ──────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: banner-success (dark) ───────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: banner-warning (dark) ───────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: banner-danger (dark) ────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: banner-dismissible (dark) ───────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: progress-determinate (dark) ─────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: progress-indeterminate (dark) ───────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: spinner-default (dark) ──────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: spinner-visible-label (dark) ────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: dialog-trigger (dark) ───────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: dialog-open (dark) ──────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: dialog-description (dark) ───────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: dialog-alert (dark) ─────────────────────────────────────
+    [webkit] › e2e/axe.spec.ts:30:5 › axe: dialog-scroll (dark) ────────────────────────────────────
+    [webkit] › e2e/dialog-keyboard.spec.ts:36:1 › initial focus goes to the first field in the dialog 
+    [webkit] › e2e/dialog-keyboard.spec.ts:41:1 › Tab cycles through the dialog and wraps from last to first 
+    [webkit] › e2e/dialog-keyboard.spec.ts:52:1 › Shift+Tab cycles backwards and wraps from first to last 
+    [webkit] › e2e/dialog-keyboard.spec.ts:62:1 › focus never reaches the page while the dialog is open 
+    [webkit] › e2e/dialog-keyboard.spec.ts:70:1 › Escape closes the dialog and returns focus to the trigger 
+    [webkit] › e2e/dialog-keyboard.spec.ts:79:1 › the close button closes the dialog and returns focus 
+    [webkit] › e2e/dialog-keyboard.spec.ts:89:1 › a footer action closes the dialog and returns focus 
+    [webkit] › e2e/dialog-keyboard.spec.ts:97:1 › the page behind does not scroll while open ───────
+    [webkit] › e2e/dialog-keyboard.spec.ts:106:1 › the alert dialog focuses its safe action ────────
+    [webkit] › e2e/dialog-keyboard.spec.ts:112:1 › a nested button inherits the dark theme from its dialog 
+    [webkit] › e2e/dialog-keyboard.spec.ts:122:1 › theme="auto" follows the system colour scheme ───
+  116 passed (22.5s)
+/home/alexandre/orca/workspaces/zilo/t15-ui-foundation/apps/catalog:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @zilo/catalog@0.0.0 e2e: `playwright test -c e2e/playwright.config.ts`
+Exit status 1
+$ playwright test -c e2e/playwright.config.ts
+[ELIFECYCLE] Command failed with exit code 1.
+
+Running 3 tests using 3 workers
+
+  ✓  2 [chromium] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button (111ms)
+  ✘  3 [webkit] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button (1ms)
+  ✘  4 [webkit] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button (retry #1) (2ms)
+  ✓  1 [firefox] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button (963ms)
+
+
+  1) [webkit] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button ───────────────────────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Missing libraries:                                   ║
+    ║     libgtk-4.so.1                                    ║
+    ║     libgraphene-1.0.so.0                             ║
+    ║     libevent-2.1.so.7                                ║
+    ║     libopus.so.0                                     ║
+    ║     libgstallocators-1.0.so.0                        ║
+    ║     libgstapp-1.0.so.0                               ║
+    ║     libgstpbutils-1.0.so.0                           ║
+    ║     libgstaudio-1.0.so.0                             ║
+    ║     libgsttag-1.0.so.0                               ║
+    ║     libgstvideo-1.0.so.0                             ║
+    ║     libgstgl-1.0.so.0                                ║
+    ║     libgstcodecparsers-1.0.so.0                      ║
+    ║     libgstfft-1.0.so.0                               ║
+    ║     libflite.so.1                                    ║
+    ║     libflite_usenglish.so.1                          ║
+    ║     libflite_cmu_grapheme_lang.so.1                  ║
+    ║     libflite_cmu_grapheme_lex.so.1                   ║
+    ║     libflite_cmu_indic_lang.so.1                     ║
+    ║     libflite_cmu_indic_lex.so.1                      ║
+    ║     libflite_cmulex.so.1                             ║
+    ║     libflite_cmu_time_awb.so.1                       ║
+    ║     libflite_cmu_us_awb.so.1                         ║
+    ║     libflite_cmu_us_kal16.so.1                       ║
+    ║     libflite_cmu_us_kal.so.1                         ║
+    ║     libflite_cmu_us_rms.so.1                         ║
+    ║     libflite_cmu_us_slt.so.1                         ║
+    ║     libwebpdemux.so.2                                ║
+    ║     libavif.so.16                                    ║
+    ║     libharfbuzz-icu.so.0                             ║
+    ║     libwebpmux.so.3                                  ║
+    ║     libmanette-0.2.so.0                              ║
+    ║     libenchant-2.so.2                                ║
+    ║     libsecret-1.so.0                                 ║
+    ║     libhyphen.so.0                                   ║
+    ║     libGLESv2.so.2                                   ║
+    ║     libx264.so                                       ║
+    ╚══════════════════════════════════════════════════════╝
+
+    Error Context: test-results/smoke-demo-loads-and-renders-a-Zilo-button-webkit/error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Missing libraries:                                   ║
+    ║     libgtk-4.so.1                                    ║
+    ║     libgraphene-1.0.so.0                             ║
+    ║     libevent-2.1.so.7                                ║
+    ║     libopus.so.0                                     ║
+    ║     libgstallocators-1.0.so.0                        ║
+    ║     libgstapp-1.0.so.0                               ║
+    ║     libgstpbutils-1.0.so.0                           ║
+    ║     libgstaudio-1.0.so.0                             ║
+    ║     libgsttag-1.0.so.0                               ║
+    ║     libgstvideo-1.0.so.0                             ║
+    ║     libgstgl-1.0.so.0                                ║
+    ║     libgstcodecparsers-1.0.so.0                      ║
+    ║     libgstfft-1.0.so.0                               ║
+    ║     libflite.so.1                                    ║
+    ║     libflite_usenglish.so.1                          ║
+    ║     libflite_cmu_grapheme_lang.so.1                  ║
+    ║     libflite_cmu_grapheme_lex.so.1                   ║
+    ║     libflite_cmu_indic_lang.so.1                     ║
+    ║     libflite_cmu_indic_lex.so.1                      ║
+    ║     libflite_cmulex.so.1                             ║
+    ║     libflite_cmu_time_awb.so.1                       ║
+    ║     libflite_cmu_us_awb.so.1                         ║
+    ║     libflite_cmu_us_kal16.so.1                       ║
+    ║     libflite_cmu_us_kal.so.1                         ║
+    ║     libflite_cmu_us_rms.so.1                         ║
+    ║     libflite_cmu_us_slt.so.1                         ║
+    ║     libwebpdemux.so.2                                ║
+    ║     libavif.so.16                                    ║
+    ║     libharfbuzz-icu.so.0                             ║
+    ║     libwebpmux.so.3                                  ║
+    ║     libmanette-0.2.so.0                              ║
+    ║     libenchant-2.so.2                                ║
+    ║     libsecret-1.so.0                                 ║
+    ║     libhyphen.so.0                                   ║
+    ║     libGLESv2.so.2                                   ║
+    ║     libx264.so                                       ║
+    ╚══════════════════════════════════════════════════════╝
+
+    Error Context: test-results/smoke-demo-loads-and-renders-a-Zilo-button-webkit-retry1/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-demo-loads-and-renders-a-Zilo-button-webkit-retry1/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/smoke-demo-loads-and-renders-a-Zilo-button-webkit-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button ────────────────────────
+  2 passed (2.8s)
