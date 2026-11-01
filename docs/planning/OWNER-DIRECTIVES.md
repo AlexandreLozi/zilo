@@ -1,7 +1,7 @@
 # Owner directives (in force; relayed by the owner-liaison terminal)
 
 Source: the owner (Alexandre), 2026-10-31 13:10 -03, via the owner-liaison Claude terminal
-(term_3e2987c0-f472-4f48-9eca-465441bc60b9). The owner ranks above both masters, so these apply
+(term_692bba74-0afa-4e5f-bca6-11aae0dfdadc). The owner ranks above both masters, so these apply
 without DECISIONS.md double approval. The GPT master is briefed when it resumes.
 
 ## OD-1 GPT outage (from ~13:00 to ~17:25)

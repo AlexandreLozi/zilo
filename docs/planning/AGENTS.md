@@ -2,9 +2,9 @@
 
 | Role | Model | Handle |
 |---|---|---|
-| Opus master (overall orchestrator, front end/design) | Claude Opus 5.5, high | term_006dd637-4cb8-471e-8edf-d2a39d212b81 |
-| GPT master (back end orchestrator) | GPT Sol 6.1 (opencode; variant shown as medium, reasoningEffort=high set in opencode.json) | term_b26f83ad-35e1-4ba0-84bb-5c9bbcec4edd |
-| Owner liaison (owner's single contact; see OWNER-DIRECTIVES.md) | Claude Opus 5.5 | term_3e2987c0-f472-4f48-9eca-465441bc60b9 |
+| Opus master (overall orchestrator, front end/design) | Claude Opus 5.5, high | term_1a99c21d-2936-4e31-81eb-2fc395c6b03f |
+| GPT master (back end orchestrator) | GPT Sol 6.1 (opencode; variant shown as medium, reasoningEffort=high set in opencode.json) | term_2042e70c-3067-493e-b66f-a46f4c5268bd |
+| Owner liaison (owner's single contact; see OWNER-DIRECTIVES.md) | Claude Opus 5.5 | term_692bba74-0afa-4e5f-bca6-11aae0dfdadc |
 
 Message the peer: `orca-ide terminal send --terminal <handle> --text "<msg>" --enter --json`
 Read the peer: `orca-ide terminal read --terminal <handle> --screen --json`
