@@ -19,3 +19,8 @@ Hosted `ci-web` (ubuntu-latest, `playwright install --with-deps`) is the WebKit 
 | Negative control (not kept as a log) | — | with the r1 `dialog.ts` restored, 4 host-modal tests fail in Chromium (Escape, outside click, focus hand-off, ancestor pointer-events); the two new React ordering tests fail without `transitions` |
 
 Hosted `ci-web` remains the WebKit evidence.
+
+Hosted run 41350207464 on `e39f524`: everything green except WebKit dark-theme axe on the host
+fixture (`color-contrast` on `#host-trigger`, a host button using the WebKit UA dark button style).
+Fixed in the fixture CSS (explicit themed colours for the host buttons and input); not a Zilo
+defect. Chromium and Firefox catalog re-run locally: 144 passed.

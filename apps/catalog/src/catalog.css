@@ -92,7 +92,23 @@ main {
   gap: 0.5rem;
   justify-content: flex-end;
 }
-.host-button {
+/* Explicit colours: UA button styles differ by engine (WebKit's dark ones fail contrast). */
+.host-button,
+.host-field input {
   font: inherit;
   padding: 0.375rem 0.875rem;
+  border: 1px solid;
+  border-radius: 4px;
+}
+.theme-light .host-button,
+.theme-light .host-field input {
+  background: #f2f4f6;
+  color: #1a1d21;
+  border-color: #6b7280;
+}
+.theme-dark .host-button,
+.theme-dark .host-field input {
+  background: #2f3338;
+  color: #e9ebee;
+  border-color: #8a9099;
 }
