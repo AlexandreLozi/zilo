@@ -41,16 +41,13 @@ function generate() {
   ];
   let out = START + "\n\n";
   for (const [title, kind] of sections) {
-    out += `### ${title}\n\n` + table(all.filter(([, c]) => c.kind === kind)) + "\n";
+    out += `### ${title}\n\n` + table(all.filter(([, c]) => c.kind === kind && c.t10 !== "added")) + "\n";
   }
   out += "### Codes added by T10\n\n" +
-    "Reserved for codes the T10 contract adds. Each new code needs a `copy.js` entry (kind `error`, `t10: \"added\"`) " +
-    "and then a regenerated table. Until then the UI maps unlisted codes to `unknown`.\n\n" +
-    "| Key | Surface | Title | Body | Primary | Secondary | Announce | T10 code | Notes |\n" +
-    "|---|---|---|---|---|---|---|---|---|\n" +
-    all.filter(([, c]) => c.t10 === "added").map(([k, c]) =>
-      `| \`${k}\` | ${cell(c.surface)} | ${cell(c.title)} | ${cell(c.body)} | ${cell(c.primary)} | ${cell(c.secondary)} | ${cell(c.announce)} | ${cell(c.t10)} | ${cell(c.notes)} |`).join("\n") +
-    (all.some(([, c]) => c.t10 === "added") ? "\n" : "| _(none yet)_ | | | | | | | | |\n");
+    "Codes the T10 contract added (`api/CONTRACT.md` §9, hand-off \"For T05\"). Copy written in T05 fix r1 " +
+    "(`t10: \"added\"`). `host-denied` and `token-invalid` have no copy (unreachable or silent); `invalid-request` " +
+    "and `invalid-state` use `unknown`.\n\n" +
+    table(all.filter(([, c]) => c.t10 === "added")) + "\n";
   out += "\n" + END;
   return out;
 }

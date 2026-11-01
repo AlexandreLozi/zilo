@@ -47,7 +47,7 @@ export, ownership by token), PLAN §1 (rotate, reorder and delete only; no other
 | Same device, two drivers | Listed twice (e.g. WIA and TWAIN), separated only by the badge. We do not merge or hide routes: drivers expose different caps. Order: network, then USB alphabetically, then virtual last after a divider. |
 | Selection | Last-used device per origin (SDK stores the device ID), else the first physical device, else the virtual scanner. |
 | Virtual scanner | "Zilo Virtual Scanner", connection "Test pages", always last. Hosts can hide it with an option (`showVirtualScanner`, default `true`, so the owner's parity requirement holds). |
-| Refresh | Ghost button "Refresh" (`aria-describedby` the heading). Calls `devices?refresh=1`. Existing rows stay; the list gets `aria-busy="true"` and the button shows a spinner. Disabled while scanning. |
+| Refresh | Ghost button "Refresh" (`aria-describedby` the heading). Sends `POST devices/refresh` (runs discovery now, joins one already running; T10 R-D1), then reads the list with `GET devices`, which has no side effects (D-004: no state-changing GET). Existing rows stay; the list gets `aria-busy="true"` and the button shows a spinner and "Refreshing…" (`aria-disabled`). Disabled while scanning. Prototype state `refreshing`. |
 | Loading | First load: spinner + "Looking for scanners…" + three skeleton rows. Polite announcement once. |
 | Empty | "No scanners found" box with guidance and a Refresh button (focused). Settings show "Choose a scanner to see its settings." Scan is disabled. |
 | Only virtual | Info banner "No physical scanners found" above the list; the virtual scanner is selected. |
@@ -128,8 +128,13 @@ shown and then rejected.
   already received stay visible.
 - Copy and actions for every code are in [copy.md](copy.md). Placeholders: `{device}` is the device name, `{count}` the
   number of pages kept, `{format}` the export format.
-- `unauthorized-origin` and `token-revoked` are not banner errors. They replace the Scan dialog with the Connect dialog
-  (see [detection-dialogs.md](detection-dialogs.md)), because no further call can succeed.
+- Banner codes (`scanBannerCodes` in `copy.js`): the ten scan-time codes plus the T10-added `rate-limited`,
+  `invalid-settings`, `unsupported-capability`, `not-found` and `agent-unavailable`. `invalid-settings` focuses the first
+  field named in `errors[].field`; `unsupported-capability` re-reads caps; `rate-limited` disables Try again until
+  `Retry-After` ends; `not-found` never says why the scan is gone or who owns it (R-J1).
+- `unauthorized-origin`, `consent-denied` (both variants) and `token-revoked` are not banner errors. They replace the
+  Scan dialog with the Connect dialog (see [detection-dialogs.md](detection-dialogs.md)), because no further call can
+  succeed. `token-invalid` is silent (the SDK renews and retries once).
 - Codes unknown to this UI version map to `unknown`. The SDK ignores unknown fields (PLAN §4).
 
 ## 8. Closing
@@ -142,5 +147,7 @@ shown and then rejected.
 
 ## 9. States in the prototype
 
-`ready`, `loading`, `empty`, `virtual-only`, `caps-loading`, `scanning`, `pages`, `deleted`, `exporting`, `error`
-(× every scan-time error code), and `discard`, each in light and dark, with Windows, macOS or Linux device lists.
+`ready`, `loading`, `empty`, `virtual-only`, `caps-loading`, `scanning`, `refreshing`, `pages`, `deleted`,
+`exporting`, `error` and `discard`, each in light and dark, with Windows, macOS or Linux device lists. The prototype's
+`matrix()` lists `state=error&code=…` explicitly for **all 15 banner codes**, and `check.cjs` fails if any banner code
+is missing from it (review r1 #5).

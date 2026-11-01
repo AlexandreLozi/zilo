@@ -93,7 +93,8 @@
   .site:first-child { border-top: 0; }
   .site__origin { font-family: var(--z-font-mono); overflow-wrap: anywhere; }
   .site__meta { grid-column: 1; font-size: var(--z-text-sm); color: var(--z-text-muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .site .z-btn { grid-row: 1 / span 2; grid-column: 2; }
+  .site > .z-btn, .site__actions { grid-row: 1 / span 2; grid-column: 2; }
+  .site__actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
   .sec-h { font-size: var(--z-text-sm); font-weight: var(--z-weight-semibold); margin-top: 6px; }
   .empty { padding: 24px; text-align: center; color: var(--z-text-muted); border: 1px dashed var(--z-border-strong); border-radius: var(--z-radius-md); }
   .empty strong { display: block; color: var(--z-text); margin-bottom: 4px; }
@@ -112,9 +113,9 @@
 
   const VIEWS = [
     ["consent", "Consent prompt"], ["consent-long", "Consent: long origin"], ["consent-idn", "Consent: IDN origin"],
-    ["consent-insecure", "Consent: http origin (dev)"], ["menu", "Tray menu"], ["menu-scanning", "Tray menu: scanning"],
+    ["menu", "Tray menu"], ["menu-scanning", "Tray menu: scanning"],
     ["menu-update", "Tray menu: update ready"], ["sites", "Allowed sites"], ["sites-empty", "Allowed sites: empty"],
-    ["remove-confirm", "Remove access confirm"], ["quit-confirm", "Quit while scanning"], ["main-window", "Main window (no tray / relaunch)"],
+    ["remove-confirm", "Remove access confirm"], ["block-confirm", "Block site confirm"], ["quit-confirm", "Quit while scanning"], ["main-window", "Main window (no tray / relaunch)"],
   ];
   const OSES = [["windows", "Windows"], ["macos", "macOS"], ["linux", "Linux (GNOME)"]];
 
@@ -134,7 +135,6 @@
     consent: { scheme: "https://", sub: "", reg: "app.example.com", port: "" },
     "consent-long": { scheme: "https://", sub: "secure-login.accounts.verify-session.records-portal.", reg: "example-health.co.uk", port: ":8443" },
     "consent-idn": { scheme: "https://", sub: "", reg: "xn--exmple-records-wtl.com", port: "", unicode: "exаmple-records.com" },
-    "consent-insecure": { scheme: "http://", sub: "", reg: "localhost", port: ":5173" },
   };
   /* Line breaks are allowed only after a dot, so labels stay whole; very long single labels still wrap. */
   const wbr = (s) => esc(s).replace(/\./g, ".<wbr>");
@@ -172,17 +172,15 @@
       const n = ziloCopy("tray.consent.idn", { ascii: o.reg });
       notes = `<div class="warn-note">${icon("alert-triangle", "z-icon--sm")}<p><strong>${n.title}</strong>${esc(n.body)} It may look like <span class="origin__reg" style="font-family:var(--z-font-mono)">${esc(o.unicode)}</span> in your browser.</p></div>`;
     }
-    if (view === "consent-insecure") {
-      const n = ziloCopy("tray.consent.insecure");
-      notes = `<div class="warn-note">${icon("alert-triangle", "z-icon--sm")}<p><strong>${n.title}</strong>${n.body}</p></div>`;
-    }
+    /* No http/loopback consent view: such origins never reach a prompt (D-004a; T10 R-T3). The web side shows
+       state.insecure-origin instead (detection.html). */
     const body = `<div class="consent">
         <div class="consent__head">
           <span class="app-mark" aria-hidden="true">${icon("scanner", "z-icon--lg")}</span>
           <h2 class="consent__title" id="win-t">${c.title}</h2>
         </div>
       </div>
-      ${originBox(o, view === "consent-idn" || view === "consent-insecure")}
+      ${originBox(o, view === "consent-idn")}
       ${notes}
       <p class="z-small" id="win-d">${c.body}</p>`;
     return center(chrome(os, "Zilo", body, consentButtons(os), { describedby: "win-d" }));
@@ -230,6 +228,8 @@
   function sites(view, os) {
     const c = ziloCopy("tray.sites");
     const m = ziloCopy("tray.sites.managed");
+    const d = ziloCopy("tray.sites.denied");
+    const b = ziloCopy("tray.sites.blocked");
     let list;
     if (view === "sites-empty") {
       const e = ziloCopy("tray.sites.empty");
@@ -242,10 +242,18 @@
           <button class="z-btn z-btn--sm ${s.managed ? "" : "z-btn--danger"}" type="button" aria-label="${s.managed ? m.primary : "Remove"} for ${esc(s.origin)}" ${i === 0 ? "data-autofocus" : ""}>${s.managed ? m.primary : "Remove"}</button>
         </li>`).join("")}</ul>
         <p class="z-small z-muted">${m.title}: ${m.body}</p>
-        <h3 class="sec-h">Recently denied</h3>
-        <ul class="sites" aria-label="Recently denied">
-          <li class="site"><span class="site__origin">https://scan-helper.example.net</span><span class="site__meta">Denied today · won't ask again for 10 minutes</span>
-          <button class="z-btn z-btn--sm" type="button" aria-label="Forget denial for https://scan-helper.example.net">Forget</button></li>
+        <h3 class="sec-h" id="denied-h">${d.title}</h3>
+        <p class="z-small z-muted">${d.body}</p>
+        <ul class="sites" aria-labelledby="denied-h">
+          <li class="site"><span class="site__origin">https://scan-helper.example.net</span><span class="site__meta">Denied today · can ask again in 10 minutes</span>
+          <span class="site__actions"><button class="z-btn z-btn--sm" type="button" aria-label="${d.secondary} denial for https://scan-helper.example.net">${d.secondary}</button>
+          <button class="z-btn z-btn--sm z-btn--danger" type="button" aria-label="${d.primary} https://scan-helper.example.net">${d.primary}</button></span></li>
+        </ul>
+        <h3 class="sec-h" id="blocked-h">${b.title}</h3>
+        <p class="z-small z-muted">${b.body}</p>
+        <ul class="sites" aria-labelledby="blocked-h">
+          <li class="site"><span class="site__origin">https://free-scanner-tools.example</span><span class="site__meta">Blocked 2 Oct 2026</span>
+          <button class="z-btn z-btn--sm" type="button" aria-label="${b.primary} https://free-scanner-tools.example">${b.primary}</button></li>
         </ul>`;
     }
     const body = `<h2 class="consent__title" id="win-t">${c.title}</h2><p class="z-small z-muted">${c.body}</p>${list}`;
@@ -280,6 +288,7 @@
     else if (expanded) area = `<div class="desk__area">${menu(v.view, v.os)}</div>`;
     else if (v.view.startsWith("sites")) area = sites(v.view, v.os);
     else if (v.view === "remove-confirm") area = confirmWin("tray.sites.remove", { origin: "https://records.example-health.org" }, v.os, true);
+    else if (v.view === "block-confirm") area = confirmWin("tray.sites.block", { origin: "https://scan-helper.example.net" }, v.os, true);
     else if (v.view === "quit-confirm") area = confirmWin("tray.quit-confirm", { origin: "app.example.com" }, v.os, true);
     else area = mainWindow(v.os);
     stage.innerHTML = `<div class="zilo desk os-${v.os}">${area}${bar(v.os, expanded, v.view === "menu-update")}</div>`;

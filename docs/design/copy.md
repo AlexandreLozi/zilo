@@ -13,8 +13,12 @@ this file drifts, if a required state or error code is missing, or if any string
   "Code:" line and in "Copy details".
 - **Never "not installed".** Use "Connect Zilo to scan" and "If you have Zilo, start it. If not, download and install it."
   (D-008).
-- Say plainly when data is lost (`token-revoked`, quitting during a scan) and when it is kept (`paper-jam`,
-  `disconnected`, `export-failed`).
+- Say plainly when data is lost (quitting during a scan) and when it is kept (`paper-jam`, `disconnected`,
+  `export-failed`).
+- **Revocation says "access revoked", never "erased".** `token-revoked` states that the site's access was revoked;
+  it never says pages were erased or are gone (T10 R-A12, masters' agreement). `not-found` never says why or for whom a
+  scan is gone (R-J1). The check fails if `token-revoked` mentions erasing, deleting or pages being gone.
+- **Safari is required (OD-8).** No copy calls Safari unsupported; `state.safari-unsupported` is an interim test state.
 - Origins are shown exactly and never paraphrased. In web copy `{origin}` is the full origin
   (`https://app.example.com`).
 
@@ -22,16 +26,19 @@ this file drifts, if a required state or error code is missing, or if any string
 
 `{origin}` full origin · `{device}` device name · `{count}` page count · `{n}`/`{total}` page index and total ·
 `{format}` PDF/JPEG/PNG · `{os}` detected OS label · `{version}` installed agent version · `{required}` minimum version ·
-`{latest}` manifest version · `{minutes}` cap or cool-down · `{actual}`/`{requested}` effective vs requested setting ·
+`{latest}` manifest version · `{minutes}` cap or cool-down · `{seconds}` `Retry-After` wait · `{actual}`/`{requested}` effective vs requested setting ·
 `{ascii}` punycode host · `{trayArea}` "notification area" (Windows), "menu bar" (macOS), "system tray" (Linux).
 
 ## Columns
 
 - **Announce:** live-region politeness used when the state appears while a dialog is already open (see
   [accessibility.md](accessibility.md) §4). `none` means the text arrives as a dialog's name and description.
-- **T10 code:** contract status. `planned` = listed by T05, waiting for T10 (`api/openapi.yaml`, `api/CONTRACT.md`) to
-  confirm the wire code. `n/a` = UI-only state. T10 changes `planned` to `confirmed` or renames the key, and adds any new
-  codes to the reserved section. Copy for new codes is finalised after T10 (EXECUTION T05 row).
+- **T10 code:** contract status, per the T10 hand-off (`api/CONTRACT.md` "For T05"). `confirmed` = T10 confirmed the
+  wire code under this name (all 12 original codes, plus the consent-pending and effective-settings signals). `added` =
+  a code T10 added; copy written in fix r1, listed in its own section. `n/a` = UI-only state. Keys with a dot suffix
+  (`consent-denied.blocked`) are variants of one wire code.
+- **Provisional:** consent, update and insecure-origin entries follow D-004a and the T10 draft, which are not yet
+  approved. Their notes say "Provisional".
 - Copy marked "verify in SP-1a" names browser UI that T01 must confirm on real browsers.
 
 ## Localisation
@@ -56,15 +63,18 @@ widths on buttons, and titles wrap.
 | `state.unreachable-or-blocked.blocked-hint` | Install dialog, disclosure | Zilo is running but this still shows? | Your browser settings or security software may be blocking the connection to Zilo. Check that this site is allowed to use apps on your device, then try again. | Show browser settings help | — | none | n/a | Covers the `unknown` permission case and security software. |
 | `state.unreachable-or-blocked.checking` | Install dialog, status line | Waiting for Zilo | Checking every few seconds… | — | — | none | n/a | Status line text. Not announced repeatedly; only the outcome is announced. |
 | `state.unreachable-stopped` | Install dialog | Still can't reach Zilo | We stopped checking after {minutes} minutes. Start or install Zilo, then check again. | Check again | Close | polite | n/a | Re-check cap reached (default 5 min). |
-| `state.awaiting-consent` | Connect dialog | Approve this site in Zilo | Zilo is asking if {origin} can use your scanners. Look for the Zilo window on your computer and choose Allow. | — | Cancel | polite | planned | Agent answered `hello` but this origin is not yet allowed (D-004 consent). |
-| `state.outdated` | Update dialog | Update Zilo to continue | This site needs Zilo {required} or later. This computer has Zilo {version}. | Update Zilo | Download update | none | n/a | "Update Zilo" asks the agent to self-update; shown only if `hello` advertises it. Otherwise the download is primary. |
-| `state.updating` | Update dialog | Updating Zilo… | Zilo restarts when the update is installed. This window continues by itself. | — | Close | polite | n/a | Closing does not stop the update. |
-| `state.update-failed` | Update dialog | Zilo couldn't update | Zilo {version} is still installed and nothing was changed. Try again, or download the update and install it yourself. | Try again | Download update | assertive | n/a | Signature, hash or install failure (D-008 recovery). |
+| `state.awaiting-consent` | Connect dialog | Approve this site in Zilo | Zilo is asking if {origin} can use your scanners. Look for the Zilo window on your computer and choose Allow. | — | Cancel | polite | confirmed | Provisional (D-004a/T10 R-A1 to R-A3). Shown after the user-initiated `POST /auth/consent` returns `202 pending`, or a token request returns `403 consent-pending`. Polls `GET /auth/consent` every `pollAfterSeconds` only while open; stops on granted, denied, blocked, none, an unknown state, Cancel or navigation. |
+| `state.consent-expired` | Connect dialog | Zilo didn't get an answer | The Zilo window closed before you chose Allow. Select Ask again to open it again. | Ask again | Close | polite | n/a | Provisional (R-A3). Poll returned `none`: the prompt expired or was dismissed. Ask again is a new user action, so it may send `POST /auth/consent` again. |
+| `state.outdated` | Update dialog | Update Zilo to continue | This site needs a newer version of Zilo. Download the update and install it, then try again. | Download update | Close | none | n/a | Provisional, before authorisation (D-004a). Public `hello` has no `version`, so the SDK decides from `protocol` and `capabilities` and names no version. No self-update button: `agent.self-update` is reserved (T10 §1.3). |
+| `state.outdated.authorized` | Update dialog | Update Zilo to continue | This site needs Zilo {required} or later. This computer has Zilo {version}. | Download update | Close | none | n/a | Provisional, after authorisation only: full `hello` carries `version`. "Update Zilo" (self-update) replaces the download as primary only once `agent.self-update` is approved and advertised. |
+| `state.updating` | Update dialog | Updating Zilo… | Zilo restarts when the update is installed. This window continues by itself. | — | Close | polite | n/a | Closing does not stop the update. Reached only through agent self-update, which stays reserved (`agent.self-update`, T10 §1.3) until approved. |
+| `state.update-failed` | Update dialog | Zilo couldn't update | Your current version of Zilo is still installed and nothing was changed. Try again, or download the update and install it yourself. | Try again | Download update | assertive | n/a | Signature, hash or install failure (D-008 recovery). Needs no version, so it is safe before authorisation. |
 | `state.safari-bridge` | Safari dialog | Open the Zilo window | To reach your scanners from Safari, Zilo uses a small window. Keep it open while you scan; you can move it out of the way. | Open Zilo window | Cancel | none | n/a | Only if SP-1 approves S2. The click is the user gesture that opens the popup. |
 | `state.safari-bridge-blocked` | Safari dialog | Safari blocked the Zilo window | Select Open Zilo window again. If nothing opens, allow pop-up windows for this site in Safari Settings, Websites, Pop-up Windows. | Open Zilo window | Cancel | assertive | n/a | window.open returned null. |
 | `state.safari-bridge-closed` | Safari dialog | The Zilo window was closed | Scanning from Safari needs the Zilo window. Reopen it to continue. Pages you already scanned are kept. | Reopen Zilo window | Cancel | assertive | n/a | Popup closed or navigated. Re-handshake on reopen (D-003). |
 | `state.safari-bridge-unavailable` | Safari dialog | This page can't use the Zilo window | This site's security settings stop Safari from talking to the Zilo window. To scan, open this page in Chrome, Edge or Firefox. | Copy page link | Close | none | n/a | Opener severed (COOP) or framed. Never weaken COOP silently (D-003). |
-| `state.safari-unsupported` | Safari dialog | Safari isn't supported on this Mac yet | Zilo can't reach your scanners from Safari on this Mac. To scan, open this page in Chrome, Edge or Firefox. | Copy page link | Close | none | n/a | D-003 fallback when neither S1 nor S2 is available. Never a silent failure. |
+| `state.safari-unsupported` | Safari dialog | Use another browser for now | Scanning from Safari isn't ready in this version of the site. To scan now, open this page in Chrome, Edge or Firefox. | Copy page link | Close | none | n/a | Interim test state only (OD-8): Safari is required for v1 and the T25 path is release-blocking, so this never ships as the final outcome. Never a silent failure (D-003). |
+| `state.insecure-origin` | Connect dialog | This page can't connect to Zilo | Zilo works only with secure sites, whose address starts with https. Open this site at its https address to scan. | — | Close | none | n/a | SDK-side, before any probe, when the page origin is not https (D-003, D-004a): such origins get no CORS and no token, and loopback origins are never allowed, even with the dev flag. Includes a developer note (HTTPS test host). Replaces the old tray http consent example. |
 | `state.bridge-window` | Bridge popup (127.0.0.1) | Zilo is connected to {origin} | Keep this window open while you scan. You can move it aside. It closes when you're done. | — | Disconnect | none | n/a | Shows the verified opener origin, never a caller-claimed one (D-003). |
 
 ### Scan dialog states
@@ -80,7 +90,7 @@ widths on buttons, and titles wrap.
 | `scan.page-received` | Live region | Page {n} scanned | — | — | — | polite | n/a | Batched: at most one announcement every 2 s ("Pages 4 to 6 scanned"). |
 | `scan.done` | Live region | Scan finished | {count} pages scanned. | — | — | polite | n/a | — |
 | `scan.cancelled` | Scan dialog, footer | Scan stopped | {count} pages kept. | — | — | polite | n/a | — |
-| `scan.effective-settings` | Scan dialog, pages | Your scanner used different settings | Scanned at {actual}. You chose {requested}, which {device} doesn't support. | — | — | polite | planned | From effective settings in job events (D-005). |
+| `scan.effective-settings` | Scan dialog, pages | Your scanner used different settings | Scanned at {actual}. You chose {requested}, which {device} doesn't support. | — | — | polite | confirmed | From effective settings in job events (D-005). |
 | `scan.page-deleted` | Toast | Page {n} deleted | — | Undo | — | polite | n/a | Undo for 8 s; also Ctrl/Cmd+Z. |
 | `scan.exporting` | Scan dialog, footer | Preparing your {format}… | — | — | — | polite | n/a | — |
 | `scan.discard-confirm` | Confirm (alertdialog) | Discard {count} scanned pages? | The pages haven't been added yet. If you close now, they're deleted. | Keep pages | Discard pages | none | n/a | Safe action is primary and focused first. |
@@ -89,18 +99,18 @@ widths on buttons, and titles wrap.
 
 | Key | Surface | Title | Body | Primary | Secondary | Announce | T10 code | Notes |
 |---|---|---|---|---|---|---|---|---|
-| `device-busy` | Scan dialog banner | Scanner is busy | {device} is in use by another app or scan. Finish or close that, then try again. | Try again | Choose another scanner | assertive | planned | — |
-| `feeder-empty` | Scan dialog banner | The document feeder is empty | Load pages into the feeder of {device}, then scan again. | Scan | Use flatbed | assertive | planned | Only when no page was fed. Running out after at least one page is a normal end of scan. |
-| `paper-jam` | Scan dialog banner | Paper jam | Clear the jammed page from {device}. The {count} pages scanned before the jam are kept. Put the remaining pages back in the feeder, then scan again. | Scan remaining pages | — | assertive | planned | — |
-| `cover-open` | Scan dialog banner | Scanner cover is open | Close the cover or feeder lid on {device}, then try again. | Try again | — | assertive | planned | — |
-| `timeout` | Scan dialog banner | The scanner stopped responding | {device} didn't respond in time. Check that it's on and connected, then try again. | Try again | Choose another scanner | assertive | planned | — |
-| `disconnected` | Scan dialog banner | Scanner disconnected | {device} was disconnected. Pages scanned before that are kept. Reconnect it, then refresh the list. | Refresh scanners | — | assertive | planned | — |
-| `permission` | Scan dialog banner | Zilo isn't allowed to use this scanner | This computer's settings stop Zilo from using {device}. On a work computer, ask your IT team. On Linux, your account may need scanner access. | Try again | Get help | assertive | planned | OS-level device access. Browser blocking is `state.denied`, never this code. |
-| `unauthorized-origin` | Connect dialog | This site isn't allowed to use Zilo | {origin} wasn't approved in Zilo. To allow it, select Ask again and choose Allow in the Zilo window. | Ask again | Close | assertive | planned | After a denial Zilo waits before asking again (D-004 cool-down); then the button shows "Ask again in {minutes} min" and is disabled. |
-| `token-revoked` | Connect dialog | Access to Zilo was removed | This site's access was removed in Zilo, or it expired. Connect again to keep scanning. Pages from the earlier scan are no longer available. | Connect again | Close | assertive | planned | Jobs are owned by the token (D-004), so old pages are gone. Say so. |
-| `export-failed` | Scan dialog banner | Couldn't create the {format} | Your scanned pages are still here. Try again, or save in a different format. | Try again | Change format | assertive | planned | Pages are retained after a failed export (D-004). |
-| `limits-exceeded` | Scan dialog banner | This scan is too large | It goes over Zilo's limit for pages, size or time. Scan fewer pages at once, or choose a lower resolution. | Change settings | — | assertive | planned | Pages already scanned are kept if the agent returned them. |
-| `unknown` | Scan dialog banner | Something went wrong | Zilo ran into a problem. Try again. If it keeps happening, quit and restart Zilo from its icon in the {trayArea}. | Try again | Copy details | assertive | planned | Details = code, request ID, Zilo and SDK versions. Never document content. |
+| `device-busy` | Scan dialog banner | Scanner is busy | {device} is in use by another app or scan. Finish or close that, then try again. | Try again | Choose another scanner | assertive | confirmed | — |
+| `feeder-empty` | Scan dialog banner | The document feeder is empty | Load pages into the feeder of {device}, then scan again. | Scan | Use flatbed | assertive | confirmed | Only when no page was fed. Running out after at least one page is a normal end of scan. |
+| `paper-jam` | Scan dialog banner | Paper jam | Clear the jammed page from {device}. The {count} pages scanned before the jam are kept. Put the remaining pages back in the feeder, then scan again. | Scan remaining pages | — | assertive | confirmed | — |
+| `cover-open` | Scan dialog banner | Scanner cover is open | Close the cover or feeder lid on {device}, then try again. | Try again | — | assertive | confirmed | — |
+| `timeout` | Scan dialog banner | The scanner stopped responding | {device} didn't respond in time. Check that it's on and connected, then try again. | Try again | Choose another scanner | assertive | confirmed | — |
+| `disconnected` | Scan dialog banner | Scanner disconnected | {device} was disconnected. Pages scanned before that are kept. Reconnect it, then refresh the list. | Refresh scanners | — | assertive | confirmed | — |
+| `permission` | Scan dialog banner | Zilo isn't allowed to use this scanner | This computer's settings stop Zilo from using {device}. On a work computer, ask your IT team. On Linux, your account may need scanner access. | Try again | Get help | assertive | confirmed | OS-level device access. Browser blocking is `state.denied`, never this code. |
+| `unauthorized-origin` | Connect dialog | This site isn't allowed to use Zilo | {origin} wasn't approved in Zilo. To allow it, select Ask again and choose Allow in the Zilo window. | Ask again | Close | assertive | confirmed | No consent on record (or the site was removed). Ask again sends `POST /auth/consent` from this user action (R-A1). A denial with cool-down is `consent-denied`; a block is `consent-denied.blocked`. |
+| `token-revoked` | Connect dialog | Access to Zilo was revoked | This site's access to Zilo was revoked, so any scan in progress stopped. Connect again to keep scanning. | Connect again | Close | assertive | confirmed | Revocation (R-A12, R-A13): say access was revoked, never that pages were erased or are gone. An expired or obsolete token is `token-invalid`, which is silent (R-A10) and never shows this copy. |
+| `export-failed` | Scan dialog banner | Couldn't create the {format} | Your scanned pages are still here. Try again, or save in a different format. | Try again | Change format | assertive | confirmed | Pages are retained after a failed export (D-004). |
+| `limits-exceeded` | Scan dialog banner | This scan is too large | It goes over Zilo's limit for pages, size or time. Scan fewer pages at once, or choose a lower resolution. | Change settings | — | assertive | confirmed | Pages already scanned are kept if the agent returned them. |
+| `unknown` | Scan dialog banner | Something went wrong | Zilo ran into a problem. Try again. If it keeps happening, quit and restart Zilo from its icon in the {trayArea}. | Try again | Copy details | assertive | confirmed | Details = code, request ID, Zilo and SDK versions. Never document content. Also used for `invalid-request` and `invalid-state` (client bugs) and for any code this UI version does not know. |
 
 ### Tray / menu-bar agent
 
@@ -108,10 +118,12 @@ widths on buttons, and titles wrap.
 |---|---|---|---|---|---|---|---|---|
 | `tray.consent` | Consent window (native) | Allow this website to use your scanners? | If you allow it, this website can list your scanners and scan pages when you start a scan there. You can remove access any time in Zilo, Allowed sites. | Allow | Deny | none | n/a | Origin shown in its own box, never truncated. Buttons enabled after 1 s. No default button. |
 | `tray.consent.idn` | Consent window (native) | Check this address carefully | It uses international characters and is shown as {ascii}. Some addresses look like well-known sites but aren't. | — | — | none | n/a | Shown when the host has a punycode label. |
-| `tray.consent.insecure` | Consent window (native) | This website doesn't use a secure connection | Its address starts with http. Only allow it if you are testing your own site. | — | — | none | n/a | — |
 | `tray.sites` | Allowed sites window | Allowed sites | These websites can use your scanners through Zilo. | — | — | none | n/a | — |
 | `tray.sites.empty` | Allowed sites window | No sites yet | When a website asks to use your scanners, Zilo asks you first. Sites you allow appear here. | — | — | none | n/a | — |
-| `tray.sites.remove` | Allowed sites window, confirm | Remove access for {origin}? | The site stops working with your scanners right away. It has to ask again next time. | Remove | Cancel | none | n/a | Revokes all tokens for the origin (D-004). |
+| `tray.sites.remove` | Allowed sites window, confirm | Remove access for {origin}? | The site stops working with your scanners right away. It has to ask again next time. | Remove | Cancel | none | n/a | Revokes the origin's token families (D-004, R-A12): access ends at once; pages are cleaned up within the bound. The site sees `token-revoked` copy ("access revoked"). |
+| `tray.sites.denied` | Allowed sites window | Recently denied | Zilo waits before asking these sites again. Forget lets a site ask now. Block stops it from ever asking. | Block | Forget | none | n/a | Timed denial with cool-down (`consent-denied` without `blocked`, R-A2). Rows show the time left. |
+| `tray.sites.block` | Allowed sites window, confirm | Block {origin}? | Zilo won't ask about this site again, and it can't use your scanners. You can unblock it here later. | Block | Cancel | none | n/a | "Block this site" (R-A2): the site then gets `consent-denied` with `blocked: true`. |
+| `tray.sites.blocked` | Allowed sites window | Blocked sites | Zilo never asks about these sites. Unblock a site to let it ask again the next time you scan there. | Unblock | — | none | n/a | Permanent until unblocked. Unblock clears the block and any cool-down; it does not allow the site: the next scan asks again. |
 | `tray.sites.managed` | Allowed sites window | Added by your organisation | This site was set up with Zilo. Reset access signs it out; it reconnects without asking. | Reset access | — | none | n/a | Installer-baked origin: revoke tokens, but no prompt next time (D-004). |
 | `tray.status.running` | Tray menu | Zilo is running | Version {version} · {count} scanners found | — | — | none | n/a | — |
 | `tray.status.scanning` | Tray menu | Scanning for {origin} | Page {n} | — | — | none | n/a | — |
@@ -120,10 +132,17 @@ widths on buttons, and titles wrap.
 
 ### Codes added by T10
 
-Reserved for codes the T10 contract adds. Each new code needs a `copy.js` entry (kind `error`, `t10: "added"`) and then a regenerated table. Until then the UI maps unlisted codes to `unknown`.
+Codes the T10 contract added (`api/CONTRACT.md` §9, hand-off "For T05"). Copy written in T05 fix r1 (`t10: "added"`). `host-denied` and `token-invalid` have no copy (unreachable or silent); `invalid-request` and `invalid-state` use `unknown`.
 
 | Key | Surface | Title | Body | Primary | Secondary | Announce | T10 code | Notes |
 |---|---|---|---|---|---|---|---|---|
-| _(none yet)_ | | | | | | | | |
+| `consent-denied` | Connect dialog | This site isn't allowed to use Zilo | You chose Deny for {origin} in Zilo. Zilo can ask again in {minutes} minutes. | Ask again in {minutes} min | Close | assertive | added | `403 consent-denied` without `blocked`: cool-down from `retryAfterSeconds` (R-A2). The primary stays disabled (`aria-disabled`) until the cool-down ends, then reads "Ask again". |
+| `consent-denied.blocked` | Connect dialog | This site is blocked in Zilo | Zilo was set to never allow {origin}, so it won't ask again. To use this site, open Zilo, choose Allowed sites, and unblock it under Blocked sites. | — | Close | assertive | added | `403 consent-denied` with `blocked: true` (R-A2). Permanent: no countdown and no Ask again, because the agent never prompts again. Unblocking happens only in the tray (`tray.sites.blocked`). |
+| `rate-limited` | Connect dialog or Scan dialog banner | Zilo is busy | Zilo has too many requests right now, or it is waiting for an answer about another site. Try again in {seconds} seconds. | Try again in {seconds} s | — | assertive | added | `429 rate-limited`, `Retry-After` (R-A2, R-L4). The SDK retries silently once when `Retry-After` is 2 s or less; it shows this copy only after that. The primary is disabled until the wait ends, then reads "Try again". |
+| `invalid-settings` | Scan dialog banner | These settings can't be used | Zilo can't scan with these settings, for example a resolution or page size that is too large. Choose different settings, then scan again. | Change settings | — | assertive | added | `422 invalid-settings` (R-J5). Change settings moves focus to the first field named in `errors[].field`, which gets `aria-invalid`. Nothing was scanned. |
+| `unsupported-capability` | Scan dialog banner | This scanner can't use these settings | {device} doesn't offer one of the options you chose. Choose a different option, or another scanner, then scan again. | Change settings | Choose another scanner | assertive | added | `422 unsupported-capability`: strict mismatch, or a source or colour mode the device lacks (R-J5). The UI only offers caps values, so this means the caps changed since they were read: re-read caps on Change settings. |
+| `not-found` | Scan dialog banner | This scan is no longer available | Zilo can't find this scan any more. Start a new scan to continue. Pages already added to this site aren't affected. | Scan again | — | assertive | added | `404 not-found` (R-J1). Non-disclosing: identical for an unknown, disposed or ended job and for one owned by another family or origin. Never say why, who owns it, or that pages were deleted. |
+| `agent-unavailable` | Scan dialog banner | Zilo isn't ready | Zilo is starting, updating or closing. Wait a moment, then try again. Pages already shown here are kept. | Try again | — | assertive | added | `503 agent-unavailable`, retryable. The SDK retries after `Retry-After` while the dialog is open and shows this copy only if that fails. If `hello` stops answering, detection takes over (`state.unreachable-or-blocked`). |
+
 
 <!-- copy-table:end -->
