@@ -346,3 +346,29 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
   - SP-4b: signing and notarization with owner credentials.
   - Hardware matrix.
   - Legal review.
+
+## D-012 Bounded reuse of hosted evidence across a merge-queue rebase (proposed)
+- **Status:** Proposed (2026-11-01). Opus-approved; GPT approval pending.
+- **Decision:** The merge queue may reuse a hosted CI run on the pre-rebase author head, in place of
+  a run on the exact rebased SHA, only when all of these hold:
+  1. The run is green, and it ran on the exact reviewed author head.
+  2. The rebase applied with no conflicts.
+  3. `git diff --quiet <ci-head> <rebased> -- <inputs>` succeeds, where `<inputs>` covers every
+     path the workflow builds, tests or reads:
+     - its `paths:` filter;
+     - the workflow file itself;
+     - every script it calls;
+     - lock files;
+     - `global.json`, `Directory.*.props`, `package.json`, `pnpm-*.yaml`, `.nvmrc`;
+     - any tool configuration.
+  4. VALIDATION.md records both SHAs, the input list and the command result, labelled
+     "evidence reuse", never "exact-SHA pass".
+
+  Otherwise CI runs on the rebased SHA. ★ tasks (T10, T11, T20, T24, T25, T43) always run on the
+  exact SHA.
+- **Rationale:** OD-7 billing (macOS 10×, Windows 2×). When the inputs are byte-identical, a rerun
+  adds cost but no information.
+- **Alternatives:** always rerun on the rebased SHA (costly for macOS matrices); merge without
+  hosted evidence (rejected).
+- Approved-by: Opus (2026-11-01)
+- Approved-by: GPT — pending
