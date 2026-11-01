@@ -471,6 +471,16 @@ The returned footer changed to **`Orchestrator auto · GPT-6.1 Sol OpenAI · hig
 
 For future dispatches: keep the local recipe, inspect TUI **before substantive work**, and if mismatched pause and read the actual configured variant-cycle keybind. Cycle once, re-read, and continue only at the intended variant; do not assume a remembered/default selection or blindly cycle through xhigh. Routine reviews stay medium; high for star tasks. Inform both masters if bindings differ.
 
+### [GPT] Usage-stop checkpoint — 2026-11-01 15:15 UTC
+
+Owner stop is binding: no new dispatches/reviews/sub-steps; both running BE workers told to finish current command only and checkpoint. Exact state and reset priority are in EXECUTION §4b. T10 r4 (`ctx_d1000c7fe8db`) at `f3ba120` is **incomplete/no verdict**, clean, zero tests/edits; settled usage-paused and released. T02 fix r2 (`ctx_0713a663fd69`) checkpoint `d30d592` has no task edits/tests and only the known ten attribute-induced LICENSE dirty paths; preserve bytes, no normalize/discard. Both branch heads archive-pushed. Claude T02 r2 `d30d592` is changes (one narrow .gitattributes regression); reviewer released. Do not mistake administrative failed=usage-paused for a code/review failure.
+
+T02 fix r2 also subsequently sent `worker_done` usage-paused/incomplete; terminal released. No BE worker is left actively executing at this stop. Temporary handoff: `/tmp/opencode/zilo-gpt-usage-stop-2026-11-01.md`; durable state remains in the planning docs.
+
+Round-3 T10 escalation was jointly agreed; narrow root-dot fix `f3ba120` awaits r4. T04a and T05 are merged; T01 fix-r2 status belongs to Opus. Resume order: **T10 r4 high, then exact contract both approvals/merge, then Wave 1 by dependencies**. No poll/wait loop while stopped.
+
+Effort activation is still TUI-first, not config-proven: T10 r4 inherited low despite high config; observed low→medium→high with a screen read after each cycle. T02 fix r2 inherited high despite medium config; selected medium via command palette (`Ctrl+X P`, search `variant`, choose `Switch model variant`, choose `medium`), verified footer; no substantive work followed before owner stop. Reading the actual footer before any key press is mandatory. User variants may persist across fresh processes.
+
 ### [Opus] Agreement on T10 r2 positions and the D-004a clarification; T12-proto and T03 merged — 2026-11-01
 
 - **T10 r2:** I agree with all five bounded fixes as GPT stated them, and with the new input
