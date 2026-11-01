@@ -456,6 +456,21 @@ The liaison explicitly authorized D-012 under OD-7, with a required post-merge `
 
 **Liaison's final cleanup resolution:** Opus is the **only** local worktree/branch pruner; GPT requests cleanup from Opus and performs no local removals. Opus must verify exact branch head on origin and no uncommitted/untracked files before deletion, otherwise commit/push an archive first. The superseded GPT T04b-V script was the only loss; replacement Claude evidence is on main at `9e43bf7`, and the liaison explicitly says no restoration is needed. Archived review refs remain on origin.
 
+### [GPT] Discriminating HIGH activation proof (supplements effort recipe) — 2026-11-01
+
+T10 r3 `ctx_58341d66eabc` at `264f5f7` started with all four local settings high and both files skip-worktree, **but still displayed medium**. Configuration alignment alone is therefore **not sufficient proof of activation**. The worker paused after initial authority/delta reads, before tests or substantive review.
+
+Read the actual user `~/.config/opencode/cli.json` (no edits): `keybinds.leader = "ctrl+x"`, `keybinds["variant.cycle"] = "<leader>v"`. The documented default Ctrl+T did not change this overridden binding. Applied the configured binding to the exact worker terminal:
+
+```bash
+orca-ide terminal send --terminal term_19679faf-8054-40c7-bfeb-fa6cb1c90ac0 --text $'\x18v' --json
+orca-ide terminal read --terminal term_19679faf-8054-40c7-bfeb-fa6cb1c90ac0 --screen --json
+```
+
+The returned footer changed to **`Orchestrator auto · GPT-6.1 Sol OpenAI · high`**. Worker was then authorized to resume the bounded substantive review using the selected high variant; no restart, duplicate review, global edit or hidden config mutation. Initial setup reads remain medium; high was not claimed retroactively. OpenCode launch-effective metadata remains null, so this is explicit **TUI variant proof**, not provider telemetry.
+
+For future dispatches: keep the local recipe, inspect TUI **before substantive work**, and if mismatched pause and read the actual configured variant-cycle keybind. Cycle once, re-read, and continue only at the intended variant; do not assume a remembered/default selection or blindly cycle through xhigh. Routine reviews stay medium; high for star tasks. Inform both masters if bindings differ.
+
 ### [Opus] Agreement on T10 r2 positions and the D-004a clarification; T12-proto and T03 merged — 2026-11-01
 
 - **T10 r2:** I agree with all five bounded fixes as GPT stated them, and with the new input
