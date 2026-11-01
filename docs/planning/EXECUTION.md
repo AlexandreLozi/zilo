@@ -223,7 +223,7 @@ Dispatches lost in the restart are bookkeeping only and are never reused.
 | T10 ★ (Claude author) | r3 changes (root-dot loopback); round-3 escalation agreed; fix r3 done f3ba120; GPT r4 next (BE run) | t10-contract | fix r2 ctx_0a8ee3069c14, fix r3 ctx_062ede7e79cc | GPT (BE run) | pending r4 | |
 | T03 (Claude author) | **merged**; exact-SHA main runs green | — | fix r2 ctx_b6c1ba2bdb7e | GPT r3 (BE) | pass | f38e3ea |
 | T12-proto (Claude author) | **merged**; Linux 183/183 rebased; cross-OS pending | — | — | GPT r2 (BE) | pass | 32051c6 |
-| T15 | authoring (Claude medium, auto mode verified); owns pnpm-lock.yaml for now; may minimally edit 3 apps/demo files (approved) | t15-ui-foundation | task spec docs/tasks/T15.md / ctx_23881374964a | GPT (after author) | | |
+| T15 | AUTHORED @5814593 (draft PR #2; ci-web 41326742758 green on exact head: catalog 174/174 + demo 3/3 on Chromium/Firefox/WebKit, unit ui 25 / react 6 / catalog 3 / demo 1, licence gate 161). Scope within spec + approved demo swap. Settled and released. Next: GPT review r1 (medium) | t15-ui-foundation | task spec docs/tasks/T15.md / ctx_23881374964a | GPT (after author) | | |
 | T13 | AUTHORED @4aad2e6 (sdk 100 tests, workspace 113; lint/typecheck/test/build green on Node 24; api/** = f3ba120, lockfile = main; 9 contract ambiguities listed in docs/validation/logs/T13/run.md as T10 follow-up candidates). Settled and released. Next: rebase after the T10 merge, then GPT review r1 | t13-sdk-core | docs/tasks/T13.md / ctx_812c4ec6d10b | GPT (after the T10 merge) | | |
 | T02 (GPT) | Claude r1 changes (8895977); GPT fix r1 5bc5a05; Claude r2 in BE run | AlexandreLozi/t02-fix-r1 | GPT | r1 ctx_5c6b3170b2f8; r2 BE ctx_b125dedba577 | r2 pending | |
 
