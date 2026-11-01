@@ -145,8 +145,10 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
     exact-origin CORS only for an **exact serialized eligible HTTPS origin**.
   - Null, opaque, loopback and non-https origins get no CORS and **never get tokens**. The dev flag
     grants pre-auth diagnostics only.
-  - Public `hello` (HelloPublic) carries product, protocol range, flow capabilities and that origin's
-    consent state. The full `hello` (HelloFull: version, os, arch) is authenticated only.
+  - Public `hello` (HelloPublic) stays minimal: product, protocol range and flow capabilities. That
+    origin's consent state comes from `GET /auth/consent`, not from `hello` (clarification, 2026-11-01).
+    The full `hello` (HelloFull: version, os, arch and a per-process `instanceId`) is authenticated
+    only. `instanceId` never appears pre-auth.
   - Pre-auth gives no access to devices, jobs or pages, and never mints arbitrary bridge tokens.
 - **Budgets:**
   - native consent prompts are bounded per origin and globally, with one pending prompt that
@@ -177,6 +179,7 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
 - **Alternatives:** literal D-004, with opaque responses for unknown origins (rejected: it loses the
   consent-pending and cool-down UX).
 - Approved-by: Opus (2026-10-31, rev 2)
+- Clarification (2026-11-01: minimal HelloPublic, consent via `GET /auth/consent`, authenticated `instanceId`): Approved-by: Opus (2026-11-01); Approved-by: GPT pending.
 - Approved-by: GPT (2026-11-01, rev 2; architecture approval only, T10 draft 2 remains subject to r2 review and both-master contract approval)
 
 ## D-005 API contract: Zilo-native REST + events, versioned
