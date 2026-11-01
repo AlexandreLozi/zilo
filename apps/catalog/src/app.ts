@@ -4,6 +4,7 @@ import { specimens } from './specimens.js';
 import {
   catalogStates,
   catalogThemes,
+  reactStates,
   stateUrl,
   type CatalogState,
   type CatalogTheme,
@@ -68,8 +69,22 @@ export function mount(root: HTMLElement, search: string): void {
     <main>
       <p><a href="/">All components</a></p>
       <h1>${state.component}: ${state.title} <span class="theme-tag">(${theme})</span></h1>
-      <div class="specimen" data-state="${state.id}">${specimens[state.id]}</div>
+      <div class="specimen">${specimens[state.id]}</div>
     </main>`;
+  const specimen = root.querySelector<HTMLElement>('.specimen');
+  // `data-state` marks the specimen as rendered: at once for markup, after the commit for React.
+  const markReady = (): void => {
+    specimen?.setAttribute('data-state', state.id);
+  };
+  if (reactStates.includes(state.id)) {
+    const host = root.querySelector<HTMLElement>('#host-modal-root');
+    if (host) {
+      void import('./host-modal.js')
+        .then(({ mountHostModal }) => mountHostModal(host, theme))
+        .then(markReady);
+    }
+    return;
+  }
   // Theme only the outermost Zilo elements; nested ones inherit (tokens.md §2).
   for (const el of root.querySelectorAll('.specimen > *, .specimen > * > *')) {
     if (el.tagName.startsWith('ZILO-') && !el.parentElement?.closest('zilo-dialog, zilo-banner')) {
@@ -77,4 +92,5 @@ export function mount(root: HTMLElement, search: string): void {
     }
   }
   wireDialog(root);
+  markReady();
 }
