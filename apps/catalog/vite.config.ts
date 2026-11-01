@@ -8,10 +8,10 @@ export default defineConfig({
   },
   build: {
     rolldownOptions: {
-      onwarn(warning, warn) {
+      onLog(level, log, handler) {
         // Radix ships React Server Components' "use client"; meaningless in this client-only app.
-        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return;
-        warn(warning);
+        if (log.code === 'MODULE_LEVEL_DIRECTIVE') return;
+        handler(level, log);
       },
     },
   },
