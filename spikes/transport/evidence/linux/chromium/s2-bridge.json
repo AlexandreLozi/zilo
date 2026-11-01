@@ -13,36 +13,36 @@
         },
         {
           "s": "ready",
-          "ms": 30
+          "ms": 27
         },
         {
           "s": "welcome",
-          "ms": 41,
-          "sessionId": "fa6ba16983be7599"
+          "ms": 32,
+          "sessionId": "db00b6643f5514ae"
         },
         {
           "s": "op-hello",
-          "ms": 43,
+          "ms": 40,
           "ok": true
         },
         {
           "s": "op-blob",
-          "ms": 54,
+          "ms": 51,
           "ok": true
         },
         {
           "s": "op-blob-oversize",
-          "ms": 59,
+          "ms": 55,
           "code": "too-large"
         },
         {
           "s": "op-events",
-          "ms": 1063,
+          "ms": 1059,
           "ticks": 5
         }
       ],
-      "nonce": "b2d5e6e2b79885832b58b98be995ae15",
-      "sessionId": "fa6ba16983be7599",
+      "nonce": "501d7f51d028c792d5527e5a46c3a112",
+      "sessionId": "db00b6643f5514ae",
       "hello": {
         "ok": true,
         "product": "zilo-spike-agent"
@@ -91,5 +91,5 @@
   "os": "linux",
   "browserVersion": "156.0.8078.4",
   "playwright": "1.64.1",
-  "recordedAt": "2026-11-01T14:47:58.883Z"
+  "recordedAt": "2026-11-01T15:10:45.287Z"
 }

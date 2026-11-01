@@ -8,7 +8,7 @@
       "error": "TypeError",
       "message": "Load failed",
       "timedOut": false,
-      "ms": 0
+      "ms": 1
     },
     "permissions": {
       "loopback-network": "prompt",
@@ -33,5 +33,5 @@
   "os": "linux",
   "browserVersion": "27.2",
   "playwright": "1.64.1",
-  "recordedAt": "2026-11-01T14:50:40.643Z"
+  "recordedAt": "2026-11-01T15:13:29.711Z"
 }

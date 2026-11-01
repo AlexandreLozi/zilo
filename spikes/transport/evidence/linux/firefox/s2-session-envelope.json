@@ -8,7 +8,7 @@
       {
         "ok": false,
         "code": "session-mismatch",
-        "sessionId": "fe2e473d60ce6a4d",
+        "sessionId": "fc137a00d206adbb",
         "v": 1
       }
     ],
@@ -16,7 +16,7 @@
       {
         "ok": false,
         "code": "session-mismatch",
-        "sessionId": "fe2e473d60ce6a4d",
+        "sessionId": "fc137a00d206adbb",
         "v": 1
       }
     ],
@@ -24,7 +24,7 @@
       {
         "ok": false,
         "code": "bad-version",
-        "sessionId": "fe2e473d60ce6a4d",
+        "sessionId": "fc137a00d206adbb",
         "v": 1
       }
     ],
@@ -32,7 +32,7 @@
       {
         "ok": true,
         "seq": 1,
-        "sessionId": "fe2e473d60ce6a4d",
+        "sessionId": "fc137a00d206adbb",
         "v": 1,
         "bytes": 8
       }
@@ -41,7 +41,7 @@
       {
         "ok": false,
         "code": "duplicate-request-id",
-        "sessionId": "fe2e473d60ce6a4d",
+        "sessionId": "fc137a00d206adbb",
         "v": 1
       }
     ]
@@ -51,5 +51,5 @@
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-11-01T14:49:21.920Z"
+  "recordedAt": "2026-11-01T15:12:10.427Z"
 }

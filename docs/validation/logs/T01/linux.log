@@ -1,8 +1,8 @@
-# T01 spike-transport local Linux run (fix r1)
-# code SHA: 3c753ffa2628e0e0375db2a5db10fc0ac575da48
-# host: WSL2 Ubuntu 24.04, Node v22.23.1, Playwright Version 1.64.1
+# T01 spike-transport local Linux run (fix r2)
+# code SHA: 17accfa1c63ceba932f2001fa68c9a1bd73bb05e
+# host: WSL2 Ubuntu 24.04, Node v22.23.1, Version 1.64.1
 # command: npx playwright test (all projects; headless only per OD-4: ZILO_HEADFUL_DISPLAY unset, so the headful Chromium prompt test is skipped) (WebKit via scratch libs: ZILO_WEBKIT_EXECUTABLE/ZILO_EXTRA_LD_PATH/GIO_EXTRA_MODULES)
-# started: 2026-11-01T14:47:55Z
+# started: 2026-11-01T15:10:41Z
 [WebServer] [agent-stub] listening on http://127.0.0.1:47613 (audit: ~/orca/workspaces/zilo/t01-transport-spike/spikes/transport/artifacts/agent-audit.jsonl)
 [WebServer] [app] https on 127.0.0.1:8443 for app.zilo.test:8443, evil.zilo.test:8443
 [WebServer] [app] http control on 127.0.0.1:8080
@@ -10,68 +10,68 @@
 
 Running 65 tests using 1 worker
 
-  ✓   1 [stub] › tests/stub-http.spec.ts:36:3 › agent stub rules › Host allowlist is exact (24ms)
-  ✓   2 [stub] › tests/stub-http.spec.ts:47:3 › agent stub rules › Origin allowlist is exact; CORS reflects only allowed origins, never * (11ms)
+  ✓   1 [stub] › tests/stub-http.spec.ts:36:3 › agent stub rules › Host allowlist is exact (25ms)
+  ✓   2 [stub] › tests/stub-http.spec.ts:47:3 › agent stub rules › Origin allowlist is exact; CORS reflects only allowed origins, never * (10ms)
   ✓   3 [stub] › tests/stub-http.spec.ts:66:3 › agent stub rules › bearer required on everything except hello; tokens are bound to their origin (7ms)
-  ✓   4 [stub] › tests/stub-http.spec.ts:79:3 › agent stub rules › bridge page: restrictive CSP, no framing, no-store, never served as a subresource (6ms)
-  ✓   5 [stub] › tests/stub-http.spec.ts:90:3 › agent stub rules › bridge mint: bridge origin only, allowlisted app origin, valid token, single-use nonce; capability bound to its session; re-mint makes the old session stale (13ms)
-[evidence] chromium/linux s2-bridge: pass :: {"bridge":{"ok":true,"steps":[{"s":"opened","ms":16,"closedImmediately":false},{"s":"ready","ms":30},{"s":"welcome","ms":41,"sessionId":"fa6ba16983be7599"},{"s":"op-hello","ms":43,"ok":true},{"s":"op-blob","ms":54,"ok":true},{"s":"op-blob-oversize","ms":59,"code":"too-large"},{"s":"op-events","ms":1063,"ticks":5}],"nonce":"b2d5e6e2b79885832b58b98be995ae15","sessionId":"fa6ba16983be7599","hello":{"ok":true,"product":"zilo-spike-agent"},"blob":{"ok":true,"bytes":1048576,"ms":11},"oversize":{"code":"too-large"},"events":{"ticks":[1,2,3,4,5]},"unknownOp":{"code":"unknown-op"},"coopHeader":null},"rejections":[],"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"bound","rejections":[],"hasOpener":true},"mintStatuses":[[201,"bridge-session-minted","https://app.zilo.test:8443"]]}
-[evidence] chromium/linux s2-closure: pass :: {"detected":true,"ms":1242}
+  ✓   4 [stub] › tests/stub-http.spec.ts:79:3 › agent stub rules › bridge page: restrictive CSP, no framing, no-store, never served as a subresource (5ms)
+  ✓   5 [stub] › tests/stub-http.spec.ts:90:3 › agent stub rules › bridge mint: bridge origin only, allowlisted app origin, valid token, single-use nonce; capability bound to its session; re-mint makes the old session stale (14ms)
+[evidence] chromium/linux s2-bridge: pass :: {"bridge":{"ok":true,"steps":[{"s":"opened","ms":16,"closedImmediately":false},{"s":"ready","ms":27},{"s":"welcome","ms":32,"sessionId":"db00b6643f5514ae"},{"s":"op-hello","ms":40,"ok":true},{"s":"op-blob","ms":51,"ok":true},{"s":"op-blob-oversize","ms":55,"code":"too-large"},{"s":"op-events","ms":1059,"ticks":5}],"nonce":"501d7f51d028c792d5527e5a46c3a112","sessionId":"db00b6643f5514ae","hello":{"ok":true,"product":"zilo-spike-agent"},"blob":{"ok":true,"bytes":1048576,"ms":11},"oversize":{"code":"too-large"},"events":{"ticks":[1,2,3,4,5]},"unknownOp":{"code":"unknown-op"},"coopHeader":null},"rejections":[],"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"bound","rejections":[],"hasOpener":true},"mintStatuses":[[201,"bridge-session-minted","https://app.zilo.test:8443"]]}
+[evidence] chromium/linux s2-closure: pass :: {"detected":true,"ms":1232}
   ✓   6 [chromium] › tests/bridge.spec.ts:68:3 › S2 popup bridge › handshake, typed hello relay, bounded ArrayBuffer transfer, SSE relay, closure detection (1.5s)
-[evidence] chromium/linux s2-coop: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":14,"closedImmediately":false}],"nonce":"144294feef518d955c91ca5908b2ffc6","code":"coop-severed","readyFail":"popup-closed","popupClosed":true,"coopHeader":"same-origin"},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"error: no-opener","rejections":[],"hasOpener":false},"minted":0}
-  ✓   7 [chromium] › tests/bridge.spec.ts:108:3 › S2 popup bridge › COOP same-origin on the app page: failure is explicit (coop-severed), nothing minted (322ms)
+[evidence] chromium/linux s2-coop: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":15,"closedImmediately":false}],"nonce":"46b51a341089105cf76cb96cf2193791","code":"coop-severed","readyFail":"popup-closed","popupClosed":true,"coopHeader":"same-origin"},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"error: no-opener","rejections":[],"hasOpener":false},"minted":0}
+  ✓   7 [chromium] › tests/bridge.spec.ts:108:3 › S2 popup bridge › COOP same-origin on the app page: failure is explicit (coop-severed), nothing minted (353ms)
 [evidence] chromium/linux s2-coop-allow-popups: pass :: {"ok":true,"coopHeader":"same-origin-allow-popups","popupStatus":"bound"}
   ✓   8 [chromium] › tests/bridge.spec.ts:126:3 › S2 popup bridge › COOP same-origin-allow-popups keeps the opener: bridge works (1.3s)
-[evidence] chromium/linux s2-hostile-opener: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":18,"closedImmediately":false},{"s":"ready-timeout","ms":5019}],"nonce":"07d8aedbb2e2ecb189cbc37798786a9b","code":"no-ready-then-timeout","coopHeader":null},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"rejected: origin-not-allowed","rejections":[{"code":"origin-not-allowed","detail":"https://evil.zilo.test:8443"}],"hasOpener":true},"minted":0}
-  ✓   9 [chromium] › tests/bridge.spec.ts:140:3 › S2 popup bridge › hostile opener: bridge never announces itself, rejects a forced hello, mints nothing (10.3s)
+[evidence] chromium/linux s2-hostile-opener: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":16,"closedImmediately":false},{"s":"ready-timeout","ms":5016}],"nonce":"4d3327dee757f05580157b770f6f01dd","code":"no-ready-then-timeout","coopHeader":null},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"rejected: origin-not-allowed","rejections":[{"code":"origin-not-allowed","detail":"https://evil.zilo.test:8443"}],"hasOpener":true},"minted":0}
+  ✓   9 [chromium] › tests/bridge.spec.ts:140:3 › S2 popup bridge › hostile opener: bridge never announces itself, rejects a forced hello, mints nothing (10.2s)
 [evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
-  ✓  10 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
-[evidence] chromium/linux s2-nonce-replay: pass :: {"first":{"ok":true},"second":{"ok":false,"steps":[{"s":"opened","ms":0,"closedImmediately":false},{"s":"ready","ms":10}],"nonce":"f3750e197c8401f192411191aa8df72e","code":"bridge-error:nonce-replayed","coopHeader":null},"mintStatuses":[[201,"bridge-session-minted"],[409,"nonce-replayed"]]}
+  ✓  10 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.2s)
+[evidence] chromium/linux s2-nonce-replay: pass :: {"first":{"ok":true},"second":{"ok":false,"steps":[{"s":"opened","ms":0,"closedImmediately":false},{"s":"ready","ms":10}],"nonce":"87ee572da5c1c5525f05d906f8f885be","code":"bridge-error:nonce-replayed","coopHeader":null},"mintStatuses":[[201,"bridge-session-minted"],[409,"nonce-replayed"]]}
   ✓  11 [chromium] › tests/bridge.spec.ts:172:3 › S2 popup bridge › nonce replay: a second handshake reusing a nonce is refused by the agent (11.3s)
-[evidence] chromium/linux s2-session-envelope: pass :: {"bridgeOk":true,"wrongSession":[{"ok":false,"code":"session-mismatch","sessionId":"745d210bbf1d9f5c","v":1}],"noSession":[{"ok":false,"code":"session-mismatch","sessionId":"745d210bbf1d9f5c","v":1}],"noVersion":[{"ok":false,"code":"bad-version","sessionId":"745d210bbf1d9f5c","v":1}],"valid":[{"ok":true,"seq":1,"sessionId":"745d210bbf1d9f5c","v":1,"bytes":8}],"duplicate":[{"ok":false,"code":"duplicate-request-id","sessionId":"745d210bbf1d9f5c","v":1}]}
+[evidence] chromium/linux s2-session-envelope: pass :: {"bridgeOk":true,"wrongSession":[{"ok":false,"code":"session-mismatch","sessionId":"63e1f05dfe792ff8","v":1}],"noSession":[{"ok":false,"code":"session-mismatch","sessionId":"63e1f05dfe792ff8","v":1}],"noVersion":[{"ok":false,"code":"bad-version","sessionId":"63e1f05dfe792ff8","v":1}],"valid":[{"ok":true,"seq":1,"sessionId":"63e1f05dfe792ff8","v":1,"bytes":8}],"duplicate":[{"ok":false,"code":"duplicate-request-id","sessionId":"63e1f05dfe792ff8","v":1}]}
   ✓  12 [chromium] › tests/bridge.spec.ts:193:3 › S2 popup bridge › session envelope: every op needs version, unique id and the bound session; replies carry the session (1.3s)
-[evidence] chromium/linux s2-backpressure: pass :: {"first":[{"ok":true,"seq":1,"sessionId":"660599408f934f26","v":1,"bytes":4096}],"whileUnacked":[{"ok":false,"code":"busy","sessionId":"660599408f934f26","v":1}],"afterAck":[{"ok":true,"seq":1,"sessionId":"660599408f934f26","v":1,"bytes":4096}],"delivered":[1,2],"last":{"ok":false,"code":"consumer-stalled","sessionId":"660599408f934f26","v":1},"stalledAfterMs":3304,"popupRejections":["binary-ack-overdue","consumer-stalled"]}
+[evidence] chromium/linux s2-backpressure: pass :: {"first":[{"ok":true,"seq":1,"sessionId":"67f6e1586f7041ae","v":1,"bytes":4096}],"whileUnacked":[{"ok":false,"code":"busy","sessionId":"67f6e1586f7041ae","v":1}],"afterAck":[{"ok":true,"seq":1,"sessionId":"67f6e1586f7041ae","v":1,"bytes":4096}],"delivered":[1,2],"last":{"ok":false,"code":"consumer-stalled","sessionId":"67f6e1586f7041ae","v":1},"stalledAfterMs":2606,"popupRejections":["binary-ack-overdue","consumer-stalled"]}
   ✓  13 [chromium] › tests/bridge.spec.ts:222:3 › S2 popup bridge › backpressure: an unacknowledged binary reply holds the slot; a stalled event consumer is cut off (3.9s)
-[evidence] chromium/linux s2-navigation-reconnect: pass :: {"firstOk":true,"reloaded":{"state":"bound","lost":{"reason":"pagehide","sessionId":"8513882969b6842a","ms":1080},"reconnect":{"ok":true,"previousSessionId":"8513882969b6842a","sessionId":"6977c1fc89d9ee57","nonceFresh":true,"hello":true}},"navigated":{"state":"lost","lost":{"reason":"pagehide","sessionId":"6977c1fc89d9ee57","ms":1107},"reconnect":{"ok":true,"previousSessionId":"8513882969b6842a","sessionId":"6977c1fc89d9ee57","nonceFresh":true,"hello":true},"detectMs":7,"popupOpen":true},"again":{"ok":true,"sessionId":"cd82899e13ade273"},"silent":{"state":"lost","lost":{"reason":"no-pong","sessionId":"cd82899e13ade273","ms":11513},"reconnect":{"ok":true,"previousSessionId":"8513882969b6842a","sessionId":"6977c1fc89d9ee57","nonceFresh":true,"hello":true},"detectMs":1532,"suppressedAt":"http://127.0.0.1:47613/bridge"},"sessions":["8513882969b6842a","6977c1fc89d9ee57","cd82899e13ade273"],"mintStatuses":[201,201,201]}
+[evidence] chromium/linux s2-navigation-reconnect: pass :: {"firstOk":true,"reloaded":{"state":"bound","lost":{"reason":"pagehide","sessionId":"469040222a34a999","ms":1082},"reconnect":{"ok":true,"previousSessionId":"469040222a34a999","sessionId":"cf7070b8633d990f","nonceFresh":true,"hello":true}},"navigated":{"state":"lost","lost":{"reason":"pagehide","sessionId":"cf7070b8633d990f","ms":1107},"reconnect":{"ok":true,"previousSessionId":"469040222a34a999","sessionId":"cf7070b8633d990f","nonceFresh":true,"hello":true},"detectMs":6,"popupOpen":true},"again":{"ok":true,"sessionId":"f6d8f3c797f0ba2f"},"silent":{"state":"lost","lost":{"reason":"no-pong","sessionId":"f6d8f3c797f0ba2f","ms":11514},"reconnect":{"ok":true,"previousSessionId":"469040222a34a999","sessionId":"cf7070b8633d990f","nonceFresh":true,"hello":true},"detectMs":1535,"suppressedAt":"http://127.0.0.1:47613/bridge"},"sessions":["469040222a34a999","cf7070b8633d990f","f6d8f3c797f0ba2f"],"mintStatuses":[201,201,201]}
   ✓  14 [chromium] › tests/bridge.spec.ts:253:3 › S2 popup bridge › navigation and reload: bound state is invalidated (notice or ping deadline); reload re-handshakes with a fresh session; reopen recovers (12.8s)
 [evidence] chromium/linux env: pass :: {"origin":"https://app.zilo.test:8443","isSecureContext":true,"ua":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36","tas":"loopback","variant":"plain","addressSpace":"public (forced: --ip-address-space-overrides)"}
-  ✓  15 [chromium] › tests/fetch.spec.ts:12:3 › loopback fetch from an HTTPS public origin › page is a secure context on a non-loopback hostname (public address space only where forced) (140ms)
+  ✓  15 [chromium] › tests/fetch.spec.ts:12:3 › loopback fetch from an HTTPS public origin › page is a secure context on a non-loopback hostname (public address space only where forced) (138ms)
 [evidence] chromium/linux perm-prompt: pass :: {"before":{"loopback-network":"prompt","local-network":"prompt"},"hello":{"ok":false,"error":"TypeError","message":"Failed to fetch","timedOut":false,"ms":14},"after":{"loopback-network":"denied","local-network":"prompt"}}
-  ✓  16 [chromium] › tests/fetch.spec.ts:31:3 › loopback fetch from an HTTPS public origin › default permission state (prompt): never silently allowed (332ms)
+  ✓  16 [chromium] › tests/fetch.spec.ts:31:3 › loopback fetch from an HTTPS public origin › default permission state (prompt): never silently allowed (319ms)
   -  17 [chromium] › tests/fetch.spec.ts:66:3 › loopback fetch from an HTTPS public origin › default permission state, headful Chromium: request held on a real prompt
-[evidence] chromium/linux hello-tas: pass :: {"result":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":13},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"loopback","requestsSeenByAgent":6}
-[evidence] chromium/linux hello-plain: pass :: {"result":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":14},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"loopback","requestsSeenByAgent":6}
+[evidence] chromium/linux hello-tas: pass :: {"result":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":14},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"loopback","requestsSeenByAgent":6}
+[evidence] chromium/linux hello-plain: pass :: {"result":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":13},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"loopback","requestsSeenByAgent":6}
 [evidence] chromium/linux sse-fetch-stream: pass :: {"result":{"ok":true,"status":200,"ticks":[1,2,3,4,5],"spreadMs":801,"incremental":true,"ms":1003},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"loopback","requestsSeenByAgent":6}
-[evidence] chromium/linux blob: pass :: {"result":{"ok":true,"status":200,"bytes":1048576,"ms":16},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"loopback","requestsSeenByAgent":6}
+[evidence] chromium/linux blob: pass :: {"result":{"ok":true,"status":200,"bytes":1048576,"ms":15},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"loopback","requestsSeenByAgent":6}
   ✓  18 [chromium] › tests/fetch.spec.ts:95:3 › loopback fetch from an HTTPS public origin › granted: hello with/without targetAddressSpace, SSE over fetch streaming, 1 MiB blob (1.5s)
-[evidence] chromium/linux perm-denied: pass :: {"permissions":{"loopback-network":"denied","local-network":"denied"},"hello":{"ok":false,"error":"TypeError","message":"Failed to fetch","timedOut":false,"ms":14}}
-  ✓  19 [chromium] › tests/fetch.spec.ts:149:3 › loopback fetch from an HTTPS public origin › denied: request refused immediately (279ms)
-[evidence] chromium/linux neg-hostile-origin: pass :: {"grant":"granted","hello":{"ok":false,"error":"TypeError","message":"Failed to fetch","timedOut":false,"ms":13},"blob":{"ok":false,"error":"TypeError","message":"Failed to fetch","timedOut":false,"ms":13},"audit":[["GET","/zilo/v1/hello",403,"origin-denied"],["OPTIONS","/zilo/v1/blob",403,"origin-denied"]]}
-  ✓  20 [chromium] › tests/negative.spec.ts:20:3 › negative controls › hostile HTTPS origin is denied by the agent (even with LNA granted) (221ms)
-[evidence] chromium/linux neg-bad-host: pass :: {"status":403,"audit":[["GET","/zilo/v1/hello","rebind.zilo.test:47613",403,"host-denied"],["GET","/favicon.ico","rebind.zilo.test:47613",403,"host-denied"]]}
-  ✓  21 [chromium] › tests/negative.spec.ts:45:3 › negative controls › bad Host (DNS rebinding name -> 127.0.0.1) is denied by the agent (128ms)
+[evidence] chromium/linux perm-denied: pass :: {"permissions":{"loopback-network":"denied","local-network":"denied"},"hello":{"ok":false,"error":"TypeError","message":"Failed to fetch","timedOut":false,"ms":13}}
+  ✓  19 [chromium] › tests/fetch.spec.ts:149:3 › loopback fetch from an HTTPS public origin › denied: request refused immediately (296ms)
+[evidence] chromium/linux neg-hostile-origin: pass :: {"grant":"granted","hello":{"ok":false,"error":"TypeError","message":"Failed to fetch","timedOut":false,"ms":14},"blob":{"ok":false,"error":"TypeError","message":"Failed to fetch","timedOut":false,"ms":14},"audit":[["GET","/zilo/v1/hello",403,"origin-denied"],["OPTIONS","/zilo/v1/blob",403,"origin-denied"]]}
+  ✓  20 [chromium] › tests/negative.spec.ts:20:3 › negative controls › hostile HTTPS origin is denied by the agent (even with LNA granted) (237ms)
+[evidence] chromium/linux neg-bad-host: pass :: {"status":403,"audit":[["GET","/zilo/v1/hello","rebind.zilo.test:47613",403,"host-denied"]]}
+  ✓  21 [chromium] › tests/negative.spec.ts:45:3 › negative controls › bad Host (DNS rebinding name -> 127.0.0.1) is denied by the agent (127ms)
 [evidence] chromium/linux neg-http-control: pass :: {"grant":"not grantable: browserContext.grantPermissions: Protocol error (Browser.grantPermissions): Permission can't be granted in current context.","isSecureContext":false,"permissions":{"loopback-network":"denied","local-network":"denied"},"hello":{"ok":false,"error":"TypeError","message":"Failed to fetch","timedOut":false,"ms":12}}
-  ✓  22 [chromium] › tests/negative.spec.ts:64:3 › negative controls › HTTP (insecure) page as a control (261ms)
-[evidence] chromium/linux neg-forged-mint: pass :: {"grant":"granted","forged":{"ok":false,"status":403,"code":"mint-requires-bridge-origin","ms":14},"audit":[[403,"mint-requires-bridge-origin","https://app.zilo.test:8443"]]}
-  ✓  23 [chromium] › tests/negative.spec.ts:98:3 › negative controls › forged bridge mint from the public page is refused (193ms)
-[evidence] chromium/linux control-no-override: pass :: {"permissions":{"loopback-network":"prompt","local-network":"prompt"},"hello":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":13}}
-  ✓  24 [chromium] › tests/negative.spec.ts:119:3 › negative controls › methodology control: without the public address-space override, LNA does not apply (360ms)
-wrong-session binary reply: { ok: false, sessionId: '2f64f59f5f28c40d', bytes: undefined }
-  ✓  25 [chromium] › tests/review-s2.spec.ts:29:1 › D-003: a binary request for a different session must not succeed (1.2s)
+  ✓  22 [chromium] › tests/negative.spec.ts:64:3 › negative controls › HTTP (insecure) page as a control (247ms)
+[evidence] chromium/linux neg-forged-mint: pass :: {"grant":"granted","forged":{"ok":false,"status":403,"code":"mint-requires-bridge-origin","ms":13},"audit":[[403,"mint-requires-bridge-origin","https://app.zilo.test:8443"]]}
+  ✓  23 [chromium] › tests/negative.spec.ts:98:3 › negative controls › forged bridge mint from the public page is refused (176ms)
+[evidence] chromium/linux control-no-override: pass :: {"permissions":{"loopback-network":"prompt","local-network":"prompt"},"hello":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":14}}
+  ✓  24 [chromium] › tests/negative.spec.ts:119:3 › negative controls › methodology control: without the public address-space override, LNA does not apply (384ms)
+wrong-session binary reply: { ok: false, sessionId: '552ccbfdbe0c5ad0', bytes: undefined }
+  ✓  25 [chromium] › tests/review-s2.spec.ts:29:1 › D-003: a binary request for a different session must not succeed (1.3s)
   ✓  26 [chromium] › tests/review-s2.spec.ts:42:1 › D-003: navigation of a live popup must invalidate the bound state (1.2s)
 real-popup-blocker result: {
   ok: true,
   steps: [
     { s: 'opened', ms: 15, closedImmediately: false },
-    { s: 'ready', ms: 30 },
-    { s: 'welcome', ms: 37, sessionId: '92a377de55b1b8eb' },
-    { s: 'op-hello', ms: 39, ok: true },
-    { s: 'op-blob', ms: 45, ok: true },
+    { s: 'ready', ms: 31 },
+    { s: 'welcome', ms: 38, sessionId: 'a599f7fc7e78f57d' },
+    { s: 'op-hello', ms: 40, ok: true },
+    { s: 'op-blob', ms: 46, ok: true },
     { s: 'op-blob-oversize', ms: 50, code: 'too-large' },
-    { s: 'op-events', ms: 1054, ticks: 5 }
+    { s: 'op-events', ms: 1053, ticks: 5 }
   ],
-  nonce: 'e72cd73f3897adacf38ba2550ca485b2',
-  sessionId: '92a377de55b1b8eb',
+  nonce: 'd5034d8eae3210dfda87788aa6f1ff02',
+  sessionId: 'a599f7fc7e78f57d',
   hello: { ok: true, product: 'zilo-spike-agent' },
   blob: { ok: true, bytes: 1048576, ms: 6 },
   oversize: { code: 'too-large' },
@@ -79,88 +79,223 @@ real-popup-blocker result: {
   unknownOp: { code: 'unknown-op' },
   coopHeader: 'unknown:timeout'
 }
-  ✓  27 [chromium] › tests/review-s2.spec.ts:52:1 › S2: opening the popup must retain the click activation across a slow COOP HEAD response (3.3s)
-[evidence] firefox/linux s2-bridge: pass :: {"bridge":{"ok":true,"steps":[{"s":"opened","ms":102,"closedImmediately":false},{"s":"ready","ms":140},{"s":"welcome","ms":154,"sessionId":"de8587f8530456ea"},{"s":"op-hello","ms":158,"ok":true},{"s":"op-blob","ms":166,"ok":true},{"s":"op-blob-oversize","ms":166,"code":"too-large"},{"s":"op-events","ms":1171,"ticks":5}],"nonce":"32248806e485c927bc0f0d40c5020c2f","sessionId":"de8587f8530456ea","hello":{"ok":true,"product":"zilo-spike-agent"},"blob":{"ok":true,"bytes":1048576,"ms":8},"oversize":{"code":"too-large"},"events":{"ticks":[1,2,3,4,5]},"unknownOp":{"code":"unknown-op"},"coopHeader":null},"rejections":[],"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"bound","rejections":[],"hasOpener":true},"mintStatuses":[[201,"bridge-session-minted","https://app.zilo.test:8443"]]}
-[evidence] firefox/linux s2-closure: pass :: {"detected":true,"ms":1355}
+  ✓  27 [chromium] › tests/review-s2.spec.ts:52:1 › S2: opening the popup must retain the click activation across a slow COOP HEAD response (3.4s)
+[evidence] firefox/linux s2-bridge: pass :: {"bridge":{"ok":true,"steps":[{"s":"opened","ms":154,"closedImmediately":false},{"s":"ready","ms":187},{"s":"welcome","ms":206,"sessionId":"408e7c3e81fb403a"},{"s":"op-hello","ms":210,"ok":true},{"s":"op-blob","ms":218,"ok":true},{"s":"op-blob-oversize","ms":219,"code":"too-large"},{"s":"op-events","ms":1224,"ticks":5}],"nonce":"008e3e3d7d4f16a7e24468f08ac6d4b9","sessionId":"408e7c3e81fb403a","hello":{"ok":true,"product":"zilo-spike-agent"},"blob":{"ok":true,"bytes":1048576,"ms":8},"oversize":{"code":"too-large"},"events":{"ticks":[1,2,3,4,5]},"unknownOp":{"code":"unknown-op"},"coopHeader":null},"rejections":[],"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"bound","rejections":[],"hasOpener":true},"mintStatuses":[[201,"bridge-session-minted","https://app.zilo.test:8443"]]}
+[evidence] firefox/linux s2-closure: pass :: {"detected":true,"ms":1406}
   ✓  28 [firefox] › tests/bridge.spec.ts:68:3 › S2 popup bridge › handshake, typed hello relay, bounded ArrayBuffer transfer, SSE relay, closure detection (2.3s)
-[evidence] firefox/linux s2-coop: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":89,"closedImmediately":false}],"nonce":"2d0b31170883448f9e077110792008d2","code":"coop-severed","readyFail":"popup-closed","popupClosed":true,"coopHeader":"same-origin"},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"error: no-opener","rejections":[],"hasOpener":false},"minted":0}
+[evidence] firefox/linux s2-coop: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":89,"closedImmediately":false}],"nonce":"f69d8156eba583293b602ea488d7d059","code":"coop-severed","readyFail":"popup-closed","popupClosed":true,"coopHeader":"same-origin"},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"error: no-opener","rejections":[],"hasOpener":false},"minted":0}
   ✓  29 [firefox] › tests/bridge.spec.ts:108:3 › S2 popup bridge › COOP same-origin on the app page: failure is explicit (coop-severed), nothing minted (520ms)
 [evidence] firefox/linux s2-coop-allow-popups: pass :: {"ok":true,"coopHeader":"same-origin-allow-popups","popupStatus":"bound"}
-  ✓  30 [firefox] › tests/bridge.spec.ts:126:3 › S2 popup bridge › COOP same-origin-allow-popups keeps the opener: bridge works (1.5s)
-[evidence] firefox/linux s2-hostile-opener: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":107,"closedImmediately":false},{"s":"ready-timeout","ms":5108}],"nonce":"4eca98ebaaadbf5b648c69c7e1a424be","code":"no-ready-then-timeout","coopHeader":null},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"rejected: origin-not-allowed","rejections":[{"code":"origin-not-allowed","detail":"https://evil.zilo.test:8443"}],"hasOpener":true},"minted":0}
+  ✓  30 [firefox] › tests/bridge.spec.ts:126:3 › S2 popup bridge › COOP same-origin-allow-popups keeps the opener: bridge works (1.4s)
+[evidence] firefox/linux s2-hostile-opener: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":98,"closedImmediately":false},{"s":"ready-timeout","ms":5098}],"nonce":"8e7acb5c3770adf9bc06648cd4f1ac01","code":"no-ready-then-timeout","coopHeader":null},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"rejected: origin-not-allowed","rejections":[{"code":"origin-not-allowed","detail":"https://evil.zilo.test:8443"}],"hasOpener":true},"minted":0}
   ✓  31 [firefox] › tests/bridge.spec.ts:140:3 › S2 popup bridge › hostile opener: bridge never announces itself, rejects a forced hello, mints nothing (10.4s)
 [evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
-  ✓  32 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.5s)
-[evidence] firefox/linux s2-nonce-replay: pass :: {"first":{"ok":true},"second":{"ok":false,"steps":[{"s":"opened","ms":0,"closedImmediately":false},{"s":"ready","ms":13}],"nonce":"932b08be353666088095147436d3db01","code":"bridge-error:nonce-replayed","coopHeader":null},"mintStatuses":[[201,"bridge-session-minted"],[409,"nonce-replayed"]]}
+  ✓  32 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.6s)
+[evidence] firefox/linux s2-nonce-replay: pass :: {"first":{"ok":true},"second":{"ok":false,"steps":[{"s":"opened","ms":1,"closedImmediately":false},{"s":"ready","ms":15}],"nonce":"ed982810e0f10b3970fb029f44b0fb3a","code":"bridge-error:nonce-replayed","coopHeader":null},"mintStatuses":[[201,"bridge-session-minted"],[409,"nonce-replayed"]]}
   ✓  33 [firefox] › tests/bridge.spec.ts:172:3 › S2 popup bridge › nonce replay: a second handshake reusing a nonce is refused by the agent (11.5s)
-[evidence] firefox/linux s2-session-envelope: pass :: {"bridgeOk":true,"wrongSession":[{"ok":false,"code":"session-mismatch","sessionId":"fe2e473d60ce6a4d","v":1}],"noSession":[{"ok":false,"code":"session-mismatch","sessionId":"fe2e473d60ce6a4d","v":1}],"noVersion":[{"ok":false,"code":"bad-version","sessionId":"fe2e473d60ce6a4d","v":1}],"valid":[{"ok":true,"seq":1,"sessionId":"fe2e473d60ce6a4d","v":1,"bytes":8}],"duplicate":[{"ok":false,"code":"duplicate-request-id","sessionId":"fe2e473d60ce6a4d","v":1}]}
-  ✓  34 [firefox] › tests/bridge.spec.ts:193:3 › S2 popup bridge › session envelope: every op needs version, unique id and the bound session; replies carry the session (1.5s)
-[evidence] firefox/linux s2-backpressure: pass :: {"first":[{"ok":true,"seq":1,"sessionId":"4abbd8259568857c","v":1,"bytes":4096}],"whileUnacked":[{"ok":false,"code":"busy","sessionId":"4abbd8259568857c","v":1}],"afterAck":[{"ok":true,"seq":1,"sessionId":"4abbd8259568857c","v":1,"bytes":4096}],"delivered":[1,2],"last":{"ok":false,"code":"consumer-stalled","sessionId":"4abbd8259568857c","v":1},"stalledAfterMs":2607,"popupRejections":["binary-ack-overdue","consumer-stalled"]}
+[evidence] firefox/linux s2-session-envelope: pass :: {"bridgeOk":true,"wrongSession":[{"ok":false,"code":"session-mismatch","sessionId":"fc137a00d206adbb","v":1}],"noSession":[{"ok":false,"code":"session-mismatch","sessionId":"fc137a00d206adbb","v":1}],"noVersion":[{"ok":false,"code":"bad-version","sessionId":"fc137a00d206adbb","v":1}],"valid":[{"ok":true,"seq":1,"sessionId":"fc137a00d206adbb","v":1,"bytes":8}],"duplicate":[{"ok":false,"code":"duplicate-request-id","sessionId":"fc137a00d206adbb","v":1}]}
+  ✓  34 [firefox] › tests/bridge.spec.ts:193:3 › S2 popup bridge › session envelope: every op needs version, unique id and the bound session; replies carry the session (1.6s)
+[evidence] firefox/linux s2-backpressure: pass :: {"first":[{"ok":true,"seq":1,"sessionId":"488b1dd0d2317abb","v":1,"bytes":4096}],"whileUnacked":[{"ok":false,"code":"busy","sessionId":"488b1dd0d2317abb","v":1}],"afterAck":[{"ok":true,"seq":1,"sessionId":"488b1dd0d2317abb","v":1,"bytes":4096}],"delivered":[1,2],"last":{"ok":false,"code":"consumer-stalled","sessionId":"488b1dd0d2317abb","v":1},"stalledAfterMs":2610,"popupRejections":["binary-ack-overdue","consumer-stalled"]}
   ✓  35 [firefox] › tests/bridge.spec.ts:222:3 › S2 popup bridge › backpressure: an unacknowledged binary reply holds the slot; a stalled event consumer is cut off (4.1s)
-[evidence] firefox/linux s2-navigation-reconnect: pass :: {"firstOk":true,"reloaded":{"state":"bound","lost":{"reason":"pagehide","sessionId":"eeb649635294e779","ms":1185},"reconnect":{"ok":true,"previousSessionId":"eeb649635294e779","sessionId":"b68c87c98f1af4d3","nonceFresh":true,"hello":true}},"navigated":{"state":"lost","lost":{"reason":"pagehide","sessionId":"b68c87c98f1af4d3","ms":1226},"reconnect":{"ok":true,"previousSessionId":"eeb649635294e779","sessionId":"b68c87c98f1af4d3","nonceFresh":true,"hello":true},"detectMs":7,"popupOpen":true},"again":{"ok":true,"sessionId":"62f4bef5eaff4cf4"},"silent":{"state":"lost","lost":{"reason":"no-pong","sessionId":"62f4bef5eaff4cf4","ms":11536},"reconnect":{"ok":true,"previousSessionId":"eeb649635294e779","sessionId":"b68c87c98f1af4d3","nonceFresh":true,"hello":true},"detectMs":1577,"suppressedAt":"http://127.0.0.1:47613/bridge"},"sessions":["eeb649635294e779","b68c87c98f1af4d3","62f4bef5eaff4cf4"],"mintStatuses":[201,201,201]}
+[evidence] firefox/linux s2-navigation-reconnect: pass :: {"firstOk":true,"reloaded":{"state":"bound","lost":{"reason":"pagehide","sessionId":"168639c5ae647489","ms":1200},"reconnect":{"ok":true,"previousSessionId":"168639c5ae647489","sessionId":"48d88bb5c8fc41e9","nonceFresh":true,"hello":true}},"navigated":{"state":"lost","lost":{"reason":"pagehide","sessionId":"48d88bb5c8fc41e9","ms":1243},"reconnect":{"ok":true,"previousSessionId":"168639c5ae647489","sessionId":"48d88bb5c8fc41e9","nonceFresh":true,"hello":true},"detectMs":8,"popupOpen":true},"again":{"ok":true,"sessionId":"c40bd05b1f42e98e"},"silent":{"state":"lost","lost":{"reason":"no-pong","sessionId":"c40bd05b1f42e98e","ms":11534},"reconnect":{"ok":true,"previousSessionId":"168639c5ae647489","sessionId":"48d88bb5c8fc41e9","nonceFresh":true,"hello":true},"detectMs":1577,"suppressedAt":"http://127.0.0.1:47613/bridge"},"sessions":["168639c5ae647489","48d88bb5c8fc41e9","c40bd05b1f42e98e"],"mintStatuses":[201,201,201]}
   ✓  36 [firefox] › tests/bridge.spec.ts:253:3 › S2 popup bridge › navigation and reload: bound state is invalidated (notice or ping deadline); reload re-handshakes with a fresh session; reopen recovers (13.2s)
 [evidence] firefox/linux env: pass :: {"origin":"https://app.zilo.test:8443","isSecureContext":true,"ua":"Mozilla/5.0 (X11; Linux x86_64; rv:157.0) Gecko/20100101 Firefox/157.0","tas":"ignored","variant":"plain","addressSpace":"public (forced: network.lna.address_space.public.override)"}
-  ✓  37 [firefox] › tests/fetch.spec.ts:12:3 › loopback fetch from an HTTPS public origin › page is a secure context on a non-loopback hostname (public address space only where forced) (707ms)
-[evidence] firefox/linux perm-prompt: pass :: {"before":{"loopback-network":"prompt","local-network":"prompt"},"hello":{"ok":false,"error":"AbortError","message":"The operation was aborted. ","timedOut":true,"ms":6197},"after":{"loopback-network":"prompt","local-network":"prompt"}}
-  ✓  38 [firefox] › tests/fetch.spec.ts:31:3 › loopback fetch from an HTTPS public origin › default permission state (prompt): never silently allowed (6.7s)
+  ✓  37 [firefox] › tests/fetch.spec.ts:12:3 › loopback fetch from an HTTPS public origin › page is a secure context on a non-loopback hostname (public address space only where forced) (655ms)
+[evidence] firefox/linux perm-prompt: pass :: {"before":{"loopback-network":"prompt","local-network":"prompt"},"hello":{"ok":false,"error":"AbortError","message":"The operation was aborted. ","timedOut":true,"ms":6163},"after":{"loopback-network":"prompt","local-network":"prompt"}}
+  ✓  38 [firefox] › tests/fetch.spec.ts:31:3 › loopback fetch from an HTTPS public origin › default permission state (prompt): never silently allowed (6.6s)
   -  39 [firefox] › tests/fetch.spec.ts:66:3 › loopback fetch from an HTTPS public origin › default permission state, headful Chromium: request held on a real prompt
 [evidence] firefox/linux hello-tas: pass :: {"result":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":4},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"ignored","requestsSeenByAgent":6}
-[evidence] firefox/linux hello-plain: pass :: {"result":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":4},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"ignored","requestsSeenByAgent":6}
-[evidence] firefox/linux sse-fetch-stream: pass :: {"result":{"ok":true,"status":200,"ticks":[1,2,3,4,5],"spreadMs":800,"incremental":true,"ms":1006},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"ignored","requestsSeenByAgent":6}
-[evidence] firefox/linux blob: pass :: {"result":{"ok":true,"status":200,"bytes":1048576,"ms":9},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"ignored","requestsSeenByAgent":6}
-  ✓  40 [firefox] › tests/fetch.spec.ts:95:3 › loopback fetch from an HTTPS public origin › granted: hello with/without targetAddressSpace, SSE over fetch streaming, 1 MiB blob (1.7s)
-[evidence] firefox/linux perm-denied: pass :: {"permissions":{"loopback-network":"prompt","local-network":"prompt"},"hello":{"ok":false,"error":"TypeError","message":"NetworkError when attempting to fetch resource.","timedOut":false,"ms":43}}
-  ✓  41 [firefox] › tests/fetch.spec.ts:149:3 › loopback fetch from an HTTPS public origin › denied: request refused immediately (1.3s)
-[evidence] firefox/linux neg-hostile-origin: pass :: {"grant":"granted","hello":{"ok":false,"error":"TypeError","message":"NetworkError when attempting to fetch resource.","timedOut":false,"ms":2},"blob":{"ok":false,"error":"TypeError","message":"NetworkError when attempting to fetch resource.","timedOut":false,"ms":3},"audit":[["GET","/zilo/v1/hello",403,"origin-denied"],["OPTIONS","/zilo/v1/blob",403,"origin-denied"]]}
-  ✓  42 [firefox] › tests/negative.spec.ts:20:3 › negative controls › hostile HTTPS origin is denied by the agent (even with LNA granted) (341ms)
+[evidence] firefox/linux hello-plain: pass :: {"result":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":2},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"ignored","requestsSeenByAgent":6}
+[evidence] firefox/linux sse-fetch-stream: pass :: {"result":{"ok":true,"status":200,"ticks":[1,2,3,4,5],"spreadMs":801,"incremental":true,"ms":1006},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"ignored","requestsSeenByAgent":6}
+[evidence] firefox/linux blob: pass :: {"result":{"ok":true,"status":200,"bytes":1048576,"ms":7},"permissions":{"loopback-network":"granted","local-network":"granted"},"grant":"granted via context.grantPermissions(local-network-access)","targetAddressSpace":"ignored","requestsSeenByAgent":6}
+  ✓  40 [firefox] › tests/fetch.spec.ts:95:3 › loopback fetch from an HTTPS public origin › granted: hello with/without targetAddressSpace, SSE over fetch streaming, 1 MiB blob (1.6s)
+[evidence] firefox/linux perm-denied: pass :: {"permissions":{"loopback-network":"prompt","local-network":"prompt"},"hello":{"ok":false,"error":"TypeError","message":"NetworkError when attempting to fetch resource.","timedOut":false,"ms":61}}
+  ✓  41 [firefox] › tests/fetch.spec.ts:149:3 › loopback fetch from an HTTPS public origin › denied: request refused immediately (1.4s)
+[evidence] firefox/linux neg-hostile-origin: pass :: {"grant":"granted","hello":{"ok":false,"error":"TypeError","message":"NetworkError when attempting to fetch resource.","timedOut":false,"ms":3},"blob":{"ok":false,"error":"TypeError","message":"NetworkError when attempting to fetch resource.","timedOut":false,"ms":4},"audit":[["GET","/zilo/v1/hello",403,"origin-denied"],["OPTIONS","/zilo/v1/blob",403,"origin-denied"]]}
+  ✓  42 [firefox] › tests/negative.spec.ts:20:3 › negative controls › hostile HTTPS origin is denied by the agent (even with LNA granted) (379ms)
 [evidence] firefox/linux neg-bad-host: pass :: {"status":"error: page.goto: NS_ERROR_NET_ERROR_RESPONSE","audit":[["GET","/zilo/v1/hello","rebind.zilo.test:47613",403,"host-denied"]]}
-  ✓  43 [firefox] › tests/negative.spec.ts:45:3 › negative controls › bad Host (DNS rebinding name -> 127.0.0.1) is denied by the agent (273ms)
-[evidence] firefox/linux neg-http-control: pass :: {"grant":"granted","isSecureContext":false,"permissions":{"loopback-network":"granted","local-network":"granted"},"hello":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":3}}
-  ✓  44 [firefox] › tests/negative.spec.ts:64:3 › negative controls › HTTP (insecure) page as a control (346ms)
-[evidence] firefox/linux neg-forged-mint: pass :: {"grant":"granted","forged":{"ok":false,"status":403,"code":"mint-requires-bridge-origin","ms":6},"audit":[[403,"mint-requires-bridge-origin","https://app.zilo.test:8443"]]}
-  ✓  45 [firefox] › tests/negative.spec.ts:98:3 › negative controls › forged bridge mint from the public page is refused (297ms)
-[evidence] firefox/linux control-no-override: pass :: {"permissions":{"loopback-network":"prompt","local-network":"prompt"},"hello":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":3}}
-  ✓  46 [firefox] › tests/negative.spec.ts:119:3 › negative controls › methodology control: without the public address-space override, LNA does not apply (1.5s)
-[evidence] webkit/linux s2-bridge: pass :: {"bridge":{"ok":true,"steps":[{"s":"opened","ms":13,"closedImmediately":false},{"s":"ready","ms":25},{"s":"welcome","ms":35,"sessionId":"255068dfc43c8eeb"},{"s":"op-hello","ms":38,"ok":true},{"s":"op-blob","ms":51,"ok":true},{"s":"op-blob-oversize","ms":51,"code":"too-large"},{"s":"op-events","ms":1057,"ticks":5}],"nonce":"d62c3d6117891455aef13c286412e56c","sessionId":"255068dfc43c8eeb","hello":{"ok":true,"product":"zilo-spike-agent"},"blob":{"ok":true,"bytes":1048576,"ms":13},"oversize":{"code":"too-large"},"events":{"ticks":[1,2,3,4,5]},"unknownOp":{"code":"unknown-op"},"coopHeader":null},"rejections":[],"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"bound","rejections":[],"hasOpener":true},"mintStatuses":[[201,"bridge-session-minted","https://app.zilo.test:8443"]]}
-[evidence] webkit/linux s2-closure: pass :: {"detected":true,"ms":1236}
-  ✓  47 [webkit] › tests/bridge.spec.ts:68:3 › S2 popup bridge › handshake, typed hello relay, bounded ArrayBuffer transfer, SSE relay, closure detection (1.6s)
-[evidence] webkit/linux s2-coop: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":15,"closedImmediately":false}],"nonce":"42ed2fbece4d1c3b3ed0473a7b4d2f00","code":"coop-severed","readyFail":"popup-closed","popupClosed":true,"coopHeader":"same-origin"},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"error: no-opener","rejections":[],"hasOpener":false},"minted":0}
-  ✓  48 [webkit] › tests/bridge.spec.ts:108:3 › S2 popup bridge › COOP same-origin on the app page: failure is explicit (coop-severed), nothing minted (493ms)
+  ✓  43 [firefox] › tests/negative.spec.ts:45:3 › negative controls › bad Host (DNS rebinding name -> 127.0.0.1) is denied by the agent (279ms)
+[evidence] firefox/linux neg-http-control: pass :: {"grant":"granted","isSecureContext":false,"permissions":{"loopback-network":"granted","local-network":"granted"},"hello":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":4}}
+  ✓  44 [firefox] › tests/negative.spec.ts:64:3 › negative controls › HTTP (insecure) page as a control (404ms)
+[evidence] firefox/linux neg-forged-mint: pass :: {"grant":"granted","forged":{"ok":false,"status":403,"code":"mint-requires-bridge-origin","ms":5},"audit":[[403,"mint-requires-bridge-origin","https://app.zilo.test:8443"]]}
+  ✓  45 [firefox] › tests/negative.spec.ts:98:3 › negative controls › forged bridge mint from the public page is refused (328ms)
+[evidence] firefox/linux control-no-override: pass :: {"permissions":{"loopback-network":"prompt","local-network":"prompt"},"hello":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":72}}
+  ✓  46 [firefox] › tests/negative.spec.ts:119:3 › negative controls › methodology control: without the public address-space override, LNA does not apply (1.4s)
+[evidence] webkit/linux s2-bridge: pass :: {"bridge":{"ok":true,"steps":[{"s":"opened","ms":24,"closedImmediately":false},{"s":"ready","ms":59},{"s":"welcome","ms":68,"sessionId":"29071c672f6eafbf"},{"s":"op-hello","ms":74,"ok":true},{"s":"op-blob","ms":87,"ok":true},{"s":"op-blob-oversize","ms":88,"code":"too-large"},{"s":"op-events","ms":1093,"ticks":5}],"nonce":"ae946c2af13de78bfb6278995323bf1e","sessionId":"29071c672f6eafbf","hello":{"ok":true,"product":"zilo-spike-agent"},"blob":{"ok":true,"bytes":1048576,"ms":13},"oversize":{"code":"too-large"},"events":{"ticks":[1,2,3,4,5]},"unknownOp":{"code":"unknown-op"},"coopHeader":null},"rejections":[],"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"bound","rejections":[],"hasOpener":true},"mintStatuses":[[201,"bridge-session-minted","https://app.zilo.test:8443"]]}
+[evidence] webkit/linux s2-closure: pass :: {"detected":true,"ms":1272}
+  ✓  47 [webkit] › tests/bridge.spec.ts:68:3 › S2 popup bridge › handshake, typed hello relay, bounded ArrayBuffer transfer, SSE relay, closure detection (1.8s)
+[evidence] webkit/linux s2-coop: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":31,"closedImmediately":false}],"nonce":"ce55bdb2b2d33543c67024027eb7f143","code":"coop-severed","readyFail":"popup-closed","popupClosed":true,"coopHeader":"same-origin"},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"error: no-opener","rejections":[],"hasOpener":false},"minted":0}
+  ✓  48 [webkit] › tests/bridge.spec.ts:108:3 › S2 popup bridge › COOP same-origin on the app page: failure is explicit (coop-severed), nothing minted (597ms)
 [evidence] webkit/linux s2-coop-allow-popups: pass :: {"ok":true,"coopHeader":"same-origin-allow-popups","popupStatus":"bound"}
-  ✓  49 [webkit] › tests/bridge.spec.ts:126:3 › S2 popup bridge › COOP same-origin-allow-popups keeps the opener: bridge works (1.4s)
-[evidence] webkit/linux s2-hostile-opener: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":14,"closedImmediately":false},{"s":"ready-timeout","ms":5014}],"nonce":"21a999d2ab41b727bec6384f663f8dc2","code":"no-ready-then-timeout","coopHeader":null},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"rejected: origin-not-allowed","rejections":[{"code":"origin-not-allowed","detail":"https://evil.zilo.test:8443"}],"hasOpener":true},"minted":0}
+  ✓  49 [webkit] › tests/bridge.spec.ts:126:3 › S2 popup bridge › COOP same-origin-allow-popups keeps the opener: bridge works (1.5s)
+[evidence] webkit/linux s2-hostile-opener: pass :: {"bridge":{"ok":false,"steps":[{"s":"opened","ms":15,"closedImmediately":false},{"s":"ready-timeout","ms":5016}],"nonce":"05271b11e199f79bc4b1d278b5e2f25c","code":"no-ready-then-timeout","coopHeader":null},"popupState":{"url":"http://127.0.0.1:47613/bridge","status":"rejected: origin-not-allowed","rejections":[{"code":"origin-not-allowed","detail":"https://evil.zilo.test:8443"}],"hasOpener":true},"minted":0}
   ✓  50 [webkit] › tests/bridge.spec.ts:140:3 › S2 popup bridge › hostile opener: bridge never announces itself, rejects a forced hello, mints nothing (10.3s)
 [evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
   ✓  51 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
-[evidence] webkit/linux s2-nonce-replay: pass :: {"first":{"ok":true},"second":{"ok":false,"steps":[{"s":"opened","ms":0,"closedImmediately":false},{"s":"ready","ms":9}],"nonce":"cd300557d7469f798fb0d59e7bb9e34e","code":"bridge-error:nonce-replayed","coopHeader":null},"mintStatuses":[[201,"bridge-session-minted"],[409,"nonce-replayed"]]}
-  ✓  52 [webkit] › tests/bridge.spec.ts:172:3 › S2 popup bridge › nonce replay: a second handshake reusing a nonce is refused by the agent (11.3s)
-[evidence] webkit/linux s2-session-envelope: pass :: {"bridgeOk":true,"wrongSession":[{"ok":false,"code":"session-mismatch","sessionId":"949c703ea81b824a","v":1}],"noSession":[{"ok":false,"code":"session-mismatch","sessionId":"949c703ea81b824a","v":1}],"noVersion":[{"ok":false,"code":"bad-version","sessionId":"949c703ea81b824a","v":1}],"valid":[{"ok":true,"seq":1,"sessionId":"949c703ea81b824a","v":1,"bytes":8}],"duplicate":[{"ok":false,"code":"duplicate-request-id","sessionId":"949c703ea81b824a","v":1}]}
+[evidence] webkit/linux s2-nonce-replay: pass :: {"first":{"ok":true},"second":{"ok":false,"steps":[{"s":"opened","ms":0,"closedImmediately":false},{"s":"ready","ms":8}],"nonce":"415a5baa1a43c982096b177f01ef3678","code":"bridge-error:nonce-replayed","coopHeader":null},"mintStatuses":[[201,"bridge-session-minted"],[409,"nonce-replayed"]]}
+  ✓  52 [webkit] › tests/bridge.spec.ts:172:3 › S2 popup bridge › nonce replay: a second handshake reusing a nonce is refused by the agent (11.4s)
+[evidence] webkit/linux s2-session-envelope: pass :: {"bridgeOk":true,"wrongSession":[{"ok":false,"code":"session-mismatch","sessionId":"88776c0b21702042","v":1}],"noSession":[{"ok":false,"code":"session-mismatch","sessionId":"88776c0b21702042","v":1}],"noVersion":[{"ok":false,"code":"bad-version","sessionId":"88776c0b21702042","v":1}],"valid":[{"ok":true,"seq":1,"sessionId":"88776c0b21702042","v":1,"bytes":8}],"duplicate":[{"ok":false,"code":"duplicate-request-id","sessionId":"88776c0b21702042","v":1}]}
   ✓  53 [webkit] › tests/bridge.spec.ts:193:3 › S2 popup bridge › session envelope: every op needs version, unique id and the bound session; replies carry the session (1.4s)
-[evidence] webkit/linux s2-backpressure: pass :: {"first":[{"ok":true,"seq":1,"sessionId":"30b46b3da3941537","v":1,"bytes":4096}],"whileUnacked":[{"ok":false,"code":"busy","sessionId":"30b46b3da3941537","v":1}],"afterAck":[{"ok":true,"seq":1,"sessionId":"30b46b3da3941537","v":1,"bytes":4096}],"delivered":[1,2],"last":{"ok":false,"code":"consumer-stalled","sessionId":"30b46b3da3941537","v":1},"stalledAfterMs":2607,"popupRejections":["binary-ack-overdue","consumer-stalled"]}
-  ✓  54 [webkit] › tests/bridge.spec.ts:222:3 › S2 popup bridge › backpressure: an unacknowledged binary reply holds the slot; a stalled event consumer is cut off (3.9s)
-[evidence] webkit/linux s2-navigation-reconnect: pass :: {"firstOk":true,"reloaded":{"state":"bound","lost":{"reason":"pagehide","sessionId":"45629d3ba60ff28d","ms":1079},"reconnect":{"ok":true,"previousSessionId":"45629d3ba60ff28d","sessionId":"78d0f79543f2f50b","nonceFresh":true,"hello":true}},"navigated":{"state":"lost","lost":{"reason":"pagehide","sessionId":"78d0f79543f2f50b","ms":1103},"reconnect":{"ok":true,"previousSessionId":"45629d3ba60ff28d","sessionId":"78d0f79543f2f50b","nonceFresh":true,"hello":true},"detectMs":10,"popupOpen":true},"again":{"ok":true,"sessionId":"91100626d786e01f"},"silent":{"state":"lost","lost":{"reason":"no-pong","sessionId":"91100626d786e01f","ms":11074},"reconnect":{"ok":true,"previousSessionId":"45629d3ba60ff28d","sessionId":"78d0f79543f2f50b","nonceFresh":true,"hello":true},"detectMs":1821,"suppressedAt":"http://127.0.0.1:47613/bridge"},"sessions":["45629d3ba60ff28d","78d0f79543f2f50b","91100626d786e01f"],"mintStatuses":[201,201,201]}
+[evidence] webkit/linux s2-backpressure: pass :: {"first":[{"ok":true,"seq":1,"sessionId":"10de1d5c1a870c5f","v":1,"bytes":4096}],"whileUnacked":[{"ok":false,"code":"busy","sessionId":"10de1d5c1a870c5f","v":1}],"afterAck":[{"ok":true,"seq":1,"sessionId":"10de1d5c1a870c5f","v":1,"bytes":4096}],"delivered":[1,2],"last":{"ok":false,"code":"consumer-stalled","sessionId":"10de1d5c1a870c5f","v":1},"stalledAfterMs":3690,"popupRejections":["binary-ack-overdue","consumer-stalled"]}
+  ✓  54 [webkit] › tests/bridge.spec.ts:222:3 › S2 popup bridge › backpressure: an unacknowledged binary reply holds the slot; a stalled event consumer is cut off (4.0s)
+[evidence] webkit/linux s2-navigation-reconnect: pass :: {"firstOk":true,"reloaded":{"state":"bound","lost":{"reason":"pagehide","sessionId":"47b53e029f3e4b11","ms":1078},"reconnect":{"ok":true,"previousSessionId":"47b53e029f3e4b11","sessionId":"e59a49c79aed3f69","nonceFresh":true,"hello":true}},"navigated":{"state":"lost","lost":{"reason":"pagehide","sessionId":"e59a49c79aed3f69","ms":1105},"reconnect":{"ok":true,"previousSessionId":"47b53e029f3e4b11","sessionId":"e59a49c79aed3f69","nonceFresh":true,"hello":true},"detectMs":7,"popupOpen":true},"again":{"ok":true,"sessionId":"0f5c3d347d578456"},"silent":{"state":"lost","lost":{"reason":"no-pong","sessionId":"0f5c3d347d578456","ms":11074},"reconnect":{"ok":true,"previousSessionId":"47b53e029f3e4b11","sessionId":"e59a49c79aed3f69","nonceFresh":true,"hello":true},"detectMs":1097,"suppressedAt":"http://127.0.0.1:47613/bridge"},"sessions":["47b53e029f3e4b11","e59a49c79aed3f69","0f5c3d347d578456"],"mintStatuses":[201,201,201]}
   ✓  55 [webkit] › tests/bridge.spec.ts:253:3 › S2 popup bridge › navigation and reload: bound state is invalidated (notice or ping deadline); reload re-handshakes with a fresh session; reopen recovers (12.5s)
 [evidence] webkit/linux env: pass :: {"origin":"https://app.zilo.test:8443","isSecureContext":true,"ua":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15","tas":"ignored","variant":"plain","addressSpace":"unproven: resolver proxy connects to 127.0.0.1; no public address-space override or diagnostic in WebKit"}
-  ✓  56 [webkit] › tests/fetch.spec.ts:12:3 › loopback fetch from an HTTPS public origin › page is a secure context on a non-loopback hostname (public address space only where forced) (229ms)
+  ✓  56 [webkit] › tests/fetch.spec.ts:12:3 › loopback fetch from an HTTPS public origin › page is a secure context on a non-loopback hostname (public address space only where forced) (228ms)
 [evidence] webkit/linux perm-prompt: n/a :: {"before":{"loopback-network":"prompt","local-network":"prompt"},"hello":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":1},"after":{"loopback-network":"prompt","local-network":"prompt"}}
-  ✓  57 [webkit] › tests/fetch.spec.ts:31:3 › loopback fetch from an HTTPS public origin › default permission state (prompt): never silently allowed (374ms)
+  ✓  57 [webkit] › tests/fetch.spec.ts:31:3 › loopback fetch from an HTTPS public origin › default permission state (prompt): never silently allowed (371ms)
   -  58 [webkit] › tests/fetch.spec.ts:66:3 › loopback fetch from an HTTPS public origin › default permission state, headful Chromium: request held on a real prompt
-[evidence] webkit/linux hello-tas: fail :: {"result":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":1},"permissions":{"loopback-network":"prompt","local-network":"prompt"},"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","targetAddressSpace":"ignored","requestsSeenByAgent":0}
+[evidence] webkit/linux hello-tas: fail :: {"result":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":0},"permissions":{"loopback-network":"prompt","local-network":"prompt"},"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","targetAddressSpace":"ignored","requestsSeenByAgent":0}
 [evidence] webkit/linux hello-plain: fail :: {"result":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":0},"permissions":{"loopback-network":"prompt","local-network":"prompt"},"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","targetAddressSpace":"ignored","requestsSeenByAgent":0}
 [evidence] webkit/linux sse-fetch-stream: fail :: {"result":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":0},"permissions":{"loopback-network":"prompt","local-network":"prompt"},"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","targetAddressSpace":"ignored","requestsSeenByAgent":0}
-[evidence] webkit/linux blob: fail :: {"result":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":0},"permissions":{"loopback-network":"prompt","local-network":"prompt"},"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","targetAddressSpace":"ignored","requestsSeenByAgent":0}
-  ✓  59 [webkit] › tests/fetch.spec.ts:95:3 › loopback fetch from an HTTPS public origin › granted: hello with/without targetAddressSpace, SSE over fetch streaming, 1 MiB blob (491ms)
+[evidence] webkit/linux blob: fail :: {"result":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":1},"permissions":{"loopback-network":"prompt","local-network":"prompt"},"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","targetAddressSpace":"ignored","requestsSeenByAgent":0}
+  ✓  59 [webkit] › tests/fetch.spec.ts:95:3 › loopback fetch from an HTTPS public origin › granted: hello with/without targetAddressSpace, SSE over fetch streaming, 1 MiB blob (459ms)
   -  60 [webkit] › tests/fetch.spec.ts:149:3 › loopback fetch from an HTTPS public origin › denied: request refused immediately
 [evidence] webkit/linux neg-hostile-origin: pass :: {"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","hello":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":0},"blob":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":0},"audit":[]}
-  ✓  61 [webkit] › tests/negative.spec.ts:20:3 › negative controls › hostile HTTPS origin is denied by the agent (even with LNA granted) (347ms)
+  ✓  61 [webkit] › tests/negative.spec.ts:20:3 › negative controls › hostile HTTPS origin is denied by the agent (even with LNA granted) (330ms)
 [evidence] webkit/linux neg-bad-host: pass :: {"status":403,"audit":[["GET","/zilo/v1/hello","rebind.zilo.test:47613",403,"host-denied"]]}
-  ✓  62 [webkit] › tests/negative.spec.ts:45:3 › negative controls › bad Host (DNS rebinding name -> 127.0.0.1) is denied by the agent (147ms)
+  ✓  62 [webkit] › tests/negative.spec.ts:45:3 › negative controls › bad Host (DNS rebinding name -> 127.0.0.1) is denied by the agent (145ms)
 [evidence] webkit/linux neg-http-control: pass :: {"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","isSecureContext":false,"permissions":{"loopback-network":"prompt","local-network":"prompt"},"hello":{"ok":true,"status":200,"product":"zilo-spike-agent","ms":3}}
-  ✓  63 [webkit] › tests/negative.spec.ts:64:3 › negative controls › HTTP (insecure) page as a control (253ms)
+  ✓  63 [webkit] › tests/negative.spec.ts:64:3 › negative controls › HTTP (insecure) page as a control (266ms)
 [evidence] webkit/linux neg-forged-mint: pass :: {"grant":"not grantable: browserContext.grantPermissions: Unknown permission: local-network-access","forged":{"ok":false,"error":"TypeError","message":"Load failed","timedOut":false,"ms":1},"audit":[]}
-  ✓  64 [webkit] › tests/negative.spec.ts:98:3 › negative controls › forged bridge mint from the public page is refused (293ms)
+  ✓  64 [webkit] › tests/negative.spec.ts:98:3 › negative controls › forged bridge mint from the public page is refused (277ms)
   -  65 [webkit] › tests/negative.spec.ts:119:3 › negative controls › methodology control: without the public address-space override, LNA does not apply
 
   5 skipped
   60 passed (2.7m)
+exit=0
+
+# ---- forged-ready negative control, 20x repeat (fix r2) ----
+# code SHA: 17accfa1c63ceba932f2001fa68c9a1bd73bb05e
+# command: npx playwright test --project=chromium --project=firefox --project=webkit -g "wrong event.source" --repeat-each=20 (headless; same scratch WebKit libs)
+# started: 2026-11-01T15:13:42Z
+[WebServer] [agent-stub] listening on http://127.0.0.1:47613 (audit: ~/orca/workspaces/zilo/t01-transport-spike/spikes/transport/artifacts/agent-audit.jsonl)
+[WebServer] [app] https on 127.0.0.1:8443 for app.zilo.test:8443, evil.zilo.test:8443
+[WebServer] [app] http control on 127.0.0.1:8080
+[WebServer] [resolver-proxy] on 127.0.0.1:8899
+
+Running 60 tests using 1 worker
+
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓   1 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓   2 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓   3 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓   4 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓   5 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓   6 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓   7 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓   8 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓   9 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  10 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  11 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  12 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  13 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  14 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  15 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  16 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  17 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  18 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  19 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] chromium/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  20 [chromium] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.3s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  21 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.2s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  22 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.2s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  23 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.3s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  24 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.4s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  25 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.1s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  26 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.4s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  27 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.3s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  28 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.6s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  29 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.8s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  30 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.2s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  31 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.1s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  32 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.1s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  33 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.3s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  34 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.4s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  35 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.2s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  36 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.1s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  37 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.1s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  38 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.2s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  39 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.3s)
+[evidence] firefox/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  40 [firefox] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (2.1s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  41 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  42 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  43 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  44 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  45 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  46 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  47 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  48 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  49 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  50 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  51 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  52 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  53 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  54 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  55 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  56 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  57 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  58 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  59 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+[evidence] webkit/linux s2-wrong-source: pass :: {"rejections":[{"at":"ready","code":"wrong-source"}],"bridgeOk":true}
+  ✓  60 [webkit] › tests/bridge.spec.ts:157:3 › S2 popup bridge › wrong event.source: a forged bridge-ready from another window is ignored (1.4s)
+
+  60 passed (2.2m)
 exit=0

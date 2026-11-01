@@ -4,7 +4,7 @@
   "expectation": "app detects bridge window closure explicitly",
   "observed": {
     "detected": true,
-    "ms": 1236
+    "ms": 1272
   },
   "console": [
     "error: Unable to post message to http://app.zilo.test:8080. Recipient has origin https://app.zilo.test:8443.\n"
@@ -13,5 +13,5 @@
   "os": "linux",
   "browserVersion": "27.2",
   "playwright": "1.64.1",
-  "recordedAt": "2026-11-01T14:49:55.248Z"
+  "recordedAt": "2026-11-01T15:12:44.382Z"
 }

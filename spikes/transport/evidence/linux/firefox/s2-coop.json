@@ -12,7 +12,7 @@
           "closedImmediately": false
         }
       ],
-      "nonce": "2d0b31170883448f9e077110792008d2",
+      "nonce": "f69d8156eba583293b602ea488d7d059",
       "code": "coop-severed",
       "readyFail": "popup-closed",
       "popupClosed": true,
@@ -31,5 +31,5 @@
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-11-01T14:48:54.767Z"
+  "recordedAt": "2026-11-01T15:11:42.808Z"
 }
