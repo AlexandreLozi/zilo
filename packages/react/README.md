@@ -34,10 +34,18 @@ function DiscardDialog({ open, onDone }: { open: boolean; onDone: () => void }) 
 - **Components:** `ZiloDialog`, `ZiloButton`, `ZiloBanner`, `ZiloProgress`, `ZiloSpinner`.
 - **Typed props** are assigned to the element as properties (booleans and element references such
   as `initialFocus` work). Omitting a prop resets it to the element default. Other props (`id`,
-  `className`, `slot`, `aria-*`, `data-*`, `onClick`, …) pass through to the element.
+  `className`, `slot`, `aria-*`, `data-*`, `onClick`, …) pass through to the element. `open` is
+  assigned last, so `initialFocus`, `heading`, `alert`, `hideClose` or `returnFocus` changed in the
+  same render apply to that opening or closing.
 - **Events** map to callbacks with typed `CustomEvent`s: `ZiloDialog` `onOpen`, `onCancel`,
-  `onClose` (`event.detail.reason` is `escape`, `close-button` or `api`); `ZiloBanner` `onDismiss`.
+  `onClose` (`event.detail.reason` is `escape`, `close-button`, `outside` or `api`); `ZiloBanner`
+  `onDismiss`. Listeners are attached before any prop is assigned, so mounting with `open` calls
+  `onOpen` once.
 - **Refs** are forwarded to the custom element (`ZiloDialogElement`, `ZiloButtonElement`, …), so
   `ref.current.announce('Page 3 scanned')` works.
 - `ZiloDialog` is controlled through `open`: set your state to `false` in `onClose`.
-- `createZiloComponent` builds a wrapper for a new element in the same way.
+- `createZiloComponent` builds a wrapper for a new element in the same way; its optional
+  `transitions` argument lists the props to assign last.
+- Inside a host app's modal (Radix and similar): render `ZiloDialog` inside the host modal's
+  content, with no workarounds. See the integration contract in
+  [`@zilo/ui`](../ui/README.md#inside-a-host-apps-modal-radix-and-similar).

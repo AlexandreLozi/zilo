@@ -36,13 +36,62 @@ Every element also takes `theme`. Events are `CustomEvent`s typed through `HTMLE
   `inert`.
 - Tab and Shift+Tab wrap through the dialog's tab stops in flattened-tree order, including slotted
   content and nested Zilo elements; one stop per radio group.
+- Tab stops use the effective disabled state (a `disabled` `<fieldset>` disables its controls,
+  except in its first `<legend>`), and `display: contents` wrappers are walked through.
 - Initial focus: `initialFocus`, else a slotted `[autofocus]`, else the first tab stop of the body
-  or footer, else the close button. Return focus: the opener, else `returnFocus`.
-- Escape and the close button fire `zilo-cancel` (`detail.reason`); call `preventDefault()` to keep
-  the dialog open (for example to confirm a discard first). Then `zilo-close` fires.
+  or footer, else the close button. Return focus: the opener, else `returnFocus`, else the
+  enclosing host dialog (see below).
+- Escape, the close button and a click on the backdrop fire `zilo-cancel` (`detail.reason`:
+  `escape`, `close-button`, `outside`); call `preventDefault()` to keep the dialog open (for example
+  to confirm a discard first). Then `zilo-close` fires. Only the topmost dialog reacts.
 - The page does not scroll while a dialog is open; the dialog body scrolls.
 - `announce(message, 'polite' | 'assertive')` writes to live regions that exist from construction.
 - Slots: `heading`, `description`, default (body), `footer`.
+
+## Inside a host app's modal (Radix and similar)
+
+A Zilo dialog can be opened from inside a host's own modal, such as a Radix `Dialog`, with no
+workarounds in the host. The catalog's `host-modal-radix` state is the reference fixture, tested in
+Chromium, Firefox and WebKit (`apps/catalog/e2e/host-modal.spec.ts`).
+
+How Zilo coordinates with the host modal:
+
+- **Stacking:** `showModal()` puts the dialog in the top layer, above any z-index, portal,
+  `transform` or `overflow: hidden` of the host. The rest of the page, the host modal included,
+  is inert while it is open.
+- **Escape:** while a Zilo dialog is open, it claims Escape in the _window capture_ phase with
+  `preventDefault()`. That runs before document capture listeners such as Radix's, which leave
+  their dialog open when the key is already prevented. The dialog then closes in its own handler and
+  stops propagation, so bubble-phase host handlers (MUI, React Aria and similar) don't see the key.
+- **Outside click:** a click on the Zilo backdrop closes the Zilo dialog (`reason: 'outside'`). The
+  press lands on the `<zilo-dialog>` element, which is inside the host's content, so the host does
+  not treat it as outside its own modal. The next outside click belongs to the host.
+- **Focus:** Tab and Shift+Tab are handled by the Zilo dialog and do not propagate, so an
+  enclosing trap never moves focus a second time. Focus returns to the opener inside the host. If the
+  opener is gone, it goes to the nearest enclosing `<dialog>` or `role="dialog"` element (focused
+  directly when it has `tabindex`, else its first tab stop), so the host's trap keeps working.
+- **Pointer events:** the dialog and its backdrop declare `pointer-events: auto`, so a host lock on
+  `body` (Radix sets `body.style.pointerEvents = 'none'`) or on any ancestor does not lock it out.
+
+The host **must**:
+
+- render `<zilo-dialog>` (or `<ZiloDialog>`) as a DOM descendant of its modal's content element.
+  Don't portal it out to `body`: the host's focus trap and `aria-hidden` handling only spare their
+  own content;
+- leave Escape and outside-click handling to the libraries. Don't stop Escape in a listener that
+  runs before the window capture phase, and don't open other host modals or popovers from inside a
+  Zilo dialog unless they render inside it.
+
+The host **must not** (none of these are needed):
+
+- reset `body.style.pointerEvents` or other `body` styles;
+- block `onPointerDownOutside`, `onInteractOutside` or `onEscapeKeyDown`;
+- raise z-indexes to place the Zilo dialog.
+
+Content inside a Zilo dialog that wants Escape for itself (for example a custom listbox) must stop
+its propagation in a native listener on that content, or in React's `onKeyDownCapture`. Calling only
+`preventDefault()` is not enough, because the dialog has already claimed the key. Known limit:
+Radix layers nested _inside_ a Zilo dialog don't get Escape, so Escape closes the Zilo dialog.
 
 ## Theming API
 

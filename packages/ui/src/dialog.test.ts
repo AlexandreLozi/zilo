@@ -203,4 +203,99 @@ describe('<zilo-dialog>', () => {
     dialog.remove();
     expect(scrollLockCount()).toBe(before);
   });
+  describe('inside a host modal', () => {
+    it('claims Escape before a host document capture listener, then closes itself', () => {
+      const { dialog } = setup();
+      const seen: boolean[] = [];
+      const hostListener = (event: KeyboardEvent): void => {
+        if (event.key === 'Escape') seen.push(event.defaultPrevented);
+      };
+      document.addEventListener('keydown', hostListener, true);
+      try {
+        dialog.show();
+        press('Escape');
+        expect(seen).toEqual([true]);
+        expect(dialog.open).toBe(false);
+        // Closed: Escape is the host's again.
+        press('Escape');
+        expect(seen).toEqual([true, false]);
+      } finally {
+        document.removeEventListener('keydown', hostListener, true);
+      }
+    });
+
+    it('stays open when content inside it stops Escape', () => {
+      const { dialog } = setup();
+      document.querySelector('#name')?.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+      });
+      dialog.show();
+      press('Escape');
+      expect(dialog.open).toBe(true);
+    });
+
+    it('closes on Escape when focus is outside it', () => {
+      const { dialog } = setup();
+      const reasons: string[] = [];
+      dialog.addEventListener('zilo-close', (e) => reasons.push(e.detail.reason));
+      dialog.show();
+      (document.activeElement as HTMLElement | null)?.blur();
+      press('Escape');
+      expect(reasons).toEqual(['escape']);
+    });
+
+    it('does not let Tab it handled reach an enclosing focus trap', () => {
+      const { dialog } = setup();
+      const outer = vi.fn();
+      document.body.addEventListener('keydown', outer);
+      dialog.show();
+      press('Tab');
+      expect(outer).not.toHaveBeenCalled();
+      document.body.removeEventListener('keydown', outer);
+    });
+
+    it('closes on a backdrop click (reason outside) unless zilo-cancel is prevented', () => {
+      const { dialog } = setup();
+      const reasons: string[] = [];
+      dialog.addEventListener('zilo-close', (e) => reasons.push(e.detail.reason));
+      dialog.show();
+      const native = nativeDialog(dialog);
+      const at = { clientX: -5, clientY: -5, bubbles: true, composed: true };
+      // A press inside that ends on the backdrop does not close.
+      native.querySelector('header')?.dispatchEvent(new PointerEvent('pointerdown', at));
+      native.dispatchEvent(new MouseEvent('click', at));
+      expect(dialog.open).toBe(true);
+
+      const keep = (e: Event): void => {
+        e.preventDefault();
+      };
+      dialog.addEventListener('zilo-cancel', keep);
+      native.dispatchEvent(new PointerEvent('pointerdown', at));
+      native.dispatchEvent(new MouseEvent('click', at));
+      expect(dialog.open).toBe(true);
+      dialog.removeEventListener('zilo-cancel', keep);
+
+      native.dispatchEvent(new PointerEvent('pointerdown', at));
+      native.dispatchEvent(new MouseEvent('click', at));
+      expect(dialog.open).toBe(false);
+      expect(reasons).toEqual(['outside']);
+    });
+
+    it('returns focus to the enclosing host dialog when the opener is gone', () => {
+      document.body.innerHTML = `
+        <div role="dialog" aria-label="Host" tabindex="-1" id="host">
+          <button id="opener">Open</button>
+          <zilo-dialog heading="Nested"><button id="inner">Inner</button></zilo-dialog>
+        </div>`;
+      const opener = document.querySelector<HTMLButtonElement>('#opener');
+      const dialog = document.querySelector('zilo-dialog');
+      if (!opener || !dialog) throw new Error('fixture');
+      opener.focus();
+      dialog.show();
+      expect(idOf(focused())).toBe('inner');
+      opener.remove();
+      dialog.close();
+      expect(document.activeElement?.id).toBe('host');
+    });
+  });
 });

@@ -107,7 +107,7 @@ export abstract class ZiloElement extends HTMLElement {
 }
 
 /** Why a dialog closed or wants to close. */
-export type ZiloDialogCloseReason = 'escape' | 'close-button' | 'api';
+export type ZiloDialogCloseReason = 'escape' | 'close-button' | 'outside' | 'api';
 
 /** Detail of `zilo-cancel` (cancelable) and `zilo-close`. */
 export interface ZiloDialogCloseDetail {

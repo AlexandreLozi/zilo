@@ -22,6 +22,11 @@ dialog {
   line-height: var(--z-leading-normal);
   overflow: hidden;
   z-index: var(--z-z-dialog);
+  /* A host modal may lock pointer-events on body or an ancestor; the topmost dialog stays usable. */
+  pointer-events: auto;
+}
+dialog::backdrop {
+  pointer-events: auto;
 }
 dialog[open] {
   display: flex;
@@ -41,6 +46,7 @@ dialog.fallback {
   inset: 0;
   background: var(--z-scrim);
   z-index: var(--z-z-dialog);
+  pointer-events: auto;
 }
 .fallback-scrim:not(.shown) {
   display: none;
@@ -135,8 +141,11 @@ footer:not(.has-content) {
 
 let instance = 0;
 
-/** Open dialogs, topmost last. Only the topmost one guards focus. */
+/** Open dialogs, topmost last. Only the topmost one guards focus and takes Escape. */
 const openStack: ZiloDialog[] = [];
+
+/** Escape keydowns the topmost dialog claimed in the window capture phase (see `#onWindowKeydown`). */
+const claimedEscapes = new WeakSet<Event>();
 
 /**
  * `<zilo-dialog>`: the modal dialog primitive (accessibility.md §1–§4).
@@ -150,9 +159,15 @@ const openStack: ZiloDialog[] = [];
  * - Initial focus: the `initialFocus` property, else a slotted `[autofocus]` element, else the first
  *   tab stop in the body or footer, else the close button, else the heading.
  * - Return focus: the element focused before opening, if it is still focusable; else the
- *   `returnFocus` property; else focus is released to the page.
- * - Escape and the close button fire the cancelable `zilo-cancel`; unless it is prevented, the
- *   dialog closes and fires `zilo-close` with the reason. `close()` closes with reason `api`.
+ *   `returnFocus` property; else the nearest enclosing (host) dialog; else focus is released to the
+ *   page.
+ * - Escape, the close button and a click on the backdrop (reason `outside`) fire the cancelable
+ *   `zilo-cancel`; unless it is prevented, the dialog closes and fires `zilo-close` with the reason.
+ *   `close()` closes with reason `api`.
+ * - Host modals (Radix and similar, see the README's integration contract): only the topmost dialog
+ *   reacts to Escape and outside clicks. Escape is claimed (`preventDefault()`) in the window capture
+ *   phase, before a host's document capture listener, and Tab and Escape that the dialog handles do
+ *   not propagate past it. Return focus falls back to the enclosing host dialog.
  * - The page behind does not scroll while open; the body scrolls inside the dialog.
  * - Two empty visually hidden live regions (polite and assertive) exist from construction, inside
  *   the dialog, for `announce()`.
@@ -208,6 +223,8 @@ export class ZiloDialog extends ZiloElement {
   #connected = false;
   #opener: Element | null = null;
   #inerted: HTMLElement[] = [];
+  /** The current pointer press started on the backdrop (outside the dialog box). */
+  #pressedOutside = false;
   readonly #resize =
     typeof ResizeObserver === 'function'
       ? new ResizeObserver(() => {
@@ -290,6 +307,19 @@ export class ZiloDialog extends ZiloElement {
     });
     this.#dialog.addEventListener('close', () => {
       if (this.#isOpen) this.#finishClose('api');
+    });
+    // Outside click: the backdrop's hits target the <dialog> itself, outside its box. Press and
+    // release must both land outside, so a drag that ends on the backdrop does not close.
+    this.#dialog.addEventListener('pointerdown', (event) => {
+      this.#pressedOutside = this.#isBackdropHit(event);
+    });
+    this.#dialog.addEventListener('click', (event) => {
+      const outside = this.#pressedOutside && this.#isBackdropHit(event);
+      this.#pressedOutside = false;
+      if (outside && openStack.at(-1) === this) this.#requestClose('outside');
+    });
+    this.#scrim.addEventListener('click', () => {
+      if (openStack.at(-1) === this) this.#requestClose('outside');
     });
     this.#sync();
   }
@@ -427,6 +457,8 @@ export class ZiloDialog extends ZiloElement {
       this.#inertOutside();
     }
     openStack.push(this);
+    // Same listener and options on the same window register once, however many dialogs are open.
+    this.ownerDocument.defaultView?.addEventListener('keydown', ZiloDialog.#onWindowKeydown, true);
     this.ownerDocument.addEventListener('focusin', this.#onDocumentFocusIn);
     this.#syncScrollable();
     this.#resize?.observe(this.#body);
@@ -477,6 +509,10 @@ export class ZiloDialog extends ZiloElement {
     this.#resize?.disconnect();
     const index = openStack.indexOf(this);
     if (index !== -1) openStack.splice(index, 1);
+    const view = this.ownerDocument.defaultView;
+    if (view && !openStack.some((d) => d.ownerDocument.defaultView === view)) {
+      view.removeEventListener('keydown', ZiloDialog.#onWindowKeydown, true);
+    }
     this.ownerDocument.removeEventListener('focusin', this.#onDocumentFocusIn);
     if (this.#dialog.classList.contains('fallback')) {
       this.#dialog.classList.remove('fallback');
@@ -496,10 +532,47 @@ export class ZiloDialog extends ZiloElement {
     if (canReceiveFocus(opener)) opener.focus();
     else if (canReceiveFocus(this.returnFocus)) this.returnFocus.focus();
     else {
-      const active = deepActiveElement(this.ownerDocument);
-      if (active instanceof HTMLElement && this.#containsDeep(active)) active.blur();
+      // Inside a host modal, focus goes back to that modal, so its own trap keeps working.
+      const host = enclosingDialog(this);
+      const target = host === null ? null : focusTargetIn(host);
+      if (target) target.focus();
+      else {
+        const active = deepActiveElement(this.ownerDocument);
+        if (active instanceof HTMLElement && this.#containsDeep(active)) active.blur();
+      }
     }
   }
+
+  /** True for a pointer event on the backdrop: it targets the <dialog> outside its own box. */
+  #isBackdropHit(event: MouseEvent): boolean {
+    if (event.target !== this.#dialog) return false;
+    const box = this.#dialog.getBoundingClientRect();
+    return (
+      event.clientX < box.left ||
+      event.clientX > box.right ||
+      event.clientY < box.top ||
+      event.clientY > box.bottom
+    );
+  }
+
+  /**
+   * Window capture phase: runs before any document-level capture listener, which is where host
+   * modals such as Radix listen for Escape. While a Zilo dialog is open it is the topmost layer, so it
+   * claims Escape with `preventDefault()` (Radix and similar libraries then leave their own dialog
+   * open). The dialog itself still decides in its own keydown handler, so content inside it can keep
+   * Escape by stopping propagation. Escape aimed outside the dialog (nothing focused) closes it here.
+   */
+  static readonly #onWindowKeydown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape' || event.isComposing || event.defaultPrevented) return;
+    const top = openStack.at(-1);
+    const target = event.target;
+    if (!top || !(target instanceof Node)) return;
+    // Only keys aimed at the top dialog's document (one listener serves each window).
+    if ((target.ownerDocument ?? target) !== top.ownerDocument) return;
+    event.preventDefault();
+    claimedEscapes.add(event);
+    if (!containsComposed(top, target)) top.#requestClose('escape');
+  };
 
   /** Fallback modality: mark every branch of the page outside this dialog `inert`. */
   #inertOutside(): void {
@@ -511,32 +584,38 @@ export class ZiloDialog extends ZiloElement {
   }
 
   readonly #onKeydown = (event: KeyboardEvent): void => {
-    if (!this.#isOpen || event.defaultPrevented) return;
+    if (!this.#isOpen || openStack.at(-1) !== this) return;
+    if (event.defaultPrevented && !claimedEscapes.has(event)) return;
     if (event.key === 'Escape') {
-      // Cancelling keydown stops the browser's own close request, so Escape is handled once.
+      if (event.isComposing) return;
+      // Cancelling keydown stops the browser's own close request, so Escape is handled once; not
+      // propagating keeps it from host modals' bubble-phase handlers.
       event.preventDefault();
       event.stopPropagation();
       this.#requestClose('escape');
       return;
     }
     if (event.key !== 'Tab' || event.altKey || event.ctrlKey || event.metaKey) return;
-    const stops = tabbableElements(this.#dialog);
     event.preventDefault();
-    if (stops.length === 0) {
-      this.#heading.focus();
-      return;
-    }
+    // The dialog owns Tab while open: an enclosing host focus trap must not move focus again.
+    event.stopPropagation();
+    this.#moveFocus(event.shiftKey ? -1 : 1);
+  };
+
+  /** Focuses the next tab stop in `step` direction, wrapping, skipping any stop that refuses focus. */
+  #moveFocus(step: 1 | -1): void {
+    const stops = tabbableElements(this.#dialog);
     const active = deepActiveElement(this.ownerDocument);
     const index = stops.findIndex((el) => el === active);
-    const step = event.shiftKey ? -1 : 1;
-    const next =
-      index === -1
-        ? event.shiftKey
-          ? stops.length - 1
-          : 0
-        : (index + step + stops.length) % stops.length;
-    stops[next]?.focus();
-  };
+    const start = index === -1 ? (step === 1 ? -1 : stops.length) : index;
+    for (let i = 1; i <= stops.length; i++) {
+      const stop = stops[(((start + step * i) % stops.length) + stops.length) % stops.length];
+      if (!stop || stop === active) continue;
+      stop.focus();
+      if (deepActiveElement(this.ownerDocument) === stop) return;
+    }
+    if (index === -1) this.#heading.focus();
+  }
 
   /** Pulls focus back if it escapes (fallback mode, or a host script calling `focus()`). */
   readonly #onDocumentFocusIn = (event: FocusEvent): void => {
@@ -557,6 +636,30 @@ function containsComposed(ancestor: Node, node: Node): boolean {
     current = current.parentNode ?? (root instanceof ShadowRoot ? root.host : null);
   }
   return false;
+}
+
+/** The nearest composed ancestor of `el` that is a dialog (`<dialog>` or `role="dialog"`). */
+function enclosingDialog(el: Element): HTMLElement | null {
+  let node: Node | null = el;
+  for (;;) {
+    const root: Node = node.getRootNode();
+    node =
+      node.parentNode instanceof Element
+        ? node.parentNode
+        : root instanceof ShadowRoot
+          ? root.host
+          : null;
+    if (!(node instanceof HTMLElement)) return null;
+    const role = node.getAttribute('role');
+    if (node instanceof HTMLDialogElement || role === 'dialog' || role === 'alertdialog')
+      return node;
+  }
+}
+
+/** Where focus goes in a host dialog: the dialog itself if it is focusable, else its first stop. */
+function focusTargetIn(dialog: HTMLElement): HTMLElement | null {
+  if (dialog.hasAttribute('tabindex') && canReceiveFocus(dialog)) return dialog;
+  return tabbableElements(dialog).find((el) => canReceiveFocus(el)) ?? null;
 }
 
 /** Marks every sibling of `el` and of each composed ancestor `inert`; returns what it changed. */
