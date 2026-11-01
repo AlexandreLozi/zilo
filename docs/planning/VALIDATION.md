@@ -24,6 +24,7 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
   had no conflicts, and `git diff 83df7dd 4a2a7dc -- spikes/transport
   .github/workflows/spike-transport.yml` is empty. This is not an exact-SHA pass. The push to main
   reruns spike-transport (path-filtered) on the exact SHA as the OD-7 backstop.
+  **Backstop result:** spike-transport run 41341965635 on exact 4a2a7dc is **green**.
 - Still pending outside this scope (M6): real Safari 26 (SP-1b), the public-to-loopback proof in
   WebKit, and the production S2 path.
 
