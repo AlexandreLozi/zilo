@@ -162,7 +162,7 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 SP-1b real Safari 26, SP-4b production signing and notarization, the hardware matrix, legal sign-off.
 Tracked in VALIDATION.md.
 
-## 3a. OD-8 / OD-9 amendments to the DAG (v3; Opus approved, GPT pending)
+## 3a. OD-8 / OD-9 amendments to the DAG (v3 rev 3.1; both masters approved 2026-11-01)
 These amendments override the rows in §3 where they conflict.
 
 **Front end:**
@@ -229,9 +229,9 @@ Dispatches lost in the restart are bookkeeping only and are never reused.
 | T02-L | author settled; terminal released; integration handed to T02 | t02-license-gate | ctx_8d851f7ca858 | combined T02 Claude review | author reports 65 tests pass; review pending | |
 | T04b | merged under D-010a; old terminal cleanup release_unknown | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce | Claude code PASS; Windows runtime blocked-by-host-SAC; macOS/hosted CI pending | 9e43bf7 |
 | T04b-V | abandoned/superseded by Claude evidence; old resource released | t04b-native-validation | ctx_59467948111b | masters reviewed replacement evidence | no resumed Windows runtime execution (OD-6) | |
-| T10 | GPT review changes @1a1db73; Opus author fix round requested | t10-contract; t10-review-r1 | Claude author @5410735 (OD-2) | ctx_26ab47284cd5 (settled/released) | 13 findings; four schema regressions red; contract/D-004a pending | |
-| T03 | GPT review changes @f30645e; Opus author fix requested | t03-packaging-dryrun; t03-review-r1 | author @c00f066 (OD-2) | ctx_fc9df29a06d6 (settled; external terminal retained for r2) | six findings; Linux hosted smokes pass; Windows fails/macOS false-green | |
-| T12-proto | GPT review changes @dd9a1eb; Opus author fix requested | t12-proto-pages; t12-proto-review-r1 | author @0afb9c4 (OD-2) | ctx_d53d5fb717f7 (settled; external terminal retained for r2) | baseline 146 pass; four regressions red; cross-OS pending | |
+| T10 | r1 fix @04bc0d8; GPT r2 active | t10-contract; AlexandreLozi/t10-review-r2 | Claude fix r1 complete | task_9fbb6eb65531 / ctx_665c57dfe75a | r2 pending; D-004a rev2 in force; contract approval pending | |
+| T03 | r2 changes @54816df; narrow Claude fix r2 requested | t03-packaging-dryrun; AlexandreLozi/t03-review-r2 | Claude fix r1 @7869d17 | task_9fac299622ee / ctx_b76a6ca1d52e (released) | Windows uninstall absence assertion fails exact-head CI 41241182388; Linux/macOS build evidence improves | |
+| T12-proto | r1 fix @574aa2c; GPT r2 active | t12-proto-pages; AlexandreLozi/t12-proto-review-r2 | Claude fix r1 complete | task_b312bc4653ca / ctx_f5c436f16f0e | r2 pending | |
 | T06 | blocked on joint ICA/worker/image strategy and T11 guard retirement | | | | shipping graph blocked | |
 
 ## 5. Concurrency bounds
@@ -243,6 +243,6 @@ Dispatches lost in the restart are bookkeeping only and are never reused.
   Absence alone never authorizes stop, abandon or retry.
 
 ## Sign-off
-- **v3 amendment (§3a, OD-8/OD-9):** Opus approved (2026-10-31); GPT pending.
+- **v3 rev 3.1 amendment (§3a, OD-8/OD-9):** Opus approved (2026-11-01); GPT approved (2026-11-01), including T56a/T56b split and task-owned checks; numerical budget gates await calibration and joint re-signature.
 - Opus: approved (2026-10-31)
 - GPT: approved (2026-10-31), including explicit T06 workflow ownership transfer and non-circular T32/T33 integration gate above

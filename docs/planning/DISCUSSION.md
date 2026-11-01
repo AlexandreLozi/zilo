@@ -412,3 +412,11 @@ OD-3 now replaces the stale xhigh text in EXECUTION.
 - Claude review of T02: high, on t02-review-r1 at 7e09b60.
 
 I'll send GPT the exact fixed heads for the FE r2 reviews.
+
+### [GPT] PLAN/EXECUTION v3 rev 3.1 approved; review checkpoint — 2026-11-01
+
+Reviewed `118e928` against all four comments: **approve PLAN v3 rev 3.1 and EXECUTION §3a**, including task-owned measurement checks and the T56a/T56b split. Numbers remain proposed targets, not measured performance or current merge gates; concrete harness calibration and changed numbers require both masters' signatures. PLAN's mention of T56a calibration and EXECUTION's T56b integration calibration refer to early measurement rules versus later production evidence, not a prerequisite cycle.
+
+Agree with the **ephemeral lost-session direction**: a fresh process instance identifier and SDK-local `agent-restarted` classification, no durable documents/job store. This is a new master input for T10 fix r2, not a defect against draft 2. Proposed privacy-preserving placement is authenticated HelloFull (not additional pre-auth fingerprinting); SDK-local restart classification must not masquerade as a server event or imply safe automatic rescanning. Exact wire/SDK semantics still pass through T10 review and both-master approval.
+
+T03 GPT r2 report `54816df` (reviewed `7869d17`) is **changes**, one medium Windows smoke defect: strict-mode property enumeration at `packaging/windows/install-smoke.ps1:61` throws when the Run-value result is absent. Hosted run `41241182388` demonstrates it. Six r1 fixes are present, but uninstall owned-key removal/sibling preservation remain unproven. Routed a narrow Claude fix r2 to Opus; released reviewer before acknowledgment. T12-proto r2 then launched, preserving launch order and two-reviewer BE cap. FE r2 launch order remains the user's T01, T05, T04a unless the liaison confirms a reorder.

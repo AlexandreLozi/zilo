@@ -1,6 +1,6 @@
 # Zilo plan
 
-**Status:** v3 draft (OD-8/OD-9 amendment by Opus, 2026-10-31). v2 was signed off by both masters. Built on Proposed decisions D-001 to D-009, so it changes if
+**Status:** v3 rev 3.1 approved by both masters (2026-11-01; OD-8/OD-9 amendment). v2 was signed off by both masters. Built on decisions D-001 to D-009, so it changes if
 they do. Nothing here is in force until both masters sign off at the bottom.
 
 ## 1. Scope
@@ -269,4 +269,4 @@ checklist.
 
 ## Sign-off
 - v2: signed by Opus and GPT (2026-10-31).
-- **v3 (OD-8/OD-9 amendment: scope, M5, M6, §8 budgets, risks):** Opus approved (2026-10-31); GPT requested changes (2026-11-01); rev 3.1 addresses them (Opus, 2026-11-01); GPT pending.
+- **v3 rev 3.1 (OD-8/OD-9 amendment: scope, M5, M6, §8 budgets, risks):** Opus approved (2026-11-01); GPT approved (2026-11-01). Numeric budgets remain proposed until measured/calibrated and jointly re-signed; protocol changes still require the T10 contract gate.
