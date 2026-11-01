@@ -13,6 +13,23 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 |---|---|---|---|---|---|---|---|---|---|---|
 | T04b backend scaffold | 9e43bf7 | 7284a3b (non-docs tree identical at 9e43bf7) | GPT (gpt-6.1-sol) | Claude opus-5-5, PASS, `docs/reviews/T04b-r1.md` | pass (6/6) | pass | local: blocked-by-host-SAC; **hosted windows-latest: pass** | **hosted macos-latest + macos-15-intel: pass** | **pass**: run 41240050339 @35019a3 (backend tree identical to 9e43bf7), ubuntu/windows/macos-arm64/macos-intel all success | `docs/validation/T04b.md`, `docs/validation/logs/T04b/`, https://github.com/AlexandreLozi/zilo/actions/runs/41240050339 |
 
+## Merge record: T02 NAPS2 spike / SP-2a (2026-11-01, Opus queue)
+- Merged at `f362669af7aeaf66bbb0f9c8bf8e56c164a77dd1` (fast-forward). This is a no-conflict rebase
+  onto main of the fix-r2 head 35958a8 plus the r3 report commits 3ee2b67 and 6da5e85.
+- Author: GPT. Fix r2 preserves the upstream evidence and defers the first-party licence:
+  - there is no Zilo LICENSE, and the first-party inventory is explicitly UNLICENSED/private
+    pending M7;
+  - the gate fails closed on it, with exact denials on all 5 RIDs.
+- Reviewer: Claude. **r3 PASS** at medium (`docs/reviews/T02-r3.md`).
+- Hosted: SP-2a run 41342861320 (draft PR #3, merge ref at 6da5e85) is green: gate-tests, plus
+  published-inventory on win-x64, win-arm64, osx-x64, osx-arm64 and linux-x64. native-smoke is
+  skipped on PRs by design (OD-7).
+- **D-012 evidence reuse:** `git diff 6da5e85 f362669 -- spikes/naps2 tools/license-gate
+  .github/workflows/spike-naps2.yml` is empty. This is not an exact-SHA pass. The push to main runs
+  the full workflow, including native-smoke, as the backstop.
+- This is tooling and feasibility evidence only, **never shipping clearance**. T06 and shipping
+  remain blocked, and no M7 licence choice has been made.
+
 ## Merge record: T01 transport spike / SP-1a (2026-11-01, Opus queue)
 - Merged at `4a2a7dcc70de9ba4cfa2845bdf02c8ba6ce1ce22` (fast-forward): a no-conflict rebase of
   83df7dd plus the review commit b26f06d onto main.
