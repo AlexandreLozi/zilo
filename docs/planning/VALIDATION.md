@@ -27,6 +27,9 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 - **D-012 evidence reuse:** `git diff 6da5e85 f362669 -- spikes/naps2 tools/license-gate
   .github/workflows/spike-naps2.yml` is empty. This is not an exact-SHA pass. The push to main runs
   the full workflow, including native-smoke, as the backstop.
+  **Backstop result:** SP-2a run 41343047075 on main 48d2966 (the same spike tree as f362669) is
+  **green**: gate-tests, 5 published-inventory, and native-smoke on linux-x64, win-x64,
+  win-arm64 (windows-11-arm), osx-arm64 and osx-x64.
 - This is tooling and feasibility evidence only, **never shipping clearance**. T06 and shipping
   remain blocked, and no M7 licence choice has been made.
 
