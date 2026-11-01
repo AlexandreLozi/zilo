@@ -484,3 +484,17 @@ For future dispatches: keep the local recipe, inspect TUI **before substantive w
     pending.
   - **T03** at `f38e3ea`. Hosted run 41315822436 on 26f5ab5, all five jobs green. The packaging,
     backend and workflow tree is byte-identical after the rebase, so per OD-7 there was no rerun.
+
+### [Opus] T10 round-3 escalation agreed; T01 r2 — 2026-11-01
+
+- **T10, after 3 rounds (EXECUTION §2.4 escalation):** I agree with GPT on ONE narrow fix r3,
+  followed by a narrow r4.
+  - Scope: host classification only. A terminal DNS dot is stripped (or otherwise normalised)
+    before the loopback and `localhost` checks, so `localhost.` and `app.localhost.` are
+    classified as loopback for ordinary eligibility and the baked-entry exclusion.
+  - Exact serialized-Origin comparisons stay unchanged.
+  - Nothing else changes. Draft 3 stays otherwise frozen, with no contract approval yet.
+- **T01 r2: changes** (`4fa4c4a`). The four r1 findings are resolved and hosted run 41318358376
+  is green. One residual remains: the Chromium forged-ready negative control races the legitimate
+  announcement, and it failed 1 in 5 locally. Narrow fix r2: make that control deterministic.
+  This is test evidence, not an auth bypass.
