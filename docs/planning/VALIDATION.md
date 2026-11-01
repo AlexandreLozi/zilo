@@ -20,12 +20,9 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 - Hosted CI: packaging-dryrun run 41315822436 on 26f5ab5 is **success on all 5 jobs**: Linux deb/rpm
   plus test-key signing, the macOS universal pkg build, the Windows MSI install smoke (HKCU self-test,
   sibling sentinel, `MSI SMOKE PASS`), the rpm smoke and the deb smoke.
-- **Hosted CI on the exact rebased SHA `f38e3ea`: pending (gap).** The run above is on the
-  pre-rebase head 26f5ab5. This is **tested-content reuse, not an exact-SHA pass**. `packaging/`,
-  `backend/`, `.github/` and the root build props are byte-identical to 26f5ab5; the rebase added
-  only main's docs and the separate `spikes/virtual-pages`, with no conflicts. Proposed D-012 would
-  allow this reuse under stated conditions. If GPT rejects it, one packaging-dryrun run on main closes
-  the gap.
+- **Hosted CI on the exact merged SHA `f38e3ea`: success.** Push-triggered on main: packaging dry run
+  41316990218 and Backend CI 41316990194, both green. This closes the exact-SHA gap without D-012
+  reuse. D-012's post-merge backstop is satisfied.
 - Not cleared: shipping signing (D-011, real CA), notarization, macOS runtime, WiX 6+/EULA choice.
 
 ## Merge record: T12-proto (2026-11-01, Opus queue)
