@@ -9,3 +9,16 @@ design/
 /.opencode/
 /opencode.json
 /CLAUDE.md
+# Other lanes own these trees; FE Prettier checks only FE-owned files.
+/backend/
+/packaging/
+/spikes/
+/tools/
+/api/
+/Directory.Build.props
+/Directory.Packages.props
+/global.json
+/.github/*
+!/.github/workflows/
+/.github/workflows/*
+!/.github/workflows/ci-web.yml

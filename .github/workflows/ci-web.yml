@@ -45,7 +45,7 @@ jobs:
       - name: Licence gate (default-deny)
         run: pnpm license-check
 
-      - name: Format (repository-wide)
+      - name: Format (FE-owned files)
         run: pnpm format:check
 
       - name: Lint
