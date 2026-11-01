@@ -4,20 +4,34 @@ using Xunit;
 
 namespace Zilo.Scaffold.Tests;
 
-// Temporary T04b gates: replace with real behavior tests when T06/T10 introduce
-// the reviewed dependency graph and contracts. These are not long-term architecture rules.
 public sealed class ScaffoldBoundaryTests
 {
+    [Fact]
+    public void Core_contains_the_neutral_contract()
+    {
+        var assembly = Assembly.Load(new AssemblyName("Zilo.Core"));
+
+        Assert.Contains(assembly.DefinedTypes, type => type.Name == "IScanBackend");
+        Assert.Contains(assembly.DefinedTypes, type => type.Name == "Page");
+    }
+
     [Theory]
     [InlineData("Zilo.Core")]
+    [InlineData("Zilo.Security")]
     [InlineData("Zilo.Drivers.Naps2")]
     [InlineData("Zilo.Drivers.Virtual")]
-    [InlineData("Zilo.Security")]
-    public void Placeholder_library_has_no_implementation_or_contract_types(string assemblyName)
+    public void Libraries_do_not_reference_outer_layers_or_other_drivers(string assemblyName)
     {
-        var assembly = Assembly.Load(new AssemblyName(assemblyName));
+        var references = Assembly.Load(new AssemblyName(assemblyName))
+            .GetReferencedAssemblies()
+            .Select(name => name.Name)
+            .ToHashSet(StringComparer.Ordinal);
 
-        Assert.Empty(assembly.DefinedTypes);
+        Assert.DoesNotContain("Zilo.Agent", references);
+        if (assemblyName != "Zilo.Security")
+            Assert.DoesNotContain("Zilo.Security", references);
+        Assert.DoesNotContain("Zilo.Drivers.Naps2", references);
+        Assert.DoesNotContain("Zilo.Drivers.Virtual", references);
     }
 
     [Fact]
