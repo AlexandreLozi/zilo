@@ -33,7 +33,7 @@ def main():
             observed[identity] = package
     packages = []
     for identity, package in sorted(observed.items()):
-        if identity[0].casefold() == "naps2.sdk.worker.win32":
+        if identity[0].casefold() in {"naps2.sdk.worker.win32", "zilo.naps2spike"}:
             # D-010b: never emit an approval pin, even if upstream adds SPDX metadata.
             continue
         expression = package["licenseExpression"] or FILE_INTERPRETATIONS.get(identity)

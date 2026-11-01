@@ -24,9 +24,12 @@ class RealGraphGateTests(unittest.TestCase):
     def graph(self):
         return json.loads(Path("evidence/inventory/osx-arm64.gate.json").read_text())
 
-    def test_actual_permissive_and_dynamic_lgpl_graph(self):
+    def test_actual_graph_denies_private_unlicensed_first_party(self):
         result = self.check(self.graph())
-        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+        errors = json.loads(result.stdout)["errors"]
+        self.assertEqual(5, len(errors))
+        self.assertTrue(all("Zilo.Naps2Spike" in e or "payload Naps2Spike." in e for e in errors))
 
     def test_seeded_disallowed_or_unknown_package_is_denied(self):
         for expression in ("GPL-3.0-only", "AGPL-3.0-only", "LicenseRef-Six-Labors-Split-License", "LicenseRef-Unknown"):

@@ -29,7 +29,7 @@ def gate(graph):
 class ReviewT02R1Tests(unittest.TestCase):
     def test_f2_all_denied_pins_and_exceptions_rejected_without_outcome_drift(self):
         # Inject into osx-arm64: these Windows/Linux identities are absent there,
-        # so the raw result stays passed with identical counts and errors.
+        # so the raw result retains only the private first-party denials.
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             spike = root / "spikes/naps2"
@@ -52,7 +52,8 @@ class ReviewT02R1Tests(unittest.TestCase):
                         raw = subprocess.run([sys.executable, "../../tools/license-gate/gate.py", "check",
                             "evidence/inventory/osx-arm64.gate.json", "--policy", "policy.json"],
                             cwd=spike, capture_output=True, text=True)
-                        self.assertEqual(0, raw.returncode, raw.stdout)
+                        self.assertEqual(1, raw.returncode, raw.stdout)
+                        self.assertEqual(5, len(json.loads(raw.stdout)["errors"]), raw.stdout)
                         result = subprocess.run([sys.executable, "expected_gate.py", "--rid", "osx-arm64"],
                             cwd=spike, capture_output=True, text=True)
                         self.assertEqual(1, result.returncode, result.stdout)

@@ -118,11 +118,11 @@ Managed counts include satellite resources and the first-party DLL.
 
 | RID | NuGet packages | Managed / native / data files | Total files | Real metadata gate exit | Native execution |
 |---|---:|---|---:|---|---|
-| win-x64 |27|75 /1 /3|79|**exit 1**, 3 errors: worker missing exact policy pin + 2 dependent payloads|blocked-by-host-SAC; hosted CI pending|
-| win-arm64 |27|75 /0 /3|78|**exit 1**, 2 errors: worker missing exact policy pin + marker DLL; EXE omitted|blocked-by-host-SAC; hosted CI pending|
-| osx-arm64 |26|74 /0 /3|77|**0**, supplied permissive/conditional-LGPL technical policy|Pending|
-| osx-x64 |26|74 /0 /3|77|**0**, same scope|Pending|
-| linux-x64 |31|78 /0 /3|81|**exit 1**, 14 errors: 7 unapproved Gtk packages + 7 DLLs|GTK + eSCL fixture only|
+| win-x64 |27|75 /1 /3|79|**exit 1**, 8 errors: original 3 worker denials + 5 private first-party denials|blocked-by-host-SAC; hosted CI pending|
+| win-arm64 |27|75 /0 /3|78|**exit 1**, 7 errors: original 2 worker denials + 5 private first-party denials|blocked-by-host-SAC; hosted CI pending|
+| osx-arm64 |26|74 /0 /3|77|**exit 1**, 5 private first-party denials|Pending|
+| osx-x64 |26|74 /0 /3|77|**exit 1**, 5 private first-party denials|Pending|
+| linux-x64 |31|78 /0 /3|81|**exit 1**, 19 errors: original 14 Gtk denials + 5 private first-party denials|GTK + eSCL fixture only|
 
 Data files are the first-party PDB/deps/runtimeconfig, not hidden native assets.
 Only one published native binary was found: win-x64 `NAPS2.Worker.exe`.
@@ -160,7 +160,8 @@ URLs and SHA256s are in [`source/index.json`](../../spikes/naps2/evidence/source
 licenses, exact filename/file hash/source plus evidence/obligations. Missing,
 restricted, disallowed or changed metadata fails closed. All seven Gtk binding
 packages and the Windows worker are intentionally absent from approved pins.
-The wrapper independently rejects any pin for these eight denied identities,
+The wrapper independently rejects any pin for these eight third-party denied identities
+and the private first-party identity,
 and requires empty exceptions and reviewed payloads even if raw outcomes stay unchanged.
 
 | Package(s), exact version | Evidence / technical interpretation |
@@ -186,7 +187,8 @@ NAPS2 application/Dynamsoft/ImageSharp unconditional bans and synthetic reviewed
 SANE-linking exceptions. **Those SANE fixtures are deliberately fabricated test
 data, not approvals.** Three additional integration tests use the actually
 restored osx-arm64 graph and seed bad packages/native payload into it; the real
-permissive/conditional-LGPL metadata graph passes while seeded variants fail.
+third-party permissive/conditional-LGPL metadata remains unchanged, but the complete
+graph now denies private UNLICENSED first-party material; seeded variants also fail.
 The producer/policy are trusted review inputs; the gate cannot detect a lying
 producer, missing files or false licensing evidence by itself.
 Five additional expected-outcome tests prove that the evidence wrapper rejects
@@ -275,8 +277,8 @@ asserted before runtime evidence is labeled native. Artifacts are uploaded even
 when the actual license graph is denied. `expected_gate.py` runs the real gate,
 asserts its exact exit/status/error multiset and package/payload counts, and fails
 on any drift, including an unexpected pass. **D-010b permits green evidence/tooling
-checks for these exact denials only; Windows/Linux shipping graphs remain
-blocked.** The macOS metadata passes are not ICA/runtime or release clearance.
+checks for these exact denials only; all five shipping graphs remain
+blocked.** Earlier macOS metadata passes are superseded by the owner licence deferral.
 Static lint is not execution; hosted execution of this revision remains pending.
 actionlint 1.7.12 was downloaded from its official release and its archive SHA256
 verified against release checksums:
@@ -301,7 +303,7 @@ Windows now reports `missing exact package policy pin (id/version/hash/expressio
 for `NAPS2.Sdk.Worker.Win32@1.6.0`; dependent marker/EXE payload denials remain
 `exact approved inventory owner required` (3 errors on x64, 2 on arm64).
 Linux retains the seven missing-pin errors and seven dependent DLL denials.
-The macOS metadata outcomes remain passes; raw exits stay **1/1/0/0/1**.
+Those r1 macOS passes are historical; r2 raw exits are **1/1/1/1/1** under owner M7 deferral.
 The wrapper additionally rejects denied-identity pins and any exception or payload
 review even if the raw gate still produces exactly the expected outcome.
 
@@ -309,8 +311,21 @@ Only lock files are byte-compared in CI. Inventories remain uploaded evidence,
 not a byte-drift assertion: first-party DLL/PDB output hashes are path-dependent,
 and changes preserving gate counts/errors can pass. Deterministic/path-mapped
 builds and evidence byte comparison are deferred, not silently claimed here.
-The three source inputs to the first-party package pin are forced to LF by local
-`.gitattributes`; a `core.autocrlf=true` checkout regression checks the exact pin.
+The two remaining first-party source inputs are forced to LF by root-only local
+`.gitattributes` patterns; a `core.autocrlf=true` checkout regression checks their inventory hash.
+
+### Owner licence deferral and F4-r2 correction
+
+The premature first-party MIT LICENSE and policy pin are removed. Zilo remains private
+pending the owner's M7 licence decision: `Zilo.Naps2Spike@0.0.0` is explicitly
+`UNLICENSED`, not an OSI grant or an allowed LicenseRef. Both source files and all four
+published outputs remain inventoried. Actual remaining source bytes determine the SHA512;
+no first-party licence file/hash is fabricated. Each RID adds exactly one missing-pin
+denial and four dependent output denials; original worker/Gtk denials stay unchanged.
+The wrapper checks truthful source metadata/hash and rejects first-party pins as well
+as waivers. All upstream evidence stays `-text`, with original bytes/hashes preserved.
+See [`r2-fix-summary.md`](../../spikes/naps2/evidence/logs/r2-fix-summary.md).
+Independent Claude r3 is mandatory before merge; shipping clearance and T06 remain blocked.
 
 On 2026-11-01, `git ls-remote https://github.com/actions/<name>.git refs/tags/<tag>`
 verified these official upstream refs before pinning every workflow action use:

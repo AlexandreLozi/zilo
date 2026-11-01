@@ -487,16 +487,15 @@
       "id": "Zilo.Naps2Spike",
       "version": "0.0.0",
       "type": "first-party-source",
-      "sha512": "gdxk+4d9ZEbTNppeUFL9/XNi3AWa/58VlMa3xaMcMcqWuDskNbAJk0oVcZJqDBrBSAggtUJAYYO8Za8j9RMwHg==",
-      "licenseExpression": "MIT",
-      "licenseFile": "LICENSE",
-      "licenseFileSha256": "b948495c6839fa04b197595cd7fa039b55298907f6183aaeb07b4fbfd3edb99f",
-      "source": "first-party:Zilo.Naps2Spike/Program.cs,Naps2Spike.csproj,LICENSE",
+      "sha512": "Bt7YSoUIgvT125AbIjnoWYLBRF9mq20ZKs3OkIWf0IVbkWZ4dK3/uOlVx5zlacuTwIQ4Cs3cJw3+MyLDbvtOJg==",
+      "licenseExpression": "UNLICENSED",
+      "licenseFile": null,
+      "source": "first-party:Zilo.Naps2Spike/Program.cs,Naps2Spike.csproj",
       "sourceFiles": [
         "spikes/naps2/Program.cs",
-        "spikes/naps2/Naps2Spike.csproj",
-        "spikes/naps2/LICENSE"
-      ]
+        "spikes/naps2/Naps2Spike.csproj"
+      ],
+      "licenseStatus": "Private; owner licence choice deferred to M7; no redistribution approval"
     }
   ],
   "payloads": [

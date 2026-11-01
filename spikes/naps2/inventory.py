@@ -65,6 +65,17 @@ def write_evidence(root, relative, data):
     target.write_bytes(data)
 
 
+def first_party_package():
+    names = ("Naps2Spike.csproj", "Program.cs")
+    project_source = b"".join((Path(__file__).parent / p).read_bytes() for p in names)
+    return {"id": "Zilo.Naps2Spike", "version": "0.0.0", "type": "first-party-source",
+        "sha512": base64.b64encode(hashlib.sha512(project_source).digest()).decode(),
+        "licenseExpression": "UNLICENSED", "licenseFile": None,
+        "source": "first-party:Zilo.Naps2Spike/Program.cs,Naps2Spike.csproj",
+        "sourceFiles": ["spikes/naps2/Program.cs", "spikes/naps2/Naps2Spike.csproj"],
+        "licenseStatus": "Private; owner licence choice deferred to M7; no redistribution approval"}
+
+
 def produce(rid, assets_path, lock_path, publish, cache, evidence):
     assets = json.loads(assets_path.read_text())
     lock = json.loads(lock_path.read_text())
@@ -130,12 +141,7 @@ def produce(rid, assets_path, lock_path, publish, cache, evidence):
                 package.update({"licenseFile": source["path"], "licenseFileSha256": source["sha256"],
                     "licenseEvidenceSource": source["url"], "sourceAssociation": source["association"]})
             packages.append(package)
-    project_source = b"".join((Path(__file__).parent / p).read_bytes() for p in ("Naps2Spike.csproj", "Program.cs", "LICENSE"))
-    packages.append({"id": "Zilo.Naps2Spike", "version": "0.0.0", "type": "first-party-source",
-        "sha512": base64.b64encode(hashlib.sha512(project_source).digest()).decode(),
-        "licenseExpression": "MIT", "licenseFile": "LICENSE", "licenseFileSha256": digest((Path(__file__).parent / "LICENSE").read_bytes()),
-        "source": "first-party:Zilo.Naps2Spike/Program.cs,Naps2Spike.csproj,LICENSE",
-        "sourceFiles": ["spikes/naps2/Program.cs", "spikes/naps2/Naps2Spike.csproj", "spikes/naps2/LICENSE"]})
+    packages.append(first_party_package())
     payloads = []
     own_names = {"Naps2Spike.dll", "Naps2Spike.pdb", "Naps2Spike.deps.json", "Naps2Spike.runtimeconfig.json"}
     for path in sorted(publish.rglob("*")):

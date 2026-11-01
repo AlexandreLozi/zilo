@@ -5,13 +5,31 @@ import json
 from pathlib import Path
 import struct
 import subprocess
+import shutil
 import tempfile
 import unittest
 
 
 class InventoryTests(unittest.TestCase):
+    def test_all_upstream_evidence_stages_without_byte_changes(self):
+        files = subprocess.check_output(["git", "ls-files", "-z", "--", "evidence/licenses", "evidence/source"]).decode().strip("\0").split("\0")
+        self.assertTrue(files)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            shutil.copyfile(".gitattributes", root / ".gitattributes")
+            for name in files:
+                target = root / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(name, target)
+            subprocess.run(["git", "-C", str(root), "add", "."], check=True, capture_output=True)
+            for name in files:
+                with self.subTest(name=name):
+                    staged = subprocess.check_output(["git", "-C", str(root), "show", f":{name}"])
+                    self.assertEqual(Path(name).read_bytes(), staged)
+
     def test_hashed_source_checkout_stays_lf_with_autocrlf(self):
-        names = ("Naps2Spike.csproj", "Program.cs", "LICENSE")
+        names = ("Naps2Spike.csproj", "Program.cs")
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             subprocess.run(["git", "init", "-q", str(root)], check=True)
@@ -25,7 +43,7 @@ class InventoryTests(unittest.TestCase):
             subprocess.run(["git", "-C", str(root), "checkout-index", "-a", "-f"], check=True)
             content = b"".join((root / name).read_bytes() for name in names)
             self.assertNotIn(b"\r\n", content)
-            pin = next(p for p in json.loads(Path("policy.json").read_text())["packages"]
+            pin = next(p for p in json.loads(Path("evidence/inventory/osx-arm64.json").read_text())["packages"]
                        if p["id"] == "Zilo.Naps2Spike")
             self.assertEqual(pin["sha512"], base64.b64encode(hashlib.sha512(content).digest()).decode())
 

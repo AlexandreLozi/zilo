@@ -68,6 +68,10 @@ python3 build_policy.py               # regenerate DRAFT technical pins; review 
 python3 bundle_inventory.py ~/.nuget/packages/naps2.sdk.worker.win32/1.6.0/contentFiles/NAPS2.Worker.exe --output evidence/worker-bundle.json
 ```
 
+All five complete graphs are denied: the private first-party source/output inventory
+is explicitly UNLICENSED pending the owner's M7 licence choice, with no policy pin.
+No Zilo licence grant or redistribution clearance is implied; T06 remains blocked.
+
 Do not regenerate locks/policy to suppress a license failure. New restricted
 exceptions require actual review in `docs/legal/exceptions.md`; this task has
 not created or approved any. After changing the first-party project/source,
