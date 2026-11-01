@@ -30,6 +30,22 @@ arm64:
 - **Installs:** per-user and admin (machine-wide) installs (OD-9).
 - **`@zilo/dwt-compat`:** a clean-room facade over the **commonly used public DWT API** (OD-9),
   prioritized by the owner's answers in OWNER-QUESTIONS.md.
+  - **Owner integration facts (2026-11-01, `docs/context/dwt-integration-inventory.md`):**
+    - **P0 is the owner's exact call surface.** That includes DWT's built-in viewer plus
+      `Viewer.createThumbnailViewer`, with drag reorder, keyboard control and themeable colours.
+      P1 is the wider common public API.
+    - The owner's app calls `Load`/`Unload` on every dialog open, so detection plus `Load` must be
+      fast and idempotent across repeated cycles, with no leak.
+    - **Host-modal requirement:** Zilo dialogs and the viewer must work inside a host app's modal
+      (Radix and similar) without hacks. That covers nested focus traps, `pointer-events`, portals
+      and z-index. It applies to T15, T22 and T45, and each one gets a Radix host-modal test
+      fixture.
+    - The owner's app sends no COOP or COEP headers, so the S2 pop-up bridge needs no header change
+      on the owner's side.
+    - Scanning runs top-level, not in an iframe, so Local Network Access delegation doesn't apply.
+    - The owner's CSP already allows loopback. The integration guide documents the explicit
+      `http://127.0.0.1:<port>` needed if the CSP is tightened.
+    - The app's installers come from Dynamsoft's demo CDN today. Zilo hosts its own (T46).
 - **Budgets:** the performance budgets and reliability requirements in §8, enforced by tests.
 
 **Later:** thin Angular and Vue wrappers.
@@ -157,13 +173,9 @@ Exit:
 **M5 — Compat + hardening.**
 - `dwt-compat` over the common public DWT API (clean-room), prioritized by the owner's answers.
 - The §8 soak and recovery suites run green on hosted CI.
-- Open-source hygiene (OD-9):
-  - a licence proposal for the owner to decide;
-  - CONTRIBUTING, SECURITY.md, DCO or CLA;
-  - the NOTICE file from T53;
-  - a scripted clean public export that excludes agent and planning paths.
 - Consent UI polish, diagnostics, resource bounds.
-- Threat-model review and the legal licence review.
+- Threat-model review, and a legal review of third-party licences (the NAPS2 graph and T53
+  NOTICE).
 
 **M6 — Release readiness (evidence gates, owner-assisted).** Each item stays pending until evidenced:
 - real Safari 26 on macOS, run by the owner from a checklist or on a proven safaridriver lane (Playwright
@@ -171,8 +183,18 @@ Exit:
 - the hardware matrix;
 - signing and notarization with owner credentials (SP-4b); every Windows PE file signed (D-011);
 - §8 budgets met on hosted runners, and on real hardware where the budget applies;
-- legal sign-off;
-- the public export reviewed by both masters and approved by the owner.
+- legal sign-off on third-party licences.
+
+**M7 — Open-source release (owner Q17/Q18, 2026-11-01).** M7 starts only after the owner has
+approved a functional app. Zilo is the owner's personal project, and he holds the copyright.
+- The masters present a short comparison of MIT, Apache-2.0 and MPL/LGPL, and the owner chooses.
+- Until M7: there is no LICENSE file for Zilo and the repo stays private (OD-7). Third-party
+  notices (T53) are still kept.
+- The open-source hygiene moved here from M5 (T54):
+  - the licence file the owner chose;
+  - CONTRIBUTING, SECURITY.md, DCO or CLA;
+  - a scripted clean public export that excludes agent and planning paths;
+  - the export reviewed by both masters and approved by the owner before anything goes public.
 
 ## 6. Cross-cutting acceptance
 - **Cross-model review applies to everything:** research, plans and code. The Phase 1 exchange counts as

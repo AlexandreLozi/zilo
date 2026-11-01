@@ -115,14 +115,14 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T12 | Virtual driver (D-007 layer 1) against the T10 neutral model. A standalone page-generator prototype may start earlier under `spikes/` | BE | G | C | T10, T04b | Golden-image tests (decoded pixels, QR payload); failure-variant tests |
 | T13 | SDK core: D-008 detection state machine, permission query, HTTP transport, typed errors, devices/caps, unknown-field tolerance with redacted debug logs | FE | C | G | T04a, T10 | Unit tests against an OpenAPI-generated mock server |
 | T14 | Demo app device list, integrated with the real agent | FE | C | G | T13, T11, T12 | Linux CI job starts the agent and the demo lists "Zilo Virtual Scanner" over real HTTP (M1 exit) |
-| T15 | UI foundation: Web Components base, tokens, dialog primitive (focus trap, ARIA), themes, React wrapper | FE | C | G | T04a, T05 | Component catalog page; axe checks pass in Playwright |
+| T15 | UI foundation: Web Components base, tokens, dialog primitive (focus trap, ARIA), themes, React wrapper | FE | C | G | T04a, T05 | Component catalog page; axe checks pass in Playwright; **host-modal fixture**: the dialog works inside a Radix Dialog with no host hacks (nested focus trap and return, pointer-events, portal and z-index, Escape and outside-click ownership). Added in T15 fix r1 (PLAN §1, owner inventory) |
 
 ### Wave 2 — M2 virtual end-to-end
 | ID | Task | Lane | A | R | Deps | Observable acceptance |
 |---|---|---|---|---|---|---|
 | T20 ★ | Agent jobs: state machine, SSE with `seq`/replay, pages, export (PDF, TIFF, JPEG, PNG) with retry, cancel, dispose, TTL, user-private temp | BE | G | C | T11, T12 | Contract tests for every job endpoint and transition; export golden tests; temp-permission tests on Linux and Windows |
 | T21 | SDK jobs/events/pages/export. **Two gates:** (a) unit tests on the mock; (b) a real-agent integration test, enabled only once T20 has merged | FE | C | G | T13 (a), T20 (b) | (a) mock suite green; (b) integration suite green in `ci-web` against the agent |
-| T22 | Scan dialog v1 (device list with driver badges, settings bound to caps, live thumbnails, rotate/reorder/delete, export) | FE | C | G | T15, T21a, T05 | Component tests + axe |
+| T22 | Scan dialog v1 (device list with driver badges, settings bound to caps, live thumbnails, rotate/reorder/delete, export) | FE | C | G | T15, T21a, T05 | Component tests + axe; thumbnail strip with drag reorder and keyboard control, current-page selection and themeable colours (the owner's P0 viewer); a Radix host-modal fixture |
 | T24 ★ | Security suite: hostile origin, bad Host, replayed pairing challenges, expired and revoked tokens (valid bearer reuse allowed), cross-origin job access, GET safety, resource bounds | BE | G | C | T20 | Suite in `ci-backend`; each case shown failing against a deliberately weakened build, then passing |
 | T25-BE ★ | Safari path, agent side, per the SP-1a result. **S2:** bridge capability minting bound to the verified app-origin handshake and pairing, plus session lifecycle and bridge page serving with CSP and no framing. **S1:** trust tooling, rotation, uninstall. **Neither:** an explicit capability flag | BE | G | C | T01, T20 | Hostile-opener, forged-origin, wrong-nonce and stale-session tests (S2); unrelated-hostname, rotation and uninstall tests (S1) |
 | T25-FE ★ | Safari path, SDK and UI side: S2 relay (typed ops, bounded binary, exact `targetOrigin`, COOP, popup-blocker and closure handling) or the explicit Safari-unsupported state | FE | C | G | T21a, T25-BE | Playwright WebKit tests of handshake failures and the unsupported state |
@@ -145,13 +145,13 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 | T42 | Linux `.deb`/`.rpm`, `systemd --user`, XDG handler | BE | G | C | T03, T32 | Container installs on Ubuntu LTS and Fedora: dependencies resolve, the user unit starts, `xdg-mime` query, purge is clean |
 | T43 ★ | Signed `latest.json` + updater | BE | G | C | T11 | Tests: tampered manifest rejected, hash mismatch rejected, downgrade rejected, interrupted update rolls back, success path updates atomically (test keys) |
 | T44 | Tray/menu-bar shells: consent prompt, revocation, status, logs (to the T05 design) | BE | G | C | T11, T05 | Per-OS UI automation or a scripted harness shows prompt → allow/deny → token issued/denied, and revocation invalidates tokens |
-| T45 | Install, Permission-help, Update and Safari-state dialogs; bounded polling; `zilo://start` | FE | C | G | T22, T43, T25-FE | Playwright: each D-008 state renders the right dialog; polling stops on dismiss and navigation; a11y passes |
-| T46 | Download page consuming `latest.json` | FE | C | G | T43 | Picks OS/arch correctly in the browser matrix; rejects a manifest with a bad signature (SDK verification) |
+| T45 | Install, Permission-help, Update and Safari-state dialogs; bounded polling; `zilo://start` | FE | C | G | T22, T43, T25-FE | Playwright: each D-008 state renders the right dialog; polling stops on dismiss and navigation; a11y passes; the Install and Permission dialogs work inside a Radix host modal with no hacks (owner inventory: DWT's install dialog breaks theirs) |
+| T46 | Download page consuming `latest.json`; Zilo self-hosts the installers (the owner's app uses Dynamsoft's demo CDN today) | FE | C | G | T43 | Picks OS/arch correctly in the browser matrix; rejects a manifest with a bad signature (SDK verification) |
 
 ### Wave 5 — M5 compat + hardening
 | ID | Task | Lane | A | R | Deps | Observable acceptance |
 |---|---|---|---|---|---|---|
-| T50 | `@zilo/dwt-compat` from the owner's call inventory (**blocked on owner**) | FE | C | G | T21b, owner code | Contract tests replaying each owner call sequence |
+| T50 | `@zilo/dwt-compat`. P0 = the owner's call inventory (`docs/context/dwt-integration-inventory.md`, incl. built-in viewer + `createThumbnailViewer`); P1 = the common public API. Owner unblocked 2026-11-01 | FE | C | G | T21b, T22 (viewer) | Contract tests replaying each owner call sequence; 20 consecutive `Load`/`Unload` cycles are idempotent with no leak and stay within the §8 detection budget |
 | T51 | Diagnostics endpoint + support bundle | BE | G | C | T20 | Test asserts no page data, tokens or file paths outside the allowlist appear in the bundle |
 | T52-C ★ | Threat-model review, Claude-authored, independent | joint | C | — | T24, T25-*, T43 | `docs/reviews/T52-claude.md` |
 | T52-G ★ | Threat-model review, GPT-authored, independent (does not read T52-C before finishing) | joint | G | — | T24, T25-*, T43 | `docs/reviews/T52-gpt.md` |
@@ -161,6 +161,12 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
 ### M6 release readiness (owner-assisted; pending ≠ pass)
 SP-1b real Safari 26, SP-4b production signing and notarization, the hardware matrix, legal sign-off.
 Tracked in VALIDATION.md.
+
+### M7 open-source release (owner Q17/Q18; gated on an owner-approved functional app)
+T54: the masters present an MIT / Apache-2.0 / MPL-LGPL comparison and the owner chooses. Then
+CONTRIBUTING, SECURITY.md, DCO, and the clean public export, reviewed by both masters and approved
+by the owner. Until M7 there is **no Zilo LICENSE file** anywhere in the repo, and the repo stays
+private. Third-party licence texts under evidence/notice paths are fine.
 
 ## 3a. OD-8 / OD-9 amendments to the DAG (v3 rev 3.1; both masters approved 2026-11-01)
 These amendments override the rows in §3 where they conflict.
@@ -197,8 +203,9 @@ These amendments override the rows in §3 where they conflict.
   public-docs-only API names, and the owner's answers re-rank it.
 
 **New tasks:**
-- **T54 (FE lane, docs/tooling), open-source hygiene:**
-  - a licence proposal (masters propose, owner decides; recorded in OWNER-QUESTIONS.md #18);
+- **T54 (FE lane, docs/tooling), open-source hygiene. It is in M7 and gated on an
+  owner-approved functional app (Q17/Q18). No LICENSE file is added before then.**
+  - an MIT / Apache-2.0 / MPL-LGPL comparison (masters present it, the owner decides);
   - CONTRIBUTING, SECURITY.md, DCO;
   - a scripted clean public export that excludes CLAUDE.md, `.claude/`, `opencode.json`,
     `.opencode/`, `docs/planning`, `docs/tasks` and `docs/reviews`, keeps the product docs, and

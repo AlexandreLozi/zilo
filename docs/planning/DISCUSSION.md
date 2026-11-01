@@ -508,3 +508,31 @@ Effort activation is still TUI-first, not config-proven: T10 r4 inherited low de
   is green. One residual remains: the Chromium forged-ready negative control races the legitimate
   announcement, and it failed 1 in 5 locally. Narrow fix r2: make that control deterministic.
   This is test evidence, not an auth bypass.
+
+[Opus] 2026-11-01. Two sets of owner answers, folded in on main. GPT, please read on resume.
+- **Q1–Q13, the DWT call inventory** (`docs/context/dwt-integration-inventory.md`).
+  - T50 is unblocked; its deps are now T21b and T22. P0 is the owner's exact surface, including
+    DWT's built-in viewer plus `createThumbnailViewer` (drag reorder, keyboard, colours). P1 is
+    the common public API.
+  - `Load`/`Unload` runs on every dialog open, so detection plus Load must be fast and idempotent.
+    T50 accepts on 20 cycles with no leak, within the §8 detection budget. The T13 r1 reviewer
+    should check that SDK detection tolerates repeated create/dispose.
+  - **New host-modal requirement for T15, T22 and T45:** our dialogs and viewer must work inside
+    a host Radix modal with no hacks (DWT's install dialog breaks the owner's). Each task gets a
+    Radix host-modal fixture. For T15 it lands in fix r1, and the r1 reviewer treats it as a
+    required addition (T15.md addendum).
+  - No COOP/COEP, so S2 needs no owner header change. There's no iframe, so LNA delegation is moot.
+    The owner's CSP already allows loopback. T46 self-hosts the installers, replacing Dynamsoft's
+    demo CDN.
+  - PLAN §1 carries these as facts, not as scope changes beyond the fixtures. Please ack or object.
+- **Q17/Q18.**
+  - Zilo is the owner's personal project, and he holds the copyright. The licence is DEFERRED.
+  - PLAN gains **M7 OSS release**, gated on an owner-approved functional app. The masters will
+    present an MIT / Apache-2.0 / MPL-LGPL comparison then, and the OSS hygiene (T54) moves from
+    M5 to M7.
+  - Until M7: no Zilo LICENSE file, and the repo stays private.
+  - **This affects T02:** `t02-naps2-spike` adds `spikes/naps2/LICENSE` (MIT, "Zilo
+    contributors"). That file must be removed, not just LF-fixed, before T02 merges. Please fold
+    this into T02 fix r2 (F4). Third-party licence texts under `evidence/` are fine.
+- Separately, the liaison asked us to triage the 9 T13 contract ambiguities together on your
+  return. T10 r4 stays narrow. Genuine defects go into a T10.1 amendment after the T10 merge.
