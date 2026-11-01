@@ -168,7 +168,14 @@ export class MockAgent {
 
     const injected = this.inject.get(op)?.shift();
     if (injected !== undefined) {
-      return this.problem(op, injected.status, injected.code, injected.retryable, injected.retryAfterSeconds, injected.extra);
+      return this.problem(
+        op,
+        injected.status,
+        injected.code,
+        injected.retryable,
+        injected.retryAfterSeconds,
+        injected.extra,
+      );
     }
 
     if (!PRE_AUTH.has(op)) {
@@ -187,7 +194,10 @@ export class MockAgent {
       if (m === null) continue;
       const id = r.byMethod.get(method);
       if (id === undefined) return undefined;
-      return { operationId: id, params: Object.fromEntries(r.names.map((n, i) => [n, decodeURIComponent(m[i + 1] ?? '')])) };
+      return {
+        operationId: id,
+        params: Object.fromEntries(r.names.map((n, i) => [n, decodeURIComponent(m[i + 1] ?? '')])),
+      };
     }
     return undefined;
   }
@@ -208,7 +218,12 @@ export class MockAgent {
     return fam;
   }
 
-  private respond(op: string, status: number, body?: unknown, headers: Record<string, string> = {}): Response {
+  private respond(
+    op: string,
+    status: number,
+    body?: unknown,
+    headers: Record<string, string> = {},
+  ): Response {
     assertResponse(op, status, body);
     const h: Record<string, string> = {
       'Zilo-Request-Id': `req-${String(++this.seq)}`,
@@ -235,7 +250,16 @@ export class MockAgent {
       title: code,
       status,
       code,
-      retryable: retryable ?? ['consent-pending', 'consent-denied', 'rate-limited', 'device-busy', 'agent-unavailable', 'unknown'].includes(code),
+      retryable:
+        retryable ??
+        [
+          'consent-pending',
+          'consent-denied',
+          'rate-limited',
+          'device-busy',
+          'agent-unavailable',
+          'unknown',
+        ].includes(code),
       requestId: `req-${String(this.seq + 1)}`,
       ...extra,
     };
@@ -264,7 +288,12 @@ export class MockAgent {
       case 'getHello': {
         const fam = this.allowed() ? this.authenticate(token) : 'token-invalid';
         if (typeof fam === 'string') {
-          return this.respond(op, 200, { product: 'zilo', scope: 'public', protocol: this.protocol, capabilities: this.publicCapabilities });
+          return this.respond(op, 200, {
+            product: 'zilo',
+            scope: 'public',
+            protocol: this.protocol,
+            capabilities: this.publicCapabilities,
+          });
         }
         return this.respond(op, 200, {
           product: 'zilo',
@@ -279,20 +308,24 @@ export class MockAgent {
         });
       }
       case 'getConsent': {
-        if (this.consent === 'pending' && this.pollScript.length > 0) this.consent = this.pollScript.shift() ?? 'pending';
+        if (this.consent === 'pending' && this.pollScript.length > 0)
+          this.consent = this.pollScript.shift() ?? 'pending';
         return this.respond(op, 200, this.consentStatus());
       }
       case 'requestConsent': {
         if (this.consent === 'granted') return this.respond(op, 200, this.consentStatus());
-        if (this.consent === 'denied') return this.problem(op, 403, 'consent-denied', true, this.denyRetryAfter);
-        if (this.consent === 'blocked') return this.problem(op, 403, 'consent-denied', false, undefined, { blocked: true });
+        if (this.consent === 'denied')
+          return this.problem(op, 403, 'consent-denied', true, this.denyRetryAfter);
+        if (this.consent === 'blocked')
+          return this.problem(op, 403, 'consent-denied', false, undefined, { blocked: true });
         if (this.consent === 'none') this.consent = this.promptOutcome;
         return this.respond(op, this.consent === 'granted' ? 200 : 202, this.consentStatus());
       }
       case 'issueToken': {
         if (rawBody !== undefined) this.checkRequest('TokenRequest', rawBody);
         if (this.consent === 'pending') return this.problem(op, 403, 'consent-pending', true, 2);
-        if (this.consent === 'denied') return this.problem(op, 403, 'consent-denied', true, this.denyRetryAfter);
+        if (this.consent === 'denied')
+          return this.problem(op, 403, 'consent-denied', true, this.denyRetryAfter);
         if (!this.allowed()) return this.problem(op, 403, 'unauthorized-origin');
         const now = this.now();
         const fam: FamilyRec = {
@@ -329,7 +362,8 @@ export class MockAgent {
 
   private checkRequest(schemaName: string, raw: unknown): void {
     const errors = validate(schema(schemaName), JSON.parse(String(raw)));
-    if (errors.length > 0) throw new Error(`SDK sent an invalid ${schemaName}: ${errors.join('; ')}`);
+    if (errors.length > 0)
+      throw new Error(`SDK sent an invalid ${schemaName}: ${errors.join('; ')}`);
   }
 
   private protectedOp(
@@ -348,9 +382,19 @@ export class MockAgent {
           return this.problem(op, 409, 'invalid-state');
         }
         if (rec.expiresAt >= fam.familyExpiresAt) return this.problem(op, 409, 'invalid-state');
-        if (now < rec.renewAfter) return this.problem(op, 429, 'rate-limited', true, Math.ceil((rec.renewAfter - now) / 1000));
+        if (now < rec.renewAfter)
+          return this.problem(
+            op,
+            429,
+            'rate-limited',
+            true,
+            Math.ceil((rec.renewAfter - now) / 1000),
+          );
         rec.renewed = true;
-        rec.graceUntil = Math.min(now + (this.limits.tokenRenewGraceSeconds as number) * 1000, rec.expiresAt);
+        rec.graceUntil = Math.min(
+          now + (this.limits.tokenRenewGraceSeconds as number) * 1000,
+          rec.expiresAt,
+        );
         return this.respond(op, 200, this.mint(fam, now));
       }
       case 'revokeToken':
@@ -358,7 +402,10 @@ export class MockAgent {
         return this.respond(op, 204);
       case 'listDevices':
       case 'refreshDevices':
-        return this.respond(op, 200, { devices: this.devices, discovery: { state: 'idle', lastCompletedAt: new Date(now).toISOString() } });
+        return this.respond(op, 200, {
+          devices: this.devices,
+          discovery: { state: 'idle', lastCompletedAt: new Date(now).toISOString() },
+        });
       case 'getDeviceCaps': {
         const caps = this.caps.get(params.deviceId ?? '');
         if (caps === undefined) return this.problem(op, 404, 'not-found');
@@ -374,7 +421,14 @@ export class MockAgent {
           state: 'queued',
           createdAt: new Date(now).toISOString(),
           requested: req.settings,
-          effective: { source: req.settings.source, resolution: 300, colorMode: 'color', pageSize: 'a4', pageSizeMm: { widthMm: 210, heightMm: 297 }, maxPages: 1 },
+          effective: {
+            source: req.settings.source,
+            resolution: 300,
+            colorMode: 'color',
+            pageSize: 'a4',
+            pageSizeMm: { widthMm: 210, heightMm: 297 },
+            maxPages: 1,
+          },
           adjustments: [],
           pageCount: 0,
           lastSeq: 1,
@@ -415,7 +469,13 @@ function sleep(ms: number, signal: AbortSignal | undefined): Promise<void> {
 
 /** Contract-shaped fixtures, validated against the spec by the tests that use them. */
 export const fixtures = {
-  virtualDevice: { id: 'virtual-0', name: 'Zilo Virtual Scanner', driver: 'virtual', connection: 'virtual', busy: false },
+  virtualDevice: {
+    id: 'virtual-0',
+    name: 'Zilo Virtual Scanner',
+    driver: 'virtual',
+    connection: 'virtual',
+    busy: false,
+  },
   /** A future agent: unknown driver and connection values, and an unknown field (R-V4). */
   futureDevice: {
     id: 'future.1',

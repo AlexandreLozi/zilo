@@ -24,7 +24,12 @@ describe('generated contract artefacts', () => {
 
 describe('test validator', () => {
   it('enforces the pre-auth disclosure boundary (HelloPublic forbids full-only fields)', () => {
-    const pub = { product: 'zilo', scope: 'public', protocol: { min: '1.0', max: '1.0' }, capabilities: [] };
+    const pub = {
+      product: 'zilo',
+      scope: 'public',
+      protocol: { min: '1.0', max: '1.0' },
+      capabilities: [],
+    };
     expect(validate(schema('Hello'), pub)).toEqual([]);
     expect(validate(schema('Hello'), { ...pub, instanceId: 'x' })).not.toEqual([]);
     expect(validate(schema('Hello'), { ...pub, unknownField: 1 })).toEqual([]);
@@ -51,7 +56,20 @@ describe('test validator', () => {
 
   it('knows every operation the SDK calls', () => {
     const ops = operations();
-    for (const id of ['getHello', 'getConsent', 'requestConsent', 'issueToken', 'renewToken', 'revokeToken', 'listDevices', 'refreshDevices', 'getDeviceCaps', 'createJob', 'getJob', 'disposeJob']) {
+    for (const id of [
+      'getHello',
+      'getConsent',
+      'requestConsent',
+      'issueToken',
+      'renewToken',
+      'revokeToken',
+      'listDevices',
+      'refreshDevices',
+      'getDeviceCaps',
+      'createJob',
+      'getJob',
+      'disposeJob',
+    ]) {
       expect(ops.has(id), id).toBe(true);
     }
   });

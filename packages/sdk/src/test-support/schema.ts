@@ -83,31 +83,45 @@ export function validate(schema: Schema, value: unknown, path = '$'): string[] {
   if (typeof s.$ref === 'string') errors.push(...validate(resolveRef(s.$ref), value, path));
   if (s.type !== undefined) {
     const types = Array.isArray(s.type) ? (s.type as string[]) : [s.type as string];
-    if (!types.some((t) => typeMatches(value, t))) return [...errors, `${path}: expected ${types.join('|')}`];
+    if (!types.some((t) => typeMatches(value, t)))
+      return [...errors, `${path}: expected ${types.join('|')}`];
   }
-  if ('const' in s && JSON.stringify(s.const) !== JSON.stringify(value)) errors.push(`${path}: const`);
+  if ('const' in s && JSON.stringify(s.const) !== JSON.stringify(value))
+    errors.push(`${path}: const`);
   if (Array.isArray(s.enum) && !s.enum.some((e) => JSON.stringify(e) === JSON.stringify(value))) {
     errors.push(`${path}: enum`);
   }
   if (typeof value === 'string') {
-    if (typeof s.minLength === 'number' && [...value].length < s.minLength) errors.push(`${path}: minLength`);
-    if (typeof s.maxLength === 'number' && [...value].length > s.maxLength) errors.push(`${path}: maxLength`);
-    if (typeof s.pattern === 'string' && !new RegExp(s.pattern, 'u').test(value)) errors.push(`${path}: pattern`);
+    if (typeof s.minLength === 'number' && (value.match(/./gsu)?.length ?? 0) < s.minLength)
+      errors.push(`${path}: minLength`);
+    if (typeof s.maxLength === 'number' && (value.match(/./gsu)?.length ?? 0) > s.maxLength)
+      errors.push(`${path}: maxLength`);
+    if (typeof s.pattern === 'string' && !new RegExp(s.pattern, 'u').test(value))
+      errors.push(`${path}: pattern`);
   }
   if (typeof value === 'number') {
     if (typeof s.minimum === 'number' && value < s.minimum) errors.push(`${path}: minimum`);
     if (typeof s.maximum === 'number' && value > s.maximum) errors.push(`${path}: maximum`);
-    if (typeof s.exclusiveMinimum === 'number' && value <= s.exclusiveMinimum) errors.push(`${path}: exclusiveMinimum`);
-    if (typeof s.multipleOf === 'number' && value % s.multipleOf !== 0) errors.push(`${path}: multipleOf`);
+    if (typeof s.exclusiveMinimum === 'number' && value <= s.exclusiveMinimum)
+      errors.push(`${path}: exclusiveMinimum`);
+    if (typeof s.multipleOf === 'number' && value % s.multipleOf !== 0)
+      errors.push(`${path}: multipleOf`);
   }
   if (Array.isArray(value)) {
-    if (typeof s.minItems === 'number' && value.length < s.minItems) errors.push(`${path}: minItems`);
-    if (typeof s.maxItems === 'number' && value.length > s.maxItems) errors.push(`${path}: maxItems`);
-    if (s.uniqueItems === true && new Set(value.map((v) => JSON.stringify(v))).size !== value.length) {
+    if (typeof s.minItems === 'number' && value.length < s.minItems)
+      errors.push(`${path}: minItems`);
+    if (typeof s.maxItems === 'number' && value.length > s.maxItems)
+      errors.push(`${path}: maxItems`);
+    if (
+      s.uniqueItems === true &&
+      new Set(value.map((v) => JSON.stringify(v))).size !== value.length
+    ) {
       errors.push(`${path}: uniqueItems`);
     }
     if (s.items !== undefined) {
-      value.forEach((item, i) => errors.push(...validate(s.items as Schema, item, `${path}[${String(i)}]`)));
+      value.forEach((item, i) =>
+        errors.push(...validate(s.items as Schema, item, `${path}[${String(i)}]`)),
+      );
     }
   }
   if (typeOf(value) === 'object') {
@@ -123,15 +137,22 @@ export function validate(schema: Schema, value: unknown, path = '$'): string[] {
       }
     }
   }
-  if (Array.isArray(s.allOf)) for (const sub of s.allOf as Schema[]) errors.push(...validate(sub, value, path));
-  if (Array.isArray(s.anyOf) && !(s.anyOf as Schema[]).some((sub) => validate(sub, value, path).length === 0)) {
+  if (Array.isArray(s.allOf))
+    for (const sub of s.allOf as Schema[]) errors.push(...validate(sub, value, path));
+  if (
+    Array.isArray(s.anyOf) &&
+    !(s.anyOf as Schema[]).some((sub) => validate(sub, value, path).length === 0)
+  ) {
     errors.push(`${path}: anyOf`);
   }
   if (Array.isArray(s.oneOf)) {
-    const matches = (s.oneOf as Schema[]).filter((sub) => validate(sub, value, path).length === 0).length;
+    const matches = (s.oneOf as Schema[]).filter(
+      (sub) => validate(sub, value, path).length === 0,
+    ).length;
     if (matches !== 1) errors.push(`${path}: oneOf matched ${String(matches)}`);
   }
-  if (s.not !== undefined && validate(s.not as Schema, value, path).length === 0) errors.push(`${path}: not`);
+  if (s.not !== undefined && validate(s.not as Schema, value, path).length === 0)
+    errors.push(`${path}: not`);
   if (s.if !== undefined) {
     const branch = validate(s.if as Schema, value, path).length === 0 ? s.then : s.else;
     if (branch !== undefined) errors.push(...validate(branch as Schema, value, path));
@@ -167,9 +188,12 @@ export function operations(): Map<string, { path: string; method: string; op: Op
 export function responseSchema(operationId: string, status: number): Schema | undefined {
   const entry = operations().get(operationId);
   if (entry === undefined) throw new Error(`unknown operation ${operationId}`);
-  let response = (entry.op.responses[String(status)] ?? entry.op.responses.default) as Record<string, unknown> | undefined;
-  if (response === undefined) throw new Error(`${operationId} declares no ${String(status)} response`);
-  if (typeof response.$ref === 'string') response = resolveRef(response.$ref) as Record<string, unknown>;
+  let response = (entry.op.responses[String(status)] ?? entry.op.responses.default) as
+    Record<string, unknown> | undefined;
+  if (response === undefined)
+    throw new Error(`${operationId} declares no ${String(status)} response`);
+  if (typeof response.$ref === 'string')
+    response = resolveRef(response.$ref) as Record<string, unknown>;
   const content = response.content as Record<string, { schema: Schema }> | undefined;
   if (content === undefined) return undefined;
   const media = content['application/json'] ?? content['application/problem+json'];
@@ -181,11 +205,14 @@ export function responseSchema(operationId: string, status: number): Schema | un
 export function assertResponse(operationId: string, status: number, body: unknown): void {
   const s = responseSchema(operationId, status);
   if (s === undefined) {
-    if (body !== undefined) throw new Error(`${operationId} ${String(status)}: the spec declares no body`);
+    if (body !== undefined)
+      throw new Error(`${operationId} ${String(status)}: the spec declares no body`);
     return;
   }
   const errors = validate(s, body);
   if (errors.length > 0) {
-    throw new Error(`${operationId} ${String(status)} violates the contract: ${errors.slice(0, 5).join('; ')}`);
+    throw new Error(
+      `${operationId} ${String(status)} violates the contract: ${errors.slice(0, 5).join('; ')}`,
+    );
   }
 }

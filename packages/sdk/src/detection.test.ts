@@ -44,7 +44,9 @@ describe('permission query (D-008 step 1)', () => {
     const state = await queryLoopbackPermission({
       query: ({ name }) => {
         asked.push(name);
-        return name === 'loopback-network' ? Promise.reject(new TypeError('x')) : Promise.resolve({ state: 'prompt' });
+        return name === 'loopback-network'
+          ? Promise.reject(new TypeError('x'))
+          : Promise.resolve({ state: 'prompt' });
       },
     });
     expect(asked).toEqual(['loopback-network', 'local-network-access']);
@@ -72,7 +74,9 @@ describe('detection flow', () => {
     const h = setup({ isSafari: true });
     expect((await h.client.connect()).state).toBe('safari-unsupported');
     expect(h.agent.log).toHaveLength(0);
-    expect(detectSafari('Mozilla/5.0 (Macintosh) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15')).toBe(true);
+    expect(
+      detectSafari('Mozilla/5.0 (Macintosh) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15'),
+    ).toBe(true);
     expect(detectSafari('Mozilla/5.0 AppleWebKit/537.36 Chrome/156.0 Safari/537.36')).toBe(false);
   });
 
@@ -159,7 +163,11 @@ describe('detection flow', () => {
 
     const caps = setup();
     caps.agent.publicCapabilities = ['transport.http'];
-    expect((await caps.client.connect()).fit).toEqual({ fits: false, reason: 'missing-capabilities', missing: ['auth.consent', 'auth.token'] });
+    expect((await caps.client.connect()).fit).toEqual({
+      fits: false,
+      reason: 'missing-capabilities',
+      missing: ['auth.consent', 'auth.token'],
+    });
   });
 
   it('is outdated-authorized when the full hello is below the site minimum', async () => {
@@ -242,7 +250,9 @@ describe('consent (R-A1 to R-A3)', () => {
     expect((await blocked.client.connect()).state).toBe('consent-blocked');
 
     const limited = setup({ consent: 'none' });
-    limited.agent.inject.set('requestConsent', [{ status: 429, code: 'rate-limited', retryAfterSeconds: 30 }]);
+    limited.agent.inject.set('requestConsent', [
+      { status: 429, code: 'rate-limited', retryAfterSeconds: 30 },
+    ]);
     const l = await limited.client.connect();
     expect(l.state).toBe('rate-limited');
     expect(l.retryAfterSeconds).toBe(30);
@@ -254,7 +264,9 @@ describe('consent (R-A1 to R-A3)', () => {
 
   it('treats a 403 consent-pending from token issuance like a pending prompt', async () => {
     const h = setup({ consent: 'granted' });
-    h.agent.inject.set('issueToken', [{ status: 403, code: 'consent-pending', retryAfterSeconds: 2 }]);
+    h.agent.inject.set('issueToken', [
+      { status: 403, code: 'consent-pending', retryAfterSeconds: 2 },
+    ]);
     expect((await h.client.connect()).state).toBe('awaiting-consent');
     await vi.advanceTimersByTimeAsync(2_000);
     expect(h.client.detection.snapshot.state).toBe('ready');

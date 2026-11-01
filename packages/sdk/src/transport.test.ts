@@ -32,7 +32,9 @@ describe('HttpTransport', () => {
     const t = new HttpTransport(48100, {
       fetch: (url, init) => {
         seen.push({ url, init });
-        return Promise.resolve(new Response('{"ok":true}', { headers: { 'Content-Type': 'application/json' } }));
+        return Promise.resolve(
+          new Response('{"ok":true}', { headers: { 'Content-Type': 'application/json' } }),
+        );
       },
     });
     const res = await t.request({ ...get, token: 'secret-token-value' });
@@ -42,7 +44,9 @@ describe('HttpTransport', () => {
     expect(seen[0]?.init.targetAddressSpace).toBe('loopback');
     expect(seen[0]?.init.credentials).toBe('omit');
     expect(seen[0]?.init.cache).toBe('no-store');
-    expect(new Headers(seen[0]?.init.headers).get('Authorization')).toBe('Bearer secret-token-value');
+    expect(new Headers(seen[0]?.init.headers).get('Authorization')).toBe(
+      'Bearer secret-token-value',
+    );
   });
 
   it('sends JSON bodies with a JSON content type', async () => {
@@ -67,7 +71,9 @@ describe('HttpTransport', () => {
     const a = agent();
     const status = PROBLEM_CODES[code].status[0];
     a.inject.set('listDevices', [{ status, code, retryable: PROBLEM_CODES[code].retryable }]);
-    const err = await new HttpTransport(48100, { fetch: a.fetch }).request(get).catch((e: unknown) => e);
+    const err = await new HttpTransport(48100, { fetch: a.fetch })
+      .request(get)
+      .catch((e: unknown) => e);
     expect(err).toBeInstanceOf(ZiloProblemError);
     expect(isProblem(err, code)).toBe(true);
     const p = err as ZiloProblemError;
@@ -80,7 +86,9 @@ describe('HttpTransport', () => {
   it('maps an unknown problem code to unknown, keeping retryable and the wire code (R-V4)', async () => {
     const a = agent();
     a.inject.set('listDevices', [{ status: 418, code: 'teapot-overheated', retryable: false }]);
-    const err = (await new HttpTransport(48100, { fetch: a.fetch }).request(get).catch((e: unknown) => e)) as ZiloProblemError;
+    const err = (await new HttpTransport(48100, { fetch: a.fetch })
+      .request(get)
+      .catch((e: unknown) => e)) as ZiloProblemError;
     expect(err.code).toBe('unknown');
     expect(err.wireCode).toBe('teapot-overheated');
     expect(err.retryable).toBe(false);
@@ -89,7 +97,9 @@ describe('HttpTransport', () => {
   it('reads Retry-After and retryAfterSeconds', async () => {
     const a = agent();
     a.inject.set('listDevices', [{ status: 429, code: 'rate-limited', retryAfterSeconds: 7 }]);
-    const err = (await new HttpTransport(48100, { fetch: a.fetch }).request(get).catch((e: unknown) => e)) as ZiloProblemError;
+    const err = (await new HttpTransport(48100, { fetch: a.fetch })
+      .request(get)
+      .catch((e: unknown) => e)) as ZiloProblemError;
     expect(err.retryAfterSeconds).toBe(7);
     expect(parseRetryAfter(' 12 ')).toBe(12);
     expect(parseRetryAfter('Wed, 21 Oct 2015 07:28:00 GMT')).toBeUndefined();
@@ -97,34 +107,47 @@ describe('HttpTransport', () => {
 
   it('keeps blocked on consent-denied', async () => {
     const a = agent();
-    a.inject.set('listDevices', [{ status: 403, code: 'consent-denied', retryable: false, extra: { blocked: true } }]);
-    const err = (await new HttpTransport(48100, { fetch: a.fetch }).request(get).catch((e: unknown) => e)) as ZiloProblemError;
+    a.inject.set('listDevices', [
+      { status: 403, code: 'consent-denied', retryable: false, extra: { blocked: true } },
+    ]);
+    const err = (await new HttpTransport(48100, { fetch: a.fetch })
+      .request(get)
+      .catch((e: unknown) => e)) as ZiloProblemError;
     expect(err.blocked).toBe(true);
   });
 
   it('turns an error without a problem body into a protocol error', async () => {
-    const t = new HttpTransport(1, { fetch: () => Promise.resolve(new Response(null, { status: 403 })) });
+    const t = new HttpTransport(1, {
+      fetch: () => Promise.resolve(new Response(null, { status: 403 })),
+    });
     const err = await t.request(get).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(ZiloProtocolError);
     expect((err as ZiloProtocolError).status).toBe(403);
   });
 
   it('rejects non-JSON success bodies', async () => {
-    const t = new HttpTransport(1, { fetch: () => Promise.resolve(new Response('<html>', { headers: { 'Content-Type': 'text/html' } })) });
+    const t = new HttpTransport(1, {
+      fetch: () =>
+        Promise.resolve(new Response('<html>', { headers: { 'Content-Type': 'text/html' } })),
+    });
     await expect(t.request(get)).rejects.toBeInstanceOf(ZiloProtocolError);
   });
 
   it('maps a refused connection or a response without CORS (TypeError) to a transport error', async () => {
     const a = agent();
     a.up = false;
-    await expect(new HttpTransport(48100, { fetch: a.fetch }).request(get)).rejects.toBeInstanceOf(ZiloTransportError);
+    await expect(new HttpTransport(48100, { fetch: a.fetch }).request(get)).rejects.toBeInstanceOf(
+      ZiloTransportError,
+    );
   });
 
   it('bounds every request with a timeout', async () => {
     vi.useFakeTimers();
     const a = agent();
     a.delayMs = 60_000;
-    const p = new HttpTransport(48100, { fetch: a.fetch, timeoutMs: 250 }).request(get).catch((e: unknown) => e);
+    const p = new HttpTransport(48100, { fetch: a.fetch, timeoutMs: 250 })
+      .request(get)
+      .catch((e: unknown) => e);
     await vi.advanceTimersByTimeAsync(250);
     const err = await p;
     expect(err).toBeInstanceOf(ZiloTimeoutError);
@@ -135,7 +158,9 @@ describe('HttpTransport', () => {
     vi.useFakeTimers();
     const a = agent();
     a.delayMs = 5_000;
-    const p = new HttpTransport(48100, { fetch: a.fetch, timeoutMs: 60_000 }).request({ ...get, timeoutMs: 100 }).catch((e: unknown) => e);
+    const p = new HttpTransport(48100, { fetch: a.fetch, timeoutMs: 60_000 })
+      .request({ ...get, timeoutMs: 100 })
+      .catch((e: unknown) => e);
     await vi.advanceTimersByTimeAsync(100);
     expect(await p).toBeInstanceOf(ZiloTimeoutError);
   });
@@ -158,11 +183,22 @@ describe('redacted debug logging', () => {
   it('logs safe metadata only: never the token, the body or the path', async () => {
     const a = agent();
     const lines: string[] = [];
-    const t = new HttpTransport(48100, { fetch: a.fetch, logger: (e, f) => lines.push(JSON.stringify([e, f])) });
+    const t = new HttpTransport(48100, {
+      fetch: a.fetch,
+      logger: (e, f) => lines.push(JSON.stringify([e, f])),
+    });
     a.inject.set('listDevices', [{ status: 401, code: 'token-invalid' }]);
     const token = 'tok_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop';
     await t.request({ ...get, token }).catch(() => undefined);
-    await t.request({ op: 'createJob', method: 'POST', path: '/zilo/v1/jobs', token, body: { secret: 'document' } }).catch(() => undefined);
+    await t
+      .request({
+        op: 'createJob',
+        method: 'POST',
+        path: '/zilo/v1/jobs',
+        token,
+        body: { secret: 'document' },
+      })
+      .catch(() => undefined);
     const all = lines.join('\n');
     expect(lines.length).toBeGreaterThan(0);
     expect(all).toContain('token-invalid');

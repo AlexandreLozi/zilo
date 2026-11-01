@@ -339,7 +339,8 @@ export class Detector {
       switch (err.code) {
         case 'consent-pending':
           // From POST /auth/token: a prompt is open; poll like a 202 (R-A7).
-          if (this.snap.state !== 'awaiting-consent') this.go({ ...base, state: 'awaiting-consent' });
+          if (this.snap.state !== 'awaiting-consent')
+            this.go({ ...base, state: 'awaiting-consent' });
           this.schedulePoll(run, base, err.retryAfterSeconds ?? DEFAULT_POLL_SECONDS);
           return;
         case 'consent-denied':
