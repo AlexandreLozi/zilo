@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Zilo local agent API
-  version: 1.0.0-draft.2
+  version: 1.0.0-draft.3
   summary: Wire contract between the Zilo local agent and @zilo/sdk.
   description: |
     Normative wire contract for `/zilo/v1` (D-005). `api/CONTRACT.md` is normative alongside this
@@ -11,18 +11,24 @@ info:
     Provenance markers:
     - `x-zilo-source: SP-1a-interim (unreviewed)` marks a rule that depends on the T01 interim
       note (OD-2). GPT reviewed its evidence in T10 r1; the marker stays until the masters approve.
-    - `x-zilo-source: D-004a (pending GPT)` marks a rule that depends on the proposed pre-auth
-      consent tier, as amended by the agreed T10 r1 master positions, and on the agreed D-004
-      reconciliation (shared token family, revocation). Neither is in force yet.
+    - `x-zilo-source: D-004a rev 2 (in force)` marks a rule that depends on the pre-auth consent
+      tier and the token family of D-004a revision 2 (in force since 2026-11-01, approved by both
+      masters as architecture). That approval is not approval of this contract.
+    - `x-zilo-source: D-004a clarification 2026-11-01 (GPT approval pending)` additionally marks
+      the minimal public `hello`, consent state through `GET /auth/consent`, and the
+      authenticated per-process `instanceId`. Opus approved the clarification; GPT has not yet.
 
-    Both kinds are listed in CONTRACT.md, "Unreviewed inputs".
+    Both kinds are listed in CONTRACT.md, "Unreviewed inputs". This file stays a draft until both
+    masters approve the contract itself.
 
     **Open response enums (R-V4).** Every enum a response carries is an `anyOf` of a closed
     `…Known` enum and a plain `string`, so an unknown value validates as JSON Schema and the
     generated type stays open. Requests use the closed `…Known` enums, so the agent's request
-    validation stays strict. Two response discriminators are deliberately closed: `Hello.scope`
-    and the known-event `type` in `JobEvent`; SSE frames are decoded in two steps, first as
-    `JobEventEnvelope` (any `type`), then as `JobEvent` only for known types.
+    validation stays strict. Exactly two response discriminators are deliberately closed:
+    `Hello.scope` and the known-event `type` in `JobEvent`; SSE frames are decoded in two steps,
+    first as `JobEventEnvelope` (any `type`), then as `JobEvent` only for known types. Every
+    other response union is open: `ResolutionCaps.kind` has a `ResolutionUnknown` member and a
+    defined safe client fallback (CONTRACT.md R-D4).
 
     **Global errors (R-ER4).** `x-zilo-global-errors` lists the errors that any route can return.
     Each operation also declares them, plus a `default` problem response, so tooling never treats
@@ -30,7 +36,7 @@ info:
   license:
     name: Proprietary (Zilo project)
     url: https://example.invalid/zilo/license
-  x-zilo-status: draft 2 for cross-model re-review (T10 fix r1, Claude-authored under OD-2)
+  x-zilo-status: draft 3 for cross-model re-review (T10 fix r2, Claude-authored under OD-2)
 x-zilo-global-errors:
   - status: 403
     code: host-denied
@@ -107,7 +113,8 @@ paths:
 
         - **Without a bearer token**, or with a token that is not valid for the calling origin, the
           response has `scope: public`. It holds only `product`, `protocol` and the flow
-          capabilities (D-004a, pending GPT).
+          capabilities, and stays minimal: it carries no consent state. The origin's consent
+          state comes from `GET /zilo/v1/auth/consent` (D-004a clarification of 2026-11-01).
         - **With a valid bearer token** for the calling origin, which must be *allowed*, the
           response has `scope: full`. That adds `version`, `os`, `arch`, `instanceId` and
           `limits`, all required. The public variant forbids those fields.
@@ -116,7 +123,8 @@ paths:
         `scope: public`. A dev-eligible loopback origin (dev flag on) can read this endpoint, but
         always gets `scope: public` (D-004a amendment: diagnostics only).
       x-zilo-source:
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
+        - D-004a clarification 2026-11-01 (GPT approval pending)
         - SP-1a-interim (unreviewed)
       security:
         - {}
@@ -173,7 +181,8 @@ paths:
         `pollAfterSeconds`. A dev-eligible loopback origin can read it (diagnostics only); its
         state is always `none`, because loopback origins are never allowed.
       x-zilo-source:
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
+        - D-004a clarification 2026-11-01 (GPT approval pending)
       security: []
       parameters:
         - $ref: '#/components/parameters/Origin'
@@ -227,7 +236,7 @@ paths:
         The SDK calls this only from a user gesture, but that is SDK policy. The agent cannot
         verify a gesture; the prompt budgets in CONTRACT.md R-A4 are the server-side bound.
       x-zilo-source:
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
       security: []
       parameters:
         - $ref: '#/components/parameters/Origin'
@@ -308,10 +317,13 @@ paths:
           `limits.maxFamiliesPerOrigin` and `limits.maxFamiliesTotal` (eviction, else
           `429 limits-exceeded`).
 
-        The SDK calls this only when its shared same-origin storage holds no usable token
-        (CONTRACT.md R-A10).
+        The SDK calls this only under the rollover rule of CONTRACT.md R-A15: when its shared
+        same-origin storage has no usable current family, or the current family's token is
+        final (capped at `familyExpiresAt`, so it cannot be renewed). Starting a new family
+        moves the SDK's current-family pointer; it never discards the older family's
+        credential while that family still owns live jobs.
       x-zilo-source:
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
       security: []
       parameters:
         - $ref: '#/components/parameters/Origin'
@@ -358,9 +370,12 @@ paths:
         renewal grace. The effect is immediate: every later protected request with any token of
         the family gets `401 token-revoked`, every open event stream of the family is closed,
         and active jobs are cancelled. Pages and temp files are deleted physically within
-        `limits.revocationCleanupSeconds` (CONTRACT.md R-A12).
+        `limits.revocationCleanupSeconds` (CONTRACT.md R-A12). Until they are actually freed,
+        those bytes and any still-running work stay counted in the agent's global physical
+        reservations (`maxStoreBytes`, `maxConcurrentExportsTotal`, device occupancy, job
+        records), so a new family cannot overfill the store before cleanup (R-L5).
       x-zilo-source:
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
       responses:
         '204':
           description: Family revoked.
@@ -415,10 +430,13 @@ paths:
         - The presented token stays valid for `limits.tokenRenewGraceSeconds` after renewal,
           never past its own `expiresAt`.
         - Renewal never extends the family past `familyExpiresAt`. When the current token
-          already expires at `familyExpiresAt`, the call returns `409 invalid-state`; start a new
-          family with `POST /zilo/v1/auth/token`. The new family starts without jobs.
+          already expires at `familyExpiresAt` (a final token), the call returns
+          `409 invalid-state`. The final token stays valid for the old family's jobs until its
+          `expiresAt`. For new scans the SDK starts a new family with
+          `POST /zilo/v1/auth/token`, which starts without jobs, and keeps the old family's
+          credential under its family ID for the old jobs (CONTRACT.md R-A15).
       x-zilo-source:
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
       responses:
         '200':
           description: Renewed.
@@ -1202,7 +1220,13 @@ paths:
           client received it. A retry may then get `404 not-found`. Allowed only on a terminal
           job (`409 invalid-state` otherwise). The SDK never sends it: its reliable flow is
           receive every body, verify it, then `DELETE` the job.
-        - **During scanning:** an active job may export the pages in its snapshot.
+        - **Settled acquisition boundary (CONTRACT.md R-X7):** the SDK's export-and-delete
+          starts only on a terminal job. On an active job it either refuses or, when the caller
+          asked it to stop the scan, cancels with pages kept and waits for `done` first. It
+          fixes the selection only after that, so a page acquired during an export is never
+          deleted unseen.
+        - **During scanning:** an active job may export the pages in its snapshot. Such an
+          export is always non-destructive.
       requestBody:
         required: true
         content:
@@ -1301,7 +1325,8 @@ components:
       required: false
       description: |
         Set by the browser. This is the serialised origin the agent authorises against. Requests
-        whose Origin is missing, `null` or opaque get no CORS headers (D-004a).
+        whose Origin is missing, `null`, opaque or loopback get no CORS headers (D-004a). The
+        only loopback exception is the dev flag's pre-auth diagnostics (CONTRACT.md R-T3).
       schema:
         type: string
     AccessControlRequestMethod:
@@ -1410,7 +1435,7 @@ components:
         `Access-Control-Allow-Private-Network` or any other PNA/LNA header.
       x-zilo-source:
         - SP-1a-interim (unreviewed)
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
       headers:
         Access-Control-Allow-Origin:
           $ref: '#/components/headers/AccessControlAllowOrigin'
@@ -1431,7 +1456,7 @@ components:
         - **Origin refused** for this path (R-T5), or an unknown path: **no body**.
       x-zilo-source:
         - SP-1a-interim (unreviewed)
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
       headers:
         Vary:
           $ref: '#/components/headers/Vary'
@@ -1663,10 +1688,11 @@ components:
       type: string
       description: |
         Opaque ID of a token family (CONTRACT.md §3.2), the unit of job ownership. It is not a
-        credential. The SDK stores it next to the current token in its shared same-origin
-        storage, to tell a renewed token of the same family from a new family.
+        credential. The SDK uses it as the key of its family-indexed credential map in its
+        shared same-origin storage, and records it for each job, so every request about a job
+        uses that job's family (CONTRACT.md R-A15).
       x-zilo-source:
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
       pattern: '^[A-Za-z0-9_-]{16,64}$'
     Timestamp:
       type: string
@@ -1683,7 +1709,8 @@ components:
           checkable. Unknown additional fields are tolerated.
         - `HelloFull` adds `version`, `os`, `arch`, `instanceId` and `limits`, all required.
       x-zilo-source:
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
+        - D-004a clarification 2026-11-01 (GPT approval pending)
       oneOf:
         - $ref: '#/components/schemas/HelloPublic'
         - $ref: '#/components/schemas/HelloFull'
@@ -1698,7 +1725,8 @@ components:
         Answer to a caller without a valid bearer token for an allowed origin. Never carries
         `version`, `os`, `arch`, `instanceId` or `limits` (D-004a).
       x-zilo-source:
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
+        - D-004a clarification 2026-11-01 (GPT approval pending)
       required: [product, scope, protocol, capabilities]
       properties:
         product:
@@ -1719,7 +1747,8 @@ components:
       type: object
       description: Answer to a valid bearer token for an allowed origin.
       x-zilo-source:
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
+        - D-004a clarification 2026-11-01 (GPT approval pending)
       required: [product, scope, protocol, capabilities, version, os, arch, instanceId, limits]
       properties:
         product:
@@ -1743,8 +1772,14 @@ components:
           type: string
           minLength: 1
           description: |
-            Random value chosen at each agent start. A change means the agent restarted, and
-            every token family and job is gone.
+            Opaque random value (at least 128 bits) chosen at each agent process start and never
+            derived from the machine, the user or the install. It is in the authenticated full
+            `hello` only; the public variant forbids it, so it adds no pre-auth fingerprint.
+            A change means the agent process restarted: every token family, job and page of the
+            old process is gone, because they are ephemeral (no durable job store). The SDK
+            then classifies the jobs it tracked under the old value as `agent-restarted`
+            (retryable, CONTRACT.md R-R1 to R-R3). That classification is SDK-local: the agent
+            sends no event or problem code for it, and it never triggers an automatic rescan.
         limits:
           $ref: '#/components/schemas/Limits'
     ProductName:
@@ -1853,7 +1888,10 @@ components:
         maxStoreBytes:
           type: integer
           minimum: 1
-          description: Stored pages **and** export staging/output files of all jobs of the user (R-L1).
+          description: |
+            Stored pages **and** export staging/output files of all jobs of the user (R-L1).
+            A physical reservation (R-L5): bytes of a revoked or ended family stay counted
+            until they are actually deleted.
           x-zilo-default: 8589934592
         maxExportBytes:
           type: integer
@@ -1927,6 +1965,9 @@ components:
         maxConcurrentExportsTotal:
           type: integer
           minimum: 1
+          description: |
+            Running export workers of the whole agent. A physical reservation (R-L5): an
+            aborted worker holds its slot until it has actually stopped.
           x-zilo-default: 4
         maxRequestBodyBytes:
           type: integer
@@ -1995,7 +2036,7 @@ components:
         - `granted` requires `managed`.
         An unknown state requires only `origin` and `state`.
       x-zilo-source:
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
       required: [origin, state]
       properties:
         origin:
@@ -2065,7 +2106,7 @@ components:
         `expiresAt = min(issuedAt + limits.tokenTtlSeconds, familyExpiresAt)` and
         `renewAfter = issuedAt + floor(3 × (expiresAt − issuedAt) / 4)`.
       x-zilo-source:
-        - D-004a (pending GPT)
+        - D-004a rev 2 (in force)
       required:
         - token
         - tokenType
@@ -2190,15 +2231,33 @@ components:
         - $ref: '#/components/schemas/ColorModeKnown'
         - type: string
     ResolutionCaps:
-      description: Supported resolutions, either as a discrete list or as a stepped range.
+      description: |
+        Supported resolutions: a discrete list, a stepped range, or a future kind
+        (CONTRACT.md R-D4, R-V4). `kind` is an **open** response discriminator: the known kinds
+        `list` and `range` are validated strictly, and any other `kind` validates as
+        `ResolutionUnknown`, so a newer agent never makes the whole caps response undecodable.
+        **Safe fallback:** a client that does not know the `kind` treats the source's
+        resolution capability as unsupported. It offers only `defaults.resolution` and omits
+        `resolution` from the scan request, so the agent applies that default (R-J7).
+        There is deliberately no OpenAPI `discriminator` keyword here: a discriminator mapping is
+        closed, and this union is not.
       oneOf:
         - $ref: '#/components/schemas/ResolutionList'
         - $ref: '#/components/schemas/ResolutionRange'
-      discriminator:
-        propertyName: kind
-        mapping:
-          list: '#/components/schemas/ResolutionList'
-          range: '#/components/schemas/ResolutionRange'
+        - $ref: '#/components/schemas/ResolutionUnknown'
+    ResolutionUnknown:
+      type: object
+      description: |
+        A resolution capability of a kind this contract version does not define. Clients apply
+        the safe fallback of `ResolutionCaps` and ignore every other field. It never matches
+        the known kinds, so a malformed `list` or `range` stays invalid.
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          minLength: 1
+          not:
+            enum: [list, range]
     ResolutionList:
       type: object
       required: [kind, values]
