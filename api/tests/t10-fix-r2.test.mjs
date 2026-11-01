@@ -335,7 +335,16 @@ function hextets(addr) {
   const fill = addr.includes('::') ? Array(8 - h.length - t.length).fill('0') : [];
   return [...h, ...fill, ...t].map((x) => parseInt(x, 16));
 }
-function isLoopbackHost(host) {
+// Fix r3, R-T3 host normalisation, for classification only. A domain host may end in ONE root
+// dot, removed here; any other empty label is malformed (null). IP literals are already canonical.
+function classHost(host) {
+  if (host.startsWith('[') || /^\d+\.\d+\.\d+\.\d+$/.test(host)) return host;
+  const name = host.endsWith('.') ? host.slice(0, -1) : host;
+  return name.split('.').includes('') ? null : name;
+}
+function isLoopbackHost(raw) {
+  const host = classHost(raw);
+  if (host === null) return false; // malformed: the callers reject it before this matters
   if (host === 'localhost' || host.endsWith('.localhost')) return true;
   const v4 = host.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
   if (v4) return Number(v4[1]) === 127 || host === '0.0.0.0';
@@ -354,6 +363,7 @@ function classify(origin, { dev = false, consented = new Set(), baked = new Set(
   if (origin === 'null' || url.origin === 'null') return { cls: 'ineligible' };
   const serial = url.origin;
   const scheme = url.protocol.slice(0, -1);
+  if (classHost(url.hostname) === null) return { cls: 'ineligible', serial }; // empty label
   if (isLoopbackHost(url.hostname)) {
     return { cls: dev && (scheme === 'http' || scheme === 'https') ? 'dev-eligible' : 'ineligible', serial };
   }
@@ -361,7 +371,8 @@ function classify(origin, { dev = false, consented = new Set(), baked = new Set(
   if (consented.has(serial) || baked.has(serial)) return { cls: 'allowed', serial };
   return { cls: 'eligible', serial };
 }
-const loadBaked = (list) => new Set(list.map((o) => new URL(o).origin).filter((o) => !isLoopbackHost(new URL(o).hostname)));
+const loadBaked = (list) => new Set(list.map((o) => new URL(o)).filter((u) =>
+  classHost(u.hostname) !== null && !isLoopbackHost(u.hostname)).map((u) => u.origin));
 function preAuth(c) {
   return {
     corsOnGetHello: ['eligible', 'allowed', 'dev-eligible'].includes(c.cls),
@@ -403,6 +414,43 @@ test('r2-5 R-T3 classifies loopback for every scheme and rejects baked loopback 
   assert.match(contract, /A well-formed `https:\/\/host\[:port\]` origin whose host is \*\*not loopback\*\*/);
   assert.match(contract, /\*\*Installer-baked loopback origins\*\* are rejected/);
   assert.match(spec.components.parameters.Origin.description, /loopback get no CORS headers/);
+});
+test('r3 rule model: one root dot is removed for classification only; other empty labels reject', () => {
+  const closed = { corsOnGetHello: false, corsOnPostConsent: false, canPrompt: false, canMintToken: false };
+  for (const o of ['https://localhost.', 'https://LOCALHOST.:8443', 'https://app.localhost.', 'http://localhost.:3000']) {
+    const off = classify(o);
+    assert.equal(off.cls, 'ineligible', `${o} dev off`);
+    assert.deepEqual(preAuth(off), closed, o);
+    const on = classify(o, { dev: true, consented: new Set([new URL(o).origin]) });
+    assert.equal(on.cls, 'dev-eligible', `${o} dev on, even if consented`);
+    assert.equal(on.serial, new URL(o).origin, `${o} serial keeps its root dot`);
+    assert.equal(preAuth(on).corsOnPostConsent, false, o);
+  }
+  // Baked root-qualified loopback entries are rejected at load, like their dotless forms.
+  assert.deepEqual([...loadBaked(['https://localhost.', 'https://app.localhost.:8443', 'https://app.example.com.'])],
+    ['https://app.example.com.']);
+  // Empty labels other than one terminal root dot are malformed: ineligible, dev or not, and never baked.
+  for (const o of ['https://localhost..', 'https://app.localhost..', 'https://.localhost', 'https://app..localhost',
+    'https://.', 'https://127.0.0.1..', 'https://app.example.com..', 'https://.app.example.com']) {
+    assert.equal(classify(o).cls, 'ineligible', `${o} dev off`);
+    assert.equal(classify(o, { dev: true }).cls, 'ineligible', `${o} dev on`);
+    assert.equal(loadBaked([o]).size, 0, `${o} baked`);
+  }
+  // Non-loopback controls; exact serialised comparison keeps the dot (no normalisation there).
+  assert.equal(classify('https://localhost.example.com').cls, 'eligible');
+  assert.equal(classify('https://localhost.example.com.').cls, 'eligible');
+  const baked = loadBaked(['https://app.example.com']);
+  assert.equal(classify('https://app.example.com', { baked }).cls, 'allowed');
+  assert.equal(classify('https://app.example.com.', { baked }).cls, 'eligible', 'root-qualified is a distinct origin');
+  assert.equal(classify('https://app.example.com.', { consented: new Set(['https://app.example.com.']) }).cls, 'allowed');
+  assert.equal(classify('https://127.0.0.1.').serial, 'https://127.0.0.1', 'URL canonicalises the IPv4 root dot');
+});
+test('r3 R-T3 states the root-dot normalisation and the empty-label rejection', () => {
+  assert.match(contract, /\*\*Host normalisation for classification\.\*\*/);
+  assert.match(contract, /`localhost\.` and `app\.localhost\.` are loopback/);
+  assert.match(contract, /any other empty label[\s\S]{0,160}?is\s\*\*malformed\*\*/);
+  assert.match(contract, /used \*\*only\*\* for this classification/);
+  assert.match(contract, /\n## Fix r3\n[\s\S]*\| r3-1 \|/);
 });
 
 // ------------------------------------------------------------------ N1 agent restart
