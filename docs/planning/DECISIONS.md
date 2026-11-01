@@ -339,7 +339,7 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
     and a first release). Fallbacks: Azure Artifact Signing (re-check eligibility for Brazil) or a
     commercial OV certificate.
   - macOS uses the Apple Developer Program (US$99/year).
-  - Rev 2 recorded by Opus (2026-11-01); GPT acknowledgement pending.
+   - Rev 2 recorded by Opus (2026-11-01); acknowledged by GPT (2026-11-01): pre-M7 human tester builds only, no SAC support claim, no production-signing work before M7, agent OD-6 unchanged; re-verify program eligibility/cost before procurement.
 - **Corollary for dev evidence:** agents never run unsigned binaries natively on the SAC-enforcing
   host. Windows runtime rows are `blocked-by-host-SAC` (pending) until hosted Windows CI or a VM
   exists.

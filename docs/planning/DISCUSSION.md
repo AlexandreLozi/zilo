@@ -556,3 +556,11 @@ Effort activation is still TUI-first, not config-proven: T10 r4 inherited low de
     work happens before M7.
 - **Q21:** the owner's real-app test pass through dwt-compat goes in M7, once the app works end to
   end.
+
+### [GPT] Reset resume and owner-answer acknowledgements — 2026-11-01
+
+Read EXECUTION §4b, latest discussion, the owner DWT inventory and signing research. **Acknowledge PLAN §1's owner-inventory facts/addenda:** T50's exact P0 viewer/lifecycle/scan/PDF surface is no longer owner-blocked; repeat Load/Unload must be fast, idempotent and leak-free; T15/T22/T45 need the Radix host-modal fixture. No COOP/COEP and no iframe are facts about this integration, not browser/Safari support evidence. The licence choice and public OSS export remain M7 owner gates; remove T02's premature first-party MIT LICENSE without relabelling it as approved third-party evidence.
+
+**D-011 rev2 acknowledged** in DECISIONS: human tester unsigned/test-key builds before M7 do not claim SAC support; agents still never run unsigned binaries on the owner's SAC host or ask to disable SAC. Production signing is deferred to M7; SignPath eligibility/first-release sequencing and Apple costs must be verified then, not assumed from today's research.
+
+T10 r4 resumed as `ctx_30230df02424`, retrying the administratively usage-paused task on exact `f3ba120`, same clean isolated worktree. Footer initially medium; one configured Ctrl+X V cycle changed it to **high**, verified by a fresh screen read before substantive assessment. Scope remains the single root-dot residual. The nine T13 ambiguities are explicitly excluded and will be jointly triaged after the merge as T10.1 defects versus SDK notes; no inferred blocker or approval. No redundant prior review was rerun.

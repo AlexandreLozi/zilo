@@ -259,7 +259,7 @@ Wave 1 (T11, T12, T13, T15, T56a) starts once T10 merges. T04a and T05 are alrea
 | T02-L | author settled; terminal released; integration handed to T02 | t02-license-gate | ctx_8d851f7ca858 | combined T02 Claude review | author reports 65 tests pass; review pending | |
 | T04b | merged under D-010a; old terminal cleanup release_unknown | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce | Claude code PASS; Windows runtime blocked-by-host-SAC; macOS/hosted CI pending | 9e43bf7 |
 | T04b-V | abandoned/superseded by Claude evidence; old resource released | t04b-native-validation | ctx_59467948111b | masters reviewed replacement evidence | no resumed Windows runtime execution (OD-6) | |
-| T10 | **USAGE-PAUSED; FIRST ON RESET:** narrow GPT r4 of f3ba120 (high). No substantive review/tests/edits performed. Then both-master exact contract approval and Opus merge | t10-contract @f3ba120; origin/AlexandreLozi/t10-review-r4 @f3ba120; worktree t10-review-r4 clean | Claude fix r3 ctx_062ede7e79cc done; joint round-3 escalation agreed | task_98de4952c49d / ctx_d1000c7fe8db settled failed=usage-paused/incomplete, released; no verdict | r3 report255b3e5: one root-dot localhost residual; fix f3ba120 author reports60/60. r4 not done, contract NOT approved. Fresh/retry dispatch only after reset authorization, verify TUI high | |
+| T10 | **RESUMED:** narrow GPT r4 of f3ba120, high footer verified. Then exact contract both-master approval and Opus merge | t10-contract @f3ba120; AlexandreLozi/t10-review-r4 | Claude fix r3 ctx_062ede7e79cc done; joint escalation agreed | task_98de4952c49d / ctx_30230df02424 retry of usage-paused ctx_d1000c7fe8db | only root-dot classification residual; nine T13 ambiguities excluded from r4, triage after merge. No contract approval yet | |
 | T03 | r3 PASS @dc19861; merged by Opus; exact-SHA main CI gap closed | archived on origin; locals pruned by Opus | Claude fix r2 @26f5ab5 | task_f3300d311cb8 / ctx_d21e2a135b45 (released) | main f38e3ea packaging41316990218 +backend41316990194 success; signing/macOS runtime pending | f38e3ea |
 | T12-proto | r2 PASS @fc72aa9; merged by Opus | t12-proto-pages; AlexandreLozi/t12-proto-review-r2 | Claude fix r1 @574aa2c | task_b312bc4653ca / ctx_f5c436f16f0e (settled; release retained/user_takeover) | rebased Linux Debug/Release 183/183 reported by Opus; prototype only; cross-OS pending | 32051c6 |
 | T06 | blocked on joint ICA/worker/image strategy and T11 guard retirement | | | | shipping graph blocked | |
@@ -272,6 +272,12 @@ Both exact checkpoint branch heads are pushed to origin. No polling or wait loop
 After reset authorization: **T10 r4 high → both-master contract approval + Opus T10 merge → Wave 1
 (T11/T12/T13/T15/T56a) in dependency order**. T02 fix r2/Claude r3 and T01 follow at lower priority.
 No contract approval, shipping graph clearance, or T06 unblock is implied by a usage checkpoint.
+
+**RESUME authorized by liaison (2026-11-01; GPT acted 19:12 UTC):** T10 r4 high first;
+exact contract joint approval/Opus merge; post-merge T13 ambiguity triage; GPT reviews T01,
+T15, T13 in FE with Opus; T02 fix r2; BE T11 high and T12 medium by merged dependencies.
+T02 fix r2 must also remove the premature first-party MIT LICENSE per owner M7 deferral,
+without inventing a licence or weakening third-party default-deny/evidence hashes.
 
 ## 5. Concurrency bounds
 - **Per lane at once:** at most 4 live authors, 2 live reviewers, and 1 fix dispatch per task.
