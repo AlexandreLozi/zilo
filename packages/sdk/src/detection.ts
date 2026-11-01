@@ -58,7 +58,7 @@ export const TRANSITIONS: Readonly<Record<DetectionStateName, readonly Detection
   ],
   'unreachable-stopped': ['checking'],
   outdated: ['checking'],
-  'awaiting-consent': ['awaiting-consent', ...OUTCOMES.filter((s) => s !== 'awaiting-consent')],
+  'awaiting-consent': OUTCOMES.filter((s) => s !== 'awaiting-consent'),
   'consent-expired': ['checking'],
   'unauthorized-origin': ['checking'],
   'consent-denied': ['checking'],
@@ -296,7 +296,9 @@ export class Detector {
         await this.authorized(run, base);
         return;
       case 'pending':
-        this.go({ ...base, state: 'awaiting-consent', promptExpiresAt: consent.promptExpiresAt });
+        if (this.snap.state !== 'awaiting-consent') {
+          this.go({ ...base, state: 'awaiting-consent', promptExpiresAt: consent.promptExpiresAt });
+        }
         this.schedulePoll(run, base, consent.pollAfterSeconds ?? DEFAULT_POLL_SECONDS);
         return;
       case 'denied':
@@ -337,7 +339,7 @@ export class Detector {
       switch (err.code) {
         case 'consent-pending':
           // From POST /auth/token: a prompt is open; poll like a 202 (R-A7).
-          this.go({ ...base, state: 'awaiting-consent' });
+          if (this.snap.state !== 'awaiting-consent') this.go({ ...base, state: 'awaiting-consent' });
           this.schedulePoll(run, base, err.retryAfterSeconds ?? DEFAULT_POLL_SECONDS);
           return;
         case 'consent-denied':
