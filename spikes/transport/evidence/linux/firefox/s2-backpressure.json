@@ -7,7 +7,7 @@
       {
         "ok": true,
         "seq": 1,
-        "sessionId": "4abbd8259568857c",
+        "sessionId": "488b1dd0d2317abb",
         "v": 1,
         "bytes": 4096
       }
@@ -16,7 +16,7 @@
       {
         "ok": false,
         "code": "busy",
-        "sessionId": "4abbd8259568857c",
+        "sessionId": "488b1dd0d2317abb",
         "v": 1
       }
     ],
@@ -24,7 +24,7 @@
       {
         "ok": true,
         "seq": 1,
-        "sessionId": "4abbd8259568857c",
+        "sessionId": "488b1dd0d2317abb",
         "v": 1,
         "bytes": 4096
       }
@@ -36,10 +36,10 @@
     "last": {
       "ok": false,
       "code": "consumer-stalled",
-      "sessionId": "4abbd8259568857c",
+      "sessionId": "488b1dd0d2317abb",
       "v": 1
     },
-    "stalledAfterMs": 2607,
+    "stalledAfterMs": 2610,
     "popupRejections": [
       "binary-ack-overdue",
       "consumer-stalled"
@@ -50,5 +50,5 @@
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-11-01T14:49:26.047Z"
+  "recordedAt": "2026-11-01T15:12:14.551Z"
 }

@@ -8,13 +8,13 @@
       "state": "bound",
       "lost": {
         "reason": "pagehide",
-        "sessionId": "45629d3ba60ff28d",
-        "ms": 1079
+        "sessionId": "47b53e029f3e4b11",
+        "ms": 1078
       },
       "reconnect": {
         "ok": true,
-        "previousSessionId": "45629d3ba60ff28d",
-        "sessionId": "78d0f79543f2f50b",
+        "previousSessionId": "47b53e029f3e4b11",
+        "sessionId": "e59a49c79aed3f69",
         "nonceFresh": true,
         "hello": true
       }
@@ -23,44 +23,44 @@
       "state": "lost",
       "lost": {
         "reason": "pagehide",
-        "sessionId": "78d0f79543f2f50b",
-        "ms": 1103
+        "sessionId": "e59a49c79aed3f69",
+        "ms": 1105
       },
       "reconnect": {
         "ok": true,
-        "previousSessionId": "45629d3ba60ff28d",
-        "sessionId": "78d0f79543f2f50b",
+        "previousSessionId": "47b53e029f3e4b11",
+        "sessionId": "e59a49c79aed3f69",
         "nonceFresh": true,
         "hello": true
       },
-      "detectMs": 10,
+      "detectMs": 7,
       "popupOpen": true
     },
     "again": {
       "ok": true,
-      "sessionId": "91100626d786e01f"
+      "sessionId": "0f5c3d347d578456"
     },
     "silent": {
       "state": "lost",
       "lost": {
         "reason": "no-pong",
-        "sessionId": "91100626d786e01f",
+        "sessionId": "0f5c3d347d578456",
         "ms": 11074
       },
       "reconnect": {
         "ok": true,
-        "previousSessionId": "45629d3ba60ff28d",
-        "sessionId": "78d0f79543f2f50b",
+        "previousSessionId": "47b53e029f3e4b11",
+        "sessionId": "e59a49c79aed3f69",
         "nonceFresh": true,
         "hello": true
       },
-      "detectMs": 1821,
+      "detectMs": 1097,
       "suppressedAt": "http://127.0.0.1:47613/bridge"
     },
     "sessions": [
-      "45629d3ba60ff28d",
-      "78d0f79543f2f50b",
-      "91100626d786e01f"
+      "47b53e029f3e4b11",
+      "e59a49c79aed3f69",
+      "0f5c3d347d578456"
     ],
     "mintStatuses": [
       201,
@@ -77,5 +77,5 @@
   "os": "linux",
   "browserVersion": "27.2",
   "playwright": "1.64.1",
-  "recordedAt": "2026-11-01T14:50:39.508Z"
+  "recordedAt": "2026-11-01T15:13:28.601Z"
 }

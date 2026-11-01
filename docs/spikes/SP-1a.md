@@ -2,6 +2,7 @@
 
 **Status:** feasibility evidence for D-003. This is not release evidence (D-009, D-010). **Date:** 2026-10-31;
 **fix r1** (review `docs/reviews/T01-r1.md`) 2026-11-01, see [Fix r1](#fix-r1-review-findings--changes).
+**fix r2** (review `docs/reviews/T01-r2.md`) 2026-11-01, see [Fix r2](#fix-r2-review-findings--changes).
 **Code:** `spikes/transport/` (see its README). **Logs:** `docs/validation/logs/T01/{linux,windows}.log`.
 **Interim note for T10:** `docs/spikes/SP-1a-interim.md`.
 
@@ -26,7 +27,7 @@
 ## What runs where
 | Where | Projects | Result |
 |---|---|---|
-| Local Linux (WSL2 Ubuntu 24.04), code SHA 3c753ff (fix r1) | stub, chromium (including the reviewer's `review-s2.spec.ts`), firefox, webkit ("Playwright WebKit on Linux (scratch libs)", not Safari). Headless only (OD-4). | **60 passed, 5 skipped**, exit 0. Skipped: the headful Chromium prompt test (3 projects; not run headless-only) and 2 WebKit n/a rows. |
+| Local Linux (WSL2 Ubuntu 24.04), code SHA 17accfa (fix r2) | stub, chromium (including the reviewer's `review-s2.spec.ts`), firefox, webkit ("Playwright WebKit on Linux (scratch libs)", not Safari). Headless only (OD-4). | **60 passed, 5 skipped**, exit 0. Skipped: the headful Chromium prompt test (3 projects; not run headless-only) and 2 WebKit n/a rows. |
 | Local native Windows 11, code SHA c921bd2, **observed before OD-6** | stub, webkit ("Playwright WebKit on Windows", not Safari) | 17 passed, 3 skipped. Not re-run: OD-6 forbids native Windows runs. The COOP allow-popups and fix r1 rows have no Windows evidence. |
 | Hosted `ubuntu-latest`, `windows-latest`, `macos-latest` (`.github/workflows/spike-transport.yml`) | linux: all; windows and macOS: stub plus webkit. macOS is observe-only. | **pending**: not yet observed for this head (OD-7). |
 | Real Safari 26 | manual | **pending** |
@@ -64,7 +65,7 @@ assert**. Regenerate the matrix with `node spikes/transport/scripts/matrix.ts`.
 | HTTPS page on a non-loopback hostname is a secure context (public address space only where forced) | pass · address space public (forced) ([json](../../spikes/transport/evidence/linux/chromium/env.json)) | pass · address space public (forced) ([json](../../spikes/transport/evidence/linux/firefox/env.json)) | pass · secure context only; public address space **unproven** ([json](../../spikes/transport/evidence/linux/webkit/env.json)) | pass · secure context only; public address space **unproven** ([json](../../spikes/transport/evidence/win32/webkit/env.json)) | pending | **pending** |
 | fetch `hello` with `targetAddressSpace:'loopback'` (granted where grantable) | pass · 200 ([json](../../spikes/transport/evidence/linux/chromium/hello-tas.json)) | pass · 200 ([json](../../spikes/transport/evidence/linux/firefox/hello-tas.json)) | fail · mixed-content blocked, never sent ([json](../../spikes/transport/evidence/linux/webkit/hello-tas.json)) | fail · mixed-content blocked, never sent ([json](../../spikes/transport/evidence/win32/webkit/hello-tas.json)) | pending | **pending** |
 | fetch `hello` without the option (granted where grantable) | pass · 200 ([json](../../spikes/transport/evidence/linux/chromium/hello-plain.json)) | pass · 200 ([json](../../spikes/transport/evidence/linux/firefox/hello-plain.json)) | fail · mixed-content blocked, never sent ([json](../../spikes/transport/evidence/linux/webkit/hello-plain.json)) | fail · mixed-content blocked, never sent ([json](../../spikes/transport/evidence/win32/webkit/hello-plain.json)) | pending | **pending** |
-| SSE over fetch streaming with `Authorization`, 5 incremental ticks | pass · 200, spread 801 ms ([json](../../spikes/transport/evidence/linux/chromium/sse-fetch-stream.json)) | pass · 200, spread 800 ms ([json](../../spikes/transport/evidence/linux/firefox/sse-fetch-stream.json)) | fail · mixed-content blocked, never sent ([json](../../spikes/transport/evidence/linux/webkit/sse-fetch-stream.json)) | fail · mixed-content blocked, never sent ([json](../../spikes/transport/evidence/win32/webkit/sse-fetch-stream.json)) | pending | **pending** |
+| SSE over fetch streaming with `Authorization`, 5 incremental ticks | pass · 200, spread 801 ms ([json](../../spikes/transport/evidence/linux/chromium/sse-fetch-stream.json)) | pass · 200, spread 801 ms ([json](../../spikes/transport/evidence/linux/firefox/sse-fetch-stream.json)) | fail · mixed-content blocked, never sent ([json](../../spikes/transport/evidence/linux/webkit/sse-fetch-stream.json)) | fail · mixed-content blocked, never sent ([json](../../spikes/transport/evidence/win32/webkit/sse-fetch-stream.json)) | pending | **pending** |
 | 1 MiB binary over fetch | pass · 200 ([json](../../spikes/transport/evidence/linux/chromium/blob.json)) | pass · 200 ([json](../../spikes/transport/evidence/linux/firefox/blob.json)) | fail · mixed-content blocked, never sent ([json](../../spikes/transport/evidence/linux/webkit/blob.json)) | fail · mixed-content blocked, never sent ([json](../../spikes/transport/evidence/win32/webkit/blob.json)) | pending | **pending** |
 | Permission **prompt** (default): never silently allowed | pass · headless auto-deny ([json](../../spikes/transport/evidence/linux/chromium/perm-prompt.json)) | pass · held on prompt ([json](../../spikes/transport/evidence/linux/firefox/perm-prompt.json)) | n/a · query=prompt; fetch TypeError ([json](../../spikes/transport/evidence/linux/webkit/perm-prompt.json)) | n/a · query=prompt; fetch TypeError ([json](../../spikes/transport/evidence/win32/webkit/perm-prompt.json)) | pending | **pending** |
 | Permission prompt, headful Chromium: request held on the real prompt | pass ([json](../../spikes/transport/evidence/linux/chromium/perm-prompt-headful.json)) | n/a | n/a | n/a | pending | **pending** |
@@ -239,3 +240,15 @@ at 3c753ff in the `chromium` project, which now includes them.
 Not changed by fix r1: the Windows column is the pre-OD-6 observation at c921bd2 (no native rerun,
 OD-6); hosted CI and macOS remain pending; the headful Chromium prompt row is the d17a78e
 observation.
+
+## Fix r2: review findings → changes
+Review: `docs/reviews/T01-r2.md` (verdict `changes`; r1 findings 1–4 closed). The reviewer showed a
+test-synchronization defect, not a product defect: no forged source was accepted. Bridge semantics,
+the source/origin/schema checks and `review-s2.spec.ts` are unchanged.
+
+| # | Finding | Change | Evidence |
+|---|---|---|---|
+| 1 | The forged-ready negative control races the legitimate ready: if the real `bridge-ready` arrives first, `waitFor` drops its listener, the forged ready is never checked, and no `wrong-source` rejection is logged (1 of 5 local failures). | `app/app.js` (test harness only, active only with `injectFakeReady`): `waitFor` holds an accepted legitimate ready, and keeps listening, until a message is rejected at the `ready` step. The forged ready therefore always goes through the same checks, whichever arrives first. If it is never rejected, the held ready is released at the 5 s timeout and the test fails (no rejection). The test still requires a `wrong-source` rejection at `ready` and, in strict engines, a completed bridge. | Local Linux at 17accfa (`linux.log`): full headless suite **60 passed, 5 skipped**, exit 0; `wrong event.source` test `--repeat-each=20` in chromium, firefox and webkit: **60 passed, 0 failed**, each with exactly one rejection `{at: ready, code: wrong-source}`. |
+
+Not changed by fix r2: the Windows column (pre-OD-6, c921bd2), hosted macOS observe-only rows, and the
+pending real-Safari / public-source gate.

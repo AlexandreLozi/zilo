@@ -8,11 +8,11 @@
       "steps": [
         {
           "s": "opened",
-          "ms": 15,
+          "ms": 31,
           "closedImmediately": false
         }
       ],
-      "nonce": "42ed2fbece4d1c3b3ed0473a7b4d2f00",
+      "nonce": "ce55bdb2b2d33543c67024027eb7f143",
       "code": "coop-severed",
       "readyFail": "popup-closed",
       "popupClosed": true,
@@ -31,5 +31,5 @@
   "os": "linux",
   "browserVersion": "27.2",
   "playwright": "1.64.1",
-  "recordedAt": "2026-11-01T14:49:55.752Z"
+  "recordedAt": "2026-11-01T15:12:45.031Z"
 }

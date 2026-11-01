@@ -11,15 +11,15 @@
       "steps": [
         {
           "s": "opened",
-          "ms": 0,
+          "ms": 1,
           "closedImmediately": false
         },
         {
           "s": "ready",
-          "ms": 13
+          "ms": 15
         }
       ],
-      "nonce": "932b08be353666088095147436d3db01",
+      "nonce": "ed982810e0f10b3970fb029f44b0fb3a",
       "code": "bridge-error:nonce-replayed",
       "coopHeader": null
     },
@@ -39,5 +39,5 @@
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-11-01T14:49:20.380Z"
+  "recordedAt": "2026-11-01T15:12:07.721Z"
 }

@@ -8,15 +8,15 @@
       "steps": [
         {
           "s": "opened",
-          "ms": 107,
+          "ms": 98,
           "closedImmediately": false
         },
         {
           "s": "ready-timeout",
-          "ms": 5108
+          "ms": 5098
         }
       ],
-      "nonce": "4eca98ebaaadbf5b648c69c7e1a424be",
+      "nonce": "8e7acb5c3770adf9bc06648cd4f1ac01",
       "code": "no-ready-then-timeout",
       "coopHeader": null
     },
@@ -38,5 +38,5 @@
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-11-01T14:49:07.387Z"
+  "recordedAt": "2026-11-01T15:11:54.660Z"
 }
