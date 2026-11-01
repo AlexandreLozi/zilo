@@ -225,7 +225,7 @@ Dispatches lost in the restart are bookkeeping only and are never reused.
 ## 4b. BE lane status (GPT edits)
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
 |---|---|---|---|---|---|---|
-| T02 | evidence/tooling committed @7e09b60; author released; handed to Opus for Claude review | t02-naps2-spike | ctx_975ddc338e6a (retry of abandoned ctx_94f23f46bf05) | Opus to dispatch Claude | author reports 65 gate + 18 spike tests pass; expected denials preserved; shipping graph blocked | |
+| T02 | Claude r1 changes @8895977; fresh GPT fix r1 active | t02-naps2-spike; AlexandreLozi/t02-fix-r1 | task_a1ccd2676cd6 / ctx_7605215e19fe (GPT medium, BE Run) | Claude r1 released; r2 required after fix | F1/F2 licence-policy regressions red; F3/F4 CI fixes requested; shipping graph/T06 remain blocked | |
 | T02-L | author settled; terminal released; integration handed to T02 | t02-license-gate | ctx_8d851f7ca858 | combined T02 Claude review | author reports 65 tests pass; review pending | |
 | T04b | merged under D-010a; old terminal cleanup release_unknown | t04b-backend-scaffold | ctx_317f6a3478f7 | ctx_da98e443e5ce | Claude code PASS; Windows runtime blocked-by-host-SAC; macOS/hosted CI pending | 9e43bf7 |
 | T04b-V | abandoned/superseded by Claude evidence; old resource released | t04b-native-validation | ctx_59467948111b | masters reviewed replacement evidence | no resumed Windows runtime execution (OD-6) | |

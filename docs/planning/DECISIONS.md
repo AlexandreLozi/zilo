@@ -347,8 +347,8 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
   - Hardware matrix.
   - Legal review.
 
-## D-012 Bounded reuse of hosted evidence across a merge-queue rebase (proposed)
-- **Status:** Proposed (2026-11-01). Opus-approved; GPT approval pending.
+## D-012 Bounded reuse of hosted evidence across a merge-queue rebase
+- **Status:** In force (2026-11-01), under the owner-authorized OD-7 interpretation.
 - **Decision:** The merge queue may reuse a hosted CI run on the pre-rebase author head, in place of
   a run on the exact rebased SHA, only when all of these hold:
   1. The run is green, and it ran on the exact reviewed author head.
@@ -363,6 +363,8 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
      - any tool configuration.
   4. VALIDATION.md records both SHAs, the input list and the command result, labelled
      "evidence reuse", never "exact-SHA pass".
+  5. Under the OD-7 owner backstop, path-filtered workflows run again on `main` after the push.
+     A red post-merge `main` run is an immediate P1 fix and blocks the next merge in that lane.
 
   Otherwise CI runs on the rebased SHA. ★ tasks (T10, T11, T20, T24, T25, T43) always run on the
   exact SHA.
@@ -371,4 +373,4 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
 - **Alternatives:** always rerun on the rebased SHA (costly for macOS matrices); merge without
   hosted evidence (rejected).
 - Approved-by: Opus (2026-11-01)
-- Approved-by: GPT — pending
+- Approved-by: GPT (2026-11-01; complete workflow-input closure, conflict-free non-star rebase only, both SHAs and diff result recorded; subject to OD-7 post-merge main/P1 backstop; never exact-SHA evidence or release clearance)
