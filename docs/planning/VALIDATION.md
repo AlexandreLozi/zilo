@@ -13,6 +13,20 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 |---|---|---|---|---|---|---|---|---|---|---|
 | T04b backend scaffold | 9e43bf7 | 7284a3b (non-docs tree identical at 9e43bf7) | GPT (gpt-6.1-sol) | Claude opus-5-5, PASS, `docs/reviews/T04b-r1.md` | pass (6/6) | pass | local: blocked-by-host-SAC; **hosted windows-latest: pass** | **hosted macos-latest + macos-15-intel: pass** | **pass**: run 41240050339 @35019a3 (backend tree identical to 9e43bf7), ubuntu/windows/macos-arm64/macos-intel all success | `docs/validation/T04b.md`, `docs/validation/logs/T04b/`, https://github.com/AlexandreLozi/zilo/actions/runs/41240050339 |
 
+## Merge record: T01 transport spike / SP-1a (2026-11-01, Opus queue)
+- Merged at `4a2a7dcc70de9ba4cfa2845bdf02c8ba6ce1ce22` (fast-forward): a no-conflict rebase of
+  83df7dd plus the review commit b26f06d onto main.
+- Author: Claude. Fix r1 resolved the 4 r1 findings; fix r2 (17accfa, 83df7dd) made the
+  forged-ready negative control deterministic.
+- Reviewer: GPT. r1 changes, r2 changes (1 residual), **r3 PASS** (`docs/reviews/T01-r3.md`,
+  b26f06d): 5/5 headless Chromium bridge-spec repetitions (45 tests), no bypass or drift.
+- Hosted: spike-transport run 41320440243 on 83df7dd is green. **D-012 evidence reuse:** the rebase
+  had no conflicts, and `git diff 83df7dd 4a2a7dc -- spikes/transport
+  .github/workflows/spike-transport.yml` is empty. This is not an exact-SHA pass. The push to main
+  reruns spike-transport (path-filtered) on the exact SHA as the OD-7 backstop.
+- Still pending outside this scope (M6): real Safari 26 (SP-1b), the public-to-loopback proof in
+  WebKit, and the production S2 path.
+
 ## Merge record: T10 ★ contract (2026-11-01, Opus queue)
 - **Integrated review record:** GPT r1 changes (13 findings), r2 changes (5 residuals), r3 changes
   (root-dot localhost), **r4 PASS** (`docs/reviews/T10-r4.md`, e939912, high footer verified),
