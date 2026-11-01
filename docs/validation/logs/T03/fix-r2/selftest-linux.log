@@ -1,0 +1,9 @@
+--- object-level
+OK   (a) key absent (null item): assertion continues
+OK   (b) key without ZiloAgent: assertion continues
+OK   (c) key retains ZiloAgent: assertion FAILS
+SELFTEST PASS
+exit=0
+--- negative control: old expression on null under strict mode
+ParentContainsErrorRecordException: The property 'Properties' cannot be found on this object. Verify that the property exists.
+exit=1

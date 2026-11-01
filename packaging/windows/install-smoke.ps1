@@ -8,6 +8,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'smoke-lib.ps1')
 New-Item -ItemType Directory -Force $LogDir | Out-Null
 $msiPath = (Resolve-Path $Msi).Path
 $installDir = Join-Path $env:LOCALAPPDATA 'Programs\Zilo'
@@ -58,7 +59,8 @@ Write-Host '=== uninstall'
 $rc = Msiexec @('/x', "`"$msiPath`"", '/qn', '/norestart', '/l*v', "`"$LogDir\uninstall.log`"")
 if ($rc -ne 0) { Fail "msiexec /x exit $rc" }
 if (Test-Path $installDir) { Fail "$installDir left behind" }
-if ((Get-ItemProperty $runKey -ErrorAction SilentlyContinue).PSObject.Properties.Name -contains 'ZiloAgent') { Fail 'Run key left behind' }
+if (Test-RegValuePresent $runKey 'ZiloAgent') { Fail 'Run key left behind' }
+Write-Host 'Run\ZiloAgent removed'
 if (Test-Path $protoKey) { Fail 'zilo:// key left behind' }
 if (Test-Path $ownKey) { Fail 'HKCU\Software\Zilo\Agent left behind' }
 if ((Get-ItemProperty $siblingKey -Name Sentinel -ErrorAction SilentlyContinue).Sentinel -ne 'keep-me') {
