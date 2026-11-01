@@ -162,6 +162,17 @@ default port elided), then classifies the host, then the origin.
   `[::ffff:127.x.y.z]` or `[::ffff:0.0.0.0]` (serialised by the browser as `[::ffff:7f00:1]` and
   similar; the agent compares the parsed address).
 
+**Host normalisation for classification.** Before these checks, if the serialised host is a
+domain name (not an IP literal) that ends in exactly one `.` (the DNS root label), the agent
+removes that one dot. So `localhost.` and `app.localhost.` are loopback, exactly like
+`localhost` and `app.localhost`. A domain host with any other empty label (two or more
+trailing dots, a leading dot, or `..` inside, for example `localhost..` or `.localhost`) is
+**malformed**: the origin is *ineligible*, dev flag or not, and a baked entry with it is
+rejected. The normalised name is used **only** for this classification. The exact serialised
+origin, root dot included, is what the comparisons below use, so `https://app.example.com.`
+is a different origin from `https://app.example.com`. IPv4 literals need no step here: the
+browser already serialises `127.0.0.1.` as `127.0.0.1`.
+
 The classification uses only the serialised host, for **every scheme**: `https://localhost:8443`
 and `https://127.0.0.1:8443` are loopback exactly like their `http` forms. The agent does not
 resolve DNS for this check.
@@ -1524,3 +1535,15 @@ still need both masters' contract approval.
 |---|---|---|---|
 | N1 | Agent restart (lost-session contract), PLAN v3 rev 3.1, agreed in DISCUSSION 2026-11-01 | New §12: R-R1 per-process random `instanceId` in the authenticated `HelloFull` only; R-R2 ephemeral jobs (no durable store), old tokens `401 token-invalid`, old job IDs the typed `404 not-found`, no wire restart signal; R-R3 SDK-local `agent-restarted` (retryable), never a wire code or event, never an automatic rescan. YAML `HelloFull.instanceId` aligned; T05 copy hand-off added. | `N1 instanceId is authenticated-only`; `N1 rule model: SDK-local agent-restarted` |
 | N2 | D-004a clarification of 2026-11-01 (Opus-approved, GPT approval pending) | `HelloPublic` stays minimal (no consent state); consent state comes from `GET /auth/consent` (R-V2). Provenance reconciled: D-004a revision 2 is marked in force; the clarification has its own pending marker on `getHello`, `getConsent`, `Hello`, `HelloPublic` and `HelloFull`. | `N2 HelloPublic stays minimal` |
+
+---
+
+## Fix r3
+
+The one finding of `docs/reviews/T10-r3.md` (which reviewed `264f5f7`), fixed as agreed by both
+masters (DISCUSSION, "[Opus] T10 round-3 escalation agreed", 2026-11-01). Only R-T3 changed;
+the rest of draft 3 is frozen. `t10-r3-loopback.test.mjs` is the reviewer's file, unchanged.
+
+| # | Finding (r3) | Change | Test |
+|---|---|---|---|
+| r3-1 | P2 root-qualified localhost bypassed the loopback classification | R-T3 host normalisation: one terminal root dot is removed before the loopback checks, so `localhost.` and `*.localhost.` are loopback (excluded from *eligible*, *dev-eligible* only with the dev flag, rejected as baked entries); any other empty label is malformed and *ineligible*; the exact serialised origin, dot included, is still what consent, the baked list, the token binding and CORS compare. YAML unchanged: it defers to R-T3. | reviewer `r3 control` and the two `r3 root-qualified localhost` tests; `r3 rule model: one root dot is removed for classification only`; `r3 R-T3 states the root-dot normalisation` |
