@@ -43,7 +43,23 @@ or tells the liaison terminal. Masters: add new owner questions **here**, not in
     MPL/LGPL (copyleft), and what each means given NAPS2 is LGPL.
   - Until then, add no LICENSE file and keep the repo private.
 
-## Open: things only the owner can provide (each has a lead time, so start early)
+## Owner-provided resources (answered 2026-11-01)
+- **Q19, test hardware:**
+  - The owner has **a person with a Mac and a scanner** for weekday tests (SP-1b real Safari, the
+    hardware matrix).
+  - Both owner PCs are **Intel x64**. AMD is optional: it runs the same x64 code. **Windows on ARM**
+    is the case that matters, and it is still unavailable.
+  - **USB and Wi-Fi scanners** are reachable during the week.
+  - Linux: WSL2 is available, and a native install is possible if needed (see below).
+- **Q20, signing:**
+  - The owner prefers **free**. He is willing to try about US$10/month, but that option likely
+    isn't available to individuals in Brazil.
+  - See **`docs/context/code-signing-research.md`**. Plan: unsigned or test-key builds for testers
+    now; SignPath Foundation free OSS signing at the M7 public release; the US$99/year Apple
+    account is the one unavoidable cost if macOS should install without warnings.
+- **Q21, a real-app test pass:** **yes**, once the app works end to end.
+
+## Original wording of Q19-Q21
 19. **Test hardware.** Which machines and scanners can you test on?
     - **A Mac with Safari** is needed. Safari is required for v1, and only a real Mac proves it
       (SP-1b); WebKit in CI isn't enough.
