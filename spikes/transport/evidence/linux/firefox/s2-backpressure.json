@@ -1,0 +1,54 @@
+{
+  "scenario": "s2-backpressure",
+  "outcome": "pass",
+  "expectation": "second blob refused (busy) until the first is acked; after ack a blob is sent; with no event acks only 2 events are posted, then consumer-stalled after ~2000 ms",
+  "observed": {
+    "first": [
+      {
+        "ok": true,
+        "seq": 1,
+        "sessionId": "4abbd8259568857c",
+        "v": 1,
+        "bytes": 4096
+      }
+    ],
+    "whileUnacked": [
+      {
+        "ok": false,
+        "code": "busy",
+        "sessionId": "4abbd8259568857c",
+        "v": 1
+      }
+    ],
+    "afterAck": [
+      {
+        "ok": true,
+        "seq": 1,
+        "sessionId": "4abbd8259568857c",
+        "v": 1,
+        "bytes": 4096
+      }
+    ],
+    "delivered": [
+      1,
+      2
+    ],
+    "last": {
+      "ok": false,
+      "code": "consumer-stalled",
+      "sessionId": "4abbd8259568857c",
+      "v": 1
+    },
+    "stalledAfterMs": 2607,
+    "popupRejections": [
+      "binary-ack-overdue",
+      "consumer-stalled"
+    ]
+  },
+  "console": [],
+  "project": "firefox",
+  "os": "linux",
+  "browserVersion": "157.0",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-11-01T14:49:26.047Z"
+}

@@ -8,42 +8,41 @@
       "steps": [
         {
           "s": "opened",
-          "ms": 116,
+          "ms": 102,
           "closedImmediately": false
         },
         {
           "s": "ready",
-          "ms": 176
+          "ms": 140
         },
         {
           "s": "welcome",
-          "ms": 183,
-          "sessionId": "ca4dcfc6e55e1186"
+          "ms": 154,
+          "sessionId": "de8587f8530456ea"
         },
         {
           "s": "op-hello",
-          "ms": 186,
+          "ms": 158,
           "ok": true
         },
         {
           "s": "op-blob",
-          "ms": 199,
+          "ms": 166,
           "ok": true
         },
         {
           "s": "op-blob-oversize",
-          "ms": 201,
+          "ms": 166,
           "code": "too-large"
         },
         {
           "s": "op-events",
-          "ms": 1206,
+          "ms": 1171,
           "ticks": 5
         }
       ],
-      "coopHeader": null,
-      "nonce": "a30d2073b4d997318fdc061feb238b82",
-      "sessionId": "ca4dcfc6e55e1186",
+      "nonce": "32248806e485c927bc0f0d40c5020c2f",
+      "sessionId": "de8587f8530456ea",
       "hello": {
         "ok": true,
         "product": "zilo-spike-agent"
@@ -51,7 +50,7 @@
       "blob": {
         "ok": true,
         "bytes": 1048576,
-        "ms": 13
+        "ms": 8
       },
       "oversize": {
         "code": "too-large"
@@ -67,7 +66,8 @@
       },
       "unknownOp": {
         "code": "unknown-op"
-      }
+      },
+      "coopHeader": null
     },
     "rejections": [],
     "popupState": {
@@ -89,5 +89,5 @@
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:26:51.270Z"
+  "recordedAt": "2026-11-01T14:48:54.223Z"
 }

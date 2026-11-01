@@ -8,7 +8,7 @@
       "ok": false,
       "status": 403,
       "code": "mint-requires-bridge-origin",
-      "ms": 7
+      "ms": 6
     },
     "audit": [
       [
@@ -23,5 +23,5 @@
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:27:30.453Z"
+  "recordedAt": "2026-11-01T14:49:51.665Z"
 }

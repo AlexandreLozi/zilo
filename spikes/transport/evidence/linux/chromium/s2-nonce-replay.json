@@ -11,17 +11,17 @@
       "steps": [
         {
           "s": "opened",
-          "ms": 13,
+          "ms": 0,
           "closedImmediately": false
         },
         {
           "s": "ready",
-          "ms": 28
+          "ms": 10
         }
       ],
-      "coopHeader": null,
-      "nonce": "a6bb0bc60a1f992f69f69681ce494061",
-      "code": "bridge-error:nonce-replayed"
+      "nonce": "f3750e197c8401f192411191aa8df72e",
+      "code": "bridge-error:nonce-replayed",
+      "coopHeader": null
     },
     "mintStatuses": [
       [
@@ -39,5 +39,5 @@
   "os": "linux",
   "browserVersion": "156.0.8078.4",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:26:37.650Z"
+  "recordedAt": "2026-11-01T14:48:23.316Z"
 }

@@ -1,0 +1,77 @@
+{
+  "scenario": "s2-navigation-reconnect",
+  "outcome": "pass",
+  "expectation": "reload -> bridge-lost (pagehide notice, or the re-announcement) then bridge-reconnect with a new session; navigation to about:blank -> state lost within 2.5 s (popup still open); a new click rebinds; with the pagehide notice suppressed, the ping deadline reports lost (no-pong); three distinct sessions, three 201 mints",
+  "observed": {
+    "firstOk": true,
+    "reloaded": {
+      "state": "bound",
+      "lost": {
+        "reason": "pagehide",
+        "sessionId": "8513882969b6842a",
+        "ms": 1080
+      },
+      "reconnect": {
+        "ok": true,
+        "previousSessionId": "8513882969b6842a",
+        "sessionId": "6977c1fc89d9ee57",
+        "nonceFresh": true,
+        "hello": true
+      }
+    },
+    "navigated": {
+      "state": "lost",
+      "lost": {
+        "reason": "pagehide",
+        "sessionId": "6977c1fc89d9ee57",
+        "ms": 1107
+      },
+      "reconnect": {
+        "ok": true,
+        "previousSessionId": "8513882969b6842a",
+        "sessionId": "6977c1fc89d9ee57",
+        "nonceFresh": true,
+        "hello": true
+      },
+      "detectMs": 7,
+      "popupOpen": true
+    },
+    "again": {
+      "ok": true,
+      "sessionId": "cd82899e13ade273"
+    },
+    "silent": {
+      "state": "lost",
+      "lost": {
+        "reason": "no-pong",
+        "sessionId": "cd82899e13ade273",
+        "ms": 11513
+      },
+      "reconnect": {
+        "ok": true,
+        "previousSessionId": "8513882969b6842a",
+        "sessionId": "6977c1fc89d9ee57",
+        "nonceFresh": true,
+        "hello": true
+      },
+      "detectMs": 1532,
+      "suppressedAt": "http://127.0.0.1:47613/bridge"
+    },
+    "sessions": [
+      "8513882969b6842a",
+      "6977c1fc89d9ee57",
+      "cd82899e13ade273"
+    ],
+    "mintStatuses": [
+      201,
+      201,
+      201
+    ]
+  },
+  "console": [],
+  "project": "chromium",
+  "os": "linux",
+  "browserVersion": "156.0.8078.4",
+  "playwright": "1.64.1",
+  "recordedAt": "2026-11-01T14:48:42.014Z"
+}

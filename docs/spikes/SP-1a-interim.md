@@ -137,9 +137,20 @@ plus the minted capability.
    anything about Safari. Whether `http://127.0.0.1` fetch is mixed-content-blocked in WebKit is the
    open item.
 4. The bridge binary transfer is bounded only by a size cap and one in-flight transfer. T25 still
-   needs credit-based backpressure for multi-page jobs.
+   needs credit-based backpressure for multi-page jobs. *Fix r1 (2026-11-01):* the prototype now
+   holds its single binary slot until the app acknowledges the reply, allows at most 2
+   unacknowledged events and cuts off a stalled consumer, and binds every op to the session. That
+   is a one-slot window for the spike, not the production credit scheme, which remains T25's.
 
 ## Update (same day): WebKit
 Playwright WebKit 27.2, on Linux and Windows, is not Safari. In it, the HTTPS page's fetch to
 `http://127.0.0.1` is **blocked as mixed content before sending**, so the agent sees nothing. The S2
 bridge works, and COOP `same-origin-allow-popups` keeps it working. See `SP-1a.md`.
+
+*Correction (fix r1, 2026-11-01):* the WebKit page was not in the public address space. Its resolver
+proxy connects to 127.0.0.1 and WebKit has no address-space override, so this is a mixed-content /
+HTTPS-hostname observation only. Public → loopback semantics remain **unproven** for WebKit and
+Safari; `SP-1a.md` has a manual Safari step with a genuinely public HTTPS source. Also from fix r1:
+the bridge popup must be opened synchronously in the click handler (an `await` before
+`window.open` lost the user activation in Chromium), and navigation or reload of the popup is now
+detected, with a fresh handshake on reload.

@@ -8,15 +8,15 @@
       "steps": [
         {
           "s": "opened",
-          "ms": 115,
+          "ms": 89,
           "closedImmediately": false
         }
       ],
-      "coopHeader": "same-origin",
-      "nonce": "d45d8425f62155de9a6ab90b91c8216a",
+      "nonce": "2d0b31170883448f9e077110792008d2",
       "code": "coop-severed",
       "readyFail": "popup-closed",
-      "popupClosed": true
+      "popupClosed": true,
+      "coopHeader": "same-origin"
     },
     "popupState": {
       "url": "http://127.0.0.1:47613/bridge",
@@ -31,5 +31,5 @@
   "os": "linux",
   "browserVersion": "157.0",
   "playwright": "1.64.1",
-  "recordedAt": "2026-10-31T16:26:51.907Z"
+  "recordedAt": "2026-11-01T14:48:54.767Z"
 }
