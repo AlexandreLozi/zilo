@@ -517,11 +517,10 @@
     {
       "id": "Zilo.Naps2Spike",
       "version": "0.0.0",
-      "sha512": "gdxk+4d9ZEbTNppeUFL9/XNi3AWa/58VlMa3xaMcMcqWuDskNbAJk0oVcZJqDBrBSAggtUJAYYO8Za8j9RMwHg==",
-      "licenseExpression": "MIT",
-      "licenseFile": "LICENSE",
-      "source": "first-party:Zilo.Naps2Spike/Program.cs,Naps2Spike.csproj,LICENSE",
-      "licenseFileSha256": "b948495c6839fa04b197595cd7fa039b55298907f6183aaeb07b4fbfd3edb99f",
+      "sha512": "Bt7YSoUIgvT125AbIjnoWYLBRF9mq20ZKs3OkIWf0IVbkWZ4dK3/uOlVx5zlacuTwIQ4Cs3cJw3+MyLDbvtOJg==",
+      "licenseExpression": "UNLICENSED",
+      "licenseFile": null,
+      "source": "first-party:Zilo.Naps2Spike/Program.cs,Naps2Spike.csproj",
       "deployment": {
         "linkage": "dynamic",
         "separateDll": true,
@@ -696,14 +695,14 @@
     },
     {
       "path": "Naps2Spike.dll",
-      "sha256": "aea010f587847322769704a3126a4499215c1619a9bb72ce462efbf115fd18bf",
+      "sha256": "e2c5290bfe979c6cd6792835c214717515a45c37de297698c260a5d3caa2141f",
       "kind": "managed",
       "packageId": "Zilo.Naps2Spike",
       "packageVersion": "0.0.0"
     },
     {
       "path": "Naps2Spike.pdb",
-      "sha256": "a4e737911825a7eda0213c90148580f8f96d6bf8b32c8aea8e34f7847157e90c",
+      "sha256": "b0d9c1c3143cd3e8dbc25a575c1ba64fd705a3366965671aa267c54c7f0b39d8",
       "kind": "data",
       "packageId": "Zilo.Naps2Spike",
       "packageVersion": "0.0.0"

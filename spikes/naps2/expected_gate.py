@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from inventory import first_party_package, gate_inventory
 
 
 WORKER = [
@@ -16,16 +17,21 @@ WORKER = [
     "payload NAPS2.Sdk.Worker.Win32.dll: exact approved inventory owner required",
 ]
 GTK = ("AtkSharp", "CairoSharp", "GLibSharp", "GdkSharp", "GioSharp", "GtkSharp", "PangoSharp")
-DENIED_IDENTITIES = {name.casefold() for name in (*GTK, "NAPS2.Sdk.Worker.Win32")}
+DENIED_IDENTITIES = {name.casefold() for name in (*GTK, "NAPS2.Sdk.Worker.Win32", "Zilo.Naps2Spike")}
+FIRST_PARTY = ["package Zilo.Naps2Spike@0.0.0: missing exact package policy pin (id/version/hash/expression)"] + [
+    f"payload {name}: exact approved inventory owner required" for name in (
+        "Naps2Spike.deps.json", "Naps2Spike.dll", "Naps2Spike.pdb", "Naps2Spike.runtimeconfig.json")]
 EXPECTED = {
     "win-x64": (1, "denied", 28, 79, WORKER + ["payload NAPS2.Worker.exe: exact approved inventory owner required"]),
     "win-arm64": (1, "denied", 28, 78, WORKER),
     "linux-x64": (1, "denied", 32, 81,
         [f"package {name}@3.24.24.95: missing exact package policy pin (id/version/hash/expression)" for name in GTK]
         + [f"payload {name}.dll: exact approved inventory owner required" for name in GTK]),
-    "osx-arm64": (0, "passed", 27, 77, []),
-    "osx-x64": (0, "passed", 27, 77, []),
+    "osx-arm64": (1, "denied", 27, 77, []),
+    "osx-x64": (1, "denied", 27, 77, []),
 }
+EXPECTED = {rid: (code, status, packages, payloads, errors + FIRST_PARTY)
+    for rid, (code, status, packages, payloads, errors) in EXPECTED.items()}
 
 
 def main():
@@ -42,7 +48,15 @@ def main():
             raise ValueError("D-010b forbids exceptions and reviewed payload waivers in this spike")
         if any(pin["id"].casefold() in DENIED_IDENTITIES for pin in policy["packages"]):
             raise ValueError("D-010b forbids approval pins for denied identities")
-        if json.loads(inventory.read_text())["rid"] != args.rid:
+        graph = json.loads(inventory.read_text())
+        source = json.loads((root / f"evidence/inventory/{args.rid}.json").read_text())
+        own = first_party_package()
+        if [p for p in source["packages"] if p["id"].casefold() == "zilo.naps2spike"] != [own]:
+            raise ValueError("First-party source inventory differs from actual private UNLICENSED inputs")
+        expected_own = gate_inventory({"rid": args.rid, "packages": [own], "payloads": []})["packages"]
+        if [p for p in graph["packages"] if p["id"].casefold() == "zilo.naps2spike"] != expected_own:
+            raise ValueError("First-party gate metadata differs from private UNLICENSED source")
+        if graph["rid"] != args.rid:
             raise ValueError("Inventory RID differs from asserted RID")
         result = subprocess.run([sys.executable, str(root / "../../tools/license-gate/gate.py"),
             "check", str(inventory), "--policy", str(root / "policy.json")], capture_output=True, text=True)

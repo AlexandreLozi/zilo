@@ -663,25 +663,6 @@
         "https://api.nuget.org/v3-flatcontainer/zxing.net/0.16.11/zxing.net.0.16.11.nupkg",
         "NuGet lock contentHash: OZfAVu88hl87BffQ+rlWCj/vLvAhhCK4QnFaoveeF/MY8SjHNSYBQ3qyUEWlPKNgBQGh1syXhCDg10vUnCsqkg=="
       ]
-    },
-    {
-      "id": "Zilo.Naps2Spike",
-      "version": "0.0.0",
-      "sha512": "gdxk+4d9ZEbTNppeUFL9/XNi3AWa/58VlMa3xaMcMcqWuDskNbAJk0oVcZJqDBrBSAggtUJAYYO8Za8j9RMwHg==",
-      "licenseExpression": "MIT",
-      "review": {
-        "reviewer": "GPT T02 author technical interpretation; independent Claude/legal review pending",
-        "date": "2026-10-31",
-        "reference": "docs/spikes/SP-2a.md#license-evidence"
-      },
-      "obligations": [
-        "license-text",
-        "notice"
-      ],
-      "provenance": [
-        "first-party:Zilo.Naps2Spike/Program.cs,Naps2Spike.csproj,LICENSE",
-        "NuGet lock contentHash: gdxk+4d9ZEbTNppeUFL9/XNi3AWa/58VlMa3xaMcMcqWuDskNbAJk0oVcZJqDBrBSAggtUJAYYO8Za8j9RMwHg=="
-      ]
     }
   ],
   "exceptions": [],

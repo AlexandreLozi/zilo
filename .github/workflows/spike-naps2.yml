@@ -31,6 +31,7 @@ jobs:
           python -B -m unittest discover -s tests -p test_real_gate.py -v
           python -B -m unittest discover -s tests -p test_expected_gate.py -v
           python -B -m unittest discover -s tests -p test_review_t02_r1.py -v
+          python -B -m unittest discover -s tests -p test_review_t02_r2.py -v
           python -B -m unittest discover -s tests -p test_inventory.py -v
 
   published-inventory:
