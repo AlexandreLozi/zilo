@@ -37,3 +37,21 @@ One existing expectation changed, as triage #4 requires: in `detection.test.ts`,
 gained two assertions: the typed cause, and no token issuance.
 
 Not run: native Windows, macOS, real browsers, hosted CI.
+
+## Fix r2 (finding 1, P2): the overall deadline bounds every continuation
+
+Base `db8ef93`. Change confined to `packages/sdk/src/detection.ts`:
+
+- One deadline per run (`run.since` + `recheckCapMs`). `stopIfExpired()` runs after the probe
+  resolves, after the token check (before `POST`/`GET /auth/consent`), before and after `authorize`,
+  when a poll timer fires and after each `GET /auth/consent` answers. On expiry the run is aborted
+  and the flow moves to `unreachable-stopped`.
+- Consent polling, including the `429` backoff, never waits past the deadline: the last wait is
+  shortened to end at it, then the run stops with no timer left.
+- `unreachable-stopped` is now in `OUTCOMES`, so every active flow state (`checking`,
+  `permission-prompt`, `unreachable-or-blocked`, `awaiting-consent`) may move to it.
+
+Node v24.22.2, pnpm 11.17.0: frozen install (lockfile unchanged), lint, typecheck, `pnpm -r test`,
+build and format:check all exit 0. SDK **130/130** (10 files): the two r2 proofs in
+`review-r2.test.ts` and the five r1 proofs pass unchanged (`git diff db8ef93` is empty for both).
+dwt-compat 1/1, license-gate 10/10, ui 1/1, demo 1/1. Not run: browsers, native Windows/macOS, hosted CI.

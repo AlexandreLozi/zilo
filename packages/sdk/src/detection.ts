@@ -37,6 +37,8 @@ export type DetectionStateName =
 /** Where the flow can land once a probe or an auth step has an answer. */
 const OUTCOMES = [
   'unreachable-or-blocked',
+  // The run's overall deadline passed (T05 §3): reachable from every active flow state.
+  'unreachable-stopped',
   'outdated',
   'sdk-too-old',
   'awaiting-consent',
@@ -58,10 +60,7 @@ export const TRANSITIONS: Readonly<Record<DetectionStateName, readonly Detection
   'permission-prompt': OUTCOMES,
   denied: ['checking'],
   // The live re-check moves straight on when the agent answers (T05 §3), or stops at the cap.
-  'unreachable-or-blocked': [
-    'unreachable-stopped',
-    ...OUTCOMES.filter((s) => s !== 'unreachable-or-blocked'),
-  ],
+  'unreachable-or-blocked': OUTCOMES.filter((s) => s !== 'unreachable-or-blocked'),
   'unreachable-stopped': ['checking'],
   outdated: ['checking'],
   'sdk-too-old': ['checking'],
@@ -289,6 +288,31 @@ export class Detector {
     return this.snap;
   }
 
+  /** The run's overall deadline (`since` plus the cap), shared by re-checks and consent polls. */
+  private deadline(run: Run): number {
+    return run.since + (this.d.recheckCapMs ?? DEFAULT_RECHECK_CAP_MS);
+  }
+
+  /**
+   * Stops the run at its overall deadline (r2 #1): every continuation calls this after an await
+   * and before prompting, `POST`ing consent or authorizing. Returns true when the run stopped.
+   */
+  private stopIfExpired(run: Run, perm: PermissionBase): boolean {
+    if (Date.now() <= this.deadline(run)) return false;
+    this.stopAtDeadline(run, perm);
+    return true;
+  }
+
+  private stopAtDeadline(run: Run, perm: PermissionBase): void {
+    if (this.run === run) this.stop();
+    if (this.snap.state === 'unreachable-stopped') return;
+    this.go({
+      state: 'unreachable-stopped',
+      permission: perm.permission,
+      permissionHint: perm.permissionHint,
+    });
+  }
+
   private async probeAndContinue(run: Run, perm: PermissionBase): Promise<void> {
     const signal = run.ctl.signal;
     let found: ProbeResult | undefined;
@@ -299,6 +323,7 @@ export class Detector {
       found = undefined;
     }
     if (signal.aborted) return;
+    if (found !== undefined && this.stopIfExpired(run, perm)) return;
     if (found === undefined) {
       if (this.snap.state !== 'unreachable-or-blocked')
         this.go({ state: 'unreachable-or-blocked', ...perm });
@@ -319,6 +344,7 @@ export class Detector {
         return;
       }
       if (isAborted(signal)) return; // dismissed while the token check ran
+      if (this.stopIfExpired(run, perm)) return;
       let consent: ConsentStatus;
       if (run.asked) {
         consent = await this.d.readConsent(signal);
@@ -347,8 +373,10 @@ export class Detector {
   }
 
   private async authorized(run: Run, base: SnapshotBase): Promise<void> {
+    if (this.stopIfExpired(run, base)) return;
     const full = await this.d.authorize(run.ctl.signal);
     if (run.ctl.signal.aborted) return;
+    if (this.stopIfExpired(run, base)) return;
     const required = this.d.minAgentVersion;
     if (required !== undefined && compareSemver(full.version, required) < 0) {
       this.go({
@@ -396,23 +424,40 @@ export class Detector {
     }
   }
 
+  /**
+   * Polls consent until the run's overall deadline. The last wait is cut to end at the deadline,
+   * so a slow `pollAfterSeconds` or a rate-limit backoff never runs past it.
+   */
   private schedulePoll(run: Run, base: SnapshotBase, seconds: number): void {
-    this.timer = setTimeout(() => {
-      this.timer = undefined;
-      if (run.ctl.signal.aborted) return;
-      void (async () => {
-        try {
-          await this.onConsent(run, base, await this.d.readConsent(run.ctl.signal));
-        } catch (err) {
-          if (isProblem(err, 'rate-limited')) {
-            // GET /auth/consent is limited to 2/s per origin (R-A3): back off and keep polling.
-            this.schedulePoll(run, base, Math.max(seconds, err.retryAfterSeconds ?? seconds));
-            return;
-          }
-          this.onAuthError(run, base, err);
-        }
-      })();
-    }, seconds * 1000);
+    const remaining = this.deadline(run) - Date.now();
+    if (remaining <= 0) {
+      this.stopAtDeadline(run, base);
+      return;
+    }
+    this.timer = setTimeout(
+      () => {
+        this.timer = undefined;
+        if (run.ctl.signal.aborted) return;
+        if (this.stopIfExpired(run, base)) return;
+        void this.poll(run, base, seconds);
+      },
+      Math.min(seconds * 1000, remaining),
+    );
+  }
+
+  private async poll(run: Run, base: SnapshotBase, seconds: number): Promise<void> {
+    try {
+      const consent = await this.d.readConsent(run.ctl.signal);
+      if (run.ctl.signal.aborted || this.stopIfExpired(run, base)) return;
+      await this.onConsent(run, base, consent);
+    } catch (err) {
+      if (isProblem(err, 'rate-limited')) {
+        // GET /auth/consent is limited to 2/s per origin (R-A3): back off and keep polling.
+        this.schedulePoll(run, base, Math.max(seconds, err.retryAfterSeconds ?? seconds));
+        return;
+      }
+      this.onAuthError(run, base, err);
+    }
   }
 
   private onAuthError(run: Run, base: SnapshotBase, err: unknown): void {
