@@ -213,14 +213,19 @@ These amendments override the rows in §3 where they conflict.
   - **T56b (joint), integration:** hosted-CI soak and recovery jobs, plus calibration of the §8
     numbers for both masters to re-sign. Deps: T20, T21, T56a. Keep macOS minutes low (OD-7).
 
-## 4a. FE lane status (Opus edits; refreshed 2026-11-01 after the PC restart)
+## 4a. FE lane status (Opus edits; refreshed 2026-11-01 ~12:30 -03)
 Dispatches lost in the restart are bookkeeping only and are never reused.
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
 |---|---|---|---|---|---|---|
-| T01 | r1 changes (report + 3 failing tests merged @b6c3aec); fix r1 running | t01-transport-spike | task_1a7a80dac936 / ctx_7a373faedbc2 (claude high) | r1 GPT (settled) | changes | |
-| T04a | r1 changes (1 minor: Node 24); fix r1 running | t04a-web-scaffold | task_3a6702e7608d / ctx_cd74bcad8bc0 (claude low) | r1 ctx_4cd437852043 (released), report on t04a-review-r1@4b68400 | changes | |
-| T05 | r1 changes (5 P2, report @e8c4aee); fix r1 running | t05-design-spec | task_0b54a1bf13a2 / ctx_11403c9933fe (claude medium) | r1 GPT (settled) | changes | |
-| T02 (GPT-authored, BE lane) | Claude review r1 running, at 7e09b60 | t02-review-r1 | GPT (released) | task_c00fdc96e79b / ctx_5c6b3170b2f8 (claude high) | | |
+| T04a | **merged** (r2 Node pass, r3 format-scope pass; D-012 reuse of ci-web 41319600327; main backstop ci-web 41320055013) | — | fix r1 ctx_cd74bcad8bc0, fix r2 ctx_e53b3cb5f39b | r2 ctx_1d112881a0b7, r3 ctx_15fbb7f49d56 (GPT) | pass | 4639340 |
+| T05 | **merged** (r2 pass; rebased checks: 190 states, 0 axe violations) | — | fix r1 ctx_11403c9933fe | r2 ctx_e5c59cb532bb (GPT) | pass | f22eb2e |
+| T01 | r2 changes (forged-ready control race, 4fa4c4a); fix r2 running | t01-transport-spike | fix r1 ctx_7a373faedbc2 (a261ee5); fix r2 ctx_18d2b7435bfb (claude medium) | r2 ctx_48f38cafb0c0 (GPT high) | changes | |
+| T10 ★ (Claude author) | r3 changes (root-dot loopback); round-3 escalation agreed; fix r3 done f3ba120; GPT r4 next (BE run) | t10-contract | fix r2 ctx_0a8ee3069c14, fix r3 ctx_062ede7e79cc | GPT (BE run) | pending r4 | |
+| T03 (Claude author) | **merged**; exact-SHA main runs green | — | fix r2 ctx_b6c1ba2bdb7e | GPT r3 (BE) | pass | f38e3ea |
+| T12-proto (Claude author) | **merged**; Linux 183/183 rebased; cross-OS pending | — | — | GPT r2 (BE) | pass | 32051c6 |
+| T02 (GPT) | Claude r1 changes (8895977); GPT fix r1 5bc5a05; Claude r2 in BE run | AlexandreLozi/t02-fix-r1 | GPT | r1 ctx_5c6b3170b2f8; r2 BE ctx_b125dedba577 | r2 pending | |
+
+Wave 1 (T11, T12, T13, T15, T56a) starts once T10 merges. T04a and T05 are already on main.
 
 ## 4b. BE lane status (GPT edits)
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
