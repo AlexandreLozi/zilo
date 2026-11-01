@@ -4,6 +4,7 @@ D-010b: a negative spike merges only if "no suppression, waiver or allowlist ent
 These tests fail on 7e09b60 and must pass after the fix. Run from spikes/naps2.
 """
 import json
+import copy
 from pathlib import Path
 import shutil
 import subprocess
@@ -26,6 +27,37 @@ def gate(graph):
 
 
 class ReviewT02R1Tests(unittest.TestCase):
+    def test_f2_all_denied_pins_and_exceptions_rejected_without_outcome_drift(self):
+        # Inject into osx-arm64: these Windows/Linux identities are absent there,
+        # so the raw result stays passed with identical counts and errors.
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            spike = root / "spikes/naps2"
+            shutil.copytree(".", spike, ignore=shutil.ignore_patterns("bin", "obj", "artifacts"))
+            shutil.copytree("../../tools/license-gate", root / "tools/license-gate")
+            original = json.loads((spike / "policy.json").read_text())
+            template = original["packages"][0]
+            for identity in sorted(DENIED):
+                for kind in ("packages", "exceptions"):
+                    with self.subTest(identity=identity, kind=kind):
+                        policy = copy.deepcopy(original)
+                        pin = dict(template, id=identity.upper())
+                        if kind == "exceptions":
+                            pin = {key: pin[key] for key in ("id", "version", "sha512",
+                                "licenseExpression", "review", "obligations", "provenance")}
+                            pin["review"] = dict(pin["review"],
+                                reference="docs/legal/exceptions.md#seeded-denied-identity")
+                        policy[kind].append(pin)
+                        (spike / "policy.json").write_text(json.dumps(policy))
+                        raw = subprocess.run([sys.executable, "../../tools/license-gate/gate.py", "check",
+                            "evidence/inventory/osx-arm64.gate.json", "--policy", "policy.json"],
+                            cwd=spike, capture_output=True, text=True)
+                        self.assertEqual(0, raw.returncode, raw.stdout)
+                        result = subprocess.run([sys.executable, "expected_gate.py", "--rid", "osx-arm64"],
+                            cwd=spike, capture_output=True, text=True)
+                        self.assertEqual(1, result.returncode, result.stdout)
+                        self.assertFalse(json.loads(result.stdout)["expectedOutcomeMatched"])
+
     def test_f1_denied_items_have_no_policy_allowlist_pin(self):
         policy = json.loads(Path("policy.json").read_text())
         pinned = sorted(p["id"] for p in policy["packages"] if p["id"].casefold() in DENIED)

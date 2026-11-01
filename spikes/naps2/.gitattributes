@@ -1,3 +1,7 @@
 # Preserve upstream evidence bytes, including CRLF/whitespace, for hash verification.
 evidence/licenses/** -text -diff
 evidence/source/** -text -diff
+# These exact first-party source bytes are hashed into the package policy pin.
+Naps2Spike.csproj text eol=lf
+Program.cs text eol=lf
+LICENSE text eol=lf

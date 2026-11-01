@@ -1,12 +1,34 @@
 import hashlib
 import importlib.util
+import base64
+import json
 from pathlib import Path
 import struct
+import subprocess
 import tempfile
 import unittest
 
 
 class InventoryTests(unittest.TestCase):
+    def test_hashed_source_checkout_stays_lf_with_autocrlf(self):
+        names = ("Naps2Spike.csproj", "Program.cs", "LICENSE")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "core.autocrlf", "true"], check=True)
+            (root / ".gitattributes").write_bytes(Path(".gitattributes").read_bytes())
+            for name in names:
+                (root / name).write_bytes(Path(name).read_bytes())
+            subprocess.run(["git", "-C", str(root), "add", "."], check=True, capture_output=True)
+            for name in names:
+                (root / name).unlink()
+            subprocess.run(["git", "-C", str(root), "checkout-index", "-a", "-f"], check=True)
+            content = b"".join((root / name).read_bytes() for name in names)
+            self.assertNotIn(b"\r\n", content)
+            pin = next(p for p in json.loads(Path("policy.json").read_text())["packages"]
+                       if p["id"] == "Zilo.Naps2Spike")
+            self.assertEqual(pin["sha512"], base64.b64encode(hashlib.sha512(content).digest()).decode())
+
     def load(self):
         path = Path("inventory.py")
         self.assertTrue(path.is_file(), "Inventory producer is required")
@@ -54,6 +76,8 @@ class InventoryTests(unittest.TestCase):
         deployment = module.gate_inventory(source)["packages"][0]["deployment"]
         self.assertTrue(deployment["singleFile"])
         self.assertFalse(deployment["separateDll"])
+        self.assertFalse(deployment["replaceable"])
+        self.assertFalse(deployment["trimmed"], "matching LGPL DLL bytes must not be labeled trimmed")
 
 
 if __name__ == "__main__":
