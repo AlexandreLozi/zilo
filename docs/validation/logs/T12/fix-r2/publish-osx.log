@@ -1,0 +1,37 @@
+  Determining projects to restore...
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 59 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Core/Zilo.Core.csproj (in 55 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Security/Zilo.Security.csproj (in 59 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 127 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 133 ms).
+  Zilo.Core -> /tmp/opencode/t12-packaging-fix-r2/actual-osx.work/osx-arm64/bin/Zilo.Core/release/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> /tmp/opencode/t12-packaging-fix-r2/actual-osx.work/osx-arm64/bin/Zilo.Drivers.Naps2/release/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> /tmp/opencode/t12-packaging-fix-r2/actual-osx.work/osx-arm64/bin/Zilo.Security/release/Zilo.Security.dll
+  Zilo.Drivers.Virtual -> /tmp/opencode/t12-packaging-fix-r2/actual-osx.work/osx-arm64/bin/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> /tmp/opencode/t12-packaging-fix-r2/actual-osx.work/osx-arm64/bin/Zilo.Agent/release_osx-arm64/Zilo.Agent.dll
+  Zilo.Agent -> /tmp/opencode/t12-packaging-fix-r2/actual-osx/
+  Determining projects to restore...
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 65 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Security/Zilo.Security.csproj (in 65 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Core/Zilo.Core.csproj (in 62 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 138 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 143 ms).
+  Zilo.Core -> /tmp/opencode/t12-packaging-fix-r2/actual-osx.work/osx-x64/bin/Zilo.Core/release/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> /tmp/opencode/t12-packaging-fix-r2/actual-osx.work/osx-x64/bin/Zilo.Drivers.Naps2/release/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> /tmp/opencode/t12-packaging-fix-r2/actual-osx.work/osx-x64/bin/Zilo.Security/release/Zilo.Security.dll
+  Zilo.Drivers.Virtual -> /tmp/opencode/t12-packaging-fix-r2/actual-osx.work/osx-x64/bin/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> /tmp/opencode/t12-packaging-fix-r2/actual-osx.work/osx-x64/bin/Zilo.Agent/release_osx-x64/Zilo.Agent.dll
+  Zilo.Agent -> /tmp/opencode/t12-packaging-fix-r2/actual-osx.work/osx-x64.out/
+apphost ok: /tmp/opencode/t12-packaging-fix-r2/actual-osx/Zilo.Agent (macho-arm64, sha256 bad7f6862fa7404877c3d694d15cd8ef75c06fe7397df63955ec198057680e4e)
+apphost ok: /tmp/opencode/t12-packaging-fix-r2/actual-osx.work/osx-x64.out/Zilo.Agent (macho-x64, sha256 ef5b63e90415bf842176d8861ce04280b3dbb959bf0ba1b1c89f30496620678d)
+lipo not available: osx apphost left arm64-only (build the pkg on macOS)
+total 768
+-rwxr-xr-x 1 alexandre alexandre 124712 Nov  2 10:06 Zilo.Agent
+-rw-r--r-- 1 alexandre alexandre   2608 Nov  2 10:06 Zilo.Agent.deps.json
+-rw-r--r-- 1 alexandre alexandre   4608 Nov  2 10:06 Zilo.Agent.dll
+-rw-r--r-- 1 alexandre alexandre    330 Nov  2 10:06 Zilo.Agent.runtimeconfig.json
+-rw-r--r-- 1 alexandre alexandre  46592 Nov  2 10:06 Zilo.Core.dll
+-rw-r--r-- 1 alexandre alexandre   3584 Nov  2 10:06 Zilo.Drivers.Naps2.dll
+-rw-r--r-- 1 alexandre alexandre  69632 Nov  2 10:06 Zilo.Drivers.Virtual.dll
+-rw-r--r-- 1 alexandre alexandre   3584 Nov  2 10:06 Zilo.Security.dll
+-rwxr--r-- 1 alexandre alexandre 516096 Oct 25  2025 zxing.dll

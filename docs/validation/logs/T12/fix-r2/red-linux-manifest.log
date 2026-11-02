@@ -1,0 +1,43 @@
+=== deb: control
+ new Debian package, version 2.0.
+ size 326016 bytes: control archive=1401 bytes.
+     488 bytes,    13 lines      control
+     740 bytes,    11 lines      md5sums
+     450 bytes,    10 lines   *  postinst             #!/bin/sh
+     737 bytes,    19 lines   *  prerm                #!/bin/sh
+ Package: zilo-agent
+ Version: 0.0.1-1
+ Section: utils
+ Priority: optional
+ Architecture: amd64
+ Maintainer: Zilo packaging (placeholder) <packaging@zilo.invalid>
+ Installed-Size: 708
+ Depends: dotnet-runtime-10.0, libsane1
+ Recommends: sane-airscan
+ Homepage: https://zilo.invalid/
+ Description: Zilo local scanning agent (SP-4a packaging dry run).
+  Per-user agent started by systemd --user; registers the zilo:// URL scheme.
+  This dry-run build is the T04b scaffold: it prints a notice and exits.
+=== deb: contents
+drwxr-xr-x root/root         0 2026-11-02 03:19 ./usr/
+drwxr-xr-x root/root         0 2026-11-02 03:19 ./usr/bin/
+l--------- root/root         0 2026-11-02 03:19 ./usr/bin/zilo-agent -> /usr/lib/zilo/Zilo.Agent
+drwxr-xr-x root/root         0 2026-11-02 03:19 ./usr/lib/
+drwxr-xr-x root/root         0 2026-11-02 03:19 ./usr/lib/systemd/
+drwxr-xr-x root/root         0 2026-11-02 03:19 ./usr/lib/systemd/user/
+-rw-r--r-- root/root       248 2026-11-02 03:18 ./usr/lib/systemd/user/zilo-agent.service
+drwxr-xr-x root/root         0 2026-11-02 03:19 ./usr/lib/zilo/
+-rwxr-xr-x root/root     78192 2026-11-02 03:19 ./usr/lib/zilo/Zilo.Agent
+-rw-r--r-- root/root      2608 2026-11-02 03:19 ./usr/lib/zilo/Zilo.Agent.deps.json
+-rw-r--r-- root/root      4608 2026-11-02 03:19 ./usr/lib/zilo/Zilo.Agent.dll
+-rw-r--r-- root/root       330 2026-11-02 03:19 ./usr/lib/zilo/Zilo.Agent.runtimeconfig.json
+-rw-r--r-- root/root     46592 2026-11-02 03:18 ./usr/lib/zilo/Zilo.Core.dll
+-rw-r--r-- root/root      3584 2026-11-02 03:18 ./usr/lib/zilo/Zilo.Drivers.Naps2.dll
+-rw-r--r-- root/root     69632 2026-11-02 03:18 ./usr/lib/zilo/Zilo.Drivers.Virtual.dll
+-rw-r--r-- root/root      3584 2026-11-02 03:18 ./usr/lib/zilo/Zilo.Security.dll
+-rwxr--r-- root/root    516096 2025-10-25 15:31 ./usr/lib/zilo/zxing.dll
+drwxr-xr-x root/root         0 2026-11-02 03:19 ./usr/share/
+drwxr-xr-x root/root         0 2026-11-02 03:19 ./usr/share/applications/
+-rw-r--r-- root/root       205 2026-11-02 03:18 ./usr/share/applications/zilo-agent.desktop
+10a11
+> /usr/lib/zilo/zxing.dll

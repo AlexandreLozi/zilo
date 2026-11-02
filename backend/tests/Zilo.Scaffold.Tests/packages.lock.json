@@ -137,6 +137,7 @@
       "zilo.drivers.virtual": {
         "type": "Project",
         "dependencies": {
+          "ZXing.Net": "[0.16.11, 0.16.11]",
           "Zilo.Core": "[1.0.0, )"
         }
       },
@@ -145,6 +146,12 @@
         "dependencies": {
           "Zilo.Core": "[1.0.0, )"
         }
+      },
+      "ZXing.Net": {
+        "type": "CentralTransitive",
+        "requested": "[0.16.11, 0.16.11]",
+        "resolved": "0.16.11",
+        "contentHash": "OZfAVu88hl87BffQ+rlWCj/vLvAhhCK4QnFaoveeF/MY8SjHNSYBQ3qyUEWlPKNgBQGh1syXhCDg10vUnCsqkg=="
       }
     }
   }

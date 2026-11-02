@@ -1,0 +1,13 @@
+COMMAND: /tmp/opencode/t12-proto-r2/sdk/dotnet restore backend/Zilo.slnx --locked-mode
+  Determining projects to restore...
+/home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Agent/Zilo.Agent.csproj : error NU1004: The project references zilo.drivers.virtual whose dependencies has changed.The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file. [/home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/Zilo.slnx]
+/home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Scaffold.Tests/Zilo.Scaffold.Tests.csproj : error NU1004: The project references zilo.drivers.virtual whose dependencies has changed.The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file. [/home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/Zilo.slnx]
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Core/Zilo.Core.csproj (in 65 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 89 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Security/Zilo.Security.csproj (in 89 ms).
+  Failed to restore /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Scaffold.Tests/Zilo.Scaffold.Tests.csproj (in 62 ms).
+  Failed to restore /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 109 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 118 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj (in 122 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Core.Tests/Zilo.Core.Tests.csproj (in 122 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Drivers.Virtual.Tests/Zilo.Drivers.Virtual.Tests.csproj (in 122 ms).

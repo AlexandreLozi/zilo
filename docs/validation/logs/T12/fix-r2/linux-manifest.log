@@ -1,0 +1,22 @@
+drwxr-xr-x root/root         0 2026-11-02 10:03 ./usr/
+drwxr-xr-x root/root         0 2026-11-02 10:03 ./usr/bin/
+l--------- root/root         0 2026-11-02 10:03 ./usr/bin/zilo-agent -> /usr/lib/zilo/Zilo.Agent
+drwxr-xr-x root/root         0 2026-11-02 10:03 ./usr/lib/
+drwxr-xr-x root/root         0 2026-11-02 10:03 ./usr/lib/systemd/
+drwxr-xr-x root/root         0 2026-11-02 10:03 ./usr/lib/systemd/user/
+-rw-r--r-- root/root       248 2026-11-01 18:11 ./usr/lib/systemd/user/zilo-agent.service
+drwxr-xr-x root/root         0 2026-11-02 10:03 ./usr/lib/zilo/
+-rwxr-xr-x root/root     78192 2026-11-02 10:03 ./usr/lib/zilo/Zilo.Agent
+-rw-r--r-- root/root      2608 2026-11-02 10:03 ./usr/lib/zilo/Zilo.Agent.deps.json
+-rw-r--r-- root/root      4608 2026-11-02 10:03 ./usr/lib/zilo/Zilo.Agent.dll
+-rw-r--r-- root/root       330 2026-11-02 10:03 ./usr/lib/zilo/Zilo.Agent.runtimeconfig.json
+-rw-r--r-- root/root     46592 2026-11-02 10:03 ./usr/lib/zilo/Zilo.Core.dll
+-rw-r--r-- root/root      3584 2026-11-02 10:03 ./usr/lib/zilo/Zilo.Drivers.Naps2.dll
+-rw-r--r-- root/root     69632 2026-11-02 10:03 ./usr/lib/zilo/Zilo.Drivers.Virtual.dll
+-rw-r--r-- root/root      3584 2026-11-02 10:03 ./usr/lib/zilo/Zilo.Security.dll
+-rw-r--r-- root/root    516096 2025-10-25 15:31 ./usr/lib/zilo/zxing.dll
+drwxr-xr-x root/root         0 2026-11-02 10:03 ./usr/share/
+drwxr-xr-x root/root         0 2026-11-02 10:03 ./usr/share/applications/
+-rw-r--r-- root/root       205 2026-11-01 18:11 ./usr/share/applications/zilo-agent.desktop
+
+PASS: 12 non-directory entries; zxing0644; apphost0755

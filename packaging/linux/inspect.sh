@@ -16,6 +16,7 @@ expected="/usr/bin/zilo-agent
 /usr/lib/zilo/Zilo.Drivers.Naps2.dll
 /usr/lib/zilo/Zilo.Drivers.Virtual.dll
 /usr/lib/zilo/Zilo.Security.dll
+/usr/lib/zilo/zxing.dll
 /usr/share/applications/zilo-agent.desktop"
 
 echo "=== deb: control"
@@ -28,7 +29,8 @@ dpkg-deb -c "$deb"
 got=$(dpkg-deb -c "$deb" | awk '$1 !~ /^d/ {print $6}' | sed 's|^\.||' | sort)
 [ "$got" = "$expected" ] || { diff <(echo "$expected") <(echo "$got"); fail "deb file list"; }
 dpkg-deb -c "$deb" | grep -E ' \./usr/lib/zilo/Zilo\.Agent$' | grep -q '^-rwxr-xr-x root/root' || fail "apphost mode"
-echo "deb file list: as expected (11 files, assemblies separate, no single-file bundle)"
+dpkg-deb -c "$deb" | awk '$1 == "-rw-r--r--" && $2 == "root/root" && $6 == "./usr/lib/zilo/zxing.dll" { found++ } END { exit found != 1 }' || fail "zxing.dll mode/owner"
+echo "deb file list: as expected (12 files, assemblies separate, no single-file bundle)"
 
 echo "=== rpm: header"
 "$RPM" -q -p "$rpmf" --qf 'Name: %{NAME}\nVersion: %{VERSION}-%{RELEASE}\nArch: %{ARCH}\n[Requires: %{REQUIRENAME}\n][Recommends: %{RECOMMENDNAME}\n]' 2>/dev/null
@@ -40,6 +42,8 @@ echo "=== rpm: contents"
 "$RPM" -q -p "$rpmf" --qf '[%{FILEMODES:perms} %{FILEUSERNAME}/%{FILEGROUPNAME} %{FILENAMES}\n]' 2>/dev/null
 got=$("$RPM" -q -p "$rpmf" --qf '[%{FILEMODES:perms} %{FILENAMES}\n]' 2>/dev/null | awk '$1 !~ /^d/ {print $2}' | sort)
 [ "$got" = "$expected" ] || { diff <(echo "$expected") <(echo "$got"); fail "rpm file list"; }
+"$RPM" -q -p "$rpmf" --qf '[%{FILEMODES:perms} %{FILEUSERNAME}/%{FILEGROUPNAME} %{FILENAMES}\n]' 2>/dev/null \
+  | grep -qx -- '-rw-r--r-- root/root /usr/lib/zilo/zxing.dll' || fail "rpm zxing.dll mode/owner"
 echo "rpm file list: as expected"
 echo "=== rpm: scriptlets"
 "$RPM" -q -p "$rpmf" --qf 'PREIN:%{PREIN}\nPOSTIN:%{POSTIN}\nPREUN:%{PREUN}\nPOSTUN:%{POSTUN}\n' 2>/dev/null \

@@ -1,0 +1,5 @@
+COMMAND: /tmp/opencode/t12-proto-r2/sdk/dotnet test backend/tests/Zilo.Scaffold.Tests -c Release --no-build --no-restore --filter FullyQualifiedName~Restored_runtime_graph
+Test run for /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Scaffold.Tests/bin/Release/net10.0/Zilo.Scaffold.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 20 ms - Zilo.Scaffold.Tests.dll (net10.0)

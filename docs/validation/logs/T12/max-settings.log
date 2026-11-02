@@ -1,0 +1,18 @@
+Test run for /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Drivers.Virtual.Tests/bin/Release/net10.0/Zilo.Drivers.Virtual.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+/home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Drivers.Virtual.Tests/bin/Release/net10.0/Zilo.Drivers.Virtual.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.14)
+[xUnit.net 00:00:00.13]   Discovering: Zilo.Drivers.Virtual.Tests
+[xUnit.net 00:00:00.27]   Discovered:  Zilo.Drivers.Virtual.Tests
+[xUnit.net 00:00:00.38]   Starting:    Zilo.Drivers.Virtual.Tests
+[xUnit.net 00:00:01.11]   Finished:    Zilo.Drivers.Virtual.Tests (ID = '2dea5505fa77f541ee0ed63e5fddf340a5b91db0a477f50eae0a5ccebee0ae84')
+  Passed Zilo.Drivers.Virtual.Tests.VirtualBackendTests.MaximumLegal600RawObservation [596 ms]
+  Standard Output Messages:
+ Legal600 elapsedMs=569.1 allocatedBytes=287725736 peakWorkingSet64=342532096 encodedBytes=2306981
+
+
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 1.4669 Seconds

@@ -1,0 +1,48 @@
+COMMAND: /tmp/opencode/t12-proto-r2/sdk/dotnet --info
+.NET SDK:
+ Version:           10.0.403
+ Commit:            5a2162bea6
+ Workload version:  10.0.400-manifests.a00bebb6
+ MSBuild version:   18.9.15+5a2162bea
+
+Runtime Environment:
+ OS Name:     ubuntu
+ OS Version:  24.04
+ OS Platform: Linux
+ RID:         linux-x64
+ Base Path:   /tmp/opencode/t12-proto-r2/sdk/sdk/10.0.403/
+
+.NET workloads installed:
+There are no installed workloads to display.
+Configured to use workload sets when installing new manifests.
+No workload sets are installed. Run "dotnet workload restore" to install a workload set.
+
+Host:
+  Version:      10.0.14
+  Architecture: x64
+  Commit:       0427b9abbe
+
+.NET SDKs installed:
+  10.0.403 [/tmp/opencode/t12-proto-r2/sdk/sdk]
+
+.NET runtimes installed:
+  Microsoft.AspNetCore.App 10.0.14 [/tmp/opencode/t12-proto-r2/sdk/shared/Microsoft.AspNetCore.App]
+  Microsoft.NETCore.App 10.0.14 [/tmp/opencode/t12-proto-r2/sdk/shared/Microsoft.NETCore.App]
+
+Other architectures found:
+  None
+
+Environment variables:
+  DOTNET_CLI_HOME                          [/tmp/opencode/t12-proto-r2/home]
+  DOTNET_CLI_TELEMETRY_OPTOUT              [1]
+  DOTNET_NOLOGO                            [1]
+  DOTNET_ROOT                              [/tmp/opencode/t12-proto-r2/sdk]
+
+global.json file:
+  /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/global.json
+
+Learn more:
+  https://aka.ms/dotnet/info
+
+Download .NET:
+  https://aka.ms/dotnet/download

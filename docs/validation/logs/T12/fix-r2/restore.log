@@ -1,0 +1,10 @@
+  Determining projects to restore...
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Security/Zilo.Security.csproj (in 253 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 256 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Core/Zilo.Core.csproj (in 256 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 370 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj (in 379 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Core.Tests/Zilo.Core.Tests.csproj (in 380 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Scaffold.Tests/Zilo.Scaffold.Tests.csproj (in 380 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Drivers.Virtual.Tests/Zilo.Drivers.Virtual.Tests.csproj (in 378 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 427 ms).
