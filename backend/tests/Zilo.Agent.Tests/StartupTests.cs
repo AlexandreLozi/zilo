@@ -6,21 +6,21 @@ namespace Zilo.Agent.Tests;
 public sealed class StartupTests
 {
     [Fact]
-    public async Task Startup_exits_successfully_with_a_deterministic_scaffold_notice()
+    public async Task Self_test_exits_successfully_without_starting_a_listener()
     {
         // A missing notice, a crash, stderr output, or a long-running service must fail.
-        var first = await RunAgentAsync();
-        var second = await RunAgentAsync();
+        var first = await RunAgentAsync("--self-test");
+        var second = await RunAgentAsync("--self-test");
 
         Assert.Equal(0, first.ExitCode);
         Assert.Equal(0, second.ExitCode);
         Assert.Empty(first.Stderr);
         Assert.Empty(second.Stderr);
-        Assert.Equal("Zilo.Agent scaffold: scanning is not implemented." + Environment.NewLine, first.Stdout);
+        Assert.Equal("Zilo.Agent self-test: PASS" + Environment.NewLine, first.Stdout);
         Assert.Equal(first.Stdout, second.Stdout);
     }
 
-    private static async Task<(int ExitCode, string Stdout, string Stderr)> RunAgentAsync()
+    private static async Task<(int ExitCode, string Stdout, string Stderr)> RunAgentAsync(string argument)
     {
         var startInfo = new ProcessStartInfo
         {
@@ -31,6 +31,7 @@ public sealed class StartupTests
             CreateNoWindow = true
         };
         startInfo.ArgumentList.Add(Path.Combine(AppContext.BaseDirectory, "agent", "Zilo.Agent.dll"));
+        startInfo.ArgumentList.Add(argument);
 
         using var process = Process.Start(startInfo)
             ?? throw new InvalidOperationException("Could not start the built agent.");

@@ -115,6 +115,36 @@
           "xunit.v3.extensibility.core": "[4.0.2]",
           "xunit.v3.runner.common": "[4.0.2]"
         }
+      },
+      "zilo.agent": {
+        "type": "Project",
+        "dependencies": {
+          "Zilo.Core": "[1.0.0, )",
+          "Zilo.Drivers.Naps2": "[1.0.0, )",
+          "Zilo.Drivers.Virtual": "[1.0.0, )",
+          "Zilo.Security": "[1.0.0, )"
+        }
+      },
+      "zilo.core": {
+        "type": "Project"
+      },
+      "zilo.drivers.naps2": {
+        "type": "Project",
+        "dependencies": {
+          "Zilo.Core": "[1.0.0, )"
+        }
+      },
+      "zilo.drivers.virtual": {
+        "type": "Project",
+        "dependencies": {
+          "Zilo.Core": "[1.0.0, )"
+        }
+      },
+      "zilo.security": {
+        "type": "Project",
+        "dependencies": {
+          "Zilo.Core": "[1.0.0, )"
+        }
       }
     }
   }
