@@ -446,3 +446,15 @@ Both-master agreement: Opus `msg_cdc1641ad54a` / `msg_914323a8249e`, GPT
   between fence creation and grant use; crash at each write/replace step; unwritable boot fence;
   write-before-memory-commit crash; concurrent grant/revoke and stale-generation writes/commits.
   Original privacy, ACL/ownership, reset confirmation and hosted3-OS gates are unchanged.
+
+**Restrictive-intent recovery refinement** (both masters, Opus `msg_b128dd46ccdb`, GPT
+`msg_466e18211dc0`): Task0 may prove recovery from an unclean fence without resetting blocks,
+but only where durable fence/intent evidence plus snapshot generation proves no unresolved
+restrictive mutation. Honor all durable blocks, demote grants to ask-again, and apply existing
+prompt budgets. Any unresolved or unprovable restrictive intent stays fail-closed for non-baked
+prompts/minting; proven reconciliation may recover without reset. A block/revoke is acknowledged
+complete only when state or its unresolved intent is durable; if both writes fail, report not-saved,
+never completed. Required crash tests include failed BLOCK persistence → kill → reopen with no
+prompt/mint, failed REMOVE-grant recovery only without lost block intent, clean grant retention and
+consistent unclean recovery without reset. The original fail-closed fallback remains until Task0's
+exact protocol/crash-window proof is approved; this is not permission to implement unproven recovery.
