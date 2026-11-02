@@ -163,6 +163,45 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
   - Per the owner's pc-setup default, `CLAUDE.md` stays the single source of truth. No duplicate
     AGENTS.md.
 
+## OD-10 Browser support matrix (owner, 2026-11-02)
+- **Chromium family:** Chrome, **Edge (explicitly required)**, plus Brave, Opera, Vivaldi and
+  other Chromium browsers wherever their engine allows.
+- **Firefox family:** Firefox plus derivatives (LibreWolf, Waterfox, ...).
+- **Safari:** required (OD-8).
+- **CI:** add **Microsoft Edge** to the Playwright matrix (the `msedge` channel on the Windows and
+  Linux runners) from M2 (T23) onward. Other Chromium and Firefox derivatives get a documented
+  manual smoke row in the owner checklist (T34), not CI.
+- **Known caveats:**
+  - Brave Shields and its localhost-access permission may need an explicit grant.
+  - Tor Browser is out of scope: it blocks localhost by design.
+  - Record each caveat with its UX in the Permission-help dialog (T45).
+
+## OD-11 Third model family: DeepSeek for authoring, to spare Claude (owner, 2026-11-02)
+- **Why:** Claude is near its weekly limit and the owner cannot reset it. GPT has just been
+  reset. OpenCode offers `opencode/deepseek-v4.1-flash-free` (free).
+- **Liaison test:** on a read-only review of `packages/sdk/src/detection.ts`, DeepSeek found a
+  real, precise race in 33 seconds: `go({state:'checking'})` at line 362 notifies listeners before
+  the deadline timer is armed. Headless `opencode run` hangs on tool use, so use only Orca TUI
+  sessions.
+- **Roles from now on:**
+  - **DeepSeek (OpenCode, free): the default author** for routine and medium tasks in both lanes.
+  - **GPT:** back-end orchestration, ★ back-end authoring, and **reviews of DeepSeek work**.
+  - **Claude:** the Opus master (lean), ★ front-end and design-critical authoring, and reviews of
+    GPT-authored work only. Claude does no routine authoring while near its weekly limit.
+- **Cross-model rule:** the reviewer is always from a different family than the author.
+  - DeepSeek work is reviewed by GPT, or by Claude for ★ tasks.
+  - GPT work is reviewed by Claude, or by DeepSeek for non-★ tasks when Claude is constrained.
+  - Claude work is reviewed by GPT.
+  - No family ever reviews its own work.
+- **Pilot first:** one bounded non-★ task authored by DeepSeek with a GPT review (suggestion: T14
+  demo device list, or the next routine fix). Scale up if it passes review in at most 2 rounds.
+  If DeepSeek's quality is insufficient, fall back to GPT authoring.
+- **Dispatch:** Orca refuses `--model` for OpenCode, so use the OD-3 per-worktree recipe with
+  `model` = `opencode/deepseek-v4.1-flash-free` (core keys and the active Slim preset,
+  skip-worktree). **Verify that the TUI footer reads "DeepSeek V4.1 Flash Free".**
+- **Data note:** free-tier models may retain prompts and code. Zilo is the owner's code, destined
+  for open source, and the owner accepted this. Never paste secrets into any session.
+
 ## OD-5 Reporting
 - The owner talks only to the liaison terminal. Masters send owner-facing questions to the liaison,
   which relays them.
