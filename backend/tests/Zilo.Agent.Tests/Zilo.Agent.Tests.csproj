@@ -11,7 +11,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <ProjectReference Include="../../src/Zilo.Agent/Zilo.Agent.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../../src/Zilo.Agent/Zilo.Agent.csproj" />
+    <ProjectReference Include="../../src/Zilo.Security/Zilo.Security.csproj" />
   </ItemGroup>
   <!-- Copy the real executable's complete output, not a test-host surrogate. -->
   <Target Name="CopyAgentForStartupTests" AfterTargets="Build">
