@@ -69,6 +69,8 @@ public sealed class AgentOptions
     public INativeConsentPrompt? NativeConsent { get; init; }
     public IReadOnlyList<DiscoveryBackendRegistration> DiscoveryBackends { get; init; } = Array.Empty<DiscoveryBackendRegistration>();
     public IClock Clock { get; init; } = new SystemClock();
+    public TimeProvider TimeProvider { get; init; } = TimeProvider.System;
+    public TimeSpan BackendShutdownGrace { get; init; } = TimeSpan.FromSeconds(2);
 
     public string InstanceId { get; } = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(16)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
     public string OperatingSystem => System.OperatingSystem.IsWindows() ? "windows" : System.OperatingSystem.IsMacOS() ? "macos" : "linux";

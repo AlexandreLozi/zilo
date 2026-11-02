@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Zilo.Security;
 
 namespace Zilo.Agent;
@@ -21,7 +23,10 @@ public static class AgentHost
         builder.Services.AddSingleton(tokenService);
         consent.OriginRemoved += origin => tokenService.RevokeOrigin(origin);
         builder.Services.AddSingleton(consent);
-        builder.Services.AddSingleton(_ => new DiscoveryService(options.DiscoveryBackends, TimeSpan.FromSeconds(options.Limits.DiscoveryTimeoutSeconds)));
+        if (options.BackendShutdownGrace <= TimeSpan.Zero || options.BackendShutdownGrace.TotalMilliseconds > uint.MaxValue - 1)
+            throw new ArgumentOutOfRangeException(nameof(options.BackendShutdownGrace));
+        builder.Services.Configure<HostOptions>(host => host.ShutdownTimeout = options.BackendShutdownGrace);
+        builder.Services.AddSingleton(sp => new DiscoveryService(options.DiscoveryBackends, TimeSpan.FromSeconds(options.Limits.DiscoveryTimeoutSeconds), options.TimeProvider, options.BackendShutdownGrace, sp.GetRequiredService<ILogger<DiscoveryService>>()));
         builder.Services.AddHostedService(sp => sp.GetRequiredService<DiscoveryService>());
         var app = builder.Build();
         app.UseMiddleware<AgentPipeline>();
