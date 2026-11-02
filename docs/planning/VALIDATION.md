@@ -29,7 +29,10 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 - **D-012 evidence reuse:** the merge has no conflicts, and `git diff 8fa9f8c...origin/main` over
   the ci-web inputs (packages, apps, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, .nvmrc,
   .prettier*, tsconfig*, eslint.config.*, ci-web.yml) is empty. This is not an exact-SHA pass; the
-  push to main reruns ci-web as the backstop.
+  push to main reruns ci-web as the backstop. **Backstop result:** the runs on 55cf4c4
+  (41397667226) and d19ba7f (41397704559) were cancelled by later docs pushes (cancel-in-progress).
+  ci-web **41397911617** on df225aa is **green**. df225aa has the same ci-web inputs as 55cf4c4
+  (`git diff 55cf4c4 df225aa` over them is empty).
 - Follow-ups:
   - sync the SDK port placeholder from `docs/validation/logs/T11/ports.md` (47841, then
     47842/47843) once T11 merges;
