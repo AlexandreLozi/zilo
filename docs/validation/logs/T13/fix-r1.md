@@ -55,3 +55,55 @@ Node v24.22.2, pnpm 11.17.0: frozen install (lockfile unchanged), lint, typechec
 build and format:check all exit 0. SDK **130/130** (10 files): the two r2 proofs in
 `review-r2.test.ts` and the five r1 proofs pass unchanged (`git diff db8ef93` is empty for both).
 dwt-compat 1/1, license-gate 10/10, ui 1/1, demo 1/1. Not run: browsers, native Windows/macOS, hosted CI.
+
+## Fix r3 (r3 findings 1–3, P2): one run model for the deadline, in-flight work and ownership
+
+Base `6b6134a`. Changes are limited to `packages/sdk/src/` (`detection.ts`, `auth.ts`, `credentials.ts`,
+`client.ts`, `transport.ts`, new `abort.ts`), plus the new `fix-r3.test.ts`.
+
+- **One model.** Each detection run owns an `AbortController`, one deadline timer armed at
+  `since + cap` that stops the run and aborts its signal, and its identity: the run object held in
+  `Detector.run`. Every way a run ends goes through `end()`, which aborts the signal, clears that
+  run's own deadline timer and wait, and releases ownership: deadline, `cancel()`, replacement by
+  `start()`, settling in a non-active state, `markRevoked()` and `dispose()`/`disconnect()`. A
+  settled run (`ready`, etc.) keeps no timer.
+- **r3 #1, in flight.** Every awaited step (permission query, probe, token check, `authorize`,
+  consent `POST`/`GET`) gets the run's signal and is awaited through `step()`. That rejects as soon
+  as the signal aborts, so a step still pending at the deadline is abandoned. `hasToken(signal)` is
+  now in `DetectionDeps`. `CredentialStore.withLock(origin, fn, signal?)`: the memory store rejects
+  an aborted waiter at once and never runs its `fn`. The auth client checks the signal as each
+  lock section starts and before every token request and credential write, and `withRecovery`
+  starts no recovery step after an abort. The transport drops an answer whose caller aborted while
+  the body was read. The write that records an issued token follows its answer with no await in
+  between, so an abort can drop a token the agent already minted, but it can never cause a second
+  issuance (r3 proof 1: issuance stays at 1).
+- **r3 #2, boundary.** A single helper, `expired(run, at)`, applies `at >= deadline`. At the
+  deadline the run starts nothing. A re-check or poll wait (including the `429` backoff) that would
+  end at or after the deadline is not armed, and the deadline timer stops the run at exactly the
+  cap. A re-check that runs out of time therefore stops at the cap, no longer one interval early.
+- **r3 #3, ownership.** `live(run)` checks ownership first, then the deadline. It runs right
+  before each side effect and after each await. `stopAtDeadline` is a no-op for a run that no
+  longer owns the detector, so a stale run cannot change state or stop its replacement.
+
+New tests (`fix-r3.test.ts`, 17, all fake timers):
+- The deadline fires during each pending step: the token read, `authorize` waiting on the
+  credential lock, `authorize` reading the full `hello`, the consent `POST`, a consent `GET`, and the
+  `429` backoff. Each test checks that the state holds at cap − 1 ms and is `unreachable-stopped`
+  at the cap, that no timers are left, and that after a late release no request is made, no token
+  is issued and nothing is written to the store.
+- `dispose()` during the same six steps: `start()` settles, no timers are left, abort listeners
+  balance, and nothing is notified, requested, issued or stored afterwards.
+- The A → B → C chain: A's and B's token reads answer late, one before its deadline and one after.
+  C stays `awaiting-consent` and makes no token request. C still stops at its own cap, once.
+  `cancel()` clears the run's deadline. A settled run keeps no timer.
+- The deadline is exclusive: no re-probe at the cap itself (rounds at 0, 2 and 4 s with a 6 s
+  cap), and a consent answer that arrives exactly at the cap is ignored.
+
+Against the `6b6134a` sources, 10 of the 17 new tests fail. The other 7 guard behavior that
+already held.
+
+Node v24.22.2, pnpm 11.17.0: frozen install (lockfile unchanged), lint, typecheck, `pnpm -r test`,
+build and format:check all exit 0, as does `git diff --check`. SDK **150/150** (12 files).
+dwt-compat 1/1, license-gate 10/10, ui 1/1, demo 1/1. The 10 review proofs (r1 5, r2 2, r3 3) pass
+and are byte-identical to `6b6134a` (blobs `0641aaf`, `d6d547d`, `acd050c`). No existing test
+changed. Not run: browsers, native Windows/macOS, hosted CI.

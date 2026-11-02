@@ -124,8 +124,8 @@ export class HttpTransport {
       options.signal?.removeEventListener('abort', onAbort);
       lifetime?.removeEventListener('abort', onAbort);
     }
-    // Disposed while the body was read: drop the answer instead of acting on it.
-    if (lifetime?.aborted === true) throw new ZiloAbortError('aborted');
+    // Disposed or aborted while the body was read: drop the answer instead of acting on it.
+    if (aborted()) throw new ZiloAbortError('aborted');
 
     const body = parseBody(text, response);
     const status = response.status;

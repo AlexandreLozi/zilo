@@ -7,6 +7,7 @@
 // Web Locks API). Such an adapter exposes bearer tokens to any script running in the app origin
 // (XSS), exactly like the in-memory store does to scripts in the page; it must not persist tokens
 // beyond `familyExpiresAt`. The contract approves no browser-storage technology (R-A15).
+import { throwIfAborted, untilAborted } from './abort.js';
 
 /** One family's current token (R-A15). Times are RFC 3339 strings as the agent sent them. */
 export interface FamilyCredential {
@@ -30,8 +31,12 @@ export interface CredentialStore {
   /**
    * Runs `fn` under mutual exclusion for the origin, across every tab that shares the store.
    * Acquisition, renewal and pointer moves run inside it (R-A15).
+   *
+   * `signal` is the caller's: once it aborts, the wait for the lock should reject and `fn` should
+   * not start. An adapter that ignores it stays correct, because the SDK checks the signal again
+   * as `fn` starts and before every request or write inside it; the caller then only waits longer.
    */
-  withLock<T>(origin: string, fn: () => Promise<T>): Promise<T>;
+  withLock<T>(origin: string, fn: () => Promise<T>, signal?: AbortSignal): Promise<T>;
 }
 
 function clone(value: OriginCredentials): OriginCredentials {
@@ -57,14 +62,19 @@ export class MemoryCredentialStore implements CredentialStore {
     return Promise.resolve();
   }
 
-  withLock<T>(origin: string, fn: () => Promise<T>): Promise<T> {
+  withLock<T>(origin: string, fn: () => Promise<T>, signal?: AbortSignal): Promise<T> {
     const previous = this.locks.get(origin) ?? Promise.resolve();
-    const next = previous.then(fn, fn);
+    // An aborted waiter keeps its place in the queue (so the order stays intact) but never runs.
+    const enter = (): Promise<T> => {
+      throwIfAborted(signal);
+      return fn();
+    };
+    const next = previous.then(enter, enter);
     const settled = next.catch(() => undefined);
     this.locks.set(origin, settled);
     void settled.then(() => {
       if (this.locks.get(origin) === settled) this.locks.delete(origin);
     });
-    return next;
+    return untilAborted(next, signal);
   }
 }

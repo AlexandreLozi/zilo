@@ -1,5 +1,6 @@
 // ZiloClient: detection, auth, devices and caps, and the SDK side of the lost-session contract
 // (CONTRACT.md §3, §4, §12).
+import { throwIfAborted } from './abort.js';
 import { AuthClient } from './auth.js';
 import {
   MemoryCredentialStore,
@@ -148,7 +149,7 @@ export class ZiloClient {
       isSafari: options.isSafari ?? detectSafari(g.navigator?.userAgent),
       permissions: options.permissions,
       probe: (signal) => this.probe(signal),
-      hasToken: () => this.auth.hasUsableCurrent(),
+      hasToken: (signal) => this.auth.hasUsableCurrent(signal),
       requestConsent: (signal) => this.auth.requestConsent(signal),
       readConsent: (signal) => this.auth.readConsent(signal),
       authorize: (signal) => this.authorize(signal),
@@ -295,7 +296,7 @@ export class ZiloClient {
         return { hello, cred: current };
       }
       // An invalid token on hello falls back to public (R-V2): treat it as token-invalid (R-A10).
-      const other = await this.auth.recoverInvalid(current.familyId, current.token);
+      const other = await this.auth.recoverInvalid(current.familyId, current.token, signal);
       current = other ?? (await this.auth.currentCredential({ signal }));
     }
     throw new ZiloProtocolError('hello stayed public with a fresh token');
@@ -382,11 +383,14 @@ export class ZiloClient {
       } catch (err) {
         if (err instanceof ZiloAgentRestartedError || err instanceof ZiloJobLostError) throw err;
         if (this.disposed) throw new ZiloDisposedError();
+        // The caller's signal aborted (for detection: the run's deadline, cancel or replacement):
+        // no recovery step, no write and no new request starts after that.
+        throwIfAborted(signal);
         // A renewal failure names the credential renewal presented; otherwise the request's.
         const failed = this.auth.renewalCredential(err) ?? used;
         if (isProblem(err, 'token-invalid') && !recovered && failed !== undefined) {
           recovered = true;
-          const other = await this.auth.recoverInvalid(failed.familyId, failed.token);
+          const other = await this.auth.recoverInvalid(failed.familyId, failed.token, signal);
           if (other !== undefined) {
             cred = other;
             continue;

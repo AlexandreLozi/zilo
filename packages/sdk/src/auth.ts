@@ -1,5 +1,6 @@
 // Auth and consent client (CONTRACT.md §3): consent request and polling, token issuance, renewal
 // that keeps the family, deterministic family rollover and per-origin credential storage (R-A15).
+import { throwIfAborted, untilAborted } from './abort.js';
 import type { CredentialStore, FamilyCredential, OriginCredentials } from './credentials.js';
 import { decodeConsent, decodeToken } from './decode.js';
 import { isProblem, ZiloDisposedError } from './errors.js';
@@ -44,6 +45,18 @@ export class AuthClient {
     if (this.o.closed?.() === true) throw new ZiloDisposedError();
   }
 
+  /**
+   * Checked right before every side effect (a token request, a credential write) and as a lock's
+   * critical section starts: nothing starts once the client was disposed or the caller's signal
+   * aborted (a detection run's deadline, cancel or replacement). The write that records a token
+   * follows its answer with no await in between, so an abort can only drop a token the agent
+   * already minted, never cause a second issuance.
+   */
+  private assertLive(signal: AbortSignal | undefined): void {
+    this.assertOpen();
+    throwIfAborted(signal);
+  }
+
   /** `POST /auth/consent` (R-A1): the only call that can prompt. Only from a user gesture. */
   async requestConsent(signal?: AbortSignal): Promise<ConsentStatus> {
     const res = await this.o
@@ -67,8 +80,9 @@ export class AuthClient {
   }
 
   /** True when storage holds a usable current-family token ("token held?" in T05 detection). */
-  async hasUsableCurrent(): Promise<boolean> {
-    const rec = await this.o.store.read(this.o.origin);
+  async hasUsableCurrent(signal?: AbortSignal): Promise<boolean> {
+    throwIfAborted(signal);
+    const rec = await untilAborted(this.o.store.read(this.o.origin), signal);
     return this.usable(rec?.current === undefined ? undefined : rec.families[rec.current]);
   }
 
@@ -86,14 +100,22 @@ export class AuthClient {
   async currentCredential(
     options: { newScan?: boolean; signal?: AbortSignal | undefined } = {},
   ): Promise<FamilyCredential> {
-    return this.o.store.withLock(this.o.origin, async () => {
-      const rec: OriginCredentials = (await this.o.store.read(this.o.origin)) ?? { families: {} };
-      const cur = rec.current === undefined ? undefined : rec.families[rec.current];
-      if (this.usable(cur) && !(options.newScan === true && isFinal(cur))) {
-        return this.renewIfDue(rec, cur, options.signal);
-      }
-      return this.issue(rec, options.signal);
-    });
+    const { signal } = options;
+    return this.o.store.withLock(
+      this.o.origin,
+      async () => {
+        this.assertLive(signal);
+        const rec: OriginCredentials = (await this.o.store.read(this.o.origin)) ?? {
+          families: {},
+        };
+        const cur = rec.current === undefined ? undefined : rec.families[rec.current];
+        if (this.usable(cur) && !(options.newScan === true && isFinal(cur))) {
+          return this.renewIfDue(rec, cur, signal);
+        }
+        return this.issue(rec, signal);
+      },
+      signal,
+    );
   }
 
   /** Renews the family's token when due (R-A11, R-A15). Never changes the current pointer. */
@@ -101,12 +123,17 @@ export class AuthClient {
     familyId: string,
     signal?: AbortSignal,
   ): Promise<FamilyCredential | undefined> {
-    return this.o.store.withLock(this.o.origin, async () => {
-      const rec = await this.o.store.read(this.o.origin);
-      const entry = rec?.families[familyId];
-      if (rec === undefined || !this.usable(entry)) return entry;
-      return this.renewIfDue(rec, entry, signal);
-    });
+    return this.o.store.withLock(
+      this.o.origin,
+      async () => {
+        this.assertLive(signal);
+        const rec = await this.o.store.read(this.o.origin);
+        const entry = rec?.families[familyId];
+        if (rec === undefined || !this.usable(entry)) return entry;
+        return this.renewIfDue(rec, entry, signal);
+      },
+      signal,
+    );
   }
 
   private async renewIfDue(
@@ -115,6 +142,7 @@ export class AuthClient {
     signal?: AbortSignal,
   ): Promise<FamilyCredential> {
     if (isFinal(entry) || this.o.now() < time(entry.renewAfter)) return entry;
+    this.assertLive(signal);
     try {
       const res = await this.o.transport().request({
         op: 'renewToken',
@@ -124,7 +152,7 @@ export class AuthClient {
         signal,
       });
       const t = decodeToken(res.body);
-      this.assertOpen();
+      this.assertLive(signal);
       const next: FamilyCredential = {
         familyId: entry.familyId, // renewal keeps the family (R-A11)
         token: t.token,
@@ -145,6 +173,7 @@ export class AuthClient {
   }
 
   private async issue(rec: OriginCredentials, signal?: AbortSignal): Promise<FamilyCredential> {
+    this.assertLive(signal);
     const res = await this.o.transport().request({
       op: 'issueToken',
       method: 'POST',
@@ -153,7 +182,7 @@ export class AuthClient {
       signal,
     });
     const t = decodeToken(res.body);
-    this.assertOpen();
+    this.assertLive(signal);
     const entry: FamilyCredential = {
       familyId: t.familyId,
       token: t.token,
@@ -191,16 +220,23 @@ export class AuthClient {
   async recoverInvalid(
     familyId: string,
     failedToken: string,
+    signal?: AbortSignal,
   ): Promise<FamilyCredential | undefined> {
-    return this.o.store.withLock(this.o.origin, async () => {
-      const rec = await this.o.store.read(this.o.origin);
-      if (rec === undefined) return undefined;
-      const entry = rec.families[familyId];
-      if (entry !== undefined && entry.token !== failedToken && this.usable(entry)) return entry;
-      this.drop(rec, familyId);
-      await this.o.store.write(this.o.origin, rec);
-      return undefined;
-    });
+    return this.o.store.withLock(
+      this.o.origin,
+      async () => {
+        throwIfAborted(signal);
+        const rec = await this.o.store.read(this.o.origin);
+        if (rec === undefined) return undefined;
+        const entry = rec.families[familyId];
+        if (entry !== undefined && entry.token !== failedToken && this.usable(entry)) return entry;
+        this.drop(rec, familyId);
+        throwIfAborted(signal);
+        await this.o.store.write(this.o.origin, rec);
+        return undefined;
+      },
+      signal,
+    );
   }
 
   /** Removes one family's entry (revoked or ended). */

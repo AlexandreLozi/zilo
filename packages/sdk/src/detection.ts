@@ -2,6 +2,7 @@
 // (docs/design/detection-dialogs.md §2), so `@zilo/ui` maps them one to one. Every move goes
 // through `TRANSITIONS`; an undeclared move is a bug and throws. Two SDK states have no T05 copy
 // yet (`sdk-too-old`, `auth-unavailable`); the UI shows a safe generic message for them.
+import { untilAborted } from './abort.js';
 import { compareSemver, publicFit, type Fit } from './compat.js';
 import { isProblem, ZiloAbortError, ZiloDisposedError, ZiloProblemError } from './errors.js';
 import {
@@ -138,7 +139,8 @@ export interface DetectionDeps {
   isSafari: boolean;
   permissions?: PermissionsLike | undefined;
   probe(signal: AbortSignal): Promise<ProbeResult | undefined>;
-  hasToken(): Promise<boolean>;
+  /** "Token held?" (T05). Takes the run's signal, like every awaited step of a run. */
+  hasToken(signal: AbortSignal): Promise<boolean>;
   requestConsent(signal: AbortSignal): Promise<ConsentStatus>;
   readConsent(signal: AbortSignal): Promise<ConsentStatus>;
   /** Gets the current family's credential and reads the full `hello` with it. */
@@ -157,19 +159,45 @@ const DEFAULT_RECHECK_MS = 2_000;
 const DEFAULT_RECHECK_CAP_MS = 5 * 60_000;
 const DEFAULT_POLL_SECONDS = 2;
 
-/** Read through a call, so a check after an `await` is not narrowed away. */
-const isAborted = (signal: AbortSignal): boolean => signal.aborted;
+/**
+ * The states a run is alive in: it still probes, polls or waits for an answer. Any other state
+ * settles the run (its deadline timer and waits are cleared and its signal aborted).
+ */
+const ACTIVE: ReadonlySet<DetectionStateName> = new Set([
+  'checking',
+  'permission-prompt',
+  'unreachable-or-blocked',
+  'awaiting-consent',
+]);
 
-/** One detection run: one user gesture (`start()`), its overall deadline and its consent request. */
+/**
+ * One detection run: one user gesture (`start()`). The run object is its identity: only the run
+ * held in `Detector.run` may change the snapshot, so a replaced, cancelled, settled or expired run
+ * is inert, whatever it was awaiting.
+ */
 interface Run {
+  /** Aborted when the run ends for any reason: deadline, cancel, replacement, settle, dispose. */
   readonly ctl: AbortController;
   /** When the run started; the overall re-check cap counts from here, across auth retries. */
   readonly since: number;
+  /** `since` plus the cap. Exclusive: from this instant on, the run starts nothing (`expired`). */
+  readonly deadline: number;
+  /** Fires at `deadline` and stops the run, aborting whatever is still pending. */
+  deadlineTimer: ReturnType<typeof setTimeout> | undefined;
+  /** The pending re-check or poll wait, if any. */
+  wait: ReturnType<typeof setTimeout> | undefined;
+  /** The permission fields, kept for the `unreachable-stopped` snapshot. */
+  perm: PermissionBase;
   /**
    * Set once this run sent `POST /auth/consent`. A run sends it at most once (R-A1, triage #3):
    * a later re-probe of the same run reads the state with `GET`, which never prompts.
    */
   asked: boolean;
+}
+
+/** The one deadline comparison (exclusive): at or after `deadline`, no new request may start. */
+function expired(run: Run, at: number = Date.now()): boolean {
+  return at >= run.deadline;
 }
 
 /**
@@ -178,12 +206,18 @@ interface Run {
  * once per call. A run continues on its own only while its dialog is shown and its overall
  * deadline (`recheckCapMs`) has not passed: `cancel()` is the dialog being dismissed, `dispose()`
  * the page or host dialog going away (navigation, Unload); both stop the re-check and polling.
+ *
+ * Run model (T13 r3). Each run owns an `AbortController`, one deadline timer armed at
+ * `since + cap` that aborts it, and its identity. Every awaited step (permission query, probe,
+ * token check, `authorize`, consent `POST`/`GET`) gets the run's signal and is awaited through
+ * `step()`, which rejects as soon as the signal aborts. `live()` is checked right before each
+ * side effect and after each await: it requires ownership first, then stops the run if the
+ * deadline was reached. Ending a run, for any reason, goes through `end()`.
  */
 export class Detector {
   private snap: DetectionSnapshot = { state: 'idle' };
   private readonly listeners = new Set<DetectionListener>();
   private run: Run | undefined;
-  private timer: ReturnType<typeof setTimeout> | undefined;
   private disposed = false;
   private readonly d: DetectionDeps;
 
@@ -201,13 +235,17 @@ export class Detector {
     return () => this.listeners.delete(listener);
   }
 
-  /** Moves the machine; throws on an undeclared transition. */
+  /**
+   * Moves the machine; throws on an undeclared transition. Leaving the active states settles the
+   * current run, so a settled run never keeps a deadline timer or a wait.
+   */
   private go(next: DetectionSnapshot): void {
     if (this.disposed) return;
     if (!canTransition(this.snap.state, next.state)) {
       throw new Error(`detection: illegal transition ${this.snap.state} -> ${next.state}`);
     }
     this.snap = next;
+    if (!ACTIVE.has(next.state) && this.run !== undefined) this.end(this.run);
     for (const l of this.listeners) l(next);
   }
 
@@ -232,7 +270,8 @@ export class Detector {
   }
 
   /**
-   * Teardown (idempotent): cancels the run, its timers and pending requests, and drops every
+   * Teardown (idempotent): ends the current run through the same path as a cancel (its signal
+   * aborts every pending step; its deadline timer and wait are cleared), then drops every
    * subscriber. A disposed detector never moves, notifies or starts again.
    */
   dispose(): void {
@@ -243,19 +282,60 @@ export class Detector {
     this.snap = { state: 'idle' };
   }
 
+  /** Ends the current run, if any. */
   private stop(): void {
-    this.run?.ctl.abort();
-    this.run = undefined;
-    if (this.timer !== undefined) clearTimeout(this.timer);
-    this.timer = undefined;
+    if (this.run !== undefined) this.end(this.run);
+  }
+
+  /** Ends `run`: aborts its signal, clears its own timers, and releases ownership if it held it. */
+  private end(run: Run): void {
+    run.ctl.abort();
+    clearTimeout(run.deadlineTimer);
+    run.deadlineTimer = undefined;
+    clearTimeout(run.wait);
+    run.wait = undefined;
+    if (this.run === run) this.run = undefined;
+  }
+
+  /** True while `run` is the current, unaborted run: the only one allowed to change state. */
+  private owns(run: Run): boolean {
+    return this.run === run && !run.ctl.signal.aborted && !this.disposed;
+  }
+
+  /**
+   * The guard before every side effect and after every await: false when the run no longer owns
+   * the detector, or when its deadline was reached (the run is then stopped). Ownership is
+   * checked first, so a stale run never touches state.
+   */
+  private live(run: Run): boolean {
+    if (!this.owns(run)) return false;
+    if (!expired(run)) return true;
+    this.stopAtDeadline(run);
+    return false;
+  }
+
+  /** The deadline stop, shared by the deadline timer and `live()`. A no-op for a stale run. */
+  private stopAtDeadline(run: Run): void {
+    if (!this.owns(run)) return;
+    this.end(run);
+    this.go({ state: 'unreachable-stopped', ...run.perm });
+  }
+
+  /**
+   * Runs one awaited step of `run` with the run's signal. Rejects with `ZiloAbortError` as soon as
+   * the run ends, so a step still pending at the deadline (a held credential lock, a slow
+   * transport) is abandoned, and its late result never reaches the run.
+   */
+  private async step<T>(run: Run, work: (signal: AbortSignal) => Promise<T>): Promise<T> {
+    const signal = run.ctl.signal;
+    if (signal.aborted) throw new ZiloAbortError('detection run ended');
+    return untilAborted(work(signal), signal);
   }
 
   /** Starts (or restarts) detection. Resolves with the state the flow settles in first. */
   async start(): Promise<DetectionSnapshot> {
     if (this.disposed) throw new ZiloDisposedError();
     this.stop();
-    const run: Run = { ctl: new AbortController(), since: Date.now(), asked: false };
-    this.run = run;
     if (this.snap.state !== 'idle' && !canTransition(this.snap.state, 'checking'))
       this.go({ state: 'idle' });
 
@@ -268,9 +348,30 @@ export class Detector {
       this.go({ state: 'safari-unsupported' });
       return this.snap;
     }
+    const since = Date.now();
+    const run: Run = {
+      ctl: new AbortController(),
+      since,
+      deadline: since + (this.d.recheckCapMs ?? DEFAULT_RECHECK_CAP_MS),
+      deadlineTimer: undefined,
+      wait: undefined,
+      perm: {},
+      asked: false,
+    };
+    this.run = run;
     this.go({ state: 'checking' });
-    const detail = await queryLoopbackPermissionDetail(this.d.permissions);
-    if (run.ctl.signal.aborted) return this.snap;
+    run.deadlineTimer = setTimeout(() => {
+      run.deadlineTimer = undefined;
+      this.stopAtDeadline(run);
+    }, run.deadline - since);
+
+    let detail: Awaited<ReturnType<typeof queryLoopbackPermissionDetail>>;
+    try {
+      detail = await this.step(run, () => queryLoopbackPermissionDetail(this.d.permissions));
+    } catch {
+      return this.snap; // the run ended while the permission was queried
+    }
+    if (!this.live(run)) return this.snap;
     // Only a `loopback-network` answer is acted on; the legacy name is a hint (triage #7).
     const perm: PermissionBase = detail.verified
       ? { permission: detail.state }
@@ -279,6 +380,7 @@ export class Detector {
           permissionHint:
             detail.name === undefined ? undefined : { name: detail.name, state: detail.state },
         };
+    run.perm = perm;
     if (perm.permission === 'denied') {
       this.go({ state: 'denied', ...perm });
       return this.snap;
@@ -288,42 +390,16 @@ export class Detector {
     return this.snap;
   }
 
-  /** The run's overall deadline (`since` plus the cap), shared by re-checks and consent polls. */
-  private deadline(run: Run): number {
-    return run.since + (this.d.recheckCapMs ?? DEFAULT_RECHECK_CAP_MS);
-  }
-
-  /**
-   * Stops the run at its overall deadline (r2 #1): every continuation calls this after an await
-   * and before prompting, `POST`ing consent or authorizing. Returns true when the run stopped.
-   */
-  private stopIfExpired(run: Run, perm: PermissionBase): boolean {
-    if (Date.now() <= this.deadline(run)) return false;
-    this.stopAtDeadline(run, perm);
-    return true;
-  }
-
-  private stopAtDeadline(run: Run, perm: PermissionBase): void {
-    if (this.run === run) this.stop();
-    if (this.snap.state === 'unreachable-stopped') return;
-    this.go({
-      state: 'unreachable-stopped',
-      permission: perm.permission,
-      permissionHint: perm.permissionHint,
-    });
-  }
-
   private async probeAndContinue(run: Run, perm: PermissionBase): Promise<void> {
-    const signal = run.ctl.signal;
+    if (!this.live(run)) return; // right before the probe: no GET once the run ended or expired
     let found: ProbeResult | undefined;
     try {
-      found = await this.d.probe(signal);
+      found = await this.step(run, (signal) => this.d.probe(signal));
     } catch (err) {
-      if (err instanceof ZiloAbortError || signal.aborted) return;
+      if (err instanceof ZiloAbortError || !this.owns(run)) return;
       found = undefined;
     }
-    if (signal.aborted) return;
-    if (found !== undefined && this.stopIfExpired(run, perm)) return;
+    if (!this.live(run)) return;
     if (found === undefined) {
       if (this.snap.state !== 'unreachable-or-blocked')
         this.go({ state: 'unreachable-or-blocked', ...perm });
@@ -339,18 +415,18 @@ export class Detector {
     }
     const base: SnapshotBase = { ...perm, port: found.port, hello: found.hello };
     try {
-      if (await this.d.hasToken()) {
+      const held = await this.step(run, (signal) => this.d.hasToken(signal));
+      if (!this.live(run)) return; // dismissed, replaced or expired while the token check ran
+      if (held) {
         await this.authorized(run, base);
         return;
       }
-      if (isAborted(signal)) return; // dismissed while the token check ran
-      if (this.stopIfExpired(run, perm)) return;
       let consent: ConsentStatus;
       if (run.asked) {
-        consent = await this.d.readConsent(signal);
+        consent = await this.step(run, (signal) => this.d.readConsent(signal));
       } else {
         run.asked = true;
-        consent = await this.d.requestConsent(signal);
+        consent = await this.step(run, (signal) => this.d.requestConsent(signal));
       }
       await this.onConsent(run, base, consent);
     } catch (err) {
@@ -358,25 +434,37 @@ export class Detector {
     }
   }
 
-  /** Re-probes while the run's overall deadline allows another attempt; then stops. */
+  /**
+   * Waits `ms`, then runs `next` if the run is still live. A wait that would end at or after the
+   * deadline is not armed: the run's deadline timer stops it first, so nothing is left behind.
+   */
+  private schedule(run: Run, ms: number, next: () => void): void {
+    if (expired(run, Date.now() + ms)) return;
+    clearTimeout(run.wait);
+    run.wait = setTimeout(() => {
+      run.wait = undefined;
+      if (this.live(run)) next();
+    }, ms);
+  }
+
+  /** Re-probes while the run's overall deadline allows another attempt. */
   private scheduleRecheck(run: Run, perm: PermissionBase): void {
-    const interval = this.d.recheckIntervalMs ?? DEFAULT_RECHECK_MS;
-    const cap = this.d.recheckCapMs ?? DEFAULT_RECHECK_CAP_MS;
-    if (Date.now() + interval - run.since > cap) {
-      this.go({ state: 'unreachable-stopped', ...perm });
-      return;
-    }
-    this.timer = setTimeout(() => {
-      this.timer = undefined;
-      if (!run.ctl.signal.aborted) void this.probeAndContinue(run, perm);
-    }, interval);
+    this.schedule(run, this.d.recheckIntervalMs ?? DEFAULT_RECHECK_MS, () => {
+      void this.probeAndContinue(run, perm);
+    });
+  }
+
+  /** Polls consent while the run's overall deadline allows another `GET`. */
+  private schedulePoll(run: Run, base: SnapshotBase, seconds: number): void {
+    this.schedule(run, seconds * 1000, () => {
+      void this.poll(run, base, seconds);
+    });
   }
 
   private async authorized(run: Run, base: SnapshotBase): Promise<void> {
-    if (this.stopIfExpired(run, base)) return;
-    const full = await this.d.authorize(run.ctl.signal);
-    if (run.ctl.signal.aborted) return;
-    if (this.stopIfExpired(run, base)) return;
+    if (!this.live(run)) return; // right before authorizing: no lock, no token request
+    const full = await this.step(run, (signal) => this.d.authorize(signal));
+    if (!this.live(run)) return;
     const required = this.d.minAgentVersion;
     if (required !== undefined && compareSemver(full.version, required) < 0) {
       this.go({
@@ -392,7 +480,7 @@ export class Detector {
   }
 
   private async onConsent(run: Run, base: SnapshotBase, consent: ConsentStatus): Promise<void> {
-    if (run.ctl.signal.aborted) return;
+    if (!this.live(run)) return; // a late consent answer never moves a stale or expired run
     switch (consent.state) {
       case 'granted':
         await this.authorized(run, base);
@@ -424,34 +512,13 @@ export class Detector {
     }
   }
 
-  /**
-   * Polls consent until the run's overall deadline. The last wait is cut to end at the deadline,
-   * so a slow `pollAfterSeconds` or a rate-limit backoff never runs past it.
-   */
-  private schedulePoll(run: Run, base: SnapshotBase, seconds: number): void {
-    const remaining = this.deadline(run) - Date.now();
-    if (remaining <= 0) {
-      this.stopAtDeadline(run, base);
-      return;
-    }
-    this.timer = setTimeout(
-      () => {
-        this.timer = undefined;
-        if (run.ctl.signal.aborted) return;
-        if (this.stopIfExpired(run, base)) return;
-        void this.poll(run, base, seconds);
-      },
-      Math.min(seconds * 1000, remaining),
-    );
-  }
-
   private async poll(run: Run, base: SnapshotBase, seconds: number): Promise<void> {
+    if (!this.live(run)) return; // right before the GET
     try {
-      const consent = await this.d.readConsent(run.ctl.signal);
-      if (run.ctl.signal.aborted || this.stopIfExpired(run, base)) return;
+      const consent = await this.step(run, (signal) => this.d.readConsent(signal));
       await this.onConsent(run, base, consent);
     } catch (err) {
-      if (isProblem(err, 'rate-limited')) {
+      if (isProblem(err, 'rate-limited') && this.live(run)) {
         // GET /auth/consent is limited to 2/s per origin (R-A3): back off and keep polling.
         this.schedulePoll(run, base, Math.max(seconds, err.retryAfterSeconds ?? seconds));
         return;
@@ -461,7 +528,8 @@ export class Detector {
   }
 
   private onAuthError(run: Run, base: SnapshotBase, err: unknown): void {
-    if (run.ctl.signal.aborted || err instanceof ZiloAbortError) return;
+    // Ownership first: a stale or aborted run's failure is dropped; then the deadline.
+    if (!this.live(run) || err instanceof ZiloAbortError) return;
     if (err instanceof ZiloProblemError) {
       switch (err.code) {
         case 'consent-pending':
