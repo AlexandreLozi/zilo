@@ -13,6 +13,29 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 |---|---|---|---|---|---|---|---|---|---|---|
 | T04b backend scaffold | 9e43bf7 | 7284a3b (non-docs tree identical at 9e43bf7) | GPT (gpt-6.1-sol) | Claude opus-5-5, PASS, `docs/reviews/T04b-r1.md` | pass (6/6) | pass | local: blocked-by-host-SAC; **hosted windows-latest: pass** | **hosted macos-latest + macos-15-intel: pass** | **pass**: run 41240050339 @35019a3 (backend tree identical to 9e43bf7), ubuntu/windows/macos-arm64/macos-intel all success | `docs/validation/T04b.md`, `docs/validation/logs/T04b/`, https://github.com/AlexandreLozi/zilo/actions/runs/41240050339 |
 
+## Merge record: T13 @zilo/sdk core (2026-11-02, Opus queue)
+- Merged at `55cf4c4` (merge commit, no conflicts) from `t13-sdk-core` at
+  `8fa9f8c569577e80fba37099c53126843528dfbb`. The scope is `packages/sdk/**`,
+  `docs/validation/logs/T13/**` and `docs/reviews/T13-*`.
+- Author: Claude (author run plus fix r1-r4). Reviewer: GPT.
+  - r1-r4 asked for changes (`docs/reviews/T13-r1..r4.md`): renewal recovery, shared-family
+    pruning, teardown, the overall deadline, the in-flight run model and restart cleanup.
+  - **r5 PASS** (`docs/reviews/T13-r5.md`, ctx_ea47a34df087).
+  - The 12 review proofs are byte-unchanged and green.
+- Local Linux (Node 24.22.2): lint, typecheck, `pnpm -r test`, build and format:check pass. SDK
+  is 159/159, also re-run on the merge commit.
+- Hosted: ci-web **41397399133** on exact 8fa9f8c (draft PR #4) is **green**: SDK 159/159, ui 1,
+  dwt-compat 1, licence gate 10, demo 1.
+- **D-012 evidence reuse:** the merge has no conflicts, and `git diff 8fa9f8c...origin/main` over
+  the ci-web inputs (packages, apps, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, .nvmrc,
+  .prettier*, tsconfig*, eslint.config.*, ci-web.yml) is empty. This is not an exact-SHA pass; the
+  push to main reruns ci-web as the backstop.
+- Follow-ups:
+  - sync the SDK port placeholder from `docs/validation/logs/T11/ports.md` (47841, then
+    47842/47843) once T11 merges;
+  - T05 copy for `agent-restarted`, `auth-unavailable` and `sdk-too-old`;
+  - T10.1 candidates from the triage.
+
 ## Merge record: T11a neutral Core contracts (2026-11-01, Opus queue)
 - Merged at `4a3aed549b0caa35566a116c43bb5d0a401be897` (fast-forward). This is a no-conflict rebase onto main of the GPT author commit
   cf58cd7, the docs-only fix r1 d0deb8f, and both review reports.
