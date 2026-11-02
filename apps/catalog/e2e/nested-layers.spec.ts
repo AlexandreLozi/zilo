@@ -588,7 +588,13 @@ test('an older native child closed and reopened while the Zilo dialog is open ke
     child.showModal();
     (zilo as HTMLElement & { show(): void }).show();
     await new Promise<void>((resolve) => {
-      child.addEventListener('close', () => resolve(), { once: true });
+      child.addEventListener(
+        'close',
+        () => {
+          resolve();
+        },
+        { once: true },
+      );
       child.close();
     });
     child.showModal();
