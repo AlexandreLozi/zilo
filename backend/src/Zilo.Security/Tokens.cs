@@ -17,6 +17,9 @@ public sealed record AuthenticatedToken(string Origin, string FamilyId, bool Rev
 
 public sealed class TokenService
 {
+    // Agent's synchronous response selection shares the mutation monitor. No IO,
+    // awaits, user callbacks or serialization may run inside that commit section.
+    internal object AuthorizationGate => _gate;
     private readonly TokenLimits _limits;
     private readonly IClock _clock;
     private readonly object _gate = new();
