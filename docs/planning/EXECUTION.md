@@ -166,7 +166,9 @@ on third-party licences. Tester builds are unsigned or test-key signed (Q20). Wi
 stay gated, with no device available (Q19). Tracked in VALIDATION.md.
 
 ### M7 open-source release (owner Q17/Q18; gated on an owner-approved functional app)
-T54: the masters present an MIT / Apache-2.0 / MPL-LGPL comparison and the owner chooses. Then
+T57 (repo hygiene, OD-13) comes first: inventory, a manifest approved by both masters, layout, README
+and docs index, and the sensitive-file check. Then T54: the masters present an MIT / Apache-2.0 /
+MPL-LGPL comparison and the owner chooses. Then
 CONTRIBUTING, SECURITY.md, DCO, and the clean public export, reviewed by both masters and approved
 by the owner. Until M7 there is **no Zilo LICENSE file** anywhere in the repo, and the repo stays
 private. Third-party licence texts under evidence/notice paths are fine.
@@ -219,7 +221,41 @@ These amendments override the rows in §3 where they conflict.
   - a scripted clean public export that excludes CLAUDE.md, `.claude/`, `opencode.json`,
     `.opencode/`, `docs/planning`, `docs/tasks` and `docs/reviews`, keeps the product docs, and
     starts the public repo from a fresh history.
-  - Reviewed by GPT. Deps: T53.
+  - Reviewed by GPT. Deps: T53, T57.
+- **T57 (joint, docs/tooling), repo hygiene (OD-13). PROPOSED by Opus, pending GPT approval.** It
+  runs after the owner has approved a functional app (the M7 entry gate) and **before T54's clean
+  public export**. Author: DeepSeek (routine, OD-11); reviewer: GPT. The deletion manifest also
+  needs both masters' sign-off.
+  1. **Inventory first, no deletions.** Write `docs/hygiene/inventory.md`: every tracked path is
+     classified as product, product docs, planning/agent, evidence log, spike/archive, or stale.
+     For each stale or archive item it records: why, who last touched it, whether anything links
+     to it, and the proposed action (keep, relocate, archive to a tag, or delete).
+  2. **Deletion and relocation manifest.** Both masters approve it before any `git rm` or `git mv`.
+     - Nothing referenced by CI, tests, packaging or a merge record is removed.
+     - Spikes and one-off resume briefs are archived (a git tag plus a manifest line), not just
+       deleted.
+     - Worktree and branch leftovers are pruned by the Opus master only (AGENTS.md).
+  3. **Consistent layout and naming.**
+     - One documented top-level layout: `packages/`, `apps/`, `backend/`, `packaging/`, `api/`,
+       `design/`, `docs/`.
+     - Fix the naming drift found in the inventory.
+     - Move CI-used sources out of evidence folders. Known case: the T12 P3-1
+       `InstalledPayloadProof.cs`, moved under `packaging/windows/`.
+  4. **README and docs index.** A root README covering what Zilo is, the quick start, the layout
+     and the supported browsers (OD-10). Add `docs/README.md` as an index of the product docs,
+     with the planning and agent docs listed separately so T54's export denylist can drop them.
+  5. **Sensitive-file check.**
+     - A dependency-free script (a CI step, or run on demand) fails on tracked secrets, keys,
+       tokens, `.env` files, certificates or private keys outside test fixtures. It also flags
+       large binaries and absolute home paths.
+     - Allowlisted test keys are listed explicitly (OD-7: CI-generated test keys are never
+       committed).
+     - Run it over the full history too, and report the findings. A history rewrite is out of
+       scope, because T54 exports with a fresh history.
+  - **Acceptance:** CI green on the exact head; no product behaviour change (the full test suites
+    are unchanged); the inventory and manifest are signed by both masters; the check runs clean,
+    or each finding is triaged.
+  - **Deps:** an owner-approved functional app (M5 exit). T54 depends on T57.
 - **T56 is split to break the dependency cycle:**
   - **T56a (joint, Wave 1, no deps), harness only:** dependency-free timing and memory helpers
     (a TS package for Vitest/Playwright and a .NET test helper, with no production references),

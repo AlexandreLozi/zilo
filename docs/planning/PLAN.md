@@ -198,6 +198,9 @@ approved a functional app. Zilo is the owner's personal project, and he holds th
 - The masters present a short comparison of MIT, Apache-2.0 and MPL/LGPL, and the owner chooses.
 - Until M7: there is no LICENSE file for Zilo and the repo stays private (OD-7). Third-party
   notices (T53) are still kept.
+- **Repo hygiene first (T57, OD-13):** organize folders and files; archive or remove stale
+  artifacts, using a manifest approved by both masters; a README and docs index; a check that no
+  sensitive file is tracked. It comes after the functional app and before the clean public export.
 - The open-source hygiene moved here from M5 (T54):
   - the licence file the owner chose;
   - CONTRIBUTING, SECURITY.md, DCO or CLA;
