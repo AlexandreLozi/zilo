@@ -45,6 +45,20 @@ public sealed class MacConsentDirectoryTests
         await using var next = MacConsentDirectory.Open(fixture.Store);
     }
 
+    [Fact(SkipUnless = nameof(DarwinHost), Skip = SkipReason)]
+    public void Native_existing_permissive_lock_is_rejected_without_repair()
+    {
+        if (!OperatingSystem.IsMacOS()) throw new PlatformNotSupportedException();
+        using var fixture = new Fixture();
+        Directory.CreateDirectory(fixture.Store, (UnixFileMode)0x1c0);
+        var lockPath = Path.Combine(fixture.Store, "consent.lock");
+        File.WriteAllBytes(lockPath, Array.Empty<byte>());
+        File.SetUnixFileMode(lockPath, (UnixFileMode)0x1a0);
+
+        Assert.Throws<IOException>(() => MacConsentDirectory.Open(fixture.Store));
+        Assert.Equal((UnixFileMode)0x1a0, File.GetUnixFileMode(lockPath));
+    }
+
     [Theory(SkipUnless = nameof(DarwinHost), Skip = SkipReason)]
     [InlineData("ancestor")]
     [InlineData("lock")]

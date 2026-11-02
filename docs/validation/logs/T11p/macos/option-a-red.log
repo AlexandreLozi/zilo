@@ -1,0 +1,20 @@
+  Zilo.Core -> <workspace>/backend/src/Zilo.Core/bin/Debug/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Virtual -> <workspace>/backend/src/Zilo.Drivers.Virtual/bin/Debug/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Drivers.Naps2 -> <workspace>/backend/src/Zilo.Drivers.Naps2/bin/Debug/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> <workspace>/backend/src/Zilo.Security/bin/Debug/net10.0/Zilo.Security.dll
+  Zilo.Agent -> <workspace>/backend/src/Zilo.Agent/bin/Debug/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <workspace>/backend/tests/Zilo.Agent.Tests/bin/Debug/net10.0/Zilo.Agent.Tests.dll
+Test run for <workspace>/backend/tests/Zilo.Agent.Tests/bin/Debug/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.MacConsentGuardTests.OpenAt_is_noncreating_three_argument_native_call [FAIL]
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.OpenAt_is_noncreating_three_argument_native_call [10 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 3
+Actual:   4
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.OpenAt_is_noncreating_three_argument_native_call() in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 14
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 23 ms - Zilo.Agent.Tests.dll (net10.0)

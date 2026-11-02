@@ -9,13 +9,15 @@ internal sealed class MacConsentDirectory : IPrivateConsentDirectory
 {
     // Apple xnu bsd/sys/{fcntl,stat,mount}.h and Libc include/sys/acl.h; NOT Linux constants.
     private const int NoFollow = 0x100, DirectoryFlag = 0x100000, CloseOnExec = 0x1000000, NonBlock = 4;
-    private const int Create = 0x200, Exclusive = 0x800, ReadWrite = 2, AtNoFollow = 0x20, FullSync = 51;
+    private const int ReadWrite = 2, AtNoFollow = 0x20, FullSync = 51;
     private const string LibSystem = "/usr/lib/libSystem.B.dylib";
     private readonly object _io = new();
     private readonly List<(string Name, SafeFileHandle Handle)> _chain = new();
     private readonly Action<MacConsentWriteStage>? _checkpoint;
     private readonly uint _uid;
-    private SafeFileHandle _lock = null!;
+    private string _rootPath = null!;
+    private SafeFileHandle? _lock;
+    private FileStream? _lockStream;
     private bool _disposed, _faulted;
     private SafeFileHandle Root => _chain[^1].Handle;
     internal bool IsVolatile => false; // Only ownership-enforcing local APFS/HFS are candidates.
@@ -51,20 +53,20 @@ internal sealed class MacConsentDirectory : IPrivateConsentDirectory
         if (!Path.IsPathFullyQualified(path) || path.Contains('\0')) throw Error();
         var parts = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length == 0 || parts.Any(part => part is "." or "..")) throw Error();
-        var store = new MacConsentDirectory(checkpoint);
+        var store = new MacConsentDirectory(checkpoint) { _rootPath = path };
         try
         {
-            store._chain.Add(("/", Handle(Native.openat(-2, "/", DirectoryFlag | NoFollow | CloseOnExec, 0)))); // AT_FDCWD=-2
+            store._chain.Add(("/", Handle(Native.openat(-2, "/", DirectoryFlag | NoFollow | CloseOnExec)))); // AT_FDCWD=-2
             CheckAncestor(Info(store.Root), store._uid);
             foreach (var part in parts)
             {
                 var parent = store.Root;
-                var fd = Native.openat(Fd(parent), part, DirectoryFlag | NoFollow | CloseOnExec, 0);
+                var fd = Native.openat(Fd(parent), part, DirectoryFlag | NoFollow | CloseOnExec);
                 if (fd < 0 && Marshal.GetLastPInvokeError() == 2)
                 {
                     if (Native.mkdirat(Fd(parent), part, 0x1c0) != 0 && Marshal.GetLastPInvokeError() != 17) throw Error();
                     Sync(parent, false);
-                    fd = Native.openat(Fd(parent), part, DirectoryFlag | NoFollow | CloseOnExec, 0);
+                    fd = Native.openat(Fd(parent), part, DirectoryFlag | NoFollow | CloseOnExec);
                 }
                 if (fd < 0 && Named(parent, part) is { } failed && (failed.Mode & 0xf000) == 0xa000)
                     throw new IOException("consent-symlink-ancestor-unsupported: use real directory ancestors or trusted maintenance; no automatic link resolution");
@@ -72,13 +74,13 @@ internal sealed class MacConsentDirectory : IPrivateConsentDirectory
                 store._chain.Add((part, handle));
                 CheckAncestor(Info(handle), store._uid);
             }
+            store.ValidateChain();
             CheckPrivate(store.Root, store._uid, true);
             if (StatFs(Fd(store.Root), out var fs) != 0) throw Error();
             RequireFileSystem(fs.TypeName, fs.Flags);
-            store._lock = Handle(Native.openat(Fd(store.Root), "consent.lock", ReadWrite | Create | NoFollow | CloseOnExec | NonBlock, 0x180));
-            CheckPrivate(store._lock, store._uid, false);
-            if (Native.flock(Fd(store._lock), 2 | 4) != 0) throw Error();
-            Sync(store._lock, true);
+            store.OpenLock();
+            if (Native.flock(Fd(store._lock!), 2 | 4) != 0) throw Error();
+            Sync(store._lock!, true);
             Sync(store.Root, true);
             store.Validate();
             return store;
@@ -119,8 +121,18 @@ internal sealed class MacConsentDirectory : IPrivateConsentDirectory
                 else if (!bytes.AsSpan().SequenceEqual("zilo-consent-session-v1\n"u8) && !bytes.AsSpan().SequenceEqual("zilo-consent-clean-v1\n"u8)) throw Error();
                 Validate(); ValidateTarget(name);
                 var temp = name == "consent.json" ? "consent.tmp" : "fence.tmp";
-                using var file = Handle(Native.openat(Fd(Root), temp, ReadWrite | Create | Exclusive | NoFollow | CloseOnExec | NonBlock, 0x180));
+                ValidateChain();
+                CheckPrivate(Root, _uid, true);
+                using var fileStream = new FileStream(Path.Combine(_rootPath, temp), CreateNewFileOptions());
+                var file = fileStream.SafeFileHandle;
+                ValidateChain();
+                CheckPrivate(Root, _uid, true);
+                // Only our exclusively created, still-empty file may have its mode normalized.
+                if (Info(file).Size != 0) throw Error();
+                if (Native.fchmod(Fd(file), 0x180) != 0) throw Error();
                 CheckPrivate(file, _uid, false);
+                ValidateNamed(temp, file);
+                ValidateChain();
                 RandomAccess.Write(file, bytes, 0);
                 _checkpoint?.Invoke(MacConsentWriteStage.FileFsync); Sync(file, false);
                 _checkpoint?.Invoke(MacConsentWriteStage.FileFullSync); RequireFullFlushSuccess(Native.fcntl(Fd(file), FullSync));
@@ -142,7 +154,9 @@ internal sealed class MacConsentDirectory : IPrivateConsentDirectory
         lock (_io)
         {
             if (_disposed) return ValueTask.CompletedTask;
-            _disposed = true; _lock?.Dispose();
+            _disposed = true;
+            if (_lockStream is not null) _lockStream.Dispose();
+            else _lock?.Dispose();
             for (var i = _chain.Count - 1; i >= 0; i--) _chain[i].Handle.Dispose();
             return ValueTask.CompletedTask;
         }
@@ -150,7 +164,7 @@ internal sealed class MacConsentDirectory : IPrivateConsentDirectory
 
     private byte[]? Read(string name, int limit)
     {
-        var fd = Native.openat(Fd(Root), name, NoFollow | CloseOnExec | NonBlock, 0);
+        var fd = Native.openat(Fd(Root), name, NoFollow | CloseOnExec | NonBlock);
         if (fd < 0 && Marshal.GetLastPInvokeError() == 2) return null;
         using var file = Handle(fd);
         CheckPrivate(file, _uid, false); ValidateNamed(name, file);
@@ -169,26 +183,66 @@ internal sealed class MacConsentDirectory : IPrivateConsentDirectory
     }
     private void Validate()
     {
+        ValidateChain();
+        CheckPrivate(Root, _uid, true); ValidateNamed("consent.lock", _lock);
+    }
+    private void ValidateChain()
+    {
         for (var i = 0; i < _chain.Count; i++)
         {
             var (name, handle) = _chain[i]; var current = Info(handle);
             CheckAncestor(current, _uid);
             if (i > 0 && !Same(current, Named(_chain[i - 1].Handle, name) ?? throw Error())) throw Error();
         }
-        CheckPrivate(Root, _uid, true); ValidateNamed("consent.lock", _lock);
     }
     private void ValidateTarget(string name)
     {
         var info = Named(Root, name);
         if (info is null) return;
-        using var handle = Handle(Native.openat(Fd(Root), name, NoFollow | CloseOnExec | NonBlock, 0));
+        using var handle = Handle(Native.openat(Fd(Root), name, NoFollow | CloseOnExec | NonBlock));
         CheckPrivate(handle, _uid, false); ValidateNamed(name, handle);
         if (!Same(info.Value, Info(handle))) throw Error();
     }
-    private void ValidateNamed(string name, SafeFileHandle file)
+    private void ValidateNamed(string name, SafeFileHandle? file)
     {
+        if (file is null) throw Error();
         CheckPrivate(file, _uid, false);
         if (!Same(Info(file), Named(Root, name) ?? throw Error())) throw Error();
+    }
+    private void OpenLock()
+    {
+        ValidateChain();
+        CheckPrivate(Root, _uid, true);
+        FileStream? created = null;
+        try
+        {
+            created = new FileStream(Path.Combine(_rootPath, "consent.lock"), CreateNewFileOptions());
+        }
+        catch (IOException exception) when (((uint)exception.HResult & 0xffffu) == 17u)
+        {
+            // Only an exclusive-create EEXIST permits the anchored, noncreating path.
+        }
+
+        if (created is not null)
+        {
+            _lockStream = created;
+            _lock = created.SafeFileHandle;
+            ValidateChain();
+            CheckPrivate(Root, _uid, true);
+            if (Info(_lock).Size != 0) throw Error();
+            if (Native.fchmod(Fd(_lock!), 0x180) != 0) throw Error();
+            CheckPrivate(_lock!, _uid, false);
+            ValidateNamed("consent.lock", _lock);
+            ValidateChain();
+            CheckPrivate(Root, _uid, true);
+            return;
+        }
+
+        _lock = Handle(Native.openat(Fd(Root), "consent.lock", ReadWrite | NoFollow | CloseOnExec | NonBlock));
+        CheckPrivate(_lock!, _uid, false);
+        ValidateNamed("consent.lock", _lock);
+        ValidateChain();
+        CheckPrivate(Root, _uid, true);
     }
     private void RequireUsable() { if (_disposed || _faulted) throw Error(); }
     private static void CheckPrivate(SafeFileHandle handle, uint uid, bool directory)
@@ -236,6 +290,18 @@ internal sealed class MacConsentDirectory : IPrivateConsentDirectory
     private static int Fd(SafeFileHandle handle) => checked((int)handle.DangerousGetHandle());
     private static SafeFileHandle Handle(int fd) => fd < 0 ? throw Error() : new((nint)fd, true);
     private static IOException Error() => new("consent-darwin-private-storage-unavailable");
+    internal static FileStreamOptions CreateNewFileOptions()
+    {
+        if (OperatingSystem.IsWindows())
+            throw new PlatformNotSupportedException("consent-managed-unix-create-mode");
+        return new FileStreamOptions
+        {
+            Mode = FileMode.CreateNew,
+            Access = FileAccess.ReadWrite,
+            Share = FileShare.ReadWrite,
+            UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite
+        };
+    }
 
     // __DARWIN_STRUCT_STAT64 (144bytes) and STATFS64 (2168bytes), same layout on Darwin x64/arm64.
     [StructLayout(LayoutKind.Explicit, Size = 144)]
@@ -260,10 +326,11 @@ internal sealed class MacConsentDirectory : IPrivateConsentDirectory
     private static int StatFs(int fd, out FileSystemStat info) => RuntimeInformation.ProcessArchitecture == Architecture.X64 ? Native.statfs_x64(fd, out info) : Native.statfs_arm64(fd, out info);
     private static class Native
     {
-        [DllImport(LibSystem, SetLastError = true)] internal static extern int openat(int fd, [MarshalAs(UnmanagedType.LPUTF8Str)] string name, int flags, uint mode);
+        [DllImport(LibSystem, SetLastError = true)] internal static extern int openat(int fd, [MarshalAs(UnmanagedType.LPUTF8Str)] string name, int flags);
         [DllImport(LibSystem, SetLastError = true)] internal static extern int mkdirat(int fd, [MarshalAs(UnmanagedType.LPUTF8Str)] string name, uint mode);
         [DllImport(LibSystem, SetLastError = true)] internal static extern int renameat(int oldFd, [MarshalAs(UnmanagedType.LPUTF8Str)] string oldName, int newFd, [MarshalAs(UnmanagedType.LPUTF8Str)] string newName);
         [DllImport(LibSystem, SetLastError = true)] internal static extern int fsync(int fd);
+        [DllImport(LibSystem, SetLastError = true)] internal static extern int fchmod(int fd, uint mode);
         // F_FULLFSYNC has no variadic argument; do not pass a fixed third arg as Darwin arm64 varargs.
         [DllImport(LibSystem, SetLastError = true)] internal static extern int fcntl(int fd, int command);
         [DllImport(LibSystem, SetLastError = true)] internal static extern int flock(int fd, int operation);
