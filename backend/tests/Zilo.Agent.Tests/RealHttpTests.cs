@@ -10,6 +10,32 @@ namespace Zilo.Agent.Tests;
 public sealed class RealHttpTests
 {
     [Fact]
+    public async Task All_three_contract_ports_occupied_fails_without_an_arbitrary_listener()
+    {
+        using var first = new TcpListener(IPAddress.Loopback, 47841);
+        using var second = new TcpListener(IPAddress.Loopback, 47842);
+        using var third = new TcpListener(IPAddress.Loopback, 47843);
+        first.Start(); second.Start(); third.Start();
+        var start = new ProcessStartInfo { FileName = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet", UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };
+        start.ArgumentList.Add(Path.Combine(AppContext.BaseDirectory, "agent", "Zilo.Agent.dll"));
+        using var process = Process.Start(start) ?? throw new InvalidOperationException("Could not start agent");
+        var stdout = process.StandardOutput.ReadToEndAsync(TestContext.Current.CancellationToken);
+        var stderr = process.StandardError.ReadToEndAsync(TestContext.Current.CancellationToken);
+        try
+        {
+            await process.WaitForExitAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+            Assert.NotEqual(0, process.ExitCode);
+            Assert.DoesNotContain("Now listening", await stdout);
+            _ = await stderr;
+        }
+        finally
+        {
+            if (!process.HasExited) process.Kill(entireProcessTree: true);
+            await process.WaitForExitAsync(TestContext.Current.CancellationToken);
+        }
+    }
+
+    [Fact]
     public async Task Real_loopback_http_exposes_public_hello_and_enforces_host_first()
     {
         var start = new ProcessStartInfo
