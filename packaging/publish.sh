@@ -43,7 +43,7 @@ publish() { # <rid> <dir>
     -p:DebugType=none -p:GenerateDocumentationFile=false \
     -o "$dir"
   for f in Zilo.Agent.dll Zilo.Agent.deps.json Zilo.Agent.runtimeconfig.json Zilo.Core.dll \
-           Zilo.Drivers.Naps2.dll Zilo.Drivers.Virtual.dll Zilo.Security.dll; do
+           Zilo.Drivers.Naps2.dll Zilo.Drivers.Virtual.dll Zilo.Security.dll zxing.dll; do
     [ -s "$dir/$f" ] || fail "$rid: missing $dir/$f"
   done
   grep -q "\"name\": \".NETCoreApp,Version=v10.0/$rid\"" "$dir/Zilo.Agent.deps.json" \
@@ -86,7 +86,7 @@ case "$target" in
     assert_apphost "$out/Zilo.Agent" macho-arm64
     assert_apphost "$work/osx-x64.out/Zilo.Agent" macho-x64
     # Only the apphost is RID-specific; the managed payload must be byte-identical.
-    for f in Zilo.Agent.dll Zilo.Core.dll Zilo.Drivers.Naps2.dll Zilo.Drivers.Virtual.dll Zilo.Security.dll; do
+    for f in Zilo.Agent.dll Zilo.Core.dll Zilo.Drivers.Naps2.dll Zilo.Drivers.Virtual.dll Zilo.Security.dll zxing.dll; do
       cmp -s "$out/$f" "$work/osx-x64.out/$f" || fail "managed payload differs between osx RIDs: $f"
     done
     if command -v lipo >/dev/null; then

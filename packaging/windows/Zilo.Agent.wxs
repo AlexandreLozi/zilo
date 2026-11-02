@@ -44,6 +44,7 @@
         <File Source="$(var.PublishDir)\Zilo.Drivers.Naps2.dll" />
         <File Source="$(var.PublishDir)\Zilo.Drivers.Virtual.dll" />
         <File Source="$(var.PublishDir)\Zilo.Security.dll" />
+        <File Source="$(var.PublishDir)\zxing.dll" />
         <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLFOLDER" On="uninstall" />
         <RemoveFolder Id="RemoveProgramsFolder" Directory="ProgramsFolder" On="uninstall" />
       </Component>

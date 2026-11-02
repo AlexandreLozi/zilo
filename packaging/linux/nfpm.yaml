@@ -44,6 +44,14 @@ contents:
     file_info:
       owner: root
       group: root
+  # A single-file tree overlays only this NuGet file's 0744 source mode.
+  - src: ${ZILO_PUBLISH_DIR}/zxing.dll
+    dst: /usr/lib/zilo/zxing.dll
+    type: tree
+    file_info:
+      owner: root
+      group: root
+      mode: 0644
   - src: /usr/lib/zilo/Zilo.Agent
     dst: /usr/bin/zilo-agent
     type: symlink

@@ -1,0 +1,60 @@
+RED
+Zilo.Agent.dll: 1cc686dcb56ca2a60ab069e504f4704daeeb01749bafc329226dcb67a83e7f54 1cc686dcb56ca2a60ab069e504f4704daeeb01749bafc329226dcb67a83e7f54 equal=True
+Zilo.Core.dll: e0c435704e7813222df12f7de92ab57b1407a58decd19a2f7dfd2a35f6d3b69b e0c435704e7813222df12f7de92ab57b1407a58decd19a2f7dfd2a35f6d3b69b equal=True
+Zilo.Drivers.Naps2.dll: 71504c125650b1aa90c4965abe9ad6d74dbf208b675181b65bd47dcb58ff9b33 71504c125650b1aa90c4965abe9ad6d74dbf208b675181b65bd47dcb58ff9b33 equal=True
+Zilo.Drivers.Virtual.dll: 29619604fee06ffc14ec4981ac93a24ae2c49903fb31fdcefe8690151820d676 5a44c37bd55e398b44d54721fe12c9c21ebe017759528c7bc067c736c557c50d equal=False
+Zilo.Security.dll: 2e706c61b3a9674c9eaffba4e9152caec911ebfb698409450cf9ee0371a2ba38 2e706c61b3a9674c9eaffba4e9152caec911ebfb698409450cf9ee0371a2ba38 equal=True
+zxing.dll: 2d9a1a3276fa21f5e20c0e8afa4ea33ca18fd6f984bd5b32ad457279e2709d73 2d9a1a3276fa21f5e20c0e8afa4ea33ca18fd6f984bd5b32ad457279e2709d73 equal=True
+GREEN CI=true
+Zilo.Agent.dll: 1cc686dcb56ca2a60ab069e504f4704daeeb01749bafc329226dcb67a83e7f54 1cc686dcb56ca2a60ab069e504f4704daeeb01749bafc329226dcb67a83e7f54 equal=True
+Zilo.Core.dll: e0c435704e7813222df12f7de92ab57b1407a58decd19a2f7dfd2a35f6d3b69b e0c435704e7813222df12f7de92ab57b1407a58decd19a2f7dfd2a35f6d3b69b equal=True
+Zilo.Drivers.Naps2.dll: 71504c125650b1aa90c4965abe9ad6d74dbf208b675181b65bd47dcb58ff9b33 71504c125650b1aa90c4965abe9ad6d74dbf208b675181b65bd47dcb58ff9b33 equal=True
+Zilo.Drivers.Virtual.dll: 4ad6fb7f9fd3d720c207ec3bcd470b0ee9e8fce7f5e0a48b4d247bb0a882ecf3 4ad6fb7f9fd3d720c207ec3bcd470b0ee9e8fce7f5e0a48b4d247bb0a882ecf3 equal=True
+Zilo.Security.dll: 2e706c61b3a9674c9eaffba4e9152caec911ebfb698409450cf9ee0371a2ba38 2e706c61b3a9674c9eaffba4e9152caec911ebfb698409450cf9ee0371a2ba38 equal=True
+zxing.dll: 2d9a1a3276fa21f5e20c0e8afa4ea33ca18fd6f984bd5b32ad457279e2709d73 2d9a1a3276fa21f5e20c0e8afa4ea33ca18fd6f984bd5b32ad457279e2709d73 equal=True
+osx-arm64 ZXing assets: {"net10.0": {"type": "package", "compile": {"lib/net9.0/zxing.dll": {"related": ".XML"}}, "runtime": {"lib/net9.0/zxing.dll": {"related": ".XML"}}}}
+osx-x64 ZXing assets: {"net10.0": {"type": "package", "compile": {"lib/net9.0/zxing.dll": {"related": ".XML"}}, "runtime": {"lib/net9.0/zxing.dll": {"related": ".XML"}}}}
+Compiler-token differences before mapping:
+---
+
++++
+
+@@ -178,20 +178,20 @@
+
+ /reference:/tmp/opencode/t12-proto-r2/sdk/packs/Microsoft.NETCore.App.Ref/10.0.14/ref/net10.0/System.Xml.XPath.dll
+ /reference:/tmp/opencode/t12-proto-r2/sdk/packs/Microsoft.NETCore.App.Ref/10.0.14/ref/net10.0/System.Xml.XPath.XDocument.dll
+ /reference:/tmp/opencode/t12-proto-r2/sdk/packs/Microsoft.NETCore.App.Ref/10.0.14/ref/net10.0/WindowsBase.dll
+-/reference:/tmp/opencode/t12-packaging-fix-r2/repro/osx-arm64/obj/Zilo.Core/release/ref/Zilo.Core.dll
++/reference:/tmp/opencode/t12-packaging-fix-r2/repro/osx-x64/obj/Zilo.Core/release/ref/Zilo.Core.dll
+ /reference:/tmp/opencode/t12-proto-r2/nuget/zxing.net/0.16.11/lib/net9.0/zxing.dll
+ /features:"InterceptorsNamespaces=;Microsoft.Extensions.Validation.Generated"
+ /debug-
+ /filealign:512
+ /optimize+
+-/out:/tmp/opencode/t12-packaging-fix-r2/repro/osx-arm64/obj/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.dll
+-/refout:/tmp/opencode/t12-packaging-fix-r2/repro/osx-arm64/obj/Zilo.Drivers.Virtual/release/refint/Zilo.Drivers.Virtual.dll
++/out:/tmp/opencode/t12-packaging-fix-r2/repro/osx-x64/obj/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.dll
++/refout:/tmp/opencode/t12-packaging-fix-r2/repro/osx-x64/obj/Zilo.Drivers.Virtual/release/refint/Zilo.Drivers.Virtual.dll
+ /target:library
+ /warnaserror+
+ /utf8output
+ /deterministic+
+ /langversion:14.0
+-/analyzerconfig:/tmp/opencode/t12-packaging-fix-r2/repro/osx-arm64/obj/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.GeneratedMSBuildEditorConfig.editorconfig
++/analyzerconfig:/tmp/opencode/t12-packaging-fix-r2/repro/osx-x64/obj/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.GeneratedMSBuildEditorConfig.editorconfig
+ /analyzerconfig:/tmp/opencode/t12-proto-r2/sdk/sdk/10.0.403/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_10_default.globalconfig
+ /analyzer:/tmp/opencode/t12-proto-r2/sdk/sdk/10.0.403/Sdks/Microsoft.NET.Sdk/targets/../analyzers/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
+ /analyzer:/tmp/opencode/t12-proto-r2/sdk/sdk/10.0.403/Sdks/Microsoft.NET.Sdk/targets/../analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll
+@@ -210,8 +210,8 @@
+
+ Raster.cs
+ Settings.cs
+ VirtualScanBackend.cs
+-/tmp/opencode/t12-packaging-fix-r2/repro/osx-arm64/obj/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.GlobalUsings.g.cs
+-"/tmp/opencode/t12-packaging-fix-r2/repro/osx-arm64/obj/Zilo.Drivers.Virtual/release/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs"
+-/tmp/opencode/t12-packaging-fix-r2/repro/osx-arm64/obj/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.AssemblyInfo.cs
++/tmp/opencode/t12-packaging-fix-r2/repro/osx-x64/obj/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.GlobalUsings.g.cs
++"/tmp/opencode/t12-packaging-fix-r2/repro/osx-x64/obj/Zilo.Drivers.Virtual/release/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs"
++/tmp/opencode/t12-packaging-fix-r2/repro/osx-x64/obj/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.AssemblyInfo.cs
+ /warnaserror+:NU1605,SYSLIB0011
+ (TaskId:67)

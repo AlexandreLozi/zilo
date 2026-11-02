@@ -1,0 +1,11 @@
+New union package closure: [('zxing.net', '0.16.11')]
+Nuspec id: ZXing.Net
+Nuspec version: 0.16.11
+Nuspec authors: Michael Jahn
+Nuspec license: Apache-2.0
+Nuspec projectUrl: https://github.com/micjahn/ZXing.Net/
+Package SHA512 base64: kHBBMH1ZKN4Y5IZY8Cq6iETXOr7k00ZrJ8Nbsow9QlTcJZvJVR26bX7VMR/oY1XOJuPzLyMu79WKdw+bKhechg==
+NuGet metadata/lock contentHash: OZfAVu88hl87BffQ+rlWCj/vLvAhhCK4QnFaoveeF/MY8SjHNSYBQ3qyUEWlPKNgBQGh1syXhCDg10vUnCsqkg==
+net10.0 compile ['lib/net9.0/zxing.dll']
+net10.0 runtime ['lib/net9.0/zxing.dll']
+PASS: exact approved managed QR only; no new transitive/native/image stack.

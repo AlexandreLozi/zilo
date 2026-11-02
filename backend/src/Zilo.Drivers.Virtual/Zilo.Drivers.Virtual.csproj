@@ -6,4 +6,12 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Zilo.Drivers.Virtual.Tests" />
   </ItemGroup>
+  <!-- File-local regex-generator types include their generated source path in their names.
+       Map isolated publish roots after the SDK's source mappings, without replacing them. -->
+  <Target Name="MapVirtualGeneratedSourcePaths" BeforeTargets="CoreCompile" Condition="'$(ArtifactsPath)' != ''">
+    <PropertyGroup>
+      <PathMap Condition="'$(PathMap)' != ''">$(PathMap),</PathMap>
+      <PathMap>$(PathMap)$(ArtifactsPath)=/_/artifacts</PathMap>
+    </PropertyGroup>
+  </Target>
 </Project>

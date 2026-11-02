@@ -34,7 +34,7 @@ if ($rc -ne 0) { Fail "msiexec /i exit $rc" }
 
 Write-Host '=== files'
 $expected = 'Zilo.Agent.exe','Zilo.Agent.dll','Zilo.Agent.deps.json','Zilo.Agent.runtimeconfig.json',
-            'Zilo.Core.dll','Zilo.Drivers.Naps2.dll','Zilo.Drivers.Virtual.dll','Zilo.Security.dll'
+            'Zilo.Core.dll','Zilo.Drivers.Naps2.dll','Zilo.Drivers.Virtual.dll','Zilo.Security.dll','zxing.dll'
 foreach ($f in $expected) { if (-not (Test-Path (Join-Path $installDir $f))) { Fail "missing $f" } }
 Get-ChildItem $installDir | Format-Table Name, Length
 
@@ -54,6 +54,27 @@ Write-Host '=== agent runs (framework-dependent; hosted runner has the .NET runt
 $out = & (Join-Path $installDir 'Zilo.Agent.exe')
 Write-Host $out
 if ($LASTEXITCODE -ne 0 -or $out -ne 'Zilo.Agent scaffold: scanning is not implemented.') { Fail 'agent run' }
+
+Write-Host '=== installed Virtual factory and ZXing dependency load (hosted .NET only)'
+# Compile only against installed assemblies; never copy them into the proof output. The
+# separate process resolves dependencies exclusively from the real MSI installation.
+$proofDir = Join-Path (Resolve-Path $LogDir).Path 'installed-payload-proof'
+New-Item -ItemType Directory -Force $proofDir | Out-Null
+$escapedInstall = [System.Security.SecurityElement]::Escape($installDir)
+@"
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Zilo.Core"><HintPath>$escapedInstall\Zilo.Core.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Zilo.Drivers.Virtual"><HintPath>$escapedInstall\Zilo.Drivers.Virtual.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>
+"@ | Set-Content (Join-Path $proofDir 'InstalledPayloadProof.csproj')
+Copy-Item (Join-Path $PSScriptRoot '../../docs/validation/logs/T12/fix-r2/InstalledPayloadProof.cs') (Join-Path $proofDir 'Program.cs')
+& dotnet build (Join-Path $proofDir 'InstalledPayloadProof.csproj') -c Release -o (Join-Path $proofDir 'out')
+if ($LASTEXITCODE -ne 0) { Fail 'installed payload proof build' }
+& dotnet (Join-Path $proofDir 'out/InstalledPayloadProof.dll') $installDir
+if ($LASTEXITCODE -ne 0) { Fail 'installed Virtual/ZXing load' }
 
 Write-Host '=== uninstall'
 $rc = Msiexec @('/x', "`"$msiPath`"", '/qn', '/norestart', '/l*v', "`"$LogDir\uninstall.log`"")

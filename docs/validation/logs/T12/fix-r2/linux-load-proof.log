@@ -1,0 +1,3 @@
+installed dependency: Zilo.Drivers.Virtual, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null; path=/tmp/opencode/t12-packaging-fix-r2/linux-installed/usr/lib/zilo/Zilo.Drivers.Virtual.dll; sha256=FC8F8F13F2A2C7E018F7282F5B6ADF0779D9DF29D67754D31909BF388D3A993A
+installed dependency: zxing, Version=0.16.11.0, Culture=neutral, PublicKeyToken=4e88037ac681fe60; path=/tmp/opencode/t12-packaging-fix-r2/linux-installed/usr/lib/zilo/zxing.dll; sha256=2D9A1A3276FA21F5E20C0E8AFA4EA33CA18FD6F984BD5B32AD457279E2709D73
+INSTALLED VIRTUAL + ZXING LOAD PASS: factory + one PNG/QR page

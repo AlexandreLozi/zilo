@@ -1,0 +1,30 @@
+  Determining projects to restore...
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Security/Zilo.Security.csproj (in 62 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 62 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Core/Zilo.Core.csproj (in 58 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 1.93 sec).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 1.94 sec).
+  Zilo.Core -> /tmp/opencode/t12-packaging-fix-r2/linux-green/publish-linux.work/linux-x64/bin/Zilo.Core/release/Zilo.Core.dll
+  Zilo.Security -> /tmp/opencode/t12-packaging-fix-r2/linux-green/publish-linux.work/linux-x64/bin/Zilo.Security/release/Zilo.Security.dll
+  Zilo.Drivers.Naps2 -> /tmp/opencode/t12-packaging-fix-r2/linux-green/publish-linux.work/linux-x64/bin/Zilo.Drivers.Naps2/release/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> /tmp/opencode/t12-packaging-fix-r2/linux-green/publish-linux.work/linux-x64/bin/Zilo.Drivers.Virtual/release/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> /tmp/opencode/t12-packaging-fix-r2/linux-green/publish-linux.work/linux-x64/bin/Zilo.Agent/release_linux-x64/Zilo.Agent.dll
+  Zilo.Agent -> /tmp/opencode/t12-packaging-fix-r2/linux-green/publish-linux/
+apphost ok: /tmp/opencode/t12-packaging-fix-r2/linux-green/publish-linux/Zilo.Agent (elf-x64, sha256 0df1f9d1ad140f3cb563a6238b3c561902ce56fdebdef3a646f4d497c0ef65f8)
+total 724
+-rwxr-xr-x 1 alexandre alexandre  78192 Nov  2 10:03 Zilo.Agent
+-rw-r--r-- 1 alexandre alexandre   2608 Nov  2 10:03 Zilo.Agent.deps.json
+-rw-r--r-- 1 alexandre alexandre   4608 Nov  2 10:03 Zilo.Agent.dll
+-rw-r--r-- 1 alexandre alexandre    330 Nov  2 10:03 Zilo.Agent.runtimeconfig.json
+-rw-r--r-- 1 alexandre alexandre  46592 Nov  2 10:03 Zilo.Core.dll
+-rw-r--r-- 1 alexandre alexandre   3584 Nov  2 10:03 Zilo.Drivers.Naps2.dll
+-rw-r--r-- 1 alexandre alexandre  69632 Nov  2 10:03 Zilo.Drivers.Virtual.dll
+-rw-r--r-- 1 alexandre alexandre   3584 Nov  2 10:03 Zilo.Security.dll
+-rwxr--r-- 1 alexandre alexandre 516096 Oct 25  2025 zxing.dll
+GitVersion:    2.48.0
+using deb packager...
+created package: /tmp/opencode/t12-packaging-fix-r2/linux-green/zilo-agent_0.0.1-1_amd64.deb
+using rpm packager...
+created package: /tmp/opencode/t12-packaging-fix-r2/linux-green/zilo-agent-0.0.1-1.x86_64.rpm
+-rw-r--r-- 1 alexandre alexandre 337397 Nov  2 10:03 /tmp/opencode/t12-packaging-fix-r2/linux-green/zilo-agent-0.0.1-1.x86_64.rpm
+-rw-r--r-- 1 alexandre alexandre 326040 Nov  2 10:03 /tmp/opencode/t12-packaging-fix-r2/linux-green/zilo-agent_0.0.1-1_amd64.deb
