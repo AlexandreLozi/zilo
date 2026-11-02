@@ -1,0 +1,16 @@
+COMMAND: /tmp/opencode/t12-proto-r2/sdk/dotnet build backend/Zilo.slnx -c Release --no-restore
+  Zilo.Core -> /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Security -> /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Virtual -> /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Drivers.Naps2 -> /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Core.Tests -> /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Core.Tests/bin/Release/net10.0/Zilo.Core.Tests.dll
+  Zilo.Drivers.Virtual.Tests -> /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Drivers.Virtual.Tests/bin/Release/net10.0/Zilo.Drivers.Virtual.Tests.dll
+  Zilo.Agent -> /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+  Zilo.Scaffold.Tests -> /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Scaffold.Tests/bin/Release/net10.0/Zilo.Scaffold.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.49

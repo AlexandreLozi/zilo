@@ -1,0 +1,11 @@
+COMMAND: /tmp/opencode/t12-proto-r2/sdk/dotnet restore backend/Zilo.slnx --locked-mode
+  Determining projects to restore...
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Core/Zilo.Core.csproj (in 80 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Security/Zilo.Security.csproj (in 82 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 82 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 132 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Core.Tests/Zilo.Core.Tests.csproj (in 136 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Drivers.Virtual.Tests/Zilo.Drivers.Virtual.Tests.csproj (in 136 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/tests/Zilo.Scaffold.Tests/Zilo.Scaffold.Tests.csproj (in 136 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t12-virtual-backend/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 139 ms).
+  1 of 9 projects are up-to-date for restore.

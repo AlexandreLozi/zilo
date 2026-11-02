@@ -32,6 +32,11 @@ for key in ("id", "version", "authors", "license", "projectUrl"):
 assert metadata.find("n:license", ns).text == "Apache-2.0"
 digest = base64.b64encode(hashlib.sha512((cache / "zxing.net.0.16.11.nupkg").read_bytes()).digest()).decode()
 print("Package SHA512 base64:", digest)
+assert digest == (cache / "zxing.net.0.16.11.nupkg.sha512").read_text().strip()
+content_hash = json.loads((cache / ".nupkg.metadata").read_text())["contentHash"]
+lock = json.loads(Path("backend/src/Zilo.Drivers.Virtual/packages.lock.json").read_text())
+assert lock["dependencies"]["net10.0"]["ZXing.Net"]["contentHash"] == content_hash
+print("NuGet metadata/lock contentHash:", content_hash)
 
 assets = json.loads(Path("backend/src/Zilo.Drivers.Virtual/obj/project.assets.json").read_text())
 for framework, packages in assets["targets"].items():

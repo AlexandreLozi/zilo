@@ -38,6 +38,24 @@ deviation and required no further fanout (`msg_b641a607ec5a`).
   The failure is retained in `initial-restore-failure.log`. Required generated
   transitive lock updates are in scope, not permission to edit Agent or scaffold code.
   Final acceptance must run after the corrective lane settles and after lock repair.
+- The same helper was subsequently resumed only after actual completed envelopes
+  to add missing controlled-timer cancellation/disposal, decoded RGB/QR/ruler,
+  maximum Legal-600 telemetry and retained-page controls. Parent inspected the
+  resulting assertions rather than accepting relayed green counts.
+- Parent acceptance reached 39 passing tests and a clean nonincremental build,
+  then source inspection found a compression cancellation defect: polling only
+  at exact input offsets could skip boundaries when LZ77 advances multiple bytes.
+  A final focused correction was assigned to the same completed helper session;
+  final evidence must be regenerated afterward, not reuse the earlier binaries.
+
+## Process limitation for independent review
+
+The helper's initial reported red was missing build assets, not a behavioral
+test failure. The early NU1004 lock failure was also setup/dependency evidence,
+not behavioral TDD. Full original-plan test-first compliance is **not established**
+and must not be inferred from passing acceptance tests. No artificial red was
+manufactured to conceal that limitation. The compression/route regressions, if
+observed red in the final correction, establish only those specific regressions.
 
 ## Evidence path
 
@@ -61,3 +79,13 @@ git diff --check
 
 Windows runtime is blocked-by-host-SAC/pending and will not be executed here;
 macOS/hosted/native scanner/eSCL/job storage/export/soak evidence remains pending.
+
+## Final reconciliation
+
+All helper generations settled via actual completed envelopes. Final parent
+acceptance passed 40 tests (Core7/Virtual26/Scaffold6/Agent1), locked restore,
+Release build, nonincremental rebuild, separate no-NAPS2 guard and scaffold smoke.
+Code commit: `390de6131d0da08b852bf9b5cb647f2acfc9905f`; subsequent changes are
+evidence only. REPORT.md carries exact commands, raw maximum-settings observations
+and remaining process/cross-OS/review limitations. No reproducible behavioral-red
+command evidence was returned, so no full TDD-compliance claim is made.
