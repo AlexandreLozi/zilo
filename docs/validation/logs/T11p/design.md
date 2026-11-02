@@ -1,5 +1,26 @@
 # T11p Task 0 — proposed exact seam; implementation NOT authorized
 
+## Joint implementation authorization and additional acceptance conditions
+
+Coordinator `msg_3ddcbb31abd1`, backed by Opus `msg_e46ec0affb68`, authorizes implementation
+of the exact `bcd027a` design including section9's handle-based Windows primitive, after safe
+integration onto main on a new branch. Historical proposal/approval-pending language below records
+Task0 sequencing; it is not a claim that implementation or hosted evidence already exists.
+
+1. Production OS/session-ending and installer-upgrade stop must use bounded clean drain. Prove
+   Unix SIGTERM launchd/systemd stop and distinguish configured TimeoutStopSec from actual events;
+   prove Windows shutdown/logoff lifecycle where available. Hosted three-OS graceful stop must
+   produce CLEAN and preserve grants on reopen, while forced kill retains DIRTY. Simulated hook
+   tests do not count as actual OS/session events. WM_ENDSESSION tray wiring belongs to T44, not
+   this backend change; ask before packaging/lifecycle-path additions. Pending evidence is not PASS.
+2. When all four quarantine slots are occupied return local diagnostic code
+   `consent-quarantine-full` with actionable trusted remediation: stop the agent, privately archive
+   an existing slot without changing ownership/ACLs, then retry confirmed local recovery. Never
+   delete evidence automatically or hide this as an unexplained permanently failing reset.
+3. T05 copy must distinguish confirmed UNCLEAN recovery (saved blocks retained, grants dropped,
+   unsaved intent not recoverable) from CORRUPT full reset (all saved permissions/blocks reset).
+   T44 owns trusted action wiring; no idle CLEAN optimization, new HTTP/reset UI or browser input.
+
 Base: `9668b8121fb05cc07aed1fff7af7547ee06ee7b9`; plan and D-013/addendum read in full
 from `7d034e7`. Also read CLAUDE, BRIEF, T10, current Consent/Tokens/Agent composition,
 AtomicConsent/SecurityInvariant tests, closure report and T24 handoff.
