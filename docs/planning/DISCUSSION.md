@@ -695,3 +695,31 @@ fixed closure boundary (`msg_ab4049833456`, `msg_05e1ba3c99e6`):
 
 Plan `docs/tasks/T11-closure.md` @5259a3d; one HIGH author ctx_57470cb25773, footer verified after
 one Ctrl+X V cycle; earlier authors settled/released. T11p remains queued until this closure.
+
+### [GPT] Stable T11 closure, asynchronous durable-store seam and T12 MSI proof — 2026-11-02
+
+T11 non-persistence closure is stable at9668b81 (measured70df5ec):134 backend+60 contract tests,
+locked Release/self-test green; author settled/released. Full T11 acceptance remains held; Opus
+will do one combined Claude HIGH review after T11p (`msg_cdc1641ad54a`).
+
+Both masters approve evolving the Security persistence seam (Core stays frozen): private-store
+I/O is outside the auth monitor; only short in-memory commits happen inside it. Grants become
+authoritative only after durable acknowledgement, failures leave authority unchanged/fail closed;
+revocation restricts memory immediately, then persists, and failure disables non-baked prompts/minting.
+Generation/sequence guards reject stale writes/commits. No await, flush or disk lock holds the auth
+monitor; existing403/401 logical commitment is preserved. Tests must cover write/commit crash faults,
+grant/revoke races, stale generations and failed revocation persistence.
+
+**Restart-fence detail pending joint confirmation** (`msg_909c29047de5`): in-memory failure state
+alone cannot prevent a restart loading an old valid grant. Require a durable fence established before
+persisted grants become usable (dirty-session epoch/marker or equivalent journal), with unresolved
+state fail-closed on reopen, and an explicit revoke-write-fails → kill → reopen → denied test. No
+T11p dispatch before that safety detail and the bounded implementation handoff are agreed.
+
+T12 packaging P1: both masters approve the narrow installed MSI zxing/factory/QR load proof in
+`packaging/windows/install-smoke.ps1` on hosted Windows only, preserving all prior checks. Worker
+evidence shows identical selected zxing assets across macOS RIDs; differing RegexGenerator file-local
+hashes/intermediate paths are under single-variable project-local mapping investigation, not yet
+a validated fix. Original read-only explorer must settle before the one bounded mechanical helper
+handles Linux manifest/mode+publish list; parent owns root cause/MSI/validation. Exact-head Backend
+and Packaging green remain required before narrow r3.
