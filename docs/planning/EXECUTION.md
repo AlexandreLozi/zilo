@@ -230,6 +230,36 @@ These amendments override the rows in §3 where they conflict.
     numbers for both masters to re-sign. Deps: T20, T21, T56a. Keep macOS minutes low (OD-7).
 
 ## 4a. FE lane status (Opus edits; refreshed 2026-11-01 ~12:30 -03)
+
+**PROJECT PAUSED (owner decision, 2026-11-02): until GPT's weekly limit resets, about 2026-11-04.**
+The owner wants the Claude+GPT pairing, so Claude doesn't carry the work alone. No new dispatches or
+reviews. The liaison resumes both masters. Checkpoint (heads on origin):
+- **T15** (FE, Claude author): fix r4 (high, ctx_d4f0c74db91f) pushed `t15-ui-foundation`
+  @ef8b988 (draft PR #2). Hosted ci-web 41442971941 was running on that head at pause time; the
+  earlier 2e242f7 run 41442494213 failed and is superseded. Spec: docs/tasks/T15-fix-r4.md.
+  The worker finishes and is settled.
+  **Next on resume:** check ci-web on the exact head. If green, dispatch **GPT r5** (medium) on
+  ef8b988 (or the settled head): the r4 proofs and all earlier proofs must be unchanged; check the
+  bounded recovery, the opt-out and the README contract. If red, a Claude fix of the CI failure
+  first.
+- **T11 ★** (BE, GPT author): **HELD**. Closure pushed on `AlexandreLozi/t11-agent-skeleton` @9668b81.
+  Full acceptance and merge wait for T11p (R-A6).
+  **Next on resume:** GPT dispatches the **T11p** author (high), using the store/auth seam and the
+  restart fence both masters agreed (2026-11-02; D-013 addendum to record). Then a combined
+  **Claude HIGH** review of T11+T11p, exact-SHA hosted CI, and the merge.
+  After merge: the SDK port-sync FE follow-up (docs/validation/logs/T11/ports.md).
+- **T12** (BE, GPT author): Opus r2 **CHANGES** (review f5339b3 on `t12-review-r2`; P1 hosted
+  Packaging dry run red). Author branch `AlexandreLozi/t12-virtual-backend` @e1e7f9c on origin.
+  The **HIGH packaging root-cause fix is paused** (ctx_f6db9cc53765; the Virtual.dll RID variance
+  comes from RegexGenerator path hashing, fixed project-locally). Co-approved for it: narrow
+  install-smoke.ps1 zxing/Virtual load proof, zxing.dll in the publish.sh list, and the Linux
+  manifest/mode.
+  **Next on resume:** GPT finishes the fix. Once Backend CI and Packaging are green on the exact
+  head, an Opus narrow r3, then the merge (rebase packaging against T11's ASP.NET runtime
+  dependency).
+- **T14** (FE, M1 exit): starts after T11, T12 and T15 merge.
+- Kept worktrees: `t15-ui-foundation` (author), `t12-review-r2` (Opus review). Prune T12 review
+  after the T12 merge.
 Dispatches lost in the restart are bookkeeping only and are never reused.
 | ID | State | Branch | Author dispatch | Reviewer dispatch | Verdict | Merged SHA |
 |---|---|---|---|---|---|---|
@@ -239,7 +269,7 @@ Dispatches lost in the restart are bookkeeping only and are never reused.
 | T10 ★ (Claude author) | **MERGED 79d6ec3** (r4 PASS e939912; both masters approved the exact f3ba120 contract; exact-SHA check.sh 60/60 + 3/3 on 79d6ec3). Follow-ups: joint triage of the 9 T13 ambiguities, then T10.1 if needed (incl. stale status markers); hosted ci-contract job | t10-contract | fix r2 ctx_0a8ee3069c14, fix r3 ctx_062ede7e79cc | GPT (BE run) | pending r4 | |
 | T03 (Claude author) | **merged**; exact-SHA main runs green | — | fix r2 ctx_b6c1ba2bdb7e | GPT r3 (BE) | pass | f38e3ea |
 | T12-proto (Claude author) | **merged**; Linux 183/183 rebased; cross-OS pending | — | — | GPT r2 (BE) | pass | 32051c6 |
-| T15 | AUTHORED @5814593 (draft PR #2; ci-web 41326742758 green on exact head: catalog 174/174 + demo 3/3 on Chromium/Firefox/WebKit, unit ui 25 / react 6 / catalog 3 / demo 1, licence gate 161). Scope within spec + approved demo swap. Settled and released. GPT r1 **changes** (55f6300: P1 disabled-fieldset focus, P2 display:contents, P2 React prop order, P2 initial onOpen, plus the required host-modal fixture). Fix r1 **DONE @e158d0d** (ci-web 41350870097 green: catalog 216/216 incl. 10 host-modal tests per browser, demo 3/3; Radix is a catalog devDependency only; licence gate 186 packages). GPT r2 **changes** (4ece1fe: 1 P2, Escape must belong to a newer non-Zilo topmost layer; r1 findings 1-4 and the Radix fixture verified). Fix r2 **DONE @d5a7840** (layer ownership in packages/ui/src/layers.ts; nested Radix fixture; ci-web 41368879035 green: catalog 246/246, demo 3/3; proofs unchanged). GPT r3 **changes** (d6740ec: 2 P2, stale layer classification across shadow/detached/coalesced toggles; README host workaround also cancels native child Escape). Fix r3 **DONE @d09b8c5** (event-time native layer ownership; ARIA snapshot re-validated; host-cancelled Escape handled; flake and a reopen bug fixed; ci-web 41400148154 green: catalog 282/282, demo 3/3; one-file lint waiver for the r3 proof). GPT r4 **CHANGES** 25f5930 (2 P2: Escape recovery overrides host cancellation outside Zilo; closes older child of unknown order). Claude fix r4 (high) next, spec docs/tasks/T15-fix-r4.md | t15-ui-foundation | task spec docs/tasks/T15.md / ctx_23881374964a | GPT (after author) | | |
+| T15 | AUTHORED @5814593 (draft PR #2; ci-web 41326742758 green on exact head: catalog 174/174 + demo 3/3 on Chromium/Firefox/WebKit, unit ui 25 / react 6 / catalog 3 / demo 1, licence gate 161). Scope within spec + approved demo swap. Settled and released. GPT r1 **changes** (55f6300: P1 disabled-fieldset focus, P2 display:contents, P2 React prop order, P2 initial onOpen, plus the required host-modal fixture). Fix r1 **DONE @e158d0d** (ci-web 41350870097 green: catalog 216/216 incl. 10 host-modal tests per browser, demo 3/3; Radix is a catalog devDependency only; licence gate 186 packages). GPT r2 **changes** (4ece1fe: 1 P2, Escape must belong to a newer non-Zilo topmost layer; r1 findings 1-4 and the Radix fixture verified). Fix r2 **DONE @d5a7840** (layer ownership in packages/ui/src/layers.ts; nested Radix fixture; ci-web 41368879035 green: catalog 246/246, demo 3/3; proofs unchanged). GPT r3 **changes** (d6740ec: 2 P2, stale layer classification across shadow/detached/coalesced toggles; README host workaround also cancels native child Escape). Fix r3 **DONE @d09b8c5** (event-time native layer ownership; ARIA snapshot re-validated; host-cancelled Escape handled; flake and a reopen bug fixed; ci-web 41400148154 green: catalog 282/282, demo 3/3; one-file lint waiver for the r3 proof). GPT r4 **CHANGES** 25f5930 (2 P2: Escape recovery overrides host cancellation outside Zilo; closes older child of unknown order). Claude fix r4 (high) ctx_d4f0c74db91f pushed @ef8b988; PAUSED, see the pause checkpoint above | t15-ui-foundation | task spec docs/tasks/T15.md / ctx_23881374964a | GPT (after author) | | |
 | T13 | AUTHORED @4aad2e6 (sdk 100 tests, workspace 113; lint/typecheck/test/build green on Node 24; api/** = f3ba120, lockfile = main; 9 contract ambiguities listed in docs/validation/logs/T13/run.md as T10 follow-up candidates). Settled and released. Merged main 0a15155 (T10) at **a6de031**: sdk 100/100, typecheck green. GPT r1 **changes** (d294335: 2 P1 renewal recovery / shared-family prune, 3 P2 double rollover / teardown / detection cap). Triage of the 9 agreed (items 3-7 go into the fix). Fix r1 **DONE @0a9b8e1** (sdk 128/128 incl. the 5 r1 proofs unchanged and a 20-cycle dispose test; new states auth-unavailable and sdk-too-old need T05 copy). GPT r2 **changes** (db8ef93: 1 P2, the overall deadline must bound consent polling and post-await work). Fix r2 **DONE @da9fd2f** (detection.ts only: one per-run deadline checked at every consent/authorize/poll continuation; sdk 130/130, r1+r2 proofs unchanged). GPT r3 **changes** (6b6134a: 3 P2, token issued after the deadline while authorize is in flight, exact-cap poll authorizes, stale run overwrites its replacement). Fix r3 **DONE @1a84ea7** (one run model: run-owned AbortController + deadline timer + identity; sdk 150/150, the 10 review proofs unchanged). GPT r4 **changes** (eaf410c: 1 P2, restart cleanup observeInstance/dropAllExcept escapes the run signal). Fix r4 **DONE @4127d33** (signal through restart cleanup; audit found and guarded 2 more write paths; sdk 159/159, 12 review proofs unchanged). GPT r5 **PASS** (8fa9f8c). **MERGED 55cf4c4** (D-012 reuse of ci-web 41397399133; main backstop 41397911617 green on df225aa, same ci-web inputs) | t13-sdk-core | docs/tasks/T13.md / ctx_812c4ec6d10b | GPT (after the T10 merge) | | |
 | T02 (GPT) | Claude r1 changes (8895977); GPT fix r1 5bc5a05; Claude r2 in BE run | AlexandreLozi/t02-fix-r1 | GPT | r1 ctx_5c6b3170b2f8; r2 BE ctx_b125dedba577 | r2 pending | |
 
