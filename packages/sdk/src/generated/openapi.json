@@ -1,0 +1,2414 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Zilo local agent API",
+    "version": "1.0.0-draft.3",
+    "summary": "Wire contract between the Zilo local agent and @zilo/sdk.",
+    "description": "Normative wire contract for `/zilo/v1` (D-005). `api/CONTRACT.md` is normative alongside this\nfile. It holds the rules that OpenAPI cannot express: check order, CORS tiers, the job state\nmachine, SSE replay, limits and retention.\n\nProvenance markers:\n- `x-zilo-source: SP-1a-interim (unreviewed)` marks a rule that depends on the T01 interim\n  note (OD-2). GPT reviewed its evidence in T10 r1; the marker stays until the masters approve.\n- `x-zilo-source: D-004a rev 2 (in force)` marks a rule that depends on the pre-auth consent\n  tier and the token family of D-004a revision 2 (in force since 2026-11-01, approved by both\n  masters as architecture). That approval is not approval of this contract.\n- `x-zilo-source: D-004a clarification 2026-11-01 (GPT approval pending)` additionally marks\n  the minimal public `hello`, consent state through `GET /auth/consent`, and the\n  authenticated per-process `instanceId`. Opus approved the clarification; GPT has not yet.\n\nBoth kinds are listed in CONTRACT.md, \"Unreviewed inputs\". This file stays a draft until both\nmasters approve the contract itself.\n\n**Open response enums (R-V4).** Every enum a response carries is an `anyOf` of a closed\n`…Known` enum and a plain `string`, so an unknown value validates as JSON Schema and the\ngenerated type stays open. Requests use the closed `…Known` enums, so the agent's request\nvalidation stays strict. Exactly two response discriminators are deliberately closed:\n`Hello.scope` and the known-event `type` in `JobEvent`; SSE frames are decoded in two steps,\nfirst as `JobEventEnvelope` (any `type`), then as `JobEvent` only for known types. Every\nother response union is open: `ResolutionCaps.kind` has a `ResolutionUnknown` member and a\ndefined safe client fallback (CONTRACT.md R-D4).\n\n**Global errors (R-ER4).** `x-zilo-global-errors` lists the errors that any route can return.\nEach operation also declares them, plus a `default` problem response, so tooling never treats\na missing declaration as permission to omit a guard.\n",
+    "license": {
+      "name": "Proprietary (Zilo project)",
+      "url": "https://example.invalid/zilo/license"
+    },
+    "x-zilo-status": "draft 3 for cross-model re-review (T10 fix r2, Claude-authored under OD-2)"
+  },
+  "x-zilo-global-errors": [
+    {
+      "status": 403,
+      "code": "host-denied",
+      "when": "The Host header is not allowlisted (R-T2). Checked first, on every method including OPTIONS.",
+      "body": "application/problem+json",
+      "cors": "never"
+    },
+    {
+      "status": 404,
+      "code": "not-found",
+      "when": "Unknown path under /zilo/v1 (check order step 3).",
+      "body": "application/problem+json",
+      "cors": "R-T4 tier of the caller"
+    },
+    {
+      "status": 405,
+      "code": "invalid-request",
+      "when": "Known path, method not defined for it (check order step 3). Carries an `Allow` header.",
+      "body": "application/problem+json",
+      "cors": "R-T4 tier of the caller"
+    },
+    {
+      "status": 413,
+      "code": "limits-exceeded",
+      "when": "A request body larger than limits.maxRequestBodyBytes, on any method (R-T9).",
+      "body": "application/problem+json",
+      "cors": "R-T4 tier of the caller"
+    },
+    {
+      "status": 429,
+      "code": "rate-limited",
+      "when": "A request rate limit (R-L1) or a prompt/token budget (R-A4, R-A9).",
+      "body": "application/problem+json",
+      "cors": "R-T4 tier of the caller"
+    },
+    {
+      "status": 500,
+      "code": "unknown",
+      "when": "Any unexpected failure.",
+      "body": "application/problem+json",
+      "cors": "R-T4 tier of the caller"
+    },
+    {
+      "status": 503,
+      "code": "agent-unavailable",
+      "when": "The agent is starting, updating or shutting down.",
+      "body": "application/problem+json",
+      "cors": "R-T4 tier of the caller"
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://127.0.0.1:{port}",
+      "description": "Per-user agent on loopback, addressed by IP literal (D-003). The port is the fixed agent port\nor one of its two fallbacks. The numbers are set by T11, not by this contract.\n",
+      "variables": {
+        "port": {
+          "default": "48100",
+          "description": "Placeholder. T11 fixes the primary port and the two fallbacks."
+        }
+      }
+    }
+  ],
+  "tags": [
+    { "name": "discovery", "description": "Agent identity and capability negotiation." },
+    {
+      "name": "auth",
+      "description": "Consent for unknown origins, and bearer token issuance, renewal and revocation."
+    },
+    { "name": "devices", "description": "Scanner list, refresh and capabilities." },
+    { "name": "jobs", "description": "Scan jobs, their state machine, cancel and dispose." },
+    {
+      "name": "events",
+      "description": "Job events as server-sent events read through fetch streaming."
+    },
+    { "name": "pages", "description": "Scanned page metadata and image bytes." },
+    { "name": "export", "description": "PDF, TIFF, JPEG and PNG export of selected pages." },
+    { "name": "cors", "description": "CORS preflight. Served without authentication." }
+  ],
+  "security": [{ "bearer": [] }],
+  "paths": {
+    "/zilo/v1/hello": {
+      "get": {
+        "tags": ["discovery"],
+        "operationId": "getHello",
+        "summary": "Identify the agent and negotiate capabilities",
+        "description": "Has no side effects. A plain `GET` without an `Authorization` header is a CORS simple\nrequest, so it sends no preflight.\n\n- **Without a bearer token**, or with a token that is not valid for the calling origin, the\n  response has `scope: public`. It holds only `product`, `protocol` and the flow\n  capabilities, and stays minimal: it carries no consent state. The origin's consent\n  state comes from `GET /zilo/v1/auth/consent` (D-004a clarification of 2026-11-01).\n- **With a valid bearer token** for the calling origin, which must be *allowed*, the\n  response has `scope: full`. That adds `version`, `os`, `arch`, `instanceId` and\n  `limits`, all required. The public variant forbids those fields.\n\nAn invalid token on this endpoint never produces a 401. The response simply falls back to\n`scope: public`. A dev-eligible loopback origin (dev flag on) can read this endpoint, but\nalways gets `scope: public` (D-004a amendment: diagnostics only).\n",
+        "x-zilo-source": [
+          "D-004a rev 2 (in force)",
+          "D-004a clarification 2026-11-01 (GPT approval pending)",
+          "SP-1a-interim (unreviewed)"
+        ],
+        "security": [{}, { "bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "Agent identity.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" },
+              "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+            },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Hello" } }
+            }
+          },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightHello",
+        "summary": "CORS preflight for hello",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    },
+    "/zilo/v1/auth/consent": {
+      "get": {
+        "tags": ["auth"],
+        "operationId": "getConsent",
+        "summary": "Read the calling origin's consent state",
+        "description": "Returns the consent state of the calling origin. It never shows a prompt and never\nchanges state. The SDK polls it while the state is `pending`, at the interval given by\n`pollAfterSeconds`. A dev-eligible loopback origin can read it (diagnostics only); its\nstate is always `none`, because loopback origins are never allowed.\n",
+        "x-zilo-source": [
+          "D-004a rev 2 (in force)",
+          "D-004a clarification 2026-11-01 (GPT approval pending)"
+        ],
+        "security": [],
+        "parameters": [{ "$ref": "#/components/parameters/Origin" }],
+        "responses": {
+          "200": {
+            "description": "Consent state of the calling origin.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" },
+              "Retry-After": { "$ref": "#/components/headers/RetryAfter" }
+            },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ConsentStatus" } }
+            }
+          },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "post": {
+        "tags": ["auth"],
+        "operationId": "requestConsent",
+        "summary": "Ask the user to allow the calling origin (native prompt)",
+        "description": "This is the **only** call that can show the native consent prompt (D-004). The SDK makes\nit only during an active user interaction.\n\n- **Origin already granted or baked:** `200`, with `state: granted`. No prompt is shown.\n- **No consent on record:** the agent shows the prompt and returns `202`, with\n  `state: pending`.\n- **A prompt for this origin is already open:** `202` with the same pending state. The\n  duplicate is coalesced, so no second prompt appears.\n- **Another origin's prompt is open, or a per-origin or global limit is hit:** `429`\n  `rate-limited`, with `Retry-After`.\n- **Denied and still in cool-down:** `403` `consent-denied`, with `Retry-After`.\n- **Blocked from the tray:** `403` `consent-denied` with `blocked: true` and no\n  `Retry-After`. No prompt is shown, ever.\n- **Origin absent, ineligible or dev-eligible loopback:** `403` `unauthorized-origin`.\n  The dev flag never lets a loopback origin trigger a prompt.\n\nThe SDK calls this only from a user gesture, but that is SDK policy. The agent cannot\nverify a gesture; the prompt budgets in CONTRACT.md R-A4 are the server-side bound.\n",
+        "x-zilo-source": ["D-004a rev 2 (in force)"],
+        "security": [],
+        "parameters": [{ "$ref": "#/components/parameters/Origin" }],
+        "responses": {
+          "200": {
+            "description": "Already granted. No prompt was shown.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ConsentStatus" } }
+            }
+          },
+          "202": {
+            "description": "Prompt shown, or coalesced with the open prompt. Poll `GET /zilo/v1/auth/consent`.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" },
+              "Retry-After": { "$ref": "#/components/headers/RetryAfter" }
+            },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ConsentStatus" } }
+            }
+          },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightConsent",
+        "summary": "CORS preflight for consent",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    },
+    "/zilo/v1/auth/token": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "issueToken",
+        "summary": "Issue a bearer token that starts a new token family",
+        "description": "Mints a random bearer token bound to the calling origin. It starts a new **token family**\n(CONTRACT.md §3.2). Jobs and pages belong to that origin and family. Renewal keeps the\nfamily, so every tab of the app that shares the family's current token shares its jobs.\nSeparate families of the same origin stay isolated.\n\n- Succeeds only if the origin is *allowed*: granted consent, or installer-baked. Baked\n  origins skip the prompt but still authenticate here (D-004).\n- Never mints for a `null`, opaque or loopback origin, even with the dev flag (D-004a).\n- Never shows a prompt.\n- Fails with `consent-pending`, `consent-denied` or `unauthorized-origin` when the origin\n  is not allowed.\n- Bounded by `limits.tokenIssuesPerOriginPerHour` (`429 rate-limited`) and by\n  `limits.maxFamiliesPerOrigin` and `limits.maxFamiliesTotal` (eviction, else\n  `429 limits-exceeded`).\n\nThe SDK calls this only under the rollover rule of CONTRACT.md R-A15: when its shared\nsame-origin storage has no usable current family, or the current family's token is\nfinal (capped at `familyExpiresAt`, so it cannot be renewed). Starting a new family\nmoves the SDK's current-family pointer; it never discards the older family's\ncredential while that family still owns live jobs.\n",
+        "x-zilo-source": ["D-004a rev 2 (in force)"],
+        "security": [],
+        "parameters": [{ "$ref": "#/components/parameters/Origin" }],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/TokenRequest" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Token issued; a new token family started.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Token" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "delete": {
+        "tags": ["auth"],
+        "operationId": "revokeToken",
+        "summary": "Revoke the caller's token family (self-revocation)",
+        "description": "Revokes the presented token's whole family: every token of it, including one in its\nrenewal grace. The effect is immediate: every later protected request with any token of\nthe family gets `401 token-revoked`, every open event stream of the family is closed,\nand active jobs are cancelled. Pages and temp files are deleted physically within\n`limits.revocationCleanupSeconds` (CONTRACT.md R-A12). Until they are actually freed,\nthose bytes and any still-running work stay counted in the agent's global physical\nreservations (`maxStoreBytes`, `maxConcurrentExportsTotal`, device occupancy, job\nrecords), so a new family cannot overfill the store before cleanup (R-L5).\n",
+        "x-zilo-source": ["D-004a rev 2 (in force)"],
+        "responses": {
+          "204": {
+            "description": "Family revoked.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightToken",
+        "summary": "CORS preflight for token",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    },
+    "/zilo/v1/auth/token/renew": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "renewToken",
+        "summary": "Exchange the family's current token for its successor",
+        "description": "Returns the successor token in the same family, origin and jobs (CONTRACT.md R-A11).\n\n- Allowed only with the family's **current** token, at or after its `renewAfter`.\n  Earlier: `429 rate-limited`, with `Retry-After` up to `renewAfter`.\n- A token has at most one successor. Presenting a token that already has one returns\n  `409 invalid-state`: another tab renewed first, and the SDK reads the successor from\n  its shared storage. The agent stores only hashes, so it cannot hand out a successor\n  twice.\n- The presented token stays valid for `limits.tokenRenewGraceSeconds` after renewal,\n  never past its own `expiresAt`.\n- Renewal never extends the family past `familyExpiresAt`. When the current token\n  already expires at `familyExpiresAt` (a final token), the call returns\n  `409 invalid-state`. The final token stays valid for the old family's jobs until its\n  `expiresAt`. For new scans the SDK starts a new family with\n  `POST /zilo/v1/auth/token`, which starts without jobs, and keeps the old family's\n  credential under its family ID for the old jobs (CONTRACT.md R-A15).\n",
+        "x-zilo-source": ["D-004a rev 2 (in force)"],
+        "responses": {
+          "200": {
+            "description": "Renewed.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Token" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightTokenRenew",
+        "summary": "CORS preflight for token renewal",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    },
+    "/zilo/v1/devices": {
+      "get": {
+        "tags": ["devices"],
+        "operationId": "listDevices",
+        "summary": "List known scanners (cached; no side effects)",
+        "description": "Returns the agent's current device list, including the Zilo Virtual Scanner when it is\nenabled. The list is read from cache: this call never starts discovery. To rediscover,\nuse `POST /zilo/v1/devices/refresh`.\n",
+        "responses": {
+          "200": {
+            "description": "Device list.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/DeviceList" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightDevices",
+        "summary": "CORS preflight for devices",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    },
+    "/zilo/v1/devices/refresh": {
+      "post": {
+        "tags": ["devices"],
+        "operationId": "refreshDevices",
+        "summary": "Rediscover scanners and return the new list",
+        "description": "Runs discovery on every driver, bounded by `limits.discoveryTimeoutSeconds`, then returns\nthe list. If a discovery is already running, the call joins it instead of starting\nanother. Drivers that time out keep their last known devices and are listed in\n`discovery.incompleteDrivers`.\n",
+        "responses": {
+          "200": {
+            "description": "Device list after discovery.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/DeviceList" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightDevicesRefresh",
+        "summary": "CORS preflight for device refresh",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    },
+    "/zilo/v1/devices/{deviceId}/caps": {
+      "parameters": [{ "$ref": "#/components/parameters/DeviceId" }],
+      "get": {
+        "tags": ["devices"],
+        "operationId": "getDeviceCaps",
+        "summary": "Read a device's capabilities",
+        "description": "Reads the device's capabilities for each source it offers. The driver may need to open\nthe device for this. If the device is in use, the call returns `device-busy`.\n",
+        "responses": {
+          "200": {
+            "description": "Capabilities.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/DeviceCaps" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "504": { "$ref": "#/components/responses/DeviceTimeout" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightDeviceCaps",
+        "summary": "CORS preflight for device caps",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    },
+    "/zilo/v1/jobs": {
+      "get": {
+        "tags": ["jobs"],
+        "operationId": "listJobs",
+        "summary": "List the jobs of the caller's token family",
+        "description": "Lists only the jobs of the caller's token family, never every job of the origin.\nDisposed jobs stay listed only while their tombstone lasts.\n",
+        "responses": {
+          "200": {
+            "description": "Jobs of this token family.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/JobList" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "post": {
+        "tags": ["jobs"],
+        "operationId": "createJob",
+        "summary": "Create a scan job and start scanning",
+        "description": "Validates the settings against the device's capabilities, resolves **every** effective\nsetting (CONTRACT.md R-J5, R-J7), and starts the job in state `queued`. The `201` body\nalways carries `effective` and `adjustments`.\n\n- A device runs at most one active job at a time. A busy device returns `device-busy`;\n  the agent does not queue behind another job.\n- Omitted settings take the source's `defaults` from caps, which the agent always fills.\n- With `strict: false` (the default), the agent may coerce `resolution`, `pageSize` and\n  `maxPages` by the deterministic rules of R-J5, and reports each change in\n  `adjustments`.\n- `source` and `colorMode` are never coerced. An unknown `pageSize` ID is rejected with\n  `422 invalid-settings`.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateJobRequest" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Job created.",
+            "headers": {
+              "Location": {
+                "description": "URL path of the new job, `/zilo/v1/jobs/{jobId}`.",
+                "schema": { "type": "string" }
+              },
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Job" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "422": { "$ref": "#/components/responses/Unprocessable" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightJobs",
+        "summary": "CORS preflight for jobs",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    },
+    "/zilo/v1/jobs/{jobId}": {
+      "parameters": [{ "$ref": "#/components/parameters/JobId" }],
+      "get": {
+        "tags": ["jobs"],
+        "operationId": "getJob",
+        "summary": "Read a job snapshot",
+        "description": "Returns the job if the caller's token family owns it. A job of another family or\norigin, or a job that never existed, returns `404 not-found`: existence is never\nrevealed.\n",
+        "responses": {
+          "200": {
+            "description": "Job snapshot.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Job" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "delete": {
+        "tags": ["jobs"],
+        "operationId": "disposeJob",
+        "summary": "Dispose a job and delete its pages",
+        "description": "Disposes the job. Every page and temp file is deleted.\n\n- An active job (`queued`, `scanning`) is cancelled first. Once the device has stopped,\n  the agent appends `state: cancelled`, `done` and `state: disposed` to the event log as\n  one atomic step (CONTRACT.md R-E7), and only then returns `204`.\n- A terminal job gets `state: disposed`.\n- The call is idempotent: disposing an already disposed job (inside the tombstone\n  window) returns `204`.\n\nThis is the second half of the SDK's normal receive-then-DELETE export flow\n(CONTRACT.md R-X5).\n",
+        "responses": {
+          "204": {
+            "description": "Disposed.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightJob",
+        "summary": "CORS preflight for a job",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    },
+    "/zilo/v1/jobs/{jobId}/cancel": {
+      "parameters": [{ "$ref": "#/components/parameters/JobId" }],
+      "post": {
+        "tags": ["jobs"],
+        "operationId": "cancelJob",
+        "summary": "Stop scanning; keep pages unless asked to discard them",
+        "description": "Requests cancellation of an active job (`queued`, `scanning`): `202`. The job moves to\n`cancelled` once the device has stopped. Pages scanned before that point are **kept**\nunless `discardPages` is true; in that case `state: cancelled`, `done` and\n`state: disposed` are appended as one atomic step.\n\nOn a **settled** job, meaning terminal (`completed`, `failed`, `cancelled`) or a\n`disposed` tombstone, the call is a no-op and returns the current job (`200`). It never\ndiscards pages there; use `DELETE` instead. After the tombstone window the job is\n`404 not-found`.\n",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CancelJobRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job already settled (terminal or tombstone); nothing changed.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Job" } } }
+          },
+          "202": {
+            "description": "Cancellation accepted. Watch the event stream for `state` changes.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Job" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightJobCancel",
+        "summary": "CORS preflight for job cancel",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    },
+    "/zilo/v1/jobs/{jobId}/events": {
+      "parameters": [{ "$ref": "#/components/parameters/JobId" }],
+      "get": {
+        "tags": ["events"],
+        "operationId": "streamJobEvents",
+        "summary": "Stream job events (SSE over fetch)",
+        "description": "A `text/event-stream` response, read with `fetch` streaming. `EventSource` cannot send\n`Authorization`, so it is not used.\n\nEach event has this form:\n```\nid: <seq>\nevent: <type>\ndata: <one-line JSON matching JobEventEnvelope; JobEvent too when the type is known>\n```\n\nNormative rules are CONTRACT.md R-E4 to R-E7. In short:\n- `seq` is per job, starts at 1 and strictly increases. Gaps are allowed, because\n  superseded `progress` events are not replayed. A gap never means a lost page.\n- **Replay high-water mark:** on connect the agent captures `H`, the job's `lastSeq`,\n  atomically with subscribing the stream to live events. It sends every retained event\n  with `Last-Event-ID < seq <= H` in ascending order, then live events with `seq > H` in\n  ascending order: no duplicate, no reordering.\n- **Close rule:** the agent decides to close only after it has sent everything up to\n  `H`. It never truncates a replay at an earlier `done`. A stream on a tombstone ends\n  with `state: disposed`. A stream on a job that is terminal but not disposed closes\n  after `done`; a later disposal is observed by reopening or by `GET /jobs/{id}`.\n- **Reconnect:** send `Last-Event-ID` with the last `seq` processed, **including** an\n  unknown event type that was ignored. A value larger than the job's `lastSeq`, or not\n  an integer, returns `400 invalid-request`.\n- **Heartbeat:** a comment line (`: hb`) is sent every `limits.sseHeartbeatSeconds`.\n- **Revocation:** the stream is bound to the token family, not to one token. Renewal\n  does not affect it. Revocation or the end of the family closes it at once, without a\n  further event.\n",
+        "x-zilo-source": ["SP-1a-interim (unreviewed)"],
+        "parameters": [
+          {
+            "name": "Last-Event-ID",
+            "in": "header",
+            "required": false,
+            "description": "Last `seq` the client processed. Allowed by the CORS preflight.",
+            "schema": { "type": "string", "pattern": "^[0-9]{1,15}$" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event stream.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "description": "SSE frames. Each `data` line holds one JSON object matching\n`JobEventEnvelope`. When its `type` is known, it also matches `JobEvent`.\n"
+                },
+                "x-zilo-event-schema": { "$ref": "#/components/schemas/JobEventEnvelope" },
+                "x-zilo-known-event-schema": { "$ref": "#/components/schemas/JobEvent" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightJobEvents",
+        "summary": "CORS preflight for job events",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    },
+    "/zilo/v1/jobs/{jobId}/pages": {
+      "parameters": [{ "$ref": "#/components/parameters/JobId" }],
+      "get": {
+        "tags": ["pages"],
+        "operationId": "listPages",
+        "summary": "List page metadata for a job",
+        "responses": {
+          "200": {
+            "description": "Pages in index order.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/PageList" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightPages",
+        "summary": "CORS preflight for pages",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    },
+    "/zilo/v1/jobs/{jobId}/pages/{index}": {
+      "parameters": [
+        { "$ref": "#/components/parameters/JobId" },
+        { "$ref": "#/components/parameters/PageIndex" }
+      ],
+      "get": {
+        "tags": ["pages"],
+        "operationId": "getPageImage",
+        "summary": "Get a page image, or a thumbnail with maxWidth",
+        "description": "Returns the image bytes of the page as scanned, with no rotation applied. Rotation is an\nexport option.\n\n- `maxWidth` scales the image down, preserving the aspect ratio. It never scales up.\n- Page bytes are immutable, so the `ETag` (strong) is stable for a given page, `format`,\n  `maxWidth` and `quality`.\n- The response carries `Cache-Control: no-store`, so documents are never written to the\n  browser HTTP cache. The SDK may keep an in-memory cache and revalidate it with\n  `If-None-Match`, which returns `304`.\n",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "description": "Image encoding. When omitted: `png` for `bw` pages, `jpeg` otherwise.\n",
+            "schema": { "$ref": "#/components/schemas/ImageFormat" }
+          },
+          {
+            "name": "maxWidth",
+            "in": "query",
+            "required": false,
+            "description": "Thumbnail width bound in pixels. Never upscales.",
+            "schema": { "type": "integer", "minimum": 16, "maximum": 4096 }
+          },
+          {
+            "name": "quality",
+            "in": "query",
+            "required": false,
+            "description": "JPEG quality, 1 to 100. Ignored for PNG. Default 85.",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "description": "ETag from an earlier response for the same variant.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image bytes.",
+            "headers": {
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "Content-Length": { "$ref": "#/components/headers/ContentLength" },
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": {
+              "image/jpeg": { "schema": { "type": "string", "contentMediaType": "image/jpeg" } },
+              "image/png": { "schema": { "type": "string", "contentMediaType": "image/png" } }
+            }
+          },
+          "304": {
+            "description": "Not modified; the client's copy for this ETag is current.",
+            "headers": {
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightPage",
+        "summary": "CORS preflight for a page",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    },
+    "/zilo/v1/jobs/{jobId}/export": {
+      "parameters": [{ "$ref": "#/components/parameters/JobId" }],
+      "post": {
+        "tags": ["export"],
+        "operationId": "exportJob",
+        "summary": "Export selected pages as PDF, TIFF, JPEG or PNG",
+        "description": "Renders the selected pages, in the order given and with each page's rotation, and\nreturns the file as the response body. Normative rules are CONTRACT.md §8.\n\n- **Formats:** `pdf` and `tiff` produce one multi-page file. `jpeg` and `png` produce\n  **one page per request**: `pages` must then hold exactly one entry (encoded in\n  `ExportRequest`), and the SDK loops over the pages. See CONTRACT.md §8 for why this is\n  not a zip.\n- **Selection snapshot:** after ownership and before rendering, the agent snapshots the\n  job's stored pages. An omitted `pages` means every page of that snapshot, in index\n  order; a page stored later is not included. An explicit index outside the snapshot\n  returns `422 invalid-request` (`errors[].reason: page-unavailable`). An empty\n  effective selection returns `409 invalid-state` (`errors[].reason: no-pages`).\n- **Retries and repeats:** a **non-destructive** export is a pure function of the\n  snapshot and the request. It can be retried and repeated, and pages are kept (D-004).\n  Rendering before the status line moves render and size failures before the headers;\n  it does not prevent a network failure during the body. The client checks the received\n  length against `Content-Length` and retries on a short body.\n- **`deleteAfterExport: true`** is **receipt-ambiguous**: the agent disposes the job\n  once it has handed the whole body to the connection, which is not proof that the\n  client received it. A retry may then get `404 not-found`. Allowed only on a terminal\n  job (`409 invalid-state` otherwise). The SDK never sends it: its reliable flow is\n  receive every body, verify it, then `DELETE` the job.\n- **Settled acquisition boundary (CONTRACT.md R-X7):** the SDK's export-and-delete\n  starts only on a terminal job. On an active job it either refuses or, when the caller\n  asked it to stop the scan, cancels with pages kept and waits for `done` first. It\n  fixes the selection only after that, so a page acquired during an export is never\n  deleted unseen.\n- **During scanning:** an active job may export the pages in its snapshot. Such an\n  export is always non-destructive.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ExportRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The exported file.",
+            "headers": {
+              "Content-Disposition": {
+                "description": "`attachment; filename=\"<name>.<ext>\"`. The SDK uses it as the `File` name.",
+                "schema": { "type": "string" }
+              },
+              "Content-Length": { "$ref": "#/components/headers/ContentLength" },
+              "Zilo-Page-Count": {
+                "description": "Number of pages in the exported file.",
+                "schema": { "type": "integer", "minimum": 1 }
+              },
+              "Access-Control-Allow-Origin": {
+                "$ref": "#/components/headers/AccessControlAllowOrigin"
+              },
+              "Vary": { "$ref": "#/components/headers/Vary" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControlNoStore" }
+            },
+            "content": {
+              "application/pdf": {
+                "schema": { "type": "string", "contentMediaType": "application/pdf" }
+              },
+              "image/tiff": { "schema": { "type": "string", "contentMediaType": "image/tiff" } },
+              "image/jpeg": { "schema": { "type": "string", "contentMediaType": "image/jpeg" } },
+              "image/png": { "schema": { "type": "string", "contentMediaType": "image/png" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "422": { "$ref": "#/components/responses/Unprocessable" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" },
+          "default": { "$ref": "#/components/responses/UnexpectedProblem" }
+        }
+      },
+      "options": {
+        "tags": ["cors"],
+        "operationId": "preflightExport",
+        "summary": "CORS preflight for export",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/AccessControlRequestMethod" },
+          { "$ref": "#/components/parameters/AccessControlRequestHeaders" }
+        ],
+        "responses": {
+          "204": { "$ref": "#/components/responses/Preflight" },
+          "403": { "$ref": "#/components/responses/PreflightDenied" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Random, origin-bound bearer token from `POST /zilo/v1/auth/token`. It travels only in the\n`Authorization` header, never in a URL (D-004). The request `Origin` must equal the\ntoken's origin.\n"
+      }
+    },
+    "parameters": {
+      "Origin": {
+        "name": "Origin",
+        "in": "header",
+        "required": false,
+        "description": "Set by the browser. This is the serialised origin the agent authorises against. Requests\nwhose Origin is missing, `null`, opaque or loopback get no CORS headers (D-004a). The\nonly loopback exception is the dev flag's pre-auth diagnostics (CONTRACT.md R-T3).\n",
+        "schema": { "type": "string" }
+      },
+      "AccessControlRequestMethod": {
+        "name": "Access-Control-Request-Method",
+        "in": "header",
+        "required": true,
+        "description": "Set by the browser on a preflight.",
+        "schema": { "type": "string", "enum": ["GET", "POST", "DELETE"] }
+      },
+      "AccessControlRequestHeaders": {
+        "name": "Access-Control-Request-Headers",
+        "in": "header",
+        "required": false,
+        "description": "Set by the browser on a preflight, e.g. `authorization,content-type`.",
+        "schema": { "type": "string" }
+      },
+      "DeviceId": {
+        "name": "deviceId",
+        "in": "path",
+        "required": true,
+        "description": "Opaque device ID from the device list.",
+        "schema": { "$ref": "#/components/schemas/DeviceId" }
+      },
+      "JobId": {
+        "name": "jobId",
+        "in": "path",
+        "required": true,
+        "description": "Opaque job ID.",
+        "schema": { "$ref": "#/components/schemas/JobId" }
+      },
+      "PageIndex": {
+        "name": "index",
+        "in": "path",
+        "required": true,
+        "description": "0-based page index within the job.",
+        "schema": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "headers": {
+      "AccessControlAllowOrigin": {
+        "description": "Exact reflection of the request `Origin`, only when CORS applies (CONTRACT.md §2). Never\n`*`. It is also sent on error responses, so the SDK can read the problem `code`.\n",
+        "x-zilo-source": ["SP-1a-interim (unreviewed)"],
+        "schema": { "type": "string" }
+      },
+      "Vary": {
+        "description": "Includes `Origin` on every response.",
+        "x-zilo-source": ["SP-1a-interim (unreviewed)"],
+        "schema": { "type": "string" }
+      },
+      "CacheControlNoStore": {
+        "description": "`no-store` on every `/zilo/v1` response.",
+        "x-zilo-source": ["SP-1a-interim (unreviewed)"],
+        "schema": { "type": "string", "const": "no-store" }
+      },
+      "ZiloRequestId": {
+        "description": "Opaque per-request ID for \"Copy details\" and agent logs. Exposed through CORS.",
+        "schema": { "type": "string" }
+      },
+      "RetryAfter": {
+        "description": "Seconds before retrying (RFC 9110). Mirrors `retryAfterSeconds` in the body.",
+        "schema": { "type": "integer", "minimum": 0 }
+      },
+      "ETag": {
+        "description": "Strong ETag of the returned variant.",
+        "schema": { "type": "string" }
+      },
+      "ContentLength": {
+        "description": "Body length in bytes.",
+        "schema": { "type": "integer", "minimum": 0 }
+      },
+      "AccessControlAllowMethods": {
+        "description": "`GET, POST, DELETE`.",
+        "x-zilo-source": ["SP-1a-interim (unreviewed)"],
+        "schema": { "type": "string" }
+      },
+      "AccessControlAllowHeaders": {
+        "description": "`Authorization, Content-Type, Last-Event-ID, If-None-Match`.",
+        "x-zilo-source": ["SP-1a-interim (unreviewed)"],
+        "schema": { "type": "string" }
+      },
+      "AccessControlMaxAge": {
+        "description": "Preflight cache lifetime in seconds (600).",
+        "schema": { "type": "integer" }
+      },
+      "WwwAuthenticate": {
+        "description": "`Bearer error=\"invalid_token\"` on 401.",
+        "schema": { "type": "string" }
+      }
+    },
+    "responses": {
+      "Preflight": {
+        "description": "Preflight accepted. It needs no authentication and returns no body. It does not send\n`Access-Control-Allow-Private-Network` or any other PNA/LNA header.\n",
+        "x-zilo-source": ["SP-1a-interim (unreviewed)", "D-004a rev 2 (in force)"],
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Access-Control-Allow-Methods": {
+            "$ref": "#/components/headers/AccessControlAllowMethods"
+          },
+          "Access-Control-Allow-Headers": {
+            "$ref": "#/components/headers/AccessControlAllowHeaders"
+          },
+          "Access-Control-Max-Age": { "$ref": "#/components/headers/AccessControlMaxAge" },
+          "Vary": { "$ref": "#/components/headers/Vary" }
+        }
+      },
+      "PreflightDenied": {
+        "description": "`403`, with no CORS headers, so the browser reports a network error. Two cases, which\nCONTRACT.md R-ER1 lists as the only body exception:\n- **Host not allowed** (check order step 1, before any route): a `host-denied`\n  problem+json body, like on every other method.\n- **Origin refused** for this path (R-T5), or an unknown path: **no body**.\n",
+        "x-zilo-source": ["SP-1a-interim (unreviewed)", "D-004a rev 2 (in force)"],
+        "headers": {
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      },
+      "UnexpectedProblem": {
+        "description": "Any other error status, including the global errors in `x-zilo-global-errors`\n(CONTRACT.md R-ER4). The body is a problem; clients key on `code`.\n",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Retry-After": { "$ref": "#/components/headers/RetryAfter" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      },
+      "MethodNotAllowed": {
+        "description": "`405 invalid-request`: the path exists but the method is not defined for it. Carries an\n`Allow` header. Declared on every path through `x-zilo-global-errors`; listed here so\ntooling has a shared representation.\n",
+        "headers": {
+          "Allow": {
+            "description": "The methods defined for this path, plus `OPTIONS`.",
+            "schema": { "type": "string" }
+          },
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      },
+      "BadRequest": {
+        "description": "`invalid-request`.",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      },
+      "Unauthorized": {
+        "description": "`token-invalid` or `token-revoked`. A 401 is produced only after the Origin check\n(CONTRACT.md §2.1 step 5), so the origin is *allowed* and CORS headers are always\npresent. An origin that is no longer allowed (for example, removed in the tray) gets\n`403 unauthorized-origin` without CORS instead, before any token is looked at.\n",
+        "headers": {
+          "WWW-Authenticate": { "$ref": "#/components/headers/WwwAuthenticate" },
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      },
+      "Forbidden": {
+        "description": "Several codes share this status:\n- `host-denied` (no CORS headers);\n- `unauthorized-origin` (no CORS headers outside the pre-auth tier);\n- `consent-pending`;\n- `consent-denied`;\n- `permission`.\n",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Retry-After": { "$ref": "#/components/headers/RetryAfter" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      },
+      "NotFound": {
+        "description": "`not-found`. Also returned for resources owned by another token family or origin.",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      },
+      "Conflict": {
+        "description": "Several codes share this status:\n- `device-busy`;\n- `invalid-state` (for example `deleteAfterExport` on an active job, an export with an\n  empty selection, or a renewal of an already renewed token);\n- device conditions at job start (`feeder-empty`, `paper-jam`, `cover-open`).\n",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Retry-After": { "$ref": "#/components/headers/RetryAfter" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      },
+      "TooLarge": {
+        "description": "`limits-exceeded` (a size, page, pixel or duration limit), including a request body over `limits.maxRequestBodyBytes`.",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      },
+      "Unprocessable": {
+        "description": "`invalid-settings`, `unsupported-capability` or `invalid-request`.",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      },
+      "TooManyRequests": {
+        "description": "`rate-limited`, or `limits-exceeded` for a concurrency quota.",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Retry-After": { "$ref": "#/components/headers/RetryAfter" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      },
+      "ServerError": {
+        "description": "`export-failed` or `unknown`.",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      },
+      "Unavailable": {
+        "description": "`disconnected` or `agent-unavailable`.",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Retry-After": { "$ref": "#/components/headers/RetryAfter" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      },
+      "DeviceTimeout": {
+        "description": "`timeout`.",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/AccessControlAllowOrigin"
+          },
+          "Vary": { "$ref": "#/components/headers/Vary" },
+          "Zilo-Request-Id": { "$ref": "#/components/headers/ZiloRequestId" }
+        },
+        "content": {
+          "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } }
+        }
+      }
+    },
+    "schemas": {
+      "DeviceId": {
+        "type": "string",
+        "description": "Opaque and URL-path-safe. It is stable for one physical route (device plus driver) for as\nlong as the agent install sees that device. Clients must not parse it.\n",
+        "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+      },
+      "JobId": {
+        "type": "string",
+        "description": "Opaque, random, URL-path-safe. It is never reused.",
+        "pattern": "^[A-Za-z0-9_-]{16,64}$"
+      },
+      "FamilyId": {
+        "type": "string",
+        "description": "Opaque ID of a token family (CONTRACT.md §3.2), the unit of job ownership. It is not a\ncredential. The SDK uses it as the key of its family-indexed credential map in its\nshared same-origin storage, and records it for each job, so every request about a job\nuses that job's family (CONTRACT.md R-A15).\n",
+        "x-zilo-source": ["D-004a rev 2 (in force)"],
+        "pattern": "^[A-Za-z0-9_-]{16,64}$"
+      },
+      "Timestamp": { "type": "string", "format": "date-time", "description": "RFC 3339, UTC." },
+      "Hello": {
+        "description": "Discriminated by `scope` (CONTRACT.md R-V2). `scope` is one of the two closed response\ndiscriminators (R-V4): a new scope value would be a breaking change.\n- `HelloPublic` holds only `product`, `scope`, `protocol` and the public capabilities.\n  The known full-only fields are forbidden in it, so the pre-auth disclosure boundary is\n  checkable. Unknown additional fields are tolerated.\n- `HelloFull` adds `version`, `os`, `arch`, `instanceId` and `limits`, all required.\n",
+        "x-zilo-source": [
+          "D-004a rev 2 (in force)",
+          "D-004a clarification 2026-11-01 (GPT approval pending)"
+        ],
+        "oneOf": [
+          { "$ref": "#/components/schemas/HelloPublic" },
+          { "$ref": "#/components/schemas/HelloFull" }
+        ],
+        "discriminator": {
+          "propertyName": "scope",
+          "mapping": {
+            "public": "#/components/schemas/HelloPublic",
+            "full": "#/components/schemas/HelloFull"
+          }
+        }
+      },
+      "HelloPublic": {
+        "type": "object",
+        "description": "Answer to a caller without a valid bearer token for an allowed origin. Never carries\n`version`, `os`, `arch`, `instanceId` or `limits` (D-004a).\n",
+        "x-zilo-source": [
+          "D-004a rev 2 (in force)",
+          "D-004a clarification 2026-11-01 (GPT approval pending)"
+        ],
+        "required": ["product", "scope", "protocol", "capabilities"],
+        "properties": {
+          "product": { "$ref": "#/components/schemas/ProductName" },
+          "scope": { "type": "string", "const": "public" },
+          "protocol": { "$ref": "#/components/schemas/ProtocolRange" },
+          "capabilities": { "$ref": "#/components/schemas/Capabilities" },
+          "version": false,
+          "os": false,
+          "arch": false,
+          "instanceId": false,
+          "limits": false
+        }
+      },
+      "HelloFull": {
+        "type": "object",
+        "description": "Answer to a valid bearer token for an allowed origin.",
+        "x-zilo-source": [
+          "D-004a rev 2 (in force)",
+          "D-004a clarification 2026-11-01 (GPT approval pending)"
+        ],
+        "required": [
+          "product",
+          "scope",
+          "protocol",
+          "capabilities",
+          "version",
+          "os",
+          "arch",
+          "instanceId",
+          "limits"
+        ],
+        "properties": {
+          "product": { "$ref": "#/components/schemas/ProductName" },
+          "scope": { "type": "string", "const": "full" },
+          "protocol": { "$ref": "#/components/schemas/ProtocolRange" },
+          "capabilities": { "$ref": "#/components/schemas/Capabilities" },
+          "version": {
+            "type": "string",
+            "description": "Agent version, SemVer 2.0.0.",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+          },
+          "os": { "$ref": "#/components/schemas/OperatingSystem" },
+          "arch": { "$ref": "#/components/schemas/Architecture" },
+          "instanceId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Opaque random value (at least 128 bits) chosen at each agent process start and never\nderived from the machine, the user or the install. It is in the authenticated full\n`hello` only; the public variant forbids it, so it adds no pre-auth fingerprint.\nA change means the agent process restarted: every token family, job and page of the\nold process is gone, because they are ephemeral (no durable job store). The SDK\nthen classifies the jobs it tracked under the old value as `agent-restarted`\n(retryable, CONTRACT.md R-R1 to R-R3). That classification is SDK-local: the agent\nsends no event or problem code for it, and it never triggers an automatic rescan.\n"
+          },
+          "limits": { "$ref": "#/components/schemas/Limits" }
+        }
+      },
+      "ProductName": { "type": "string", "const": "zilo" },
+      "Capabilities": {
+        "type": "array",
+        "description": "Capability flags (CONTRACT.md §1.3). With `scope: public` the agent lists only the\npublic flags. Unknown flags must be ignored.\n",
+        "uniqueItems": true,
+        "items": { "type": "string", "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$" }
+      },
+      "OperatingSystemKnown": { "type": "string", "enum": ["windows", "macos", "linux"] },
+      "OperatingSystem": {
+        "description": "Open response enum (R-V4).",
+        "anyOf": [{ "$ref": "#/components/schemas/OperatingSystemKnown" }, { "type": "string" }]
+      },
+      "ArchitectureKnown": {
+        "type": "string",
+        "description": "Process architecture of the agent.",
+        "enum": ["x64", "arm64", "x86"]
+      },
+      "Architecture": {
+        "description": "Open response enum (R-V4).",
+        "anyOf": [{ "$ref": "#/components/schemas/ArchitectureKnown" }, { "type": "string" }]
+      },
+      "ProtocolRange": {
+        "type": "object",
+        "description": "Protocol versions this agent serves, as `major.minor`. The major version equals the path\nversion (`/zilo/v1` means major 1), so `min` and `max` have the same major. The minor\nversion counts additive changes, and `min <= max` in numeric order. Capabilities, not\nthe minor number, gate features.\n",
+        "required": ["min", "max"],
+        "properties": {
+          "min": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+$", "examples": ["1.0"] },
+          "max": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+$", "examples": ["1.0"] }
+        }
+      },
+      "Limits": {
+        "type": "object",
+        "description": "Effective limits of this agent (CONTRACT.md §10). Installer policy may override the\ndefaults, which `x-zilo-default` gives. Every v1.0 field is required; clients must\ntolerate additional fields.\n",
+        "required": [
+          "maxPagesPerJob",
+          "maxPixelsPerPage",
+          "maxResolutionDpi",
+          "maxJobBytes",
+          "maxStoreBytes",
+          "maxExportBytes",
+          "maxJobDurationSeconds",
+          "pageTimeoutSeconds",
+          "discoveryTimeoutSeconds",
+          "maxActiveJobsPerDevice",
+          "maxActiveJobsPerOrigin",
+          "maxJobsPerFamily",
+          "maxJobRecordsTotal",
+          "maxFamiliesPerOrigin",
+          "maxFamiliesTotal",
+          "tokenIssuesPerOriginPerHour",
+          "maxRetainedAuthRecords",
+          "maxEventStreamsPerJob",
+          "maxEventStreamsTotal",
+          "maxErrorEventsPerJob",
+          "maxConcurrentExportsPerFamily",
+          "maxConcurrentExportsTotal",
+          "maxRequestBodyBytes",
+          "tokenTtlSeconds",
+          "tokenRenewGraceSeconds",
+          "familyMaxSeconds",
+          "revocationCleanupSeconds",
+          "jobIdleTtlSeconds",
+          "jobMaxTtlSeconds",
+          "tombstoneSeconds",
+          "sseHeartbeatSeconds"
+        ],
+        "properties": {
+          "maxPagesPerJob": {
+            "type": "integer",
+            "minimum": 2,
+            "description": "Safety bound on pages per job (R-J8). Even, so a duplex job ends on a whole sheet.",
+            "multipleOf": 2,
+            "x-zilo-default": 500
+          },
+          "maxPixelsPerPage": { "type": "integer", "minimum": 1, "x-zilo-default": 150000000 },
+          "maxResolutionDpi": { "type": "integer", "minimum": 1, "x-zilo-default": 1200 },
+          "maxJobBytes": { "type": "integer", "minimum": 1, "x-zilo-default": 2147483648 },
+          "maxStoreBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Stored pages **and** export staging/output files of all jobs of the user (R-L1).\nA physical reservation (R-L5): bytes of a revoked or ended family stay counted\nuntil they are actually deleted.\n",
+            "x-zilo-default": 8589934592
+          },
+          "maxExportBytes": { "type": "integer", "minimum": 1, "x-zilo-default": 1073741824 },
+          "maxJobDurationSeconds": { "type": "integer", "minimum": 1, "x-zilo-default": 1800 },
+          "pageTimeoutSeconds": { "type": "integer", "minimum": 1, "x-zilo-default": 120 },
+          "discoveryTimeoutSeconds": { "type": "integer", "minimum": 1, "x-zilo-default": 15 },
+          "maxActiveJobsPerDevice": { "type": "integer", "const": 1 },
+          "maxActiveJobsPerOrigin": { "type": "integer", "minimum": 1, "x-zilo-default": 2 },
+          "maxJobsPerFamily": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Non-disposed jobs per token family.",
+            "x-zilo-default": 8
+          },
+          "maxJobRecordsTotal": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Job records of the whole agent, non-disposed jobs and tombstones together (R-L4).",
+            "x-zilo-default": 256
+          },
+          "maxFamiliesPerOrigin": { "type": "integer", "minimum": 1, "x-zilo-default": 16 },
+          "maxFamiliesTotal": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Live token families across all origins.",
+            "x-zilo-default": 64
+          },
+          "tokenIssuesPerOriginPerHour": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "`POST /auth/token` calls per origin per rolling hour.",
+            "x-zilo-default": 20
+          },
+          "maxRetainedAuthRecords": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Revoked-token hashes kept to answer `token-revoked` (R-A14).",
+            "x-zilo-default": 1024
+          },
+          "maxEventStreamsPerJob": { "type": "integer", "minimum": 1, "x-zilo-default": 4 },
+          "maxEventStreamsTotal": { "type": "integer", "minimum": 1, "x-zilo-default": 64 },
+          "maxErrorEventsPerJob": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Non-fatal `error` events retained per job; later ones are coalesced (R-E5).",
+            "x-zilo-default": 16
+          },
+          "maxConcurrentExportsPerFamily": { "type": "integer", "minimum": 1, "x-zilo-default": 2 },
+          "maxConcurrentExportsTotal": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Running export workers of the whole agent. A physical reservation (R-L5): an\naborted worker holds its slot until it has actually stopped.\n",
+            "x-zilo-default": 4
+          },
+          "maxRequestBodyBytes": { "type": "integer", "minimum": 1, "x-zilo-default": 65536 },
+          "tokenTtlSeconds": {
+            "type": "integer",
+            "minimum": 300,
+            "description": "Token lifetime before the family deadline caps it (R-A8).",
+            "x-zilo-default": 3600
+          },
+          "tokenRenewGraceSeconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 300,
+            "x-zilo-default": 60
+          },
+          "familyMaxSeconds": {
+            "type": "integer",
+            "minimum": 3600,
+            "description": "Absolute lifetime of a token family (R-A9).",
+            "x-zilo-default": 86400
+          },
+          "revocationCleanupSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600,
+            "description": "Bound on physical deletion after a revocation (R-A12).",
+            "x-zilo-default": 60
+          },
+          "jobIdleTtlSeconds": { "type": "integer", "minimum": 1, "x-zilo-default": 3600 },
+          "jobMaxTtlSeconds": { "type": "integer", "minimum": 1, "x-zilo-default": 28800 },
+          "tombstoneSeconds": { "type": "integer", "minimum": 0, "x-zilo-default": 300 },
+          "sseHeartbeatSeconds": { "type": "integer", "minimum": 1, "x-zilo-default": 15 }
+        }
+      },
+      "ConsentStateKnown": {
+        "type": "string",
+        "description": "- `none`: no consent on record. `POST /zilo/v1/auth/consent` shows the prompt.\n- `pending`: a prompt for this origin is open.\n- `granted`: consented by the user, or baked by the installer (`managed: true`).\n- `denied`: denied, and the cool-down is running. After it ends the state returns to\n  `none`.\n- `blocked`: blocked from the tray. The agent never prompts for this origin again.\n",
+        "enum": ["none", "pending", "granted", "denied", "blocked"]
+      },
+      "ConsentState": {
+        "description": "Open response enum (R-V4). An unknown state means \"not usable yet\"; the SDK stops polling.",
+        "anyOf": [{ "$ref": "#/components/schemas/ConsentStateKnown" }, { "type": "string" }]
+      },
+      "ConsentStatus": {
+        "type": "object",
+        "description": "State-dependent required fields (CONTRACT.md R-A2):\n- `pending` requires `pollAfterSeconds` and `promptExpiresAt`;\n- `denied` requires `retryAfterSeconds` (the cool-down left);\n- `granted` requires `managed`.\nAn unknown state requires only `origin` and `state`.\n",
+        "x-zilo-source": ["D-004a rev 2 (in force)"],
+        "required": ["origin", "state"],
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "The calling origin, exactly as the agent evaluated it."
+          },
+          "state": { "$ref": "#/components/schemas/ConsentState" },
+          "managed": {
+            "type": "boolean",
+            "description": "True when the origin is installer-baked (D-004)."
+          },
+          "pollAfterSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "With `pending`, how long to wait before the next `GET`. Default 2."
+          },
+          "promptExpiresAt": { "$ref": "#/components/schemas/Timestamp" },
+          "retryAfterSeconds": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "With `denied`, the seconds of cool-down left (T05 \"Ask again in {minutes} min\")."
+          }
+        },
+        "allOf": [
+          {
+            "if": { "required": ["state"], "properties": { "state": { "const": "pending" } } },
+            "then": {
+              "required": ["pollAfterSeconds", "promptExpiresAt"],
+              "properties": { "pollAfterSeconds": true, "promptExpiresAt": true }
+            }
+          },
+          {
+            "if": { "required": ["state"], "properties": { "state": { "const": "denied" } } },
+            "then": {
+              "required": ["retryAfterSeconds"],
+              "properties": { "retryAfterSeconds": true }
+            }
+          },
+          {
+            "if": { "required": ["state"], "properties": { "state": { "const": "granted" } } },
+            "then": { "required": ["managed"], "properties": { "managed": true } }
+          }
+        ]
+      },
+      "TokenRequest": {
+        "type": "object",
+        "description": "Optional diagnostics. Never used for authorisation.",
+        "properties": {
+          "sdk": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "maxLength": 64 },
+              "version": { "type": "string", "maxLength": 64 }
+            }
+          }
+        }
+      },
+      "Token": {
+        "type": "object",
+        "description": "One token of a token family (CONTRACT.md §3.2). Times obey R-A8:\n`expiresAt = min(issuedAt + limits.tokenTtlSeconds, familyExpiresAt)` and\n`renewAfter = issuedAt + floor(3 × (expiresAt − issuedAt) / 4)`.\n",
+        "x-zilo-source": ["D-004a rev 2 (in force)"],
+        "required": [
+          "token",
+          "tokenType",
+          "origin",
+          "familyId",
+          "issuedAt",
+          "expiresAt",
+          "expiresIn",
+          "renewAfter",
+          "familyExpiresAt"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Opaque bearer secret with at least 256 bits of entropy. Never log it.",
+            "minLength": 43
+          },
+          "tokenType": { "type": "string", "const": "Bearer" },
+          "origin": { "type": "string", "description": "Origin the token is bound to." },
+          "familyId": { "$ref": "#/components/schemas/FamilyId" },
+          "issuedAt": { "$ref": "#/components/schemas/Timestamp" },
+          "expiresAt": { "$ref": "#/components/schemas/Timestamp" },
+          "expiresIn": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Seconds until `expiresAt`."
+          },
+          "renewAfter": { "$ref": "#/components/schemas/Timestamp" },
+          "familyExpiresAt": { "$ref": "#/components/schemas/Timestamp" }
+        }
+      },
+      "DriverKnown": {
+        "type": "string",
+        "description": "Route the agent uses to reach the device. `virtual` is the Zilo Virtual Scanner (D-007).\nWSD devices appear as `wia` (Windows) or `sane` (Linux, through sane-airscan) (D-001).\n",
+        "enum": ["wia", "twain", "ica", "sane", "escl", "virtual"]
+      },
+      "Driver": {
+        "description": "Open response enum (R-V4).",
+        "anyOf": [{ "$ref": "#/components/schemas/DriverKnown" }, { "type": "string" }]
+      },
+      "ConnectionKnown": { "type": "string", "enum": ["usb", "network", "virtual", "other"] },
+      "Connection": {
+        "description": "Open response enum (R-V4).",
+        "anyOf": [{ "$ref": "#/components/schemas/ConnectionKnown" }, { "type": "string" }]
+      },
+      "DiscoveryStateKnown": { "type": "string", "enum": ["idle", "running"] },
+      "DiscoveryState": {
+        "description": "Open response enum (R-V4).",
+        "anyOf": [{ "$ref": "#/components/schemas/DiscoveryStateKnown" }, { "type": "string" }]
+      },
+      "Device": {
+        "type": "object",
+        "required": ["id", "name", "driver", "connection"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/DeviceId" },
+          "name": {
+            "type": "string",
+            "description": "Display name. The virtual device is named \"Zilo Virtual Scanner\"."
+          },
+          "driver": { "$ref": "#/components/schemas/Driver" },
+          "connection": { "$ref": "#/components/schemas/Connection" },
+          "manufacturer": { "type": "string" },
+          "model": { "type": "string" },
+          "busy": {
+            "type": "boolean",
+            "description": "True while a Zilo job is active on this device."
+          }
+        }
+      },
+      "DeviceList": {
+        "type": "object",
+        "required": ["devices", "discovery"],
+        "properties": {
+          "devices": { "type": "array", "items": { "$ref": "#/components/schemas/Device" } },
+          "discovery": {
+            "type": "object",
+            "required": ["state"],
+            "properties": {
+              "state": { "$ref": "#/components/schemas/DiscoveryState" },
+              "lastCompletedAt": { "$ref": "#/components/schemas/Timestamp" },
+              "incompleteDrivers": {
+                "type": "array",
+                "description": "Drivers that timed out or failed in the last discovery.",
+                "items": { "$ref": "#/components/schemas/Driver" }
+              }
+            }
+          }
+        }
+      },
+      "SourceKnown": {
+        "type": "string",
+        "enum": ["flatbed", "feeder", "duplex"],
+        "description": "`duplex` is a feeder that scans both sides. Closed: used in requests."
+      },
+      "Source": {
+        "description": "Open response enum (R-V4).",
+        "anyOf": [{ "$ref": "#/components/schemas/SourceKnown" }, { "type": "string" }]
+      },
+      "ColorModeKnown": {
+        "type": "string",
+        "enum": ["color", "gray", "bw"],
+        "description": "24-bit colour, 8-bit greyscale, 1-bit black and white. Closed; used in requests."
+      },
+      "ColorMode": {
+        "description": "Open response enum (R-V4).",
+        "anyOf": [{ "$ref": "#/components/schemas/ColorModeKnown" }, { "type": "string" }]
+      },
+      "ResolutionCaps": {
+        "description": "Supported resolutions: a discrete list, a stepped range, or a future kind\n(CONTRACT.md R-D4, R-V4). `kind` is an **open** response discriminator: the known kinds\n`list` and `range` are validated strictly, and any other `kind` validates as\n`ResolutionUnknown`, so a newer agent never makes the whole caps response undecodable.\n**Safe fallback:** a client that does not know the `kind` treats the source's\nresolution capability as unsupported. It offers only `defaults.resolution` and omits\n`resolution` from the scan request, so the agent applies that default (R-J7).\nThere is deliberately no OpenAPI `discriminator` keyword here: a discriminator mapping is\nclosed, and this union is not.\n",
+        "oneOf": [
+          { "$ref": "#/components/schemas/ResolutionList" },
+          { "$ref": "#/components/schemas/ResolutionRange" },
+          { "$ref": "#/components/schemas/ResolutionUnknown" }
+        ]
+      },
+      "ResolutionUnknown": {
+        "type": "object",
+        "description": "A resolution capability of a kind this contract version does not define. Clients apply\nthe safe fallback of `ResolutionCaps` and ignore every other field. It never matches\nthe known kinds, so a malformed `list` or `range` stays invalid.\n",
+        "required": ["kind"],
+        "properties": {
+          "kind": { "type": "string", "minLength": 1, "not": { "enum": ["list", "range"] } }
+        }
+      },
+      "ResolutionList": {
+        "type": "object",
+        "required": ["kind", "values"],
+        "properties": {
+          "kind": { "type": "string", "const": "list" },
+          "values": { "type": "array", "minItems": 1, "items": { "type": "integer", "minimum": 1 } }
+        }
+      },
+      "ResolutionRange": {
+        "type": "object",
+        "description": "The supported values are `min + k × step` for every integer `k ≥ 0` up to `max`.",
+        "required": ["kind", "min", "max", "step"],
+        "properties": {
+          "kind": { "type": "string", "const": "range" },
+          "min": { "type": "integer", "minimum": 1 },
+          "max": { "type": "integer", "minimum": 1 },
+          "step": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "PageSizeId": {
+        "type": "string",
+        "description": "A page-size ID. The agent's canonical table (CONTRACT.md R-J5) holds `a3`, `a4`, `a5`,\n`b5`, `letter`, `legal` and `executive`, with portrait millimetres. Two IDs are\nreserved: `custom` (used with `customPageSizeMm`) and `max` (the source's whole\n`maxAreaMm`). An agent may list further IDs in caps; clients must accept unknown IDs.\n",
+        "pattern": "^[a-z0-9-]{1,32}$"
+      },
+      "PageSize": {
+        "type": "object",
+        "description": "A listed size. It always fits within the source's `maxAreaMm`, as given (no rotation).",
+        "required": ["id", "widthMm", "heightMm"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/PageSizeId" },
+          "widthMm": { "type": "number", "exclusiveMinimum": 0 },
+          "heightMm": { "type": "number", "exclusiveMinimum": 0 }
+        }
+      },
+      "SizeMm": {
+        "type": "object",
+        "required": ["widthMm", "heightMm"],
+        "properties": {
+          "widthMm": { "type": "number", "exclusiveMinimum": 0 },
+          "heightMm": { "type": "number", "exclusiveMinimum": 0 }
+        }
+      },
+      "SourceDefaults": {
+        "type": "object",
+        "description": "The value each omitted setting takes (CONTRACT.md R-J7). The agent always fills every\nfield: from the driver's defaults when the driver reports usable ones, otherwise by\nthe deterministic fallback rules of R-J7.\n",
+        "required": ["resolution", "colorMode", "pageSize"],
+        "properties": {
+          "resolution": { "type": "integer", "minimum": 1 },
+          "colorMode": { "$ref": "#/components/schemas/ColorMode" },
+          "pageSize": { "$ref": "#/components/schemas/PageSizeId" }
+        }
+      },
+      "SourceCaps": {
+        "type": "object",
+        "required": [
+          "source",
+          "resolutions",
+          "colorModes",
+          "pageSizes",
+          "maxAreaMm",
+          "customPageSize",
+          "defaults"
+        ],
+        "properties": {
+          "source": { "$ref": "#/components/schemas/Source" },
+          "resolutions": { "$ref": "#/components/schemas/ResolutionCaps" },
+          "colorModes": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/components/schemas/ColorMode" }
+          },
+          "pageSizes": {
+            "type": "array",
+            "description": "At least one entry. When the driver lists no size, the agent lists `max`, the whole\n`maxAreaMm`.\n",
+            "minItems": 1,
+            "items": { "$ref": "#/components/schemas/PageSize" }
+          },
+          "maxAreaMm": { "$ref": "#/components/schemas/SizeMm" },
+          "customPageSize": {
+            "type": "boolean",
+            "description": "True if any size up to `maxAreaMm` is accepted."
+          },
+          "maxPages": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Feeder capacity, if the device reports one. Informational; it caps nothing."
+          },
+          "defaults": { "$ref": "#/components/schemas/SourceDefaults" }
+        }
+      },
+      "DeviceCaps": {
+        "type": "object",
+        "required": ["deviceId", "sources"],
+        "properties": {
+          "deviceId": { "$ref": "#/components/schemas/DeviceId" },
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/components/schemas/SourceCaps" }
+          },
+          "limits": {
+            "type": "object",
+            "description": "Agent limits applied to this device (subset of `Limits`).",
+            "properties": {
+              "maxPagesPerJob": { "type": "integer", "minimum": 1 },
+              "maxPixelsPerPage": { "type": "integer", "minimum": 1 },
+              "maxResolutionDpi": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      },
+      "ScanSettings": {
+        "type": "object",
+        "description": "Request settings. Enums are closed. Every omitted field is resolved before the `201`\n(CONTRACT.md R-J7). `pageSize: custom` and `customPageSizeMm` go together.\n",
+        "required": ["source"],
+        "properties": {
+          "source": { "$ref": "#/components/schemas/SourceKnown" },
+          "resolution": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Dots per inch. Defaults to `defaults.resolution` of the source."
+          },
+          "colorMode": { "$ref": "#/components/schemas/ColorModeKnown" },
+          "pageSize": { "$ref": "#/components/schemas/PageSizeId" },
+          "customPageSizeMm": { "$ref": "#/components/schemas/SizeMm" },
+          "maxPages": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Stop after this many pages and complete normally (R-J8). When omitted: 1 for\n`flatbed`; for feeders, until the feeder is empty, with `limits.maxPagesPerJob` as a\nsafety bound whose breach fails the job.\n"
+          }
+        },
+        "allOf": [
+          {
+            "if": { "required": ["pageSize"], "properties": { "pageSize": { "const": "custom" } } },
+            "then": { "required": ["customPageSizeMm"], "properties": { "customPageSizeMm": true } }
+          },
+          {
+            "if": { "required": ["customPageSizeMm"], "properties": { "customPageSizeMm": true } },
+            "then": {
+              "required": ["pageSize"],
+              "properties": { "pageSize": { "const": "custom" } }
+            }
+          }
+        ]
+      },
+      "RequestedSettings": {
+        "type": "object",
+        "description": "The request settings as the agent received them, echoed in responses. Enums are open.",
+        "required": ["source"],
+        "properties": {
+          "source": { "$ref": "#/components/schemas/Source" },
+          "resolution": { "type": "integer", "minimum": 1 },
+          "colorMode": { "$ref": "#/components/schemas/ColorMode" },
+          "pageSize": { "$ref": "#/components/schemas/PageSizeId" },
+          "customPageSizeMm": { "$ref": "#/components/schemas/SizeMm" },
+          "maxPages": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "CreateJobRequest": {
+        "type": "object",
+        "required": ["deviceId", "settings"],
+        "properties": {
+          "deviceId": { "$ref": "#/components/schemas/DeviceId" },
+          "settings": { "$ref": "#/components/schemas/ScanSettings" },
+          "strict": {
+            "type": "boolean",
+            "description": "When true, a setting the device cannot honour exactly returns\n`422 unsupported-capability` (or `422 invalid-settings` for a `maxPages` above\n`limits.maxPagesPerJob`) instead of being coerced. Default: false.\n"
+          }
+        }
+      },
+      "CancelJobRequest": {
+        "type": "object",
+        "properties": {
+          "discardPages": {
+            "type": "boolean",
+            "description": "Dispose the job (and delete its pages) once it is cancelled. Default: false. Ignored on a settled job."
+          }
+        }
+      },
+      "EffectiveSettings": {
+        "type": "object",
+        "description": "The settings the job uses (D-005). Every field is resolved when the job is created\n(R-J7). The driver may refine them at scan time (R-J6). Each page also reports its own\nvalues.\n",
+        "required": ["source", "resolution", "colorMode", "pageSize", "pageSizeMm", "maxPages"],
+        "properties": {
+          "source": { "$ref": "#/components/schemas/Source" },
+          "resolution": { "type": "integer", "minimum": 1 },
+          "colorMode": { "$ref": "#/components/schemas/ColorMode" },
+          "pageSize": { "$ref": "#/components/schemas/PageSizeId" },
+          "pageSizeMm": { "$ref": "#/components/schemas/SizeMm" },
+          "maxPages": {
+            "type": ["integer", "null"],
+            "minimum": 1,
+            "description": "The completion count (R-J8). `null` means until the feeder is empty, with\n`limits.maxPagesPerJob` as a safety bound whose breach fails the job.\n"
+          }
+        }
+      },
+      "AdjustmentFieldKnown": {
+        "type": "string",
+        "enum": ["resolution", "pageSize", "colorMode", "source", "maxPages"]
+      },
+      "AdjustmentField": {
+        "description": "Open response enum (R-V4).",
+        "anyOf": [{ "$ref": "#/components/schemas/AdjustmentFieldKnown" }, { "type": "string" }]
+      },
+      "AdjustmentReasonKnown": {
+        "type": "string",
+        "description": "- `coerced`: the agent snapped the value to a supported one (`strict: false`).\n- `device-applied`: the driver reported a different value at scan time.\n- `limit`: an agent limit capped it.\n",
+        "enum": ["coerced", "device-applied", "limit"]
+      },
+      "AdjustmentReason": {
+        "description": "Open response enum (R-V4).",
+        "anyOf": [{ "$ref": "#/components/schemas/AdjustmentReasonKnown" }, { "type": "string" }]
+      },
+      "Adjustment": {
+        "type": "object",
+        "description": "One requested setting the agent or the device changed (T05 `scan.effective-settings`).",
+        "required": ["field", "requested", "effective", "reason"],
+        "properties": {
+          "field": { "$ref": "#/components/schemas/AdjustmentField" },
+          "requested": {
+            "type": ["string", "integer", "number", "null"],
+            "description": "The requested value, or null when the setting was omitted."
+          },
+          "effective": { "type": ["string", "integer", "number", "null"] },
+          "reason": { "$ref": "#/components/schemas/AdjustmentReason" }
+        }
+      },
+      "JobStateKnown": {
+        "type": "string",
+        "description": "State machine in CONTRACT.md §5.2.",
+        "enum": ["queued", "scanning", "completed", "failed", "cancelled", "disposed"]
+      },
+      "JobState": {
+        "description": "Open response enum (R-V4).",
+        "anyOf": [{ "$ref": "#/components/schemas/JobStateKnown" }, { "type": "string" }]
+      },
+      "TerminalStateKnown": { "type": "string", "enum": ["completed", "failed", "cancelled"] },
+      "TerminalState": {
+        "description": "Open response enum (R-V4) for future terminal states. The known non-terminal states,\nincluding `disposed`, are excluded: `done` never carries them (R-J2).\n",
+        "anyOf": [
+          { "$ref": "#/components/schemas/TerminalStateKnown" },
+          { "type": "string", "not": { "enum": ["queued", "scanning", "disposed"] } }
+        ]
+      },
+      "Job": {
+        "type": "object",
+        "description": "`effective` and `adjustments` are required from creation on (R-J6). A disposed tombstone\nkeeps them, with `pageCount: 0`.\n",
+        "required": [
+          "id",
+          "deviceId",
+          "state",
+          "createdAt",
+          "requested",
+          "effective",
+          "adjustments",
+          "pageCount",
+          "lastSeq"
+        ],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/JobId" },
+          "deviceId": { "$ref": "#/components/schemas/DeviceId" },
+          "state": { "$ref": "#/components/schemas/JobState" },
+          "createdAt": { "$ref": "#/components/schemas/Timestamp" },
+          "updatedAt": { "$ref": "#/components/schemas/Timestamp" },
+          "requested": { "$ref": "#/components/schemas/RequestedSettings" },
+          "effective": { "$ref": "#/components/schemas/EffectiveSettings" },
+          "adjustments": {
+            "type": "array",
+            "description": "Empty when nothing changed.",
+            "items": { "$ref": "#/components/schemas/Adjustment" }
+          },
+          "pageCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Pages stored so far. Always 0 once the job is `disposed`."
+          },
+          "lastSeq": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Highest event `seq` so far. Seq 1 (`state: queued`) exists from creation."
+          },
+          "error": { "$ref": "#/components/schemas/AsyncProblem" },
+          "expiresAt": {
+            "allOf": [{ "$ref": "#/components/schemas/Timestamp" }],
+            "description": "Current disposal deadline (R-L2) of a terminal job, or the end of a tombstone. Never\nlater than the family's `familyExpiresAt`.\n"
+          }
+        }
+      },
+      "JobList": {
+        "type": "object",
+        "required": ["jobs"],
+        "properties": {
+          "jobs": { "type": "array", "items": { "$ref": "#/components/schemas/Job" } }
+        }
+      },
+      "ImageFormat": {
+        "type": "string",
+        "description": "Request enum (query parameter); closed.",
+        "enum": ["jpeg", "png"]
+      },
+      "SideKnown": { "type": "string", "enum": ["front", "back"] },
+      "Side": {
+        "description": "Open response enum (R-V4).",
+        "anyOf": [{ "$ref": "#/components/schemas/SideKnown" }, { "type": "string" }]
+      },
+      "Page": {
+        "type": "object",
+        "required": [
+          "index",
+          "sheet",
+          "side",
+          "widthPx",
+          "heightPx",
+          "resolution",
+          "colorMode",
+          "etag",
+          "createdAt"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "0-based and stable. Assigned in acquisition order and never reused or renumbered. An\nindex always names the same immutable bytes (R-P1).\n"
+          },
+          "sheet": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "0-based physical sheet. In a duplex job the front and back share a sheet."
+          },
+          "side": { "$ref": "#/components/schemas/Side" },
+          "widthPx": { "type": "integer", "minimum": 1 },
+          "heightPx": { "type": "integer", "minimum": 1 },
+          "resolution": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": { "type": "integer", "minimum": 1 },
+              "y": { "type": "integer", "minimum": 1 }
+            }
+          },
+          "colorMode": { "$ref": "#/components/schemas/ColorMode" },
+          "etag": {
+            "type": "string",
+            "description": "ETag of the full-size image in its default format."
+          },
+          "createdAt": { "$ref": "#/components/schemas/Timestamp" }
+        }
+      },
+      "PageList": {
+        "type": "object",
+        "required": ["pages"],
+        "properties": {
+          "pages": { "type": "array", "items": { "$ref": "#/components/schemas/Page" } }
+        }
+      },
+      "ExportFormat": {
+        "type": "string",
+        "description": "Request enum; closed.",
+        "enum": ["pdf", "tiff", "jpeg", "png"]
+      },
+      "Rotation": {
+        "type": "integer",
+        "description": "Clockwise rotation in degrees, applied at export.",
+        "enum": [0, 90, 180, 270]
+      },
+      "ExportPage": {
+        "type": "object",
+        "required": ["index"],
+        "properties": {
+          "index": { "type": "integer", "minimum": 0 },
+          "rotate": { "$ref": "#/components/schemas/Rotation" }
+        }
+      },
+      "ExportRequest": {
+        "type": "object",
+        "description": "For `jpeg` and `png`, `pages` is required and holds exactly one entry (R-X2). Duplicate\nindices are rejected by the agent (JSON Schema cannot express uniqueness by property).\n",
+        "required": ["format"],
+        "properties": {
+          "format": { "$ref": "#/components/schemas/ExportFormat" },
+          "pages": {
+            "type": "array",
+            "description": "Pages in output order, each with an optional rotation. Every index must be in the\nselection snapshot (R-X1). When omitted, every page of the snapshot is exported in\nindex order with no rotation.\n",
+            "minItems": 1,
+            "items": { "$ref": "#/components/schemas/ExportPage" }
+          },
+          "quality": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "JPEG quality (default 85). It applies to `jpeg` output and to the `color` and `gray`\nimages inside a PDF. It is ignored for `tiff` and `png`, which are lossless.\n"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Base name, without extension, for `Content-Disposition`. The agent always sanitises it (R-X3).",
+            "maxLength": 128
+          },
+          "deleteAfterExport": {
+            "type": "boolean",
+            "description": "Opt-in, default false. Dispose the job once this export's body has been handed to\nthe connection. **Receipt-ambiguous** (R-X5): not a retry-safe operation. The SDK\nnever sets it.\n"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "required": ["format"],
+              "properties": { "format": { "enum": ["jpeg", "png"] } }
+            },
+            "then": { "required": ["pages"], "properties": { "pages": { "maxItems": 1 } } }
+          }
+        ]
+      },
+      "EventTypeKnown": {
+        "type": "string",
+        "enum": ["state", "progress", "page", "error", "done"]
+      },
+      "JobEventEnvelope": {
+        "type": "object",
+        "description": "**Decoding step 1** for every SSE `data` line (R-V4, R-E2). It accepts any `type`, so an\nunknown event survives decoding. The client records `seq` as processed, then decodes\nthe line again as `JobEvent` only when `type` is a known one. Unknown types are\nignored after their `seq` is recorded.\n",
+        "required": ["seq", "type", "jobId", "time"],
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Per job and strictly increasing. Equal to the SSE `id`."
+          },
+          "type": {
+            "description": "Event type, an open enum. Known values are in `EventTypeKnown`.",
+            "anyOf": [
+              { "$ref": "#/components/schemas/EventTypeKnown" },
+              { "type": "string", "minLength": 1 }
+            ]
+          },
+          "jobId": { "$ref": "#/components/schemas/JobId" },
+          "time": { "$ref": "#/components/schemas/Timestamp" }
+        }
+      },
+      "StateEvent": {
+        "allOf": [
+          { "$ref": "#/components/schemas/JobEventEnvelope" },
+          {
+            "type": "object",
+            "required": ["type", "state"],
+            "properties": {
+              "type": { "type": "string", "const": "state" },
+              "state": { "$ref": "#/components/schemas/JobState" },
+              "previous": { "$ref": "#/components/schemas/JobState" },
+              "effective": { "$ref": "#/components/schemas/EffectiveSettings" },
+              "adjustments": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Adjustment" }
+              }
+            }
+          }
+        ]
+      },
+      "ProgressEvent": {
+        "allOf": [
+          { "$ref": "#/components/schemas/JobEventEnvelope" },
+          {
+            "type": "object",
+            "required": ["type", "pagesCompleted"],
+            "properties": {
+              "type": { "type": "string", "const": "progress" },
+              "pagesCompleted": { "type": "integer", "minimum": 0 },
+              "pageIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Index the page being scanned will get."
+              },
+              "fraction": {
+                "type": ["number", "null"],
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Progress within the current page, or null if the driver does not report it."
+              },
+              "totalPages": {
+                "type": ["integer", "null"],
+                "minimum": 1,
+                "description": "Known total (flatbed, or `maxPages`), else null."
+              }
+            }
+          }
+        ]
+      },
+      "PageEvent": {
+        "allOf": [
+          { "$ref": "#/components/schemas/JobEventEnvelope" },
+          {
+            "type": "object",
+            "required": ["type", "page"],
+            "properties": {
+              "type": { "type": "string", "const": "page" },
+              "page": { "$ref": "#/components/schemas/Page" }
+            }
+          }
+        ]
+      },
+      "ErrorEvent": {
+        "allOf": [
+          { "$ref": "#/components/schemas/JobEventEnvelope" },
+          {
+            "type": "object",
+            "required": ["type", "fatal", "problem"],
+            "properties": {
+              "type": { "type": "string", "const": "error" },
+              "fatal": {
+                "type": "boolean",
+                "description": "True if the job is failing. A `state` event to `failed` and a `done` event follow."
+              },
+              "problem": { "$ref": "#/components/schemas/AsyncProblem" }
+            }
+          }
+        ]
+      },
+      "DoneEvent": {
+        "allOf": [
+          { "$ref": "#/components/schemas/JobEventEnvelope" },
+          {
+            "type": "object",
+            "required": ["type", "state", "pageCount"],
+            "properties": {
+              "type": { "type": "string", "const": "done" },
+              "state": { "$ref": "#/components/schemas/TerminalState" },
+              "pageCount": { "type": "integer", "minimum": 0 },
+              "error": { "$ref": "#/components/schemas/AsyncProblem" }
+            }
+          }
+        ]
+      },
+      "JobEvent": {
+        "description": "**Decoding step 2**: a known event. Use it only after `JobEventEnvelope` decoding found a\ntype in `EventTypeKnown`. This is the explicit known-event decoding boundary of R-V4:\nits `type` discriminator is closed on purpose, and unknown events never reach it.\n",
+        "oneOf": [
+          { "$ref": "#/components/schemas/StateEvent" },
+          { "$ref": "#/components/schemas/ProgressEvent" },
+          { "$ref": "#/components/schemas/PageEvent" },
+          { "$ref": "#/components/schemas/ErrorEvent" },
+          { "$ref": "#/components/schemas/DoneEvent" }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "state": "#/components/schemas/StateEvent",
+            "progress": "#/components/schemas/ProgressEvent",
+            "page": "#/components/schemas/PageEvent",
+            "error": "#/components/schemas/ErrorEvent",
+            "done": "#/components/schemas/DoneEvent"
+          }
+        }
+      },
+      "ErrorCodeKnown": {
+        "type": "string",
+        "description": "Stable problem codes. CONTRACT.md §9 gives the HTTP status, retryability and meaning of\neach. This list is frozen for the T05 copy alignment.\n",
+        "enum": [
+          "host-denied",
+          "unauthorized-origin",
+          "consent-pending",
+          "consent-denied",
+          "token-invalid",
+          "token-revoked",
+          "rate-limited",
+          "invalid-request",
+          "invalid-settings",
+          "unsupported-capability",
+          "invalid-state",
+          "not-found",
+          "device-busy",
+          "feeder-empty",
+          "paper-jam",
+          "cover-open",
+          "timeout",
+          "disconnected",
+          "permission",
+          "export-failed",
+          "limits-exceeded",
+          "agent-unavailable",
+          "unknown"
+        ]
+      },
+      "ErrorCode": {
+        "description": "Open response enum (R-V4). Clients map an unknown code to `unknown`, keeping `retryable`.",
+        "anyOf": [
+          { "$ref": "#/components/schemas/ErrorCodeKnown" },
+          { "type": "string", "pattern": "^[a-z-]+$" }
+        ]
+      },
+      "Problem": {
+        "type": "object",
+        "description": "RFC 9457 problem details, sent as `application/problem+json`. `type` is\n`urn:zilo:problem:<code>`, and `status` equals the HTTP status of the response that\ncarries it (R-ER1). Problems never carry document content, tokens or file paths.\n",
+        "required": ["type", "title", "status", "code", "retryable", "requestId"],
+        "properties": {
+          "type": { "type": "string", "format": "uri", "pattern": "^urn:zilo:problem:[a-z-]+$" },
+          "title": {
+            "type": "string",
+            "description": "Short English summary for logs. Not UI copy; the SDK uses T05 copy by `code`."
+          },
+          "status": { "type": "integer", "minimum": 400, "maximum": 599 },
+          "detail": { "type": "string" },
+          "instance": { "type": "string", "description": "Request path. Never contains secrets." },
+          "code": { "$ref": "#/components/schemas/ErrorCode" },
+          "retryable": {
+            "type": "boolean",
+            "description": "True if the identical request can succeed later, possibly after a physical user action."
+          },
+          "retryAfterSeconds": { "type": "integer", "minimum": 0 },
+          "requestId": {
+            "type": "string",
+            "description": "In an HTTP error response: equals that response's `Zilo-Request-Id` header (R-T9).\nIn an asynchronous problem (`AsyncProblem`): the `Zilo-Request-Id` of the request\nthat created the job, which never changes on replay (R-ER2).\n"
+          },
+          "errorId": {
+            "type": "string",
+            "description": "Stable identity of one asynchronous error occurrence (R-ER2). Present, and required,\nin `AsyncProblem`. Identical in every delivery: live, replayed, `Job.error` and\n`done.error`.\n",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$"
+          },
+          "jobId": { "$ref": "#/components/schemas/JobId" },
+          "deviceId": { "$ref": "#/components/schemas/DeviceId" },
+          "pagesKept": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "For job errors, the pages that remain available."
+          },
+          "blocked": {
+            "type": "boolean",
+            "description": "For `consent-denied`, true when the origin is blocked from the tray (never prompts again)."
+          },
+          "limit": {
+            "type": "object",
+            "description": "For `limits-exceeded`, which limit was hit.",
+            "required": ["name"],
+            "properties": { "name": { "type": "string" }, "max": { "type": "number" } }
+          },
+          "errors": {
+            "type": "array",
+            "description": "For validation codes, the field-level reasons.",
+            "items": {
+              "type": "object",
+              "required": ["field", "reason"],
+              "properties": {
+                "field": { "type": "string", "description": "JSON Pointer into the request body." },
+                "reason": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "AsyncProblem": {
+        "description": "A problem produced by a job rather than by an HTTP request: in `error` and `done`\nevents and in `Job.error`. Its payload is immutable once emitted (R-ER2).\n",
+        "allOf": [
+          { "$ref": "#/components/schemas/Problem" },
+          { "type": "object", "required": ["errorId", "jobId"] }
+        ]
+      }
+    }
+  }
+}

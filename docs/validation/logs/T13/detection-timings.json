@@ -1,0 +1,25 @@
+{
+  "environment": "node v24.22.2, in-process contract mock (no network)",
+  "samples": "two warm-ups discarded, then 20 (3 for hung ports)",
+  "readyMs": {
+    "values": [
+      1.05, 0.72, 0.9, 1.23, 0.72, 0.72, 0.72, 0.83, 0.69, 0.66, 0.62, 0.6, 0.62, 1.39, 0.52, 0.47,
+      0.58, 0.45, 0.51, 0.46
+    ],
+    "p95": 1.23,
+    "budgetMs": 300
+  },
+  "unreachableRefusedMs": {
+    "values": [
+      0.12, 0.11, 0.12, 0.13, 0.1, 0.1, 0.11, 0.11, 0.12, 0.16, 0.14, 0.15, 0.15, 0.37, 0.2, 0.27,
+      0.16, 0.13, 0.12, 0.42
+    ],
+    "p95": 0.37,
+    "budgetMs": 2000
+  },
+  "unreachableHungMs": {
+    "values": [1502.1, 1501.11, 1500.99],
+    "max": 1502.1,
+    "budgetMs": 2000
+  }
+}
