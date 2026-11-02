@@ -10,7 +10,7 @@ seven points. Implements PLAN.md v2. Both masters sign off at the bottom.
   - The Opus master runs **`zilo-fe`**: front end, design, SDK, demo, E2E, plus overall tracking and
     the merge queue.
   - The GPT master runs **`zilo-be`**: agent, drivers, virtual scanner, packaging, security.
-  - Run IDs are recorded in `docs/planning/AGENTS.md`.
+  - Run IDs are recorded in `docs/planning/HANDLES.md`.
 - **Overall tracking:** the Opus master reads both Runs (`worker-list --run <id>`) and owns the merge
   queue (§2.4).
   - Each lane edits only its own status table (§4a FE, §4b BE). That keeps edits append-safe.

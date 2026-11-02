@@ -160,8 +160,8 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
   - The public release is cut later as a clean export or filtered history. It excludes those paths
     and keeps the product docs (api/, docs/design, docs/spikes findings, user and contributor
     docs).
-  - Per the owner's pc-setup default, `CLAUDE.md` stays the single source of truth. No duplicate
-    AGENTS.md.
+  - **Superseded by OD-12:** root `AGENTS.md` is now the single source of truth for this repo, and
+    `CLAUDE.md` only imports it.
 
 ## OD-10 Browser support matrix (owner, 2026-11-02)
 - **Chromium family:** Chrome, **Edge (explicitly required)**, plus Brave, Opera, Vivaldi and
@@ -201,6 +201,28 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
   skip-worktree). **Verify that the TUI footer reads "DeepSeek V4.1 Flash Free".**
 - **Data note:** free-tier models may retain prompts and code. Zilo is the owner's code, destined
   for open source, and the owner accepted this. Never paste secrets into any session.
+
+## OD-12 AGENTS.md is the repo's agent instructions (owner, 2026-11-02)
+- **Root `AGENTS.md`** is the canonical agent-instructions file for every agent: Claude, GPT and
+  DeepSeek via OpenCode, and Codex. OpenCode and Codex read it natively.
+- **`CLAUDE.md`** contains only `@AGENTS.md`, so Claude Code loads the same text. Never put content
+  in `CLAUDE.md`.
+- **The handles table** moved from `docs/planning/AGENTS.md` to **`docs/planning/HANDLES.md`**.
+- This repo-level choice overrides the owner's global pc-setup default ("CLAUDE.md is the source
+  of truth") for this repo only.
+
+## OD-13 Repo hygiene task before the open-source release (owner, 2026-11-02)
+- **Add a roadmap task:** organize folders and files, then remove or relocate stale artifacts:
+  - planning and review clutter;
+  - one-off resume briefs;
+  - archived spikes;
+  - scratch, worktree and branch leftovers.
+
+  It also needs a consistent layout and naming, a README and docs index, and a check that nothing
+  sensitive is tracked.
+- **Timing:** schedule it before M7 (the open-source release), after a functional app exists, and
+  before cutting the clean public export (OD-9). It is a normal task: author, cross-family review,
+  merge.
 
 ## OD-5 Reporting
 - The owner talks only to the liaison terminal. Masters send owner-facing questions to the liaison,

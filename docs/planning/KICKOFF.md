@@ -1,7 +1,7 @@
 # Kickoff: master agents
 
 You are one of the two **master agents** for Zilo. Read `CLAUDE.md` and `docs/context/BRIEF.md`
-now. Your peer master's terminal handle is in `docs/planning/AGENTS.md`.
+now. Your peer master's terminal handle is in `docs/planning/HANDLES.md`.
 
 - **Opus master** (Claude Opus 5.5, high effort): overall execution orchestrator. Owns design, UX,
   the front end, the JS/TS browser SDK, the download/install dialog UX, and the demo/test web app.

@@ -1,4 +1,4 @@
-# Master agents (Orca terminal handles)
+# Terminal handles and Run IDs (masters, liaison)
 
 | Role | Model | Handle |
 |---|---|---|
