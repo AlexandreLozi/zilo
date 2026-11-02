@@ -1,0 +1,42 @@
+339c6ad27d7523c0b340787c6e6047519ffc163c
+CI=1 pnpm --filter @zilo/catalog e2e --project=webkit --retries=0 review-r4
+Scope: all 8 workspace projects
+✓ Lockfile passes supply-chain policies (verified 16h ago)
+
+Done in 394ms using pnpm v11.17.0
+$ playwright test -c e2e/playwright.config.ts --project=webkit --retries=0 review-r4
+
+Running 2 tests using 2 workers
+
+  ✘  1 [webkit] › e2e/review-r4.spec.ts:30:1 › host cancellation must not dismiss an older native child beneath reopened Zilo (1ms)
+  ✘  2 [webkit] › e2e/review-r4.spec.ts:4:1 › Zilo does not override a host intentionally keeping its separate native modal open (1ms)
+
+
+  1) [webkit] › e2e/review-r4.spec.ts:4:1 › Zilo does not override a host intentionally keeping its separate native modal open 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Missing libraries:                                   ║
+    ║     libgtk-4.so.1                                    ║
+    ║     libgraphene-1.0.so.0                             ║
+    ║     libevent-2.1.so.7                                ║
+    ║     libopus.so.0                                     ║
+    ║     libgstallocators-1.0.so.0                        ║
+    ║     libgstapp-1.0.so.0                               ║
+    ║     libgstpbutils-1.0.so.0                           ║
+    ║     libgstaudio-1.0.so.0                             ║
+    ║     libgsttag-1.0.so.0                               ║
+    ║     libgstvideo-1.0.so.0                             ║
+    ║     libgstgl-1.0.so.0                                ║
+    ║     libgstcodecparsers-1.0.so.0                      ║
+    ║     libgstfft-1.0.so.0                               ║
+    ║     libflite.so.1                                    ║
+    ║     libflite_usenglish.so.1                          ║
+    ║     libflite_cmu_grapheme_lang.so.1                  ║
+    ║     libflite_cmu_grapheme_lex.so.1                   ║
+    ║     libflite_cmu_indic_lang.so.1                     ║
+    ║     libflite_cmu_indic_lex.so.1                      ║
+    ║     libflite_cmulex.so.1                             ║
+    ║     libflite_cmu_time_awb.so.1                       ║
+    ║     libflite_cmu_us_awb.so.1                         ║
