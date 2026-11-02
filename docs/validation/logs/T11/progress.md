@@ -31,3 +31,11 @@ Plan: `docs/tasks/T11.md`; base `add1d73` (frozen Core handoff).
 - CI/package syntax: bash -n passed; actionlint 1.7.7 passed (temporary custom runner config
   for pre-existing macos-15-intel label); pinned yaml@2.8.1 parsing passed.
 - Native package installs and PowerShell parsing/execution not measured on this Linux host.
+- Initial backend slices were NOT acceptance evidence: parent found missing security invariants.
+- Read-only author risk triage identified GET eviction, stale prompts, revoked-history bounds,
+  fractional deadlines, LRU status and asynchronous authorization; focused corrections added tests.
+- Final integrated tests: Agent21 + Core7 + Scaffold6 =34 passed, none failed/skipped.
+- Final locked restore/Release build/self-test/actionlint/bash syntax/diff checks passed; see logs.
+- Coordinator confirmed T11p persistent-consent split and HOLD T11 merge pending R-A6.
+- Gate remains CLOSED for persistence, final atomic issuance/removal race and remaining matrix;
+  `report.md` is the authoritative partial checkpoint, not an acceptance claim.
