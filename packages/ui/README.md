@@ -95,22 +95,52 @@ The host **must not** (none of these are needed):
 ### Layers opened inside a Zilo dialog
 
 A Zilo dialog claims a key or a pointer press only when it is the topmost layer and the event is
-aimed at its own content. A **newer layer** is one opened after the Zilo dialog, inside it or above
-it in the top layer, that is:
+aimed at its own content. A **newer layer** is one above it: opened after it, inside it or above it
+in the top layer. Zilo recognises:
 
 - a `<dialog>`: a modal one (`showModal()`), or a non-modal one (`show()`) while it holds focus;
 - a popover: an `auto` or `hint` one while it is shown, or a `manual` one while it holds focus;
 - an element with `role="dialog"`, `role="alertdialog"` or `aria-modal="true"` inside the Zilo
   dialog (Radix, Headless UI, React Aria and similar dialogs and popovers render one), while it is
-  rendered.
+  rendered: an **ARIA layer**.
 
-Layers open before the Zilo dialog opened are older, and so is an enclosing host modal: they never
-take its input. While a newer layer is open, or holds the focus or target of the event, the Zilo
-dialog does nothing with it: no `preventDefault()`, no `stopPropagation()`, no close. So:
+Zilo tells newer layers from older ones when each key or press arrives, from the live state of the
+page (`open`, `:modal`, `:popover-open`, rendering), not from a record of what opened when:
+
+- A layer around the focused element, or around the pressed one, is newer. Under the Zilo dialog's
+  modal top layer everything outside it is inert, so focus and presses only reach a layer above it
+  or nested inside it. A nested `<dialog>` or popover gets the focus when it opens after the Zilo
+  dialog; if one that opened before holds the focus (the Zilo dialog's initial focus went there),
+  Zilo leaves Escape to the browser, which closes the topmost layer: the Zilo dialog, through its
+  `cancel` event.
+- A shown `auto` or `hint` popover is newer, focused or not: `showModal()` hides every such popover
+  that does not enclose the dialog, so one shown now was shown after it.
+- A modal `<dialog>` that does not hold the focus counts only while nothing inside the Zilo dialog
+  is focused: focus in the Zilo dialog means nothing modal is above it. With nothing focused and an
+  older modal still open elsewhere, Zilo can't tell which is on top, so it leaves Escape to the
+  browser, which closes the topmost one (for the Zilo dialog, through its `cancel` event).
+- An enclosing host modal and the Zilo dialogs open below this one are never newer.
+- An ARIA layer has no open or close event to read, so the Zilo dialog records the ARIA layers
+  already rendered when it opens: they are its content (an inline region, say), not newer layers.
+  The record can't go stale: it observes every root it scanned (the document and each open shadow
+  root) and drops an element once it is removed, its `role`, `aria-modal`, `popover` or `hidden`
+  attribute changes, or it is not rendered after any change; each key or press first applies the
+  changes not yet delivered. So an ARIA layer that closes and opens again is newer. It stays content
+  only if it was hidden and shown again within one task by other means (a class), or hidden by a
+  style change that touched no attribute (a media query): mount a new element. Each opening of the
+  Zilo dialog records afresh, so a layer still open when the Zilo dialog reopens is its content.
+
+While a newer layer is open, or holds the focus or target of the event, the Zilo dialog does nothing
+with it: no `preventDefault()`, no `stopPropagation()`, no close. So:
 
 - **Escape** goes to the newer layer the normal way: a native `cancel` for `<dialog>` and popovers,
   or the library's own listener. Radix layers stack, so with Radix host > Zilo > Radix dialog the
-  first Escape closes the inner Radix dialog, the second closes Zilo and the third the host.
+  first Escape closes the inner Radix dialog, the second closes Zilo and the third the host. If a
+  listener outside a native layer (a modal `<dialog>`, or an `auto` or `hint` popover) cancels that
+  Escape, the browser won't dismiss the layer; the Zilo dialog then dismisses it as the browser
+  would: a `cancel` event, then `close()` (`requestClose()` where supported), or `hidePopover()`.
+  "Outside" means before the key reaches the layer, or the focused element for a popover that does
+  not hold the focus. Content in the layer that keeps Escape for itself stops its propagation.
 - **Tab** is the newer layer's (its own focus trap, or the browser's); the Zilo trap does not move
   it.
 - **Pointer presses** on the Zilo backdrop are outside the newer layer, not the Zilo dialog: the
@@ -127,16 +157,31 @@ What the host must do for layers Zilo can't detect:
   that layer, or in React's `onKeyDownCapture`. Calling only `preventDefault()` is not enough: the
   Zilo dialog has already claimed the key. Content that wants Escape for itself (for example a
   custom listbox) does the same.
-- A layer inside a closed shadow root: Zilo can't see into it; stop Escape as above.
+- A layer inside a closed shadow root: from outside, a key pressed inside the root is aimed at the
+  root's host element. If that host is marked as a layer (`role="dialog"` or `aria-modal="true"`),
+  it is one. Otherwise Zilo can't know that a `<dialog>` or popover inside the root is open: it
+  claims Escape as aimed at its own content, so the browser does not close that layer, and closes
+  itself. Have the layer close itself and stop the key, in a listener on its shadow root (pinned by
+  tests in `nested-layers.spec.ts`):
+
+  ```js
+  root.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && dialog.open) {
+      event.stopPropagation();
+      dialog.close();
+    }
+  });
+  ```
+
 - Under a host whose Escape listener runs in the document capture phase (Radix), a newer layer that
   is _not_ part of that library's layer stack (a native `<dialog>` or popover) does not protect the
   host: the host's listener sees an unclaimed Escape and closes the host, with the Zilo dialog and
   the layer inside it, as it would without Zilo (pinned by a test in `nested-layers.spec.ts`). Use a
   layer from the host's library (it stacks), or have the host ignore that Escape (for Radix:
-  `onEscapeKeyDown={(e) => { if (layerOpen) e.preventDefault(); }}`).
-- An element that was already open when the Zilo dialog opened is older. If it is hidden and shown
-  again without closing (no `close` or `toggle` event), it stays older: mount a new element, or
-  close and reopen it.
+  `onEscapeKeyDown={(e) => { if (layerOpen) e.preventDefault(); }}`). That cancels the browser's
+  own dismissal of the native layer too; the Zilo dialog then dismisses the layer (see **Escape**
+  above), so the layer closes while the host and the Zilo dialog stay open (pinned by
+  `review-r3.spec.ts`).
 
 ## Theming API
 
