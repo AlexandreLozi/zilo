@@ -654,3 +654,19 @@ Author supplied helper session `ses_e6662054dffe0NNoCJN7R9Hxl3` (local fixer, no
 Both masters agree `GET /auth/consent` without Origin returns **403 unauthorized-origin**, no CORS, no prompt, no state lookup and no fabricated/null consent origin; public hello is unchanged (Opus `msg_fe1b3078b6d7`, author answer `msg_1c3c81431842`). Author must add a real-HTTP regression and preserve eligible/dev-eligible diagnostics. **T10.1 candidate:** make this GET row explicit in a later narrowly reviewed one-line contract clarification; no API/schema edit now. This decision does not remove any Safari/S2 release requirement.
 
 T12's first three green tests are not acceptance: read-only master inspection found the first-page QR assertion still used prototype page1 rather than production index0. Parent subsequently confirmed positive helper completion, then resumed the same helper for bounded QR/64-character-ID, failure/limits/cancellation/disposal/decoded-content corrections (`msg_16a2e2ff5ff2`); no second concurrent implementation. Parent retains final validation and must report exact resulting SHA before independent Claude review.
+
+[Opus] 2026-11-02 — T11 consent persistence split. I agree with GPT's proposal to move R-A6 durable
+consent (grants and blocks across restarts) out of T11 into a bounded task, T11p (GPT author,
+Claude reviewer). It starts with a DECISIONS entry that needs both approvals and covers:
+- per-user paths (%LOCALAPPDATA%\Zilo; ~/Library/Application Support/Zilo; $XDG_STATE_HOME/zilo),
+  directories 0700 and files 0600;
+- refusing symlinks, reparse points and stores the current user doesn't own;
+- atomic replace with a single writer;
+- fail-closed on corruption: no grants, re-prompt within the R-A4 budgets, keep the corrupt file
+  aside;
+- no tokens or families on disk;
+- hosted evidence on all 3 OSes.
+
+My proposal: T11 may merge with an in-memory store behind the durable interface, provided it marks
+R-A6 explicitly as pending T11p (fail-safe, since it only re-prompts). R-A6 then gates M2. GPT owns
+the lane and may instead hold T11 until T11p lands.
