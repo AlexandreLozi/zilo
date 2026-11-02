@@ -45,6 +45,50 @@ async function countTabsAtWindow(page: Page): Promise<() => Promise<number>> {
     page.evaluate(() => (window as Window & { tabsAtWindow?: number }).tabsAtWindow ?? 0);
 }
 
+/**
+ * Radix arms a layer's outside-press listener (`pointerdown` on the document) in a `setTimeout(0)`
+ * after each render that changes whether the layer takes outside presses, and removes the old one
+ * first. When the inner layer closes, its listener is removed; the host re-renders (its pointer
+ * events come back), removes its own and adds a new one a few tasks later. A press inside the host
+ * in that gap (the one on the Zilo backdrop) still runs the host's `onPointerDownCapture`, which marks
+ * the press as inside its React tree, but not the document listener that clears the mark: the host
+ * then takes its next outside press for an inside one and stays open. That made the host's outside
+ * click flaky under load. This records, in the page, the document's `pointerdown` listeners and
+ * whether the last change added one: once the host's new listener is added after both removals, the
+ * host is armed again.
+ */
+async function recordOutsidePressListeners(page: Page): Promise<() => Promise<boolean>> {
+  await page.addInitScript(() => {
+    const active = new Set<unknown>();
+    let lastWasAdd = false;
+    const add = Document.prototype.addEventListener;
+    const remove = Document.prototype.removeEventListener;
+    Document.prototype.addEventListener = function (
+      this: Document,
+      ...args: Parameters<Document['addEventListener']>
+    ): void {
+      if (args[0] === 'pointerdown') {
+        active.add(args[1]);
+        lastWasAdd = true;
+      }
+      add.apply(this, args);
+    };
+    Document.prototype.removeEventListener = function (
+      this: Document,
+      ...args: Parameters<Document['removeEventListener']>
+    ): void {
+      if (args[0] === 'pointerdown' && active.delete(args[1])) lastWasAdd = false;
+      remove.apply(this, args);
+    };
+    (window as Window & { outsidePressArmed?: () => boolean }).outsidePressArmed = () =>
+      lastWasAdd && active.size === 1;
+  });
+  return () =>
+    page.evaluate(() =>
+      Boolean((window as Window & { outsidePressArmed?: () => boolean }).outsidePressArmed?.()),
+    );
+}
+
 /** Opens the host, the Zilo dialog inside it and the Radix dialog inside that, by keyboard. */
 async function openThree(page: Page): Promise<void> {
   await page.goto(stateUrl('host-modal-nested', 'light'));
@@ -124,6 +168,7 @@ test('Tab inside the Radix dialog is its own: the Zilo trap does not take it', a
 });
 
 test('outside clicks close the Radix dialog, then Zilo, then the host', async ({ page }) => {
+  const hostArmed = await recordOutsidePressListeners(page);
   await openThree(page);
 
   // On the Zilo backdrop: outside the inner layer, which closes; the Zilo dialog stays. Radix arms
@@ -137,6 +182,9 @@ test('outside clicks close the Radix dialog, then Zilo, then the host', async ({
   await expect(zilo(page)).toBeVisible();
   await expect(body(page)).not.toHaveAttribute('data-zilo-close', /.*/);
 
+  // The host's outside-press listener, re-armed after the inner layer closed (see above), sees the
+  // next press as inside the host, so the one after it counts as outside.
+  await expect.poll(hostArmed).toBe(true);
   await page.mouse.click(4, 4);
   await expect(zilo(page)).toBeHidden();
   await expect(body(page)).toHaveAttribute('data-zilo-close', 'outside');
@@ -240,4 +288,250 @@ test('documented limit: under a Radix host, a native modal inside Zilo does not 
   await expect(host(page)).toBeHidden();
   await expect(body(page)).toHaveAttribute('data-host-dismiss', 'escape');
   await expect(body(page)).not.toHaveAttribute('data-zilo-close', /.*/);
+});
+
+/** Opens the Zilo dialog of the `dialog-trigger` state by pointer, as a user would. */
+async function openZilo(page: Page): Promise<void> {
+  await page.goto(stateUrl('dialog-trigger', 'light'));
+  await page.getByRole('button', { name: 'Open dialog' }).click();
+  await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+}
+
+type ClosedChildWindow = Window & { closedChild?: HTMLDialogElement };
+
+/**
+ * Appends to the Zilo dialog an element (`#closed-host`) whose closed shadow root holds a modal
+ * `<dialog>` with one button, and opens it. With `handlesEscape`, the closed root has the README's
+ * listener for a layer Zilo can't see. The page keeps the `<dialog>` as `window.closedChild`.
+ */
+async function openClosedRootModal(page: Page, handlesEscape: boolean): Promise<void> {
+  await page.locator('#dialog').evaluate((zilo, handles) => {
+    const host = document.createElement('div');
+    host.id = 'closed-host';
+    const root = host.attachShadow({ mode: 'closed' });
+    root.innerHTML = '<dialog aria-label="Child modal"><button>Child action</button></dialog>';
+    const dialog = root.querySelector('dialog');
+    if (!dialog) throw new Error('fixture');
+    if (handles) {
+      // packages/ui/README.md, "A layer inside a closed shadow root", word for word.
+      root.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && dialog.open) {
+          event.stopPropagation();
+          dialog.close();
+        }
+      });
+    }
+    zilo.append(host);
+    dialog.showModal();
+    (window as ClosedChildWindow).closedChild = dialog;
+  }, handlesEscape);
+  // Focus is inside the closed root; from outside it, the host stands in for it.
+  await expect(page.locator('#closed-host')).toBeFocused();
+}
+
+const closedChildOpen = (page: Page) =>
+  page.evaluate(() => Boolean((window as ClosedChildWindow).closedChild?.open));
+
+test('a native modal in a closed shadow root closes itself on Escape with the README listener', async ({
+  page,
+}) => {
+  await openZilo(page);
+  await openClosedRootModal(page, true);
+  await page.keyboard.press('Escape');
+  await expect.poll(() => closedChildOpen(page)).toBe(false);
+  await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+  await expect(body(page)).not.toHaveAttribute('data-last-close', /.*/);
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#dialog')).not.toHaveAttribute('open');
+  await expect(body(page)).toHaveAttribute('data-last-close', 'escape');
+});
+
+test('documented limit: Zilo cannot see a layer in a closed shadow root and takes its Escape', async ({
+  page,
+}) => {
+  // packages/ui/README.md, "What the host must do": the key is aimed at the closed root's host,
+  // which is Zilo content, and nothing open is visible inside the root.
+  await openZilo(page);
+  await openClosedRootModal(page, false);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#dialog')).not.toHaveAttribute('open');
+  await expect(body(page)).toHaveAttribute('data-last-close', 'escape');
+  expect(await closedChildOpen(page)).toBe(true);
+});
+
+test('a closed shadow root whose host is marked role="dialog" is a newer layer', async ({
+  page,
+}) => {
+  await openZilo(page);
+  await page.locator('#dialog').evaluate((zilo) => {
+    // A component that renders its content in a closed root and marks its host as the dialog.
+    const picker = document.createElement('div');
+    picker.id = 'picker';
+    picker.setAttribute('role', 'dialog');
+    picker.setAttribute('aria-label', 'Picker');
+    const root = picker.attachShadow({ mode: 'closed' });
+    root.innerHTML = '<button>Pick</button>';
+    // Like Radix, it cancels the Escape it handles (a native dialog under it must not close too).
+    root.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      picker.dataset['escapePrevented'] = String(event.defaultPrevented);
+      event.preventDefault();
+      picker.hidden = true;
+    });
+    zilo.append(picker);
+    root.querySelector('button')?.focus();
+  });
+  await expect(page.locator('#picker')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#picker')).toBeHidden();
+  await expect(page.locator('#picker')).toHaveAttribute('data-escape-prevented', 'false');
+  await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+});
+
+/** Appends a modal `<dialog id="native-child">` with `#child-action` to the Zilo dialog, opens it. */
+async function openNativeChild(page: Page): Promise<void> {
+  await page.locator('#dialog').evaluate((zilo) => {
+    const child = document.createElement('dialog');
+    child.id = 'native-child';
+    child.setAttribute('aria-label', 'Child modal');
+    child.innerHTML = '<button id="child-action">Child action</button>';
+    zilo.append(child);
+    child.showModal();
+  });
+  await expect(page.locator('#child-action')).toBeFocused();
+}
+
+/**
+ * Closes and reopens the Zilo dialog: it opens above any layer still open. Clears the recorded
+ * close reason (`api`) of the close.
+ */
+async function reopenZilo(page: Page): Promise<void> {
+  await page.locator('#dialog').evaluate((zilo) => {
+    const dialog = zilo as HTMLElement & { close(): void; show(): void };
+    dialog.close();
+    delete document.body.dataset['lastClose'];
+    dialog.show();
+  });
+  await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+}
+
+test('a Zilo dialog reopened while its native child stays open is above the child', async ({
+  page,
+}) => {
+  await openZilo(page);
+  await openNativeChild(page);
+  await reopenZilo(page);
+  await expect(page.locator('#native-child')).toHaveAttribute('open', '');
+  // Initial focus is on Zilo's own content, not in the child below it.
+  await expect(page.locator('#scanner-name')).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#dialog')).not.toHaveAttribute('open');
+  await expect(body(page)).toHaveAttribute('data-last-close', 'escape');
+  await expect(page.locator('#native-child')).toHaveAttribute('open', '');
+
+  // The child is the topmost layer: Escape is the browser's again.
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#native-child')).not.toHaveAttribute('open');
+});
+
+test('a Zilo dialog closed and reopened in one task stays open when that close event arrives', async ({
+  page,
+}) => {
+  await openZilo(page);
+  await page.locator('#dialog').evaluate(async (zilo) => {
+    const dialog = zilo as HTMLElement & { close(): void; show(): void };
+    const native = zilo.shadowRoot?.querySelector('dialog');
+    if (!native) throw new Error('fixture');
+    const closed = new Promise((resolve) => {
+      native.addEventListener('close', resolve, { once: true });
+    });
+    dialog.close();
+    dialog.show();
+    // The browser fires the native close event in a later task, after the reopening.
+    await closed;
+  });
+  await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+  await expect(page.locator('#scanner-name')).toBeFocused();
+  await expect(body(page)).toHaveAttribute('data-last-close', 'api');
+});
+
+test('a child reopened after its reopened Zilo dialog is above it again', async ({ page }) => {
+  await openZilo(page);
+  await openNativeChild(page);
+  await reopenZilo(page);
+  await page.locator('#native-child').evaluate((child: HTMLDialogElement) => {
+    child.close();
+    child.showModal();
+  });
+  await expect(page.locator('#child-action')).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#native-child')).not.toHaveAttribute('open');
+  await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+  await expect(body(page)).not.toHaveAttribute('data-last-close', /.*/);
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#dialog')).not.toHaveAttribute('open');
+  await expect(body(page)).toHaveAttribute('data-last-close', 'escape');
+});
+
+test('under a host that ignores the Escape, content in the native child that stops it keeps the child open', async ({
+  page,
+}) => {
+  // As in review-r3.spec.ts: the host's callback cancels the Escape before Radix sees it.
+  await page.addInitScript(() => {
+    document.addEventListener(
+      'keydown',
+      (event) => {
+        if (event.key === 'Escape' && document.querySelector<HTMLDialogElement>('#child')?.open) {
+          event.preventDefault();
+        }
+      },
+      true,
+    );
+  });
+  await page.goto(stateUrl('host-modal-radix', 'light'));
+  await page.getByRole('button', { name: 'Scan documents' }).click();
+  await page.getByRole('button', { name: 'Choose scanner' }).click();
+  await page.locator('#zilo').evaluate((zilo) => {
+    const child = document.createElement('dialog');
+    child.id = 'child';
+    child.innerHTML = '<input id="child-search" aria-label="Search" />';
+    // Content that keeps Escape for itself (say, to clear a search) stops it (README).
+    child.querySelector('input')?.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') event.stopPropagation();
+    });
+    zilo.append(child);
+    child.showModal();
+  });
+  await expect(page.locator('#child-search')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#child')).toHaveAttribute('open', '');
+  await expect(host(page)).toBeVisible();
+  await expect(page.locator('#zilo')).toHaveAttribute('open', '');
+  await expect(body(page)).not.toHaveAttribute('data-host-dismiss', /.*/);
+});
+
+test('with its initial focus in an older native child, Escape still closes the Zilo dialog above it', async ({
+  page,
+}) => {
+  // packages/ui/README.md: Zilo takes the focused child for newer and leaves Escape to the browser,
+  // which closes the topmost layer, the Zilo dialog, through its `cancel` event.
+  await page.goto(stateUrl('dialog-trigger', 'light'));
+  await page.locator('#dialog').evaluate((zilo) => {
+    const child = document.createElement('dialog');
+    child.id = 'native-child';
+    child.setAttribute('aria-label', 'Child modal');
+    child.innerHTML = '<button id="child-action" autofocus>Child action</button>';
+    zilo.append(child);
+    child.showModal();
+    (zilo as HTMLElement & { show(): void }).show();
+  });
+  await expect(page.locator('#child-action')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#dialog')).not.toHaveAttribute('open');
+  await expect(body(page)).toHaveAttribute('data-last-close', 'escape');
+  await expect(page.locator('#native-child')).toHaveAttribute('open', '');
 });

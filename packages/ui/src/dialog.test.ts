@@ -389,6 +389,78 @@ describe('<zilo-dialog>', () => {
       expect(dialog.open).toBe(false);
     });
 
+    it('treats an inline role="dialog" element removed and put back while it is open as newer', () => {
+      const { dialog } = setup(
+        '<div role="dialog" aria-label="Inline" id="layer"><button id="layer-action">Act</button></div>',
+      );
+      dialog.show();
+      const layer = document.querySelector<HTMLElement>('#layer');
+      if (!layer) throw new Error('fixture');
+      // Remounted in the same place: a new opening of the same element.
+      const parent = layer.parentElement;
+      layer.remove();
+      parent?.append(layer);
+      document.querySelector<HTMLElement>('#layer-action')?.focus();
+      expect(press('Escape').defaultPrevented).toBe(false);
+      expect(dialog.open).toBe(true);
+    });
+
+    it('treats an inline role="dialog" element that was hidden and shown again as newer', () => {
+      const { dialog } = setup(
+        '<div role="dialog" aria-label="Inline" id="layer"><button id="layer-action">Act</button></div>',
+      );
+      dialog.show();
+      const layer = document.querySelector<HTMLElement>('#layer');
+      if (!layer) throw new Error('fixture');
+      layer.hidden = true;
+      layer.hidden = false;
+      document.querySelector<HTMLElement>('#layer-action')?.focus();
+      expect(press('Escape').defaultPrevented).toBe(false);
+      expect(dialog.open).toBe(true);
+    });
+
+    it('treats an inline role="dialog" element whose role came back as newer', () => {
+      const { dialog } = setup(
+        '<div role="dialog" aria-label="Inline" id="layer"><button id="layer-action">Act</button></div>',
+      );
+      dialog.show();
+      const layer = document.querySelector<HTMLElement>('#layer');
+      if (!layer) throw new Error('fixture');
+      layer.removeAttribute('role');
+      layer.setAttribute('role', 'dialog');
+      document.querySelector<HTMLElement>('#layer-action')?.focus();
+      expect(press('Escape').defaultPrevented).toBe(false);
+      expect(dialog.open).toBe(true);
+    });
+
+    it('keeps an inline role="dialog" element its own content through unrelated changes', () => {
+      const { dialog } = setup(
+        '<div role="dialog" aria-label="Inline" id="layer"><button id="layer-action">Act</button></div>',
+      );
+      dialog.show();
+      document.querySelector('#layer')?.setAttribute('class', 'highlighted');
+      document.querySelector('#name')?.setAttribute('aria-invalid', 'true');
+      document.querySelector<HTMLElement>('#layer-action')?.focus();
+      expect(press('Escape').defaultPrevented).toBe(true);
+      expect(dialog.open).toBe(false);
+    });
+
+    it('records the role="dialog" layers open at each opening, when it is reopened', () => {
+      const { dialog } = setup();
+      const action = openLayerInside(
+        dialog,
+        '<div role="dialog" aria-label="Layer"><button id="layer-action">Act</button></div>',
+      );
+      expect(press('Escape').defaultPrevented).toBe(false);
+      expect(dialog.open).toBe(true);
+      // Reopened while the layer stays rendered: the layer was open first this time.
+      dialog.close();
+      dialog.show();
+      action.focus();
+      expect(press('Escape').defaultPrevented).toBe(true);
+      expect(dialog.open).toBe(false);
+    });
+
     it('treats an enclosing host dialog as older', () => {
       document.body.innerHTML = `
         <div role="dialog" aria-label="Host">
