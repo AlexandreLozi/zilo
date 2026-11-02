@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Zilo.Core;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Zilo.Agent;
 
@@ -12,19 +13,27 @@ public sealed class DiscoveryService : IHostedService, IAsyncDisposable
     private DeviceList _cached = new(Array.Empty<Device>(), new Discovery("idle", null));
     private Task<DeviceList>? _refresh;
     private readonly Dictionary<string, DiscoveryBackendRegistration> _owners = new(StringComparer.Ordinal);
-    private readonly Dictionary<DiscoveryBackendRegistration, Task<DeviceList>> _probes = new();
-    private readonly HashSet<Task> _capsCalls = new();
+    private readonly Dictionary<IScanBackend, Task> _calls = new(ReferenceEqualityComparer.Instance);
+    private readonly TimeProvider _time;
+    private readonly TimeSpan _shutdownGrace;
+    private readonly ILogger<DiscoveryService>? _logger;
     private readonly CancellationTokenSource _stopping = new();
     private Task? _background;
     private Task? _shutdown;
     private bool _disposed;
 
-    public DiscoveryService(IEnumerable<DiscoveryBackendRegistration>? backends, TimeSpan? timeout = null)
+    public DiscoveryService(IEnumerable<DiscoveryBackendRegistration>? backends, TimeSpan? timeout = null,
+        TimeProvider? timeProvider = null, TimeSpan? shutdownGrace = null, ILogger<DiscoveryService>? logger = null)
     {
         _backends = (backends ?? Array.Empty<DiscoveryBackendRegistration>()).ToArray();
         _timeout = timeout ?? TimeSpan.FromSeconds(15);
+        _time = timeProvider ?? TimeProvider.System;
+        _shutdownGrace = shutdownGrace ?? TimeSpan.FromSeconds(2);
+        _logger = logger;
         if (_timeout <= TimeSpan.Zero || _timeout.TotalMilliseconds > uint.MaxValue - 1)
             throw new ArgumentOutOfRangeException(nameof(timeout));
+        if (_shutdownGrace <= TimeSpan.Zero || _shutdownGrace.TotalMilliseconds > uint.MaxValue - 1)
+            throw new ArgumentOutOfRangeException(nameof(shutdownGrace));
     }
 
     public DeviceList List() { lock (_gate) return _cached; }
@@ -57,11 +66,12 @@ public sealed class DiscoveryService : IHostedService, IAsyncDisposable
             ObjectDisposedException.ThrowIf(_disposed, this);
             _owners.TryGetValue(deviceId, out owner);
             if (owner is null) return null;
-            call = Task.Run(async () => await owner.Backend.GetDeviceCapsAsync(deviceId, cancellationToken).ConfigureAwait(false), CancellationToken.None);
-            _capsCalls.Add(call);
+            if (IsBusy(owner.Backend)) throw Failure("device-busy");
+            call = StartCall(owner.Backend, token => owner.Backend.GetDeviceCapsAsync(deviceId, token));
         }
-        try { return await call.ConfigureAwait(false); }
-        finally { lock (_gate) _capsCalls.Remove(call); }
+        try { return await call.WaitAsync(_timeout, _time, cancellationToken).ConfigureAwait(false); }
+        catch (TimeoutException) { throw Failure("timeout"); }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { throw Failure("timeout"); }
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -74,7 +84,7 @@ public sealed class DiscoveryService : IHostedService, IAsyncDisposable
     {
         try
         {
-            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30), _time);
             do { await RefreshAsync(_stopping.Token).ConfigureAwait(false); }
             while (await timer.WaitForNextTickAsync(_stopping.Token).ConfigureAwait(false));
         }
@@ -84,8 +94,14 @@ public sealed class DiscoveryService : IHostedService, IAsyncDisposable
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        await _stopping.CancelAsync().ConfigureAwait(false);
-        if (_background is not null) await _background.WaitAsync(cancellationToken).ConfigureAwait(false);
+        var cancellation = _stopping.CancelAsync();
+        _ = ObserveAsync(cancellation);
+        var shutdown = _background is null ? cancellation : Task.WhenAll(cancellation, _background);
+        try { await shutdown.WaitAsync(_shutdownGrace, _time, cancellationToken).ConfigureAwait(false); }
+        catch (TimeoutException) { }
+        int retained;
+        lock (_gate) retained = _calls.Values.Count(call => !call.IsCompleted);
+        if (retained > 0) _logger?.LogWarning("Discovery shutdown retained {BackendCalls} backend call(s); cooperative boundary", retained);
     }
 
     public ValueTask DisposeAsync()
@@ -97,23 +113,32 @@ public sealed class DiscoveryService : IHostedService, IAsyncDisposable
             // A driver that ignores cancellation still owns its resources. Host shutdown
             // is bounded; this retained task observes late faults and releases only after
             // all owned calls finish. Permanently hung native work needs process isolation.
-            _shutdown = ReleaseBackendsAsync(_probes.Values.Cast<Task>().Concat(_capsCalls).ToArray());
+            _shutdown = Task.Run(ReleaseBackendsAsync);
         }
         return ValueTask.CompletedTask;
     }
 
     public Task ShutdownCompletion { get { lock (_gate) return _shutdown ?? Task.CompletedTask; } }
 
-    private async Task ReleaseBackendsAsync(Task[] calls)
+    internal int RetainedCallCount { get { lock (_gate) return _calls.Values.Count(call => !call.IsCompleted); } }
+
+    private async Task ReleaseBackendsAsync()
     {
-        await _stopping.CancelAsync().ConfigureAwait(false);
-        await ObserveAsync(Task.WhenAll(calls)).ConfigureAwait(false);
-        foreach (var registration in _backends.DistinctBy(x => x.Backend, ReferenceEqualityComparer.Instance))
-        {
-            try { await registration.Backend.DisposeAsync().ConfigureAwait(false); }
-            catch { /* Observe release failures without exposing backend diagnostics. */ }
-        }
+        var cancellation = _stopping.CancelAsync();
+        _ = ObserveAsync(cancellation);
+        var releases = _backends.DistinctBy(x => x.Backend, ReferenceEqualityComparer.Instance)
+            .Select(registration => ReleaseOneAsync(registration.Backend, _calls.GetValueOrDefault(registration.Backend))).ToArray();
+        await Task.WhenAll(releases).ConfigureAwait(false);
+        await ObserveAsync(cancellation).ConfigureAwait(false);
+        if (_background is not null) await ObserveAsync(_background).ConfigureAwait(false);
         _stopping.Dispose();
+    }
+
+    private static async Task ReleaseOneAsync(IScanBackend backend, Task? call)
+    {
+        if (call is not null) await ObserveAsync(call).ConfigureAwait(false);
+        try { await backend.DisposeAsync().ConfigureAwait(false); }
+        catch { /* Redacted; a backend diagnostic may contain private device data. */ }
     }
 
     private async Task RefreshCoreAsync(TaskCompletionSource<DeviceList> completion)
@@ -122,15 +147,15 @@ public sealed class DiscoveryService : IHostedService, IAsyncDisposable
         {
             if (_backends.Count == 0)
             {
-                var empty = new DeviceList(Array.Empty<Device>(), new Discovery("idle", DateTimeOffset.UtcNow));
-                lock (_gate) _cached = empty;
+                var empty = new DeviceList(Array.Empty<Device>(), new Discovery("idle", _time.GetUtcNow()));
+                lock (_gate) { if (!_disposed) _cached = empty; }
                 completion.TrySetResult(empty); return;
             }
             var results = await Task.WhenAll(_backends.Select(RefreshOneAsync)).ConfigureAwait(false);
             var devices = results.SelectMany(x => x.Devices).ToArray();
             var incomplete = results.SelectMany(x => x.Incomplete).ToArray();
-            var snapshot = new DeviceList(devices, new Discovery("idle", DateTimeOffset.UtcNow, incomplete));
-            lock (_gate) { _cached = snapshot; _owners.Clear(); foreach (var result in results) foreach (var device in result.Devices) { var owner = _backends.FirstOrDefault(x => x.Name == device.Driver); if (owner is not null) _owners[device.Id] = owner; } }
+            var snapshot = new DeviceList(devices, new Discovery("idle", _time.GetUtcNow(), incomplete));
+            lock (_gate) { if (!_disposed) { _cached = snapshot; _owners.Clear(); foreach (var result in results) foreach (var device in result.Devices) { var owner = _backends.FirstOrDefault(x => x.Name == device.Driver); if (owner is not null) _owners[device.Id] = owner; } } }
             completion.TrySetResult(snapshot);
         }
         catch (Exception error) { completion.TrySetException(error); }
@@ -146,17 +171,11 @@ public sealed class DiscoveryService : IHostedService, IAsyncDisposable
             {
                 // Never start another driver call while a timed-out call still owns
                 // its resources. A late snapshot is observed but never published.
-                if (_probes.TryGetValue(registration, out probe!) && !probe.IsCompleted)
+                if (_disposed || IsBusy(registration.Backend))
                     return Incomplete(registration);
-                probe = Task.Run(async () =>
-                {
-                    using var timeout = new CancellationTokenSource(_timeout);
-                    return await registration.Backend.RefreshDevicesAsync(timeout.Token).ConfigureAwait(false);
-                });
-                _probes[registration] = probe;
-                _ = ObserveAsync(probe);
+                probe = StartCall(registration.Backend, token => registration.Backend.RefreshDevicesAsync(token));
             }
-            var value = await probe.WaitAsync(_timeout).ConfigureAwait(false);
+            var value = await probe.WaitAsync(_timeout, _time, _stopping.Token).ConfigureAwait(false);
             return new(value, value.Discovery.IncompleteDrivers);
         }
         catch (OperationCanceledException) { return new(new DeviceList(List().Devices.Where(d => d.Driver == registration.Name), new Discovery("idle", null)), ImmutableArray.Create(registration.Name)); }
@@ -165,6 +184,26 @@ public sealed class DiscoveryService : IHostedService, IAsyncDisposable
 
     private RefreshResult Incomplete(DiscoveryBackendRegistration registration)
         => new(new DeviceList(List().Devices.Where(d => d.Driver == registration.Name), new Discovery("idle", null)), ImmutableArray.Create(registration.Name));
+
+    private bool IsBusy(IScanBackend backend) => _calls.TryGetValue(backend, out var call) && !call.IsCompleted;
+
+    // Called under _gate; only schedules work. All backend code and cancellation
+    // callbacks run outside it. One retained slot per backend INSTANCE, across kinds.
+    private Task<T> StartCall<T>(IScanBackend backend, Func<CancellationToken, ValueTask<T>> invoke)
+    {
+        var stopping = _stopping.Token;
+        var call = Task.Run(async () =>
+        {
+            using var timeout = new CancellationTokenSource(_timeout, _time);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, stopping);
+            return await invoke(linked.Token).ConfigureAwait(false);
+        });
+        _calls[backend] = call;
+        _ = ObserveAsync(call);
+        return call;
+    }
+
+    private static ScanFailureException Failure(string code) => new(new ScanError(code, code, true), 0);
 
     private static async Task ObserveAsync(Task task)
     {
