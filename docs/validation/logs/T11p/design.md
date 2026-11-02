@@ -19,10 +19,10 @@ a `no unresolved intent` bit alone is unsafe (counterexample below). Neither is 
 No extra persisted DenialStreak, prompt history, tokens, families, credentials or document data.
 No dependency, HTTP route, SDK surface, tray UI, Core/Virtual/scaffold/packaging/config change.
 
-**Blocking decisions:** (A) accept unconditional dirty-session fail-closed fallback, or provide a
-jointly approved stronger intent protocol; (B) approve exact schema/bounds/seam below, including
+**Blocking decisions:** (A) blanket dirty-session fail-closed fallback is BE-approved; automatic
+unclean recovery remains unapproved; (B) jointly approve exact schema/bounds/seam below, including
 `denied` plus cooldown timestamps as state/timestamp metadata; (C) resolve Windows durable namespace
-commit primitive before claiming a cross-platform durable implementation. These are not waived by
+commit proposal in section9 before implementing or claiming a cross-platform durable store. These are not waived by
 writing this proposal. No production or test implementation precedes coordinator approval.
 
 ### Recovery refinement cannot be inferred from absent intent
@@ -152,11 +152,13 @@ No persisted baked flag overrides removal/block policy or current installer poli
   reads allocate new retained entries. Any configured larger prompt bounds remain finite.
 - Fixed bounded diagnostics enum-like codes, no origin/path/token/file-content dumps; at most one
   lifecycle warning plus one transition warning per health epoch (no repeated request logs).
-- Fixed files: `consent.json`, `consent.lock`, `session.dirty`, one private `consent.tmp`.
-  Fence is exactly UTF-8 `zilo-consent-session-v1\n` (24 bytes); no caller strings or origin data.
-  Reset uses at most **4 private quarantine directories**, each at most **4 MiB snapshot + fence**;
+- Fixed files: `consent.json`, `consent.lock`, `session.fence`, one private `consent.tmp` and
+  one private `fence.tmp`. The permanent fence contains exactly UTF-8
+  `zilo-consent-session-v1\n` (dirty,24 bytes) or `zilo-consent-clean-v1\n` (clean,22 bytes);
+  no caller strings, intent fields or origin data. Every transition atomically replaces this file.
+  Reset uses at most **4 private quarantine directories**, each at most **4 MiB snapshot +24-byte fence**;
   if all four exist, fail reset and ask for trusted maintenance; do not auto-delete evidence.
-  Corrupt oversized source is not read/copied: secure rename may quarantine it only if the total
+  Corrupt oversized source is not read/copied: secure rename may quarantine it only if the slot
   quarantine byte limit permits; otherwise reset fails without touching it.
 
 ## 4. Authority and write sequences
@@ -235,14 +237,16 @@ handle owner/DACL/type and volume/file identity. Reject unknown/object/callback 
 guess their effective rights. Retain exclusive lock handle (share mode0) through clean completion;
 never grant delete sharing on ancestry. Temp uses CREATE_NEW and validated protected security attrs.
 
-**Windows unresolved primitive:** FlushFileBuffers(temp) proves a requested file flush, but a
+**Windows primitive research (section9):** FlushFileBuffers(temp) proves a requested file flush, but a
 path File.Move/ReplaceFile plus post-check does not by itself prove race-safe durable namespace
 commit. Candidate MoveFileExW(REPLACE_EXISTING|WRITE_THROUGH) with pinned ancestry must be checked
 against its actual same-volume guarantees; WRITE_THROUGH copy/delete documentation is not a proof
 of persisted directory-entry replacement. Handle-relative NtCreateFile/FileRenameInformationEx
 requires correct structure/semantics and a supported flush ordering, not an invented directory
-FlushFileBuffers guarantee. This exact primitive remains a blocker; do not implement a weaker
-Windows path and call it durable. Hosted Windows path/ACL/crash evidence is required after resolution.
+FlushFileBuffers guarantee. Section9 proposes a documented WRITE_THROUGH handle-rename/file-flush
+path without directory flush or unlink; BE accepts it as a bounded ordered-flush/process-crash path,
+pending joint implementation approval. Do not implement a weaker path and call it durable.
+Hosted Windows path/ACL/crash evidence is required after implementation.
 
 Session lock acquisition is nonblocking. File operations run on one owned worker (potentially
 blocking native syscalls, never the authorization thread); no timeout abandons ownership and
@@ -252,23 +256,31 @@ No unbounded thread-per-request workaround for stalled filesystem operations.
 
 ## 6. Fence, clean shutdown and failure table
 
-Open under lifetime store lock: validate root/metadata/fence/temp identities and privacy; a missing
-snapshot is fresh only if there is no prior fence, temp or quarantine evidence of interrupted state.
-For a genuinely new store durably write empty version1/generation1 first. Parse/validate existing
-snapshot without publishing it. Any prior fence is unresolved: Unavailable, do not expose grants,
-start prompts, mint non-baked tokens, delete fence or automatically reset metadata.
+Open under lifetime store lock: validate root/metadata/fence/temp identities and privacy. A fresh
+store means both snapshot and marker are absent and neither temp nor quarantine evidence exists;
+the retained consent.lock is not interrupted-state evidence. Never infer fresh from missing snapshot
+alone. For a genuinely new store durably create **dirty marker first**, then empty version1/generation1
+snapshot; only then publish Ready. An interruption after either temp creation, marker replacement,
+file flush or snapshot replacement leaves dirty marker/temp evidence and cannot auto-resume prompts.
 
-For a healthy clean store create session.dirty exclusively, flush its contents and durably commit
-its directory entry. Only then install hydrated state and Ready under the authorization monitor.
-Failed fence creation/flush leaves unavailable; no stored grant is usable in that interval.
-Existing stale temp with no cleanly proven origin is unavailable, not silently promoted/deleted.
+For existing stores require both valid snapshot and exact marker, and no unexplained temp. Clean
+marker permits startup, not authority yet: atomically replace it with dirty using the same ordered
+flush/rename primitive, then install hydrated state and Ready under the authorization monitor.
+Any prior dirty marker is unresolved: Unavailable; no grants, prompts, non-baked minting or automatic
+metadata reset. Missing/unknown/corrupt marker with an existing snapshot is unavailable, never clean.
+Failed marker creation/replacement/flush leaves unavailable; no stored grant is usable in that
+interval. Stale consent.tmp/fence.tmp is never promoted/deleted merely because its name is expected.
+An explicit confirmed recovery may preserve a validated snapshot's restrictive state as section7
+describes; the normal startup path never performs that recovery without confirmation.
 
 Shutdown: under gate set Stopping, invalidate prompt/grant epochs and reject new reservations;
 outside gate cancel prompt work, drain every accepted mutation, require no sticky failure and exact
-durable-generation acknowledgement. Only then remove the validated fence and flush its namespace;
-finally release lock/handles. Cancellation, failure or unknown completion leaves fence in place.
-No grant acknowledgement or best-effort Dispose is permitted to clear it. Once stopped no late
-continuation can publish Ready or authority. Flush/unlink uncertainty is reported, never hidden.
+durable-generation acknowledgement. Only then atomically replace dirty marker with the exact clean
+marker and complete its ordered file/namespace flush; finally release lock/handles. Cancellation,
+failure or unknown completion leaves dirty state, or an uncertain marker transition that is never
+reported successful. No grant acknowledgement or best-effort Dispose is permitted to mark clean.
+Once stopped no late continuation can publish Ready or authority. The marker is never cleared by
+unlink, and no directory FlushFileBuffers is assumed on Windows. POSIX retains directory fsync.
 
 | Failure/crash point | Current-process behavior | Reopen behavior |
 |---|---|---|
@@ -280,7 +292,7 @@ continuation can publish Ready or authority. Flush/unlink uncertainty is reporte
 | Block memory deny, failed persist, kill | Deny immediately; FenceCovered iff proven fence | Dirty → **no prompt/no mint**, including old grant snapshot |
 | Restrictive write before memory completion / late old grant | Already denied, sequence guard rejects stale grant | Dirty → no prompt/no mint |
 | Write durable, kill before memory commit | No pre-ack promotion | Dirty → no prompt/no mint |
-| Clean drain/fence-clear succeeds | Stopped, no late commits | Valid saved grants/blocks load after new fence |
+| Clean drain/clean-marker replacement succeeds | Stopped, no late commits | Valid saved grants/blocks load after new dirty marker |
 | Shutdown cancellation or pending/faulted write | Do not clear fence | Unavailable |
 
 The guarantee is ordered requested durable writes plus tested process-crash behavior. Simulated
@@ -291,25 +303,37 @@ flush failure and subprocess kill are not proof of sudden power-loss behavior on
 Cancellation before admission has no effect; after a restrictive reservation denial is irrevocable
 by caller cancellation. An observer may stop waiting, but the one owned write is still observed.
 Cancelling an admitted grant invalidates its sequence before any late memory promotion; an already
-physically written grant must be followed by durable removal before a clean fence may clear.
+physically written grant must be followed by durable removal before the fence may become clean.
 If cancellation races an already committed grant, return the actual completion rather than pretend
 it was undone. Do not pass arbitrary request cancellation through to half-completed atomic replaces.
 Lifecycle cancellation never means the disk operation or owned file lock disappeared.
 
 Reset is called only by trusted in-process native composition (T44 later), with explicit confirmation
-that **saved blocks will be reset** (T05 owns final warning copy). false returns refused without any
-filesystem mutation or enabling prompts. No HTTP endpoint, SDK method, environment reset switch or UI.
+that **saved blocks may be reset** when damaged metadata cannot safely reconstruct them (T05 owns
+final warning copy). `UserConfirmedSavedBlocksWillBeReset=false` returns refused without any filesystem
+mutation or enabling prompts. No HTTP endpoint, SDK method, environment reset switch or UI.
+
+Two confirmed recovery branches share the same seam and sequence:
+- **Unclean, otherwise validated snapshot:** quarantine the prior evidence, reconstruct saved
+  `blocked` records (and still-applicable denied cooldown timestamps), and **drop every saved grant**.
+  A pending restrictive intent may have been lost, so this is a user-confirmed recovery decision,
+  never inferred consistency or automatic re-prompt. Saved blocks are not needlessly erased.
+- **Corrupt/unreadable metadata in an otherwise trusted private path:** only where files can be
+  safely quarantined, preserve the damaged evidence then start empty; saved blocks cannot be claimed
+  recovered. An unreadable file that cannot be safely preserved makes reset fail. Do not treat
+  foreign ownership, broad ACLs, symlink/reparse paths or unverifiable identity as resettable damage.
 
 With true: deny non-baked authority and advance/reset epoch under gate; cancel prompts outside gate;
 retain exclusive store lock; drain writer or fail unavailable. Revalidate root and candidate handles.
 Create a private quarantine directory using the first free fixed slot0..3. Durably establish an
-unresolved reset fence before moving any metadata. Rename only the validated regular private
+dirty marker before moving any metadata. Rename only the validated regular private
 snapshot into quarantine via anchored operations; duplicate validated fence evidence into a private
-quarantine file, **never remove the active root fence**. Preserve privacy and flush quarantine/root.
+quarantine file, **never remove the active root marker**. Preserve privacy and flush quarantine/root.
 Never follow/move a symlink or copy attacker target bytes. Keep the active root fence throughout
-reset, durably replace the snapshot with empty state, and verify that fence durability remains
-established. Only then publish empty Ready state. A kill at any reset checkpoint leaves the root
-fence or interrupted-initialization evidence, so reopen cannot silently start prompts.
+reset, durably replace the snapshot with the selected restrictive-only or empty state, and verify
+that dirty-marker durability remains established. Only then publish the selected Ready state.
+A kill at any reset checkpoint leaves dirty marker or interrupted-initialization evidence, so
+reopen cannot silently start prompts.
 The fresh active fence remains dirty until the subsequent clean shutdown, including after reset.
 
 Interrupted or failed quarantine/new snapshot/fence operation leaves no authorization, no prompts,
@@ -335,6 +359,10 @@ partial write, file flush, replace, directory flush, fence creation/flush, befor
 failed Block/Revoke persistence then kill/reopen, and every reset boundary. Test all reopen states
 and preserve403/noCORS versus401/CORS logical response regression evidence. A real HTTP restart
 fixture must use production persistence composition, not an in-memory authority bypass.
+Explicit negative test: each synchronous Grant/Deny/Block/Remove helper on a production persistence-
+bound ConsentStore throws before changing state, opening a prompt, minting a token or scheduling a
+write; only the async durable path can produce a non-baked production grant. No test-only route or
+constructor overload may disable persistence in a production AgentHost.
 
 OS tests: absolute/relative XDG fallback, exact-origin identity, POSIX owner/mode/hardlink/symlink/ACL
 and ancestor/target replacement, retained lifetime lock plus process exit, Windows owner/SID/DACL/
@@ -374,7 +402,7 @@ alignment complexity, unsupported ReplaceFile WRITE_THROUGH, volume flush or adm
 Directory handle access/share flags must permit the internal target relative open; hosted tests
 must catch self-conflicting handles, not paper over them with FILE_SHARE_DELETE on ancestry.
 
-**Proposed fence refinement, approval required:** replace the Windows unlink-based fence clear
+**Reconciled fence refinement, joint approval required:** replace the Windows unlink-based fence clear
 with a permanent `session.fence` containing exactly either `zilo-consent-session-v1\n` (dirty,
 24 bytes) or `zilo-consent-clean-v1\n` (clean,22 bytes). Replace that file through the same flushed
 handle-rename helper, never clear it by delete. Unknown/missing marker in an existing store is
@@ -382,8 +410,8 @@ unavailable. Startup replaces clean with dirty before publishing stored grants; 
 replaces dirty with clean only after draining all writes. Reset preserves dirty throughout and
 quarantines a validated copy. Initialization writes dirty before empty snapshot; any interruption
 leaves fail-closed evidence. This is two fixed marker values, no intent journal or extra user data.
-If approved, apply the same marker representation on POSIX for one shared state machine, retaining
-POSIX directory fsync; update sections3/6/7 accordingly before implementation.
+Sections3/6/7 now use the same marker representation on POSIX for one shared state machine,
+retaining POSIX directory fsync. This documentation reconciliation is not implementation approval.
 
 This meets the coordinator's clarified *ordered flush requests + single namespace operation +
 process-crash evidence* target as a proposed implementation path, not an observed Windows result.
