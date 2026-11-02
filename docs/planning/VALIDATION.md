@@ -45,6 +45,11 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
   own filter.
 - **Effect:** docs/design/backend/spikes/packaging-only pushes no longer start (or cancel) ci-web.
   The D-012 main backstop still runs whenever a ci-web input changes.
+- **Main red, then fixed.** ci-web Format had failed on main since d84ac6d: the OD-12 `AGENTS.md`
+  was not Prettier-formatted (runs 41497714579, 41498391849, and 41499213618 on the merge cfecbdc).
+  Fix 508b7c6 is `prettier --write AGENTS.md` (blank lines only). ci-web **41499439003 on 508b7c6
+  is green** across the full job (catalog 303/303, demo 3/3). It is the first exact run of the new
+  filter on main.
 
 ## Merge record: T05 copy sync, OD-11 DeepSeek pilot (2026-11-02, Opus queue)
 - Merged `--no-ff` from review head 960aa56, which contains DeepSeek author head 601d775.
