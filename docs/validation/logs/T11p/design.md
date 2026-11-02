@@ -316,8 +316,10 @@ mutation or enabling prompts. No HTTP endpoint, SDK method, environment reset sw
 Two confirmed recovery branches share the same seam and sequence:
 - **Unclean, otherwise validated snapshot:** quarantine the prior evidence, reconstruct saved
   `blocked` records (and still-applicable denied cooldown timestamps), and **drop every saved grant**.
-  A pending restrictive intent may have been lost, so this is a user-confirmed recovery decision,
-  never inferred consistency or automatic re-prompt. Saved blocks are not needlessly erased.
+  An unsaved restrictive intent cannot be recovered from these bytes: trusted warning copy must
+  distinguish **durable saved blocks retained** from **unsaved decisions not recoverable**. This is
+  a user-confirmed recovery decision, never inferred consistency or automatic re-prompt. Saved
+  blocks are not needlessly erased. T05 supplies final copy and T44 wires the trusted action.
 - **Corrupt/unreadable metadata in an otherwise trusted private path:** only where files can be
   safely quarantined, preserve the damaged evidence then start empty; saved blocks cannot be claimed
   recovered. An unreadable file that cannot be safely preserved makes reset fail. Do not treat
