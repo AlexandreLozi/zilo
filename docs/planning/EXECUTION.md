@@ -231,7 +231,15 @@ These amendments override the rows in §3 where they conflict.
 
 ## 4a. FE lane status (Opus edits; refreshed 2026-11-01 ~12:30 -03)
 
-**PROJECT PAUSED (owner decision, 2026-11-02): until GPT's weekly limit resets, about 2026-11-04.**
+**RESUMED (owner, 2026-11-02; OD-10, OD-11).** FE now:
+- **T15 GPT r5** is running: ctx_f1e53485517d (medium, verified), worktree t15-review-r5 @ef8b988.
+- **OD-11 DeepSeek pilot:** T05 copy sync, ctx_e3285cac204c. Footer verified "DeepSeek V4.1 Flash
+  Free"; worktree t05-copy-sync; spec docs/tasks/T05-copy-sync.md. A GPT review follows. If the
+  pilot passes in at most 2 rounds, scale up.
+
+The pause checkpoint below is history.
+
+~~PROJECT PAUSED (owner decision, 2026-11-02): until GPT's weekly limit resets, about 2026-11-04.~~
 The owner wants the Claude+GPT pairing, so Claude doesn't carry the work alone. No new dispatches or
 reviews. The liaison resumes both masters. Checkpoint (heads on origin):
 - **T15** (FE, Claude author): fix r4 (high, ctx_d4f0c74db91f) pushed `t15-ui-foundation`
