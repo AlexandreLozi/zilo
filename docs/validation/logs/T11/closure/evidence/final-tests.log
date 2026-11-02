@@ -1,0 +1,15 @@
+Test run for /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Core.Tests/bin/Release/net10.0/Zilo.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Test run for /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Scaffold.Tests/bin/Release/net10.0/Zilo.Scaffold.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+Results File: /tmp/opencode/t11-closure/final-results/_DESKTOP-R9IOUOT_2026-11-02_08_10_13_net10.0.trx
+
+Passed!  - Failed:     0, Passed:     7, Skipped:     0, Total:     7, Duration: 55 ms - Zilo.Core.Tests.dll (net10.0)
+Results File: /tmp/opencode/t11-closure/final-results/_DESKTOP-R9IOUOT_2026-11-02_08_10_13_net10.0[1].trx
+
+Passed!  - Failed:     0, Passed:     6, Skipped:     0, Total:     6, Duration: 31 ms - Zilo.Scaffold.Tests.dll (net10.0)
+Results File: /tmp/opencode/t11-closure/final-results/_DESKTOP-R9IOUOT_2026-11-02_08_10_13_net10.0[2].trx
+
+Passed!  - Failed:     0, Passed:   121, Skipped:     0, Total:   121, Duration: 1 s - Zilo.Agent.Tests.dll (net10.0)

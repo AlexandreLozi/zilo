@@ -1,0 +1,30 @@
+  Zilo.Core -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Security -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Agent -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.60]     Zilo.Agent.Tests.CapabilityHttpTests.Extreme_caps_or_unsupported_opaque_default_return_safe_contract_problem(width: 210, dpi: 300, invalidPages: True) [FAIL]
+[xUnit.net 00:00:00.61]     Zilo.Agent.Tests.CapabilityHttpTests.Extreme_caps_or_unsupported_opaque_default_return_safe_contract_problem(width: 1.7976931348623157E+308, dpi: 300, invalidPages: False) [FAIL]
+  Failed Zilo.Agent.Tests.CapabilityHttpTests.Extreme_caps_or_unsupported_opaque_default_return_safe_contract_problem(width: 210, dpi: 300, invalidPages: True) [15 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: InternalServerError
+Actual:   OK
+  Stack Trace:
+     at Zilo.Agent.Tests.CapabilityHttpTests.Extreme_caps_or_unsupported_opaque_default_return_safe_contract_problem(Double width, Int32 dpi, Boolean invalidPages) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/CapabilityHttpTests.cs:line 60
+   at Zilo.Agent.Tests.CapabilityHttpTests.Extreme_caps_or_unsupported_opaque_default_return_safe_contract_problem(Double width, Int32 dpi, Boolean invalidPages) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/CapabilityHttpTests.cs:line 68
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.CapabilityHttpTests.Extreme_caps_or_unsupported_opaque_default_return_safe_contract_problem(width: 1.7976931348623157E+308, dpi: 300, invalidPages: False) [3 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: InternalServerError
+Actual:   OK
+  Stack Trace:
+     at Zilo.Agent.Tests.CapabilityHttpTests.Extreme_caps_or_unsupported_opaque_default_return_safe_contract_problem(Double width, Int32 dpi, Boolean invalidPages) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/CapabilityHttpTests.cs:line 60
+   at Zilo.Agent.Tests.CapabilityHttpTests.Extreme_caps_or_unsupported_opaque_default_return_safe_contract_problem(Double width, Int32 dpi, Boolean invalidPages) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/CapabilityHttpTests.cs:line 68
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     2, Passed:     6, Skipped:     0, Total:     8, Duration: 226 ms - Zilo.Agent.Tests.dll (net10.0)
