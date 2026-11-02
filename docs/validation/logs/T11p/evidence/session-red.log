@@ -1,0 +1,100 @@
+  Zilo.Core -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Virtual -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.41]     Zilo.Agent.Tests.ConsentSessionTests.Failed_boot_fence_cannot_publish_saved_grants [FAIL]
+[xUnit.net 00:00:00.42]     Zilo.Agent.Tests.ConsentSessionTests.Failed_block_persistence_then_dispose_reopen_is_unavailable_not_old_grant [FAIL]
+[xUnit.net 00:00:00.42]     Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(fault: "temp") [FAIL]
+[xUnit.net 00:00:00.42]     Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(fault: "corrupt") [FAIL]
+[xUnit.net 00:00:00.42]     Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(fault: "dirty") [FAIL]
+[xUnit.net 00:00:00.42]     Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(fault: "missing") [FAIL]
+[xUnit.net 00:00:00.42]     Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(fault: "unknown") [FAIL]
+[xUnit.net 00:00:00.42]     Zilo.Agent.Tests.ConsentSessionTests.Clean_shutdown_preserves_grant_and_block_after_new_durable_fence [FAIL]
+[xUnit.net 00:00:00.43]     Zilo.Agent.Tests.ConsentSessionTests.New_store_fences_before_empty_snapshot_and_never_cleans_on_dispose [FAIL]
+  Failed Zilo.Agent.Tests.ConsentSessionTests.Failed_boot_fence_cannot_publish_saved_grants [15 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Unavailable
+Actual:   Ready
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSessionTests.Failed_boot_fence_cannot_publish_saved_grants() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 89
+   at Zilo.Agent.Tests.ConsentSessionTests.Failed_boot_fence_cannot_publish_saved_grants() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 91
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentSessionTests.Failed_block_persistence_then_dispose_reopen_is_unavailable_not_old_grant [2 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSessionTests.Failed_block_persistence_then_dispose_reopen_is_unavailable_not_old_grant() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 53
+   at Zilo.Agent.Tests.ConsentSessionTests.Failed_block_persistence_then_dispose_reopen_is_unavailable_not_old_grant() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 54
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(fault: "temp") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Unavailable
+Actual:   Ready
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(String fault) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 78
+   at Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(String fault) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 80
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(fault: "corrupt") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Unavailable
+Actual:   Ready
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(String fault) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 78
+   at Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(String fault) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 80
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(fault: "dirty") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Unavailable
+Actual:   Ready
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(String fault) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 78
+   at Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(String fault) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 80
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(fault: "missing") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Unavailable
+Actual:   Ready
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(String fault) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 78
+   at Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(String fault) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 80
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(fault: "unknown") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Unavailable
+Actual:   Ready
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(String fault) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 78
+   at Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(String fault) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 80
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentSessionTests.Clean_shutdown_preserves_grant_and_block_after_new_durable_fence [5 ms]
+  Error Message:
+   Assert.Equal() Failure: Collections differ
+Expected: byte[] [122, 105, 108, 111, 45, ···]
+Actual:          null
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSessionTests.Clean_shutdown_preserves_grant_and_block_after_new_durable_fence() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 35
+   at Zilo.Agent.Tests.ConsentSessionTests.Clean_shutdown_preserves_grant_and_block_after_new_durable_fence() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 35
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentSessionTests.New_store_fences_before_empty_snapshot_and_never_cleans_on_dispose [4 ms]
+  Error Message:
+   Assert.Equal() Failure: Collections differ
+                        ↓ (pos 0)
+Expected: string[]     ["session.fence", "consent.json"]
+Actual:   List<string> []
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSessionTests.New_store_fences_before_empty_snapshot_and_never_cleans_on_dispose() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 20
+   at Zilo.Agent.Tests.ConsentSessionTests.New_store_fences_before_empty_snapshot_and_never_cleans_on_dispose() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 21
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     9, Passed:     0, Skipped:     0, Total:     9, Duration: 50 ms - Zilo.Agent.Tests.dll (net10.0)

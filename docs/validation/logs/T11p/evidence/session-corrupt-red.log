@@ -1,0 +1,20 @@
+  Zilo.Core -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Security -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Agent -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.44]     Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(fault: "corrupt") [FAIL]
+  Failed Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(fault: "corrupt") [1 ms]
+  Error Message:
+   System.IO.InvalidDataException : consent-metadata-invalid
+  Stack Trace:
+     at Zilo.Security.Persistence.ConsentSnapshotCodec.Decode(ReadOnlyMemory`1 bytes) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Security/Persistence/ConsentSnapshot.cs:line 52
+   at Zilo.Security.Persistence.ConsentSession.OpenAsync(CancellationToken cancellationToken) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Security/Persistence/ConsentSession.cs:line 55
+   at Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(String fault) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 77
+   at Zilo.Agent.Tests.ConsentSessionTests.Unresolved_metadata_never_becomes_empty_permissions(String fault) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSessionTests.cs:line 80
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     1, Passed:     8, Skipped:     0, Total:     9, Duration: 49 ms - Zilo.Agent.Tests.dll (net10.0)
