@@ -31,6 +31,10 @@ public sealed class TokenService
     public TokenService(TokenLimits? limits = null, IClock? clock = null, ConsentStore? consent = null, Func<string, bool>? isBaked = null)
     {
         _limits = limits ?? new(); _clock = clock ?? new SystemClock();
+        if (_limits.TokenTtlSeconds < 300 || _limits.TokenRenewGraceSeconds is < 0 or > 300 ||
+            _limits.FamilyMaxSeconds < 3600 || _limits.MaxFamiliesPerOrigin <= 0 || _limits.MaxFamiliesTotal <= 0 ||
+            _limits.TokenIssuesPerOriginPerHour <= 0 || _limits.MaxRetainedAuthRecords <= 0)
+            throw new ArgumentOutOfRangeException(nameof(limits));
         _consent = consent; _isBaked = isBaked;
         _gate = consent?.AuthorizationGate ?? new object();
     }
@@ -64,6 +68,20 @@ public sealed class TokenService
             var token = AddToken(family, raw, now);
             _families.Add(familyId, family); _hashToFamily[Hash(raw)] = familyId; log.Enqueue(now);
             return new(token, 201);
+        }
+    }
+
+    // Non-consuming transport precheck. Issue rechecks atomically when committing,
+    // so concurrent bodies can never bypass the credential issuance budget.
+    public int? IssueRetryAfter(string origin)
+    {
+        lock (_gate)
+        {
+            var now = _clock.UtcNow;
+            if (!_issues.TryGetValue(origin, out var log)) return null;
+            while (log.Count > 0 && now - log.Peek() >= TimeSpan.FromHours(1)) log.Dequeue();
+            return log.Count >= _limits.TokenIssuesPerOriginPerHour
+                ? Math.Max(1, (int)Math.Ceiling((log.Peek().AddHours(1) - now).TotalSeconds)) : null;
         }
     }
 

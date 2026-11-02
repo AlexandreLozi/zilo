@@ -47,6 +47,9 @@ public sealed class ConsentStore
     public ConsentStore(ConsentOptions? options = null, IClock? clock = null, INativeConsentPrompt? nativeConsent = null, IConsentPersistence? persistence = null)
     {
         _options = options ?? new();
+        if (_options.PromptTimeoutSeconds is <= 0 or > 4_294_966 || _options.PerOriginPromptsPerHour <= 0 ||
+            _options.GlobalPromptsPerHour <= 0 || _options.DenialCooldownSeconds is <= 0 or > 86400)
+            throw new ArgumentOutOfRangeException(nameof(options));
         _clock = clock ?? new SystemClock();
         _nativeConsent = nativeConsent;
         _persistence = persistence;
@@ -78,8 +81,6 @@ public sealed class ConsentStore
         lock (_gate)
         {
             var now = _clock.UtcNow;
-            if (!_entries.ContainsKey(origin) && _persistence?.Load(origin) is null)
-                return ValueTask.FromResult(new ConsentResult(new ConsentStatus(origin, "none")));
             var existed = _polls.TryGetValue(origin, out var queue);
             if (!existed && _polls.Count >= 256)
             {
@@ -201,7 +202,7 @@ public sealed class ConsentStore
         if (decision == ConsentDecision.Denied)
         {
             e.DenialStreak = Math.Min(e.DenialStreak + 1, 9);
-            var seconds = Math.Min(86400, _options.DenialCooldownSeconds * (1 << (e.DenialStreak - 1)));
+            var seconds = Math.Min(86400L, (long)_options.DenialCooldownSeconds * (1 << (e.DenialStreak - 1)));
             e.CooldownUntil = now.AddSeconds(seconds); e.LastDenied = now; e.State = "denied";
         }
     }
@@ -220,10 +221,18 @@ public sealed class ConsentStore
 
     private void CancelPrompt(Entry entry)
     {
-        entry.PromptCancellation?.Cancel();
-        entry.PromptCancellation?.Dispose();
+        if (entry.PromptCancellation is { } cancellation) _ = CancelAndDisposeAsync(cancellation);
         entry.PromptCancellation = null;
         if (_activePrompt == entry.PromptGuid) _activePrompt = null;
+    }
+
+    private static async Task CancelAndDisposeAsync(CancellationTokenSource cancellation)
+    {
+        // CancelAsync dispatches registered native callbacks off the monitor-owning
+        // thread. Observe callback faults and dispose only after they have returned.
+        try { await cancellation.CancelAsync().ConfigureAwait(false); }
+        catch { /* A native cancellation callback must not break revocation. */ }
+        finally { cancellation.Dispose(); }
     }
 
     private void ExpireActivePrompt(DateTimeOffset now)
@@ -240,7 +249,7 @@ public sealed class ConsentStore
         {
             e.State = "none";
             if (_activePrompt == e.PromptGuid) _activePrompt = null;
-            e.PromptCancellation?.Cancel(); e.PromptCancellation?.Dispose(); e.PromptCancellation = null;
+            CancelPrompt(e);
         }
         if (e.State == "denied" && e.CooldownUntil <= now) e.State = "none";
         if (e.LastDenied != DateTimeOffset.MinValue && now - e.LastDenied >= TimeSpan.FromHours(24)) e.DenialStreak = 0;

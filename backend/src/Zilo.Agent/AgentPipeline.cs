@@ -56,7 +56,9 @@ internal sealed class AgentPipeline
             if (!auth.Valid) { await Problem(context, 401, auth.Code, true, requestId, route.CorsTier, CorsOrigin(route.CorsTier, evaluation), wwwAuthenticate: true); return; }
             context.Items["zilo.auth"] = auth.Token;
         }
-        if (!await BodyIsValid(context, requestId, route.CorsTier)) return;
+        if (route.Name == "token" && evaluation.Class == OriginClass.Allowed && _tokens.IssueRetryAfter(evaluation.Origin!) is { } retryAfter)
+        { await Problem(context, 429, "rate-limited", true, requestId, route.CorsTier, evaluation.Origin, retryAfter); return; }
+        if (!await BodyIsValid(context, requestId, route.CorsTier, route.Name)) return;
         var afterBody = await RecheckAuthorization(context, route, requestId, evaluation);
         if (afterBody is null) return;
         evaluation = afterBody;
@@ -97,7 +99,7 @@ internal sealed class AgentPipeline
                 await WriteJson(context, token.Token, 201, requestId, route.CorsTier, evaluation.Origin); return;
             case "renew":
                 var renewed = _tokens.Renew(Bearer(context)!, evaluation.Origin!);
-                if (renewed.Token is null) { await Problem(context, renewed.HttpStatus, renewed.ProblemCode!, true, requestId, route.CorsTier, evaluation.Origin, renewed.RetryAfterSeconds, renewed.HttpStatus == 401); return; }
+                if (renewed.Token is null) { await Problem(context, renewed.HttpStatus, renewed.ProblemCode!, renewed.HttpStatus != 403, requestId, route.CorsTier, evaluation.Origin, renewed.RetryAfterSeconds, renewed.HttpStatus == 401); return; }
                 await WriteJson(context, renewed.Token, 200, requestId, route.CorsTier, evaluation.Origin); return;
             case "revoke":
                 if (!_tokens.Revoke(Bearer(context)!, evaluation.Origin!)) { await Problem(context, 401, "token-invalid", true, requestId, route.CorsTier, CorsOrigin(route.CorsTier, evaluation), wwwAuthenticate: true); return; }
@@ -182,7 +184,7 @@ internal sealed class AgentPipeline
         await Task.CompletedTask;
     }
 
-    private async Task<bool> BodyIsValid(HttpContext context, string requestId, CorsTier tier)
+    private async Task<bool> BodyIsValid(HttpContext context, string requestId, CorsTier tier, string routeName)
     {
         if (context.Request.ContentLength > _options.Limits.MaxRequestBodyBytes) { await Problem(context, 413, "limits-exceeded", true, requestId, tier, context.Request.Headers.Origin, limitName: "maxRequestBodyBytes"); return false; }
         if (!string.IsNullOrEmpty(context.Request.ContentType) && !context.Request.ContentType.Split(';', 2)[0].Trim().Equals("application/json", StringComparison.OrdinalIgnoreCase))
@@ -190,21 +192,39 @@ internal sealed class AgentPipeline
         if (context.Request.Body.CanRead && (context.Request.ContentLength is > 0 or null))
         {
             await using var body = new MemoryStream();
-            var buffer = new byte[Math.Min(8192, _options.Limits.MaxRequestBodyBytes + 1)];
-            var read = 0;
+            var buffer = new byte[(int)Math.Min(8192L, (long)_options.Limits.MaxRequestBodyBytes + 1)];
+            long read = 0;
             while (read <= _options.Limits.MaxRequestBodyBytes)
             {
-                var n = await context.Request.Body.ReadAsync(buffer.AsMemory(0, buffer.Length), context.RequestAborted);
+                var n = await context.Request.Body.ReadAsync(buffer.AsMemory(0, (int)Math.Min(buffer.Length, (long)_options.Limits.MaxRequestBodyBytes + 1 - read)), context.RequestAborted);
                 if (n == 0) break;
                 await body.WriteAsync(buffer.AsMemory(0, n), context.RequestAborted); read += n;
                 if (read > _options.Limits.MaxRequestBodyBytes) { await Problem(context, 413, "limits-exceeded", true, requestId, tier, context.Request.Headers.Origin, limitName: "maxRequestBodyBytes"); return false; }
             }
             if (read > 0)
             {
-                try { using var document = JsonDocument.Parse(body.ToArray()); }
+                try
+                {
+                    using var document = JsonDocument.Parse(body.ToArray());
+                    if (routeName == "token" && !ValidTokenRequest(document.RootElement)) throw new JsonException();
+                }
                 catch (JsonException) { await Problem(context, 400, "invalid-request", true, requestId, tier, context.Request.Headers.Origin); return false; }
                 context.Request.Body = new MemoryStream(body.ToArray());
             }
+        }
+        return true;
+    }
+
+    private static bool ValidTokenRequest(JsonElement root)
+    {
+        if (root.ValueKind != JsonValueKind.Object) return false;
+        // Unknown fields are ignored per R-V5; known fields remain strictly typed.
+        foreach (var property in root.EnumerateObject())
+        {
+            if (property.Name != "sdk") continue;
+            if (property.Value.ValueKind != JsonValueKind.Object) return false;
+            foreach (var field in property.Value.EnumerateObject())
+                if (field.Name is "name" or "version" && (field.Value.ValueKind != JsonValueKind.String || field.Value.GetString()!.EnumerateRunes().Count() > 64)) return false;
         }
         return true;
     }

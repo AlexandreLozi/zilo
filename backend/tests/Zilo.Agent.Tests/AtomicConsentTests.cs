@@ -7,6 +7,32 @@ public sealed class AtomicConsentTests
 {
     private const string Origin = "https://example.test";
 
+    [Fact]
+    public async Task Unknown_consent_polling_is_rate_limited_without_creating_authorization_state()
+    {
+        var consent = new ConsentStore();
+        Assert.Equal(200, (await consent.GetResultAsync(Origin, TestContext.Current.CancellationToken)).HttpStatus);
+        Assert.Equal(200, (await consent.GetResultAsync(Origin, TestContext.Current.CancellationToken)).HttpStatus);
+        Assert.Equal(429, (await consent.GetResultAsync(Origin, TestContext.Current.CancellationToken)).HttpStatus);
+        Assert.False(consent.IsGranted(Origin));
+    }
+
+    [Fact]
+    public async Task Native_cancellation_callbacks_do_not_run_under_authorization_monitor()
+    {
+        ConsentStore? consent = null;
+        var callbackFinished = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var prompt = new CallbackPrompt(() =>
+        {
+            var read = Task.Run(() => consent!.IsGranted(Origin), TestContext.Current.CancellationToken);
+            callbackFinished.TrySetResult(read.Wait(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken));
+        });
+        consent = new ConsentStore(nativeConsent: prompt);
+        await consent.RequestAsync(Origin, TestContext.Current.CancellationToken);
+        consent.Remove(Origin);
+        Assert.True(await callbackFinished.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -39,6 +65,15 @@ public sealed class AtomicConsentTests
     private sealed class Clock : IClock
     {
         public DateTimeOffset UtcNow { get; set; } = DateTimeOffset.Parse("2026-01-01T00:00:00Z");
+    }
+
+    private sealed class CallbackPrompt(Action callback) : INativeConsentPrompt
+    {
+        public ValueTask<ConsentDecision> RequestAsync(string origin, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.Register(callback);
+            return new(new TaskCompletionSource<ConsentDecision>(TaskCreationOptions.RunContinuationsAsynchronously).Task);
+        }
     }
 
     private sealed class GatedPersistence : IConsentPersistence

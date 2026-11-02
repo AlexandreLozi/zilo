@@ -110,10 +110,10 @@ public sealed class SecurityInvariantTests
     {
         var now = DateTimeOffset.UnixEpoch.AddTicks(7);
         var clock = new FakeClock(now);
-        var service = new TokenService(new TokenLimits(TokenTtlSeconds: 300, FamilyMaxSeconds: 301), clock);
+        var service = new TokenService(new TokenLimits(TokenTtlSeconds: 3600, FamilyMaxSeconds: 3601), clock);
         var issued = service.Issue("https://fractional.example").Token!;
-        Assert.Equal(now.AddSeconds(301), issued.FamilyExpiresAt);
-        Assert.Equal(now.AddSeconds(300), issued.ExpiresAt);
+        Assert.Equal(now.AddSeconds(3601), issued.FamilyExpiresAt);
+        Assert.Equal(now.AddSeconds(3600), issued.ExpiresAt);
         Assert.Equal(now.AddTicks((issued.ExpiresAt - now).Ticks * 3 / 4), issued.RenewAfter);
     }
 

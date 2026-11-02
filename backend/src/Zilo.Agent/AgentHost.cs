@@ -12,6 +12,7 @@ public static class AgentHost
     public static WebApplication Build(WebApplicationBuilder builder, AgentOptions? options = null)
     {
         options ??= new AgentOptions();
+        options.Limits.Validate();
         builder.Services.AddSingleton(options);
         var origins = new OriginPolicy(options.DevMode, options.BakedOrigins);
         builder.Services.AddSingleton(origins);
@@ -20,10 +21,10 @@ public static class AgentHost
         builder.Services.AddSingleton(tokenService);
         consent.OriginRemoved += origin => tokenService.RevokeOrigin(origin);
         builder.Services.AddSingleton(consent);
-        builder.Services.AddSingleton(new DiscoveryService(options.DiscoveryBackends, TimeSpan.FromSeconds(options.Limits.DiscoveryTimeoutSeconds)));
+        builder.Services.AddSingleton(_ => new DiscoveryService(options.DiscoveryBackends, TimeSpan.FromSeconds(options.Limits.DiscoveryTimeoutSeconds)));
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<DiscoveryService>());
         var app = builder.Build();
         app.UseMiddleware<AgentPipeline>();
-        app.Lifetime.ApplicationStarted.Register(() => _ = app.Services.GetRequiredService<DiscoveryService>().RefreshAsync());
         return app;
     }
 
