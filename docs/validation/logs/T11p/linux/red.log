@@ -1,0 +1,107 @@
+  Zilo.Core -> <workspace>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> <workspace>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> <workspace>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Security -> <workspace>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Agent -> <workspace>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.44]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_replacement_cannot_redirect_anchored_write_to_attacker_directory [FAIL]
+[xUnit.net 00:00:00.45]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Exclusive_lock_lasts_until_actual_disposal [FAIL]
+[xUnit.net 00:00:00.45]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Real_linux_store_is_private_and_roundtrips_clean_grants_and_blocks [FAIL]
+[xUnit.net 00:00:00.45]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Symlinks_are_not_followed_at_any_store_boundary(target: "snapshot") [FAIL]
+[xUnit.net 00:00:00.45]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Symlinks_are_not_followed_at_any_store_boundary(target: "lock") [FAIL]
+[xUnit.net 00:00:00.45]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Symlinks_are_not_followed_at_any_store_boundary(target: "ancestor") [FAIL]
+[xUnit.net 00:00:00.45]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Symlinks_are_not_followed_at_any_store_boundary(target: "root") [FAIL]
+[xUnit.net 00:00:00.45]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Unsafe_existing_root_is_rejected_not_chmod_repaired [FAIL]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Injected_write_fault_leaves_real_store_unclean_on_reopen(stage: 0) [FAIL]
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_replacement_cannot_redirect_anchored_write_to_attacker_directory [17 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_replacement_cannot_redirect_anchored_write_to_attacker_directory() in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 121
+   at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_replacement_cannot_redirect_anchored_write_to_attacker_directory() in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 123
+   at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_replacement_cannot_redirect_anchored_write_to_attacker_directory() in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 123
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Exclusive_lock_lasts_until_actual_disposal [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Exclusive_lock_lasts_until_actual_disposal() in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 36
+   at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Exclusive_lock_lasts_until_actual_disposal() in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 37
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Real_linux_store_is_private_and_roundtrips_clean_grants_and_blocks [1 ms]
+  Error Message:
+   System.IO.FileNotFoundException : Could not find file '/tmp/t11p-linux-n4sY5H/zilo'.
+  Stack Trace:
+     at System.IO.FileSystem.GetUnixFileMode(String fullPath)
+   at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Real_linux_store_is_private_and_roundtrips_clean_grants_and_blocks() in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 16
+   at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Real_linux_store_is_private_and_roundtrips_clean_grants_and_blocks() in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 23
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Symlinks_are_not_followed_at_any_store_boundary(target: "snapshot") [2 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Symlinks_are_not_followed_at_any_store_boundary(String target) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 68
+   at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Symlinks_are_not_followed_at_any_store_boundary(String target) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 68
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Symlinks_are_not_followed_at_any_store_boundary(target: "lock") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Symlinks_are_not_followed_at_any_store_boundary(String target) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 64
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Symlinks_are_not_followed_at_any_store_boundary(target: "ancestor") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Symlinks_are_not_followed_at_any_store_boundary(String target) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 58
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Symlinks_are_not_followed_at_any_store_boundary(target: "root") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Symlinks_are_not_followed_at_any_store_boundary(String target) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 64
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Unsafe_existing_root_is_rejected_not_chmod_repaired [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Unsafe_existing_root_is_rejected_not_chmod_repaired() in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 80
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Injected_write_fault_leaves_real_store_unclean_on_reopen(stage: 0) [2 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Injected_write_fault_leaves_real_store_unclean_on_reopen(Int32 stage) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 98
+   at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Injected_write_fault_leaves_real_store_unclean_on_reopen(Int32 stage) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 99
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Injected_write_fault_leaves_real_store_unclean_on_reopen(stage: 2) [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Injected_write_fault_leaves_real_store_unclean_on_reopen(stage: 1) [FAIL]
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Injected_write_fault_leaves_real_store_unclean_on_reopen(stage: 2) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Injected_write_fault_leaves_real_store_unclean_on_reopen(Int32 stage) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 98
+   at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Injected_write_fault_leaves_real_store_unclean_on_reopen(Int32 stage) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 99
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Injected_write_fault_leaves_real_store_unclean_on_reopen(stage: 1) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Injected_write_fault_leaves_real_store_unclean_on_reopen(Int32 stage) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 98
+   at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Injected_write_fault_leaves_real_store_unclean_on_reopen(Int32 stage) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 99
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:    11, Passed:     0, Skipped:     0, Total:    11, Duration: 51 ms - Zilo.Agent.Tests.dll (net10.0)

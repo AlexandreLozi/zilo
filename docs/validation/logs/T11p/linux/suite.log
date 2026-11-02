@@ -1,0 +1,16 @@
+Test run for <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for <workspace>/backend/tests/Zilo.Drivers.Virtual.Tests/bin/Release/net10.0/Zilo.Drivers.Virtual.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for <workspace>/backend/tests/Zilo.Core.Tests/bin/Release/net10.0/Zilo.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for <workspace>/backend/tests/Zilo.Scaffold.Tests/bin/Release/net10.0/Zilo.Scaffold.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+
+
+Passed!  - Failed:     0, Passed:     7, Skipped:     0, Total:     7, Duration: 87 ms - Zilo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:     6, Skipped:     0, Total:     6, Duration: 33 ms - Zilo.Scaffold.Tests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:   171, Skipped:     0, Total:   171, Duration: 2 s - Zilo.Agent.Tests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:    28, Skipped:     0, Total:    28, Duration: 2 s - Zilo.Drivers.Virtual.Tests.dll (net10.0)

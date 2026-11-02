@@ -1,0 +1,43 @@
+  Zilo.Core -> <workspace>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> <workspace>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> <workspace>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Security -> <workspace>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Agent -> <workspace>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_resolution_uses_only_absolute_XDG_or_absolute_home(xdg: "/custom/state", home: "/home/user", expected: "/custom/state/zilo") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_resolution_uses_only_absolute_XDG_or_absolute_home(xdg: "relative", home: "/home/user", expected: "/home/user/.local/state/zilo") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_resolution_uses_only_absolute_XDG_or_absolute_home(xdg: null, home: "/home/user", expected: "/home/user/.local/state/zilo") [FAIL]
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_resolution_uses_only_absolute_XDG_or_absolute_home(xdg: "/custom/state", home: "/home/user", expected: "/custom/state/zilo") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "/custom/state/zilo"
+Actual:   ""
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_resolution_uses_only_absolute_XDG_or_absolute_home(String xdg, String home, String expected) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 16
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_resolution_uses_only_absolute_XDG_or_absolute_home(xdg: "relative", home: "/home/user", expected: "/home/user/.local/state/zilo") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "/home/user/.local/state/zilo"
+Actual:   ""
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_resolution_uses_only_absolute_XDG_or_absolute_home(String xdg, String home, String expected) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 16
+   at InvokeStub_LinuxConsentDirectoryTests.Root_resolution_uses_only_absolute_XDG_or_absolute_home(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_resolution_uses_only_absolute_XDG_or_absolute_home(xdg: null, home: "/home/user", expected: "/home/user/.local/state/zilo") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "/home/user/.local/state/zilo"
+Actual:   ""
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentDirectoryTests.Root_resolution_uses_only_absolute_XDG_or_absolute_home(String xdg, String home, String expected) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentDirectoryTests.cs:line 16
+   at InvokeStub_LinuxConsentDirectoryTests.Root_resolution_uses_only_absolute_XDG_or_absolute_home(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Failed!  - Failed:     3, Passed:    21, Skipped:     0, Total:    24, Duration: 213 ms - Zilo.Agent.Tests.dll (net10.0)

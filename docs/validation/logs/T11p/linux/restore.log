@@ -1,0 +1,9 @@
+  Determining projects to restore...
+  Restored <workspace>/backend/src/Zilo.Security/Zilo.Security.csproj (in 103 ms).
+  Restored <workspace>/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 103 ms).
+  Restored <workspace>/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 1.13 sec).
+  Restored <workspace>/backend/tests/Zilo.Drivers.Virtual.Tests/Zilo.Drivers.Virtual.Tests.csproj (in 1.13 sec).
+  Restored <workspace>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 1.14 sec).
+  Restored <workspace>/backend/tests/Zilo.Scaffold.Tests/Zilo.Scaffold.Tests.csproj (in 1.13 sec).
+  Restored <workspace>/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj (in 1.13 sec).
+  2 of 9 projects are up-to-date for restore.
