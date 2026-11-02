@@ -166,8 +166,9 @@ on third-party licences. Tester builds are unsigned or test-key signed (Q20). Wi
 stay gated, with no device available (Q19). Tracked in VALIDATION.md.
 
 ### M7 open-source release (owner Q17/Q18; gated on an owner-approved functional app)
-T57 (repo hygiene, OD-13) comes first: inventory, a manifest approved by both masters, layout, README
-and docs index, and the sensitive-file check. Then T54: the masters present an MIT / Apache-2.0 /
+Prerequisite before M7: T57 (repo hygiene, OD-13), after M5 exit. It covers the inventory, a manifest
+approved by both masters, the layout, README and docs index, and the sensitive-file check with
+remediation of any live secret. Then T54: the masters present an MIT / Apache-2.0 /
 MPL-LGPL comparison and the owner chooses. Then
 CONTRIBUTING, SECURITY.md, DCO, and the clean public export, reviewed by both masters and approved
 by the owner. Until M7 there is **no Zilo LICENSE file** anywhere in the repo, and the repo stays
@@ -222,9 +223,9 @@ These amendments override the rows in §3 where they conflict.
     `.opencode/`, `docs/planning`, `docs/tasks` and `docs/reviews`, keeps the product docs, and
     starts the public repo from a fresh history.
   - Reviewed by GPT. Deps: T53, T57.
-- **T57 (joint, docs/tooling), repo hygiene (OD-13). PROPOSED by Opus, pending GPT approval.** It
-  runs after the owner has approved a functional app (the M7 entry gate) and **before T54's clean
-  public export**. Author: DeepSeek (routine, OD-11); reviewer: GPT. The deletion manifest also
+- **T57 (joint, docs/tooling), repo hygiene (OD-13).** Opus drafted it; it is an **explicit
+  prerequisite before M7, not part of M7**. It runs after the owner has approved a functional app
+  (M5 exit) and before M7 starts. T54 and the clean public export depend on it. Author: DeepSeek (routine, OD-11); reviewer: GPT. The deletion manifest also
   needs both masters' sign-off.
   1. **Inventory first, no deletions.** Write `docs/hygiene/inventory.md`: every tracked path is
      classified as product, product docs, planning/agent, evidence log, spike/archive, or stale.
@@ -252,9 +253,19 @@ These amendments override the rows in §3 where they conflict.
        committed).
      - Run it over the full history too, and report the findings. A history rewrite is out of
        scope, because T54 exports with a fresh history.
-  - **Acceptance:** CI green on the exact head; no product behaviour change (the full test suites
-    are unchanged); the inventory and manifest are signed by both masters; the check runs clean,
-    or each finding is triaged.
+  - **Secret findings:** every finding is classified.
+    - Any live secret or private key is **remediated**: removed, then revoked or rotated through the
+      owner liaison by a secure channel. An annotation never makes it pass.
+    - Raw secret contents never appear in logs, reports or model prompts; findings are redacted.
+    - Only reviewed, non-sensitive false positives and test fixtures may be allowlisted.
+    - The full-history scan reports redacted findings. Any history rewrite needs separate owner
+      authority. A fresh-history export does not neutralize a live secret, which is still rotated.
+  - **Acceptance:**
+    - CI green on the exact head;
+    - no product behaviour change (the full test suites are unchanged);
+    - the inventory and manifest signed by both masters;
+    - the check clean, apart from the reviewed allowlist, with every live exposure remediated as
+      above.
   - **Deps:** an owner-approved functional app (M5 exit). T54 depends on T57.
 - **T56 is split to break the dependency cycle:**
   - **T56a (joint, Wave 1, no deps), harness only:** dependency-free timing and memory helpers

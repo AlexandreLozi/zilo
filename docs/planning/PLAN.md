@@ -193,14 +193,19 @@ Exit:
 - §8 budgets met on hosted runners, and on real hardware where the budget applies;
 - legal sign-off on third-party licences.
 
+**Prerequisite before M7: repo hygiene (T57, OD-13).** It runs after M5 exit (the owner approves a
+functional app) and before M7 starts; T54 depends on it.
+- Organize folders and files.
+- Archive or remove stale artifacts, using a manifest approved by both masters.
+- Add a README and a docs index.
+- Check that no sensitive file is tracked. Any live secret is remediated and rotated through the
+  owner liaison; an annotation is never enough.
+
 **M7 — Open-source release (owner Q17/Q18, 2026-11-01).** M7 starts only after the owner has
 approved a functional app. Zilo is the owner's personal project, and he holds the copyright.
 - The masters present a short comparison of MIT, Apache-2.0 and MPL/LGPL, and the owner chooses.
 - Until M7: there is no LICENSE file for Zilo and the repo stays private (OD-7). Third-party
   notices (T53) are still kept.
-- **Repo hygiene first (T57, OD-13):** organize folders and files; archive or remove stale
-  artifacts, using a manifest approved by both masters; a README and docs index; a check that no
-  sensitive file is tracked. It comes after the functional app and before the clean public export.
 - The open-source hygiene moved here from M5 (T54):
   - the licence file the owner chose;
   - CONTRIBUTING, SECURITY.md, DCO or CLA;
