@@ -27,7 +27,7 @@ filesystem allowlist, ACL rejection and fail-closed behavior remain required.
 
 ## Validation / integration gates
 
-Local validation results are recorded below after execution. Linux guard tests can
+Local validation results are recorded below. Linux guard tests can
 prove managed option guards and declaration/source invariants, not Darwin ABI behavior.
 New native Darwin cases require actual x64 and ARM64 execution.
 
@@ -35,3 +35,31 @@ New native Darwin cases require actual x64 and ARM64 execution.
 Coordinator combines the separately GPT-reviewed cancellation-test fix before Opus
 coordinates one exact combined-head run on both Mac jobs. Independent Claude review
 and that native evidence still gate slice PASS; full T11p remains held.
+
+## Executed local evidence
+
+- Mac fix commit: `6716f46` (full identity available in git); source includes an explicit
+  empty-size guard before each allowed fchmod. Stream ownership persists through
+  SafeFileHandle use; existing lock descriptors are never mode-normalized.
+- Coordinator `msg_ed5ab7f61517` approved composition of GPT-reviewed cancellation
+  author SHA `f4619037d6e7768cc8752687df3e643b7248e449`. Clean cherry-pick produced
+  combined code head `606e8e51975f4fc0ab8008462527eacaacffa532`.
+- `option-a-red.log`: baseline native declaration regression fails Expected3/Actual4;
+  `option-a-targeted.log`: final Mac guards18 PASS, native Darwin12 + Windows guard1
+  explicitly skipped on Linux. Initial compile exposed CA1416 on the UnixCreateMode
+  setter; explicit Windows rejection fixed that rather than suppressing analysis.
+- Managed guards exercise exclusive empty creation, private mode bits, EEXIST and
+  no mutation of existing contents/mode. Source/reflection guards enforce current
+  three-argument native declaration and noncreating call sites; no padding trick.
+- On combined code head, pinned Linux .NET SDK10.0.403 locked restore PASS;
+  Release build PASS with0 warnings/errors; combined SecurityInvariant/Mac targeted
+  regression **25 PASS,13 skipped,0 failed**.
+- Full locked Release suite executed **once on combined code**: **249 PASS,14 skipped,
+  0 failed** (Agent208 + Virtual28 + Core7 + Scaffold6). Skips:12 Darwin-native,
+  Windows-only managed guard1, existing unavailable Linux setfacl1.
+- Combined logs: `option-a-combined-restore.log`, `option-a-combined-build.log`,
+  `option-a-combined-targeted.log`, `option-a-combined-suite.log`; absolute workspace
+  paths redacted. Staged diffcheck PASS; no product change follows this tested code head.
+- Darwin x64/ARM64 runtime proof remains **PENDING**, not inferred from these Linux
+  results; strict actual fullflush, ACL, lock reopen and create-mode behavior must be
+  checked on both native jobs. No push or hosted dispatch was performed.
