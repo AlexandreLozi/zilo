@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <PackageReference Include="ZXing.Net" />
     <ProjectReference Include="../Zilo.Core/Zilo.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Zilo.Drivers.Virtual.Tests" />
   </ItemGroup>
 </Project>
