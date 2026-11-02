@@ -20,19 +20,26 @@ public sealed class TokenService
     private readonly TokenLimits _limits;
     private readonly IClock _clock;
     private readonly object _gate = new();
+    private readonly ConsentStore? _consent;
+    private readonly Func<string, bool>? _isBaked;
     private readonly Dictionary<string, Family> _families = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _hashToFamily = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Queue<DateTimeOffset>> _issues = new(StringComparer.Ordinal);
     private readonly Dictionary<string, RevokedRecord> _revoked = new(StringComparer.Ordinal);
     private readonly Queue<string> _revokedOrder = new();
 
-    public TokenService(TokenLimits? limits = null, IClock? clock = null)
-    { _limits = limits ?? new(); _clock = clock ?? new SystemClock(); }
+    public TokenService(TokenLimits? limits = null, IClock? clock = null, ConsentStore? consent = null, Func<string, bool>? isBaked = null)
+    {
+        _limits = limits ?? new(); _clock = clock ?? new SystemClock();
+        _consent = consent; _isBaked = isBaked;
+        _gate = consent?.AuthorizationGate ?? new object();
+    }
 
     public TokenResult Issue(string origin)
     {
         lock (_gate)
         {
+            if (!IsAllowed(origin)) return new(null, 403, "unauthorized-origin");
             var now = _clock.UtcNow;
             Purge(now);
             var existed = _issues.TryGetValue(origin, out var existingLog);
@@ -64,6 +71,7 @@ public sealed class TokenService
     {
         lock (_gate)
         {
+            if (!IsAllowed(origin)) return new(null, 403, "unauthorized-origin");
             Purge(_clock.UtcNow);
             if (!TryFind(raw, out var family, out var current)) return RevokedResult(raw, origin);
             if (family.Origin != origin) return new(null, 401, "token-invalid");
@@ -126,6 +134,8 @@ public sealed class TokenService
         record = family.Tokens.FirstOrDefault(x => CryptographicOperations.FixedTimeEquals(Convert.FromHexString(x.Hash), Convert.FromHexString(hash)))!;
         return record is not null;
     }
+
+    private bool IsAllowed(string origin) => _consent is null || _isBaked?.Invoke(origin) == true || _consent.IsGranted(origin);
 
     private void Purge(DateTimeOffset now)
     {

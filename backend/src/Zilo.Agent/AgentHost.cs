@@ -13,10 +13,13 @@ public static class AgentHost
     {
         options ??= new AgentOptions();
         builder.Services.AddSingleton(options);
-        builder.Services.AddSingleton(new OriginPolicy(options.DevMode, options.BakedOrigins));
-        var tokenService = new TokenService(new TokenLimits(options.Limits.TokenTtlSeconds, options.Limits.TokenRenewGraceSeconds, options.Limits.FamilyMaxSeconds, options.Limits.MaxFamiliesPerOrigin, options.Limits.MaxFamiliesTotal, options.Limits.TokenIssuesPerOriginPerHour, options.Limits.MaxRetainedAuthRecords), options.Clock);
+        var origins = new OriginPolicy(options.DevMode, options.BakedOrigins);
+        builder.Services.AddSingleton(origins);
+        var consent = new ConsentStore(new ConsentOptions(), options.Clock, options.NativeConsent);
+        var tokenService = new TokenService(new TokenLimits(options.Limits.TokenTtlSeconds, options.Limits.TokenRenewGraceSeconds, options.Limits.FamilyMaxSeconds, options.Limits.MaxFamiliesPerOrigin, options.Limits.MaxFamiliesTotal, options.Limits.TokenIssuesPerOriginPerHour, options.Limits.MaxRetainedAuthRecords), options.Clock, consent, origins.IsBaked);
         builder.Services.AddSingleton(tokenService);
-        builder.Services.AddSingleton<ConsentStore>(sp => { var consent = new ConsentStore(new ConsentOptions(), options.Clock, options.NativeConsent); consent.OriginRemoved += origin => tokenService.RevokeOrigin(origin); return consent; });
+        consent.OriginRemoved += origin => tokenService.RevokeOrigin(origin);
+        builder.Services.AddSingleton(consent);
         builder.Services.AddSingleton(new DiscoveryService(options.DiscoveryBackends, TimeSpan.FromSeconds(options.Limits.DiscoveryTimeoutSeconds)));
         var app = builder.Build();
         app.UseMiddleware<AgentPipeline>();
