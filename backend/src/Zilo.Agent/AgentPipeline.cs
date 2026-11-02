@@ -52,6 +52,7 @@ internal sealed class AgentPipeline
         }
         if (route.Protected)
         {
+            context.Items["zilo.commit-route"] = route;
             var auth = Authenticate(context, evaluation.Origin);
             if (!auth.Valid) { await Problem(context, 401, auth.Code, true, requestId, route.CorsTier, CorsOrigin(route.CorsTier, evaluation), wwwAuthenticate: true); return; }
             context.Items["zilo.auth"] = auth.Token;
@@ -73,7 +74,7 @@ internal sealed class AgentPipeline
                 if (TryBearer(context, out var raw) && evaluation.Class == OriginClass.Allowed)
                 {
                     var auth = _tokens.Validate(raw, evaluation.Origin!);
-                    if (auth.Token is not null) { await WriteJson(context, Hello(true), 200, requestId, route.CorsTier, evaluation.Origin); return; }
+                    if (auth.Token is not null) { context.Items["zilo.commit-route"] = route; await WriteJson(context, Hello(true), 200, requestId, route.CorsTier, evaluation.Origin); return; }
                 }
                 await WriteJson(context, Hello(false), 200, requestId, route.CorsTier, evaluation.Origin); return;
             case "consent-get":
@@ -96,14 +97,18 @@ internal sealed class AgentPipeline
                 }
                 var token = _tokens.Issue(evaluation.Origin!);
                 if (token.Token is null) { await Problem(context, token.HttpStatus, token.ProblemCode!, true, requestId, route.CorsTier, evaluation.Origin, token.RetryAfterSeconds, limitName: token.LimitName); return; }
+                context.Items["zilo.commit-origin"] = true;
                 await WriteJson(context, token.Token, 201, requestId, route.CorsTier, evaluation.Origin); return;
             case "renew":
                 var renewed = _tokens.Renew(Bearer(context)!, evaluation.Origin!);
                 if (renewed.Token is null) { await Problem(context, renewed.HttpStatus, renewed.ProblemCode!, renewed.HttpStatus != 403, requestId, route.CorsTier, evaluation.Origin, renewed.RetryAfterSeconds, renewed.HttpStatus == 401); return; }
+                context.Items["zilo.commit-token"] = renewed.Token.Token;
                 await WriteJson(context, renewed.Token, 200, requestId, route.CorsTier, evaluation.Origin); return;
             case "revoke":
                 if (!_tokens.Revoke(Bearer(context)!, evaluation.Origin!)) { await Problem(context, 401, "token-invalid", true, requestId, route.CorsTier, CorsOrigin(route.CorsTier, evaluation), wwwAuthenticate: true); return; }
-                context.Response.StatusCode = 204; ApplyCors(context, route.CorsTier, evaluation.Origin); return;
+                context.Items["zilo.commit-origin"] = true;
+                context.Items.Remove("zilo.commit-route");
+                await SendPrepared(context, new PreparedResponse([], 204, null, evaluation.Origin), requestId); return;
             case "devices":
                 var devices = await _discovery.ListAsync(context.RequestAborted);
                 var currentDevicesAuth = await RecheckAuthorization(context, route, requestId);
@@ -260,17 +265,79 @@ internal sealed class AgentPipeline
         _ => null
     };
 
-    private static async Task WriteJson(HttpContext context, object value, int status, string requestId, CorsTier tier, string? origin, int? retryAfter = null)
+    private async Task WriteJson(HttpContext context, object value, int status, string requestId, CorsTier tier, string? origin, int? retryAfter = null)
     {
-        context.Response.StatusCode = status; context.Response.ContentType = "application/json"; if (retryAfter is not null) context.Response.Headers.RetryAfter = retryAfter.Value.ToString();
-        ApplyCors(context, tier, origin); await context.Response.WriteAsync(JsonSerializer.Serialize(value, Json));
+        PreparedResponse prepared;
+        try { prepared = new(SerializeBounded(value), status, "application/json", origin, retryAfter); }
+        catch { prepared = PrepareProblem(context, 500, "unknown", requestId, origin); }
+        await SendPrepared(context, prepared, requestId);
     }
 
-    private static async Task Problem(HttpContext context, int status, string code, bool cors, string requestId, CorsTier tier = CorsTier.None, string? origin = null, int? retryAfter = null, bool wwwAuthenticate = false, bool blocked = false, bool? retryable = null, string? limitName = null)
+    private Task Problem(HttpContext context, int status, string code, bool cors, string requestId, CorsTier tier = CorsTier.None, string? origin = null, int? retryAfter = null, bool wwwAuthenticate = false, bool blocked = false, bool? retryable = null, string? limitName = null)
+        => SendPrepared(context, PrepareProblem(context, status, code, requestId, cors ? origin : null, retryAfter, wwwAuthenticate, blocked, retryable, limitName), requestId);
+
+    private static PreparedResponse PrepareProblem(HttpContext context, int status, string code, string requestId, string? origin, int? retryAfter = null, bool wwwAuthenticate = false, bool blocked = false, bool? retryable = null, string? limitName = null)
     {
-        context.Response.StatusCode = status; context.Response.ContentType = "application/problem+json"; if (retryAfter is not null) context.Response.Headers.RetryAfter = retryAfter.Value.ToString(); if (wwwAuthenticate) context.Response.Headers.WWWAuthenticate = "Bearer error=\"invalid_token\""; if (cors) ApplyCors(context, tier, origin);
         var body = new { type = $"urn:zilo:problem:{code}", title = code, status, detail = code, instance = context.Request.Path.Value, code, retryable = retryable ?? (status is 408 or 429 or 503 || code == "consent-pending" || code == "device-busy" || code == "timeout" || (code == "consent-denied" && retryAfter is not null)), retryAfterSeconds = retryAfter, blocked = blocked ? true : (bool?)null, limit = limitName is null ? null : new { name = limitName }, requestId };
-        await context.Response.WriteAsync(JsonSerializer.Serialize(body, Json));
+        return new(SerializeBounded(body), status, "application/problem+json", origin, retryAfter, wwwAuthenticate);
+    }
+
+    private async Task SendPrepared(HttpContext context, PreparedResponse prepared, string requestId)
+    {
+        // Serialize bounded alternatives BEFORE acquiring the monitor. This is a logical
+        // response commit, not a wire flush: a selected response may finish after removal.
+        var denied = PrepareProblem(context, 403, "unauthorized-origin", requestId, null);
+        var revoked = PrepareProblem(context, 401, "token-revoked", requestId, prepared.Origin, wwwAuthenticate: true);
+        var invalid = PrepareProblem(context, 401, "token-invalid", requestId, prepared.Origin, wwwAuthenticate: true);
+        lock (_tokens.AuthorizationGate)
+        {
+            if (context.Items.ContainsKey("zilo.commit-route") || context.Items.ContainsKey("zilo.commit-origin"))
+            {
+                var current = _origins.Evaluate(context.Request.Headers.Origin, _consent.IsGranted);
+                if (current.Class != OriginClass.Allowed) prepared = denied;
+                else if (context.Items.ContainsKey("zilo.commit-route"))
+                {
+                    var auth = _tokens.Validate(context.Items["zilo.commit-token"] as string ?? Bearer(context), current.Origin!);
+                    if (auth.Status != 200) prepared = auth.Code == "token-revoked" ? revoked : invalid;
+                }
+            }
+            // The selection and these in-memory headers are serialized with Remove,
+            // Block and family revoke. No serialization, driver or network IO here.
+            context.Response.StatusCode = prepared.Status;
+            context.Response.ContentType = prepared.ContentType;
+            context.Response.Headers.Remove("Access-Control-Allow-Origin");
+            context.Response.Headers.Remove("Access-Control-Expose-Headers");
+            context.Response.Headers.Remove("Retry-After");
+            context.Response.Headers.Remove("WWW-Authenticate");
+            if (prepared.RetryAfter is { } retry) context.Response.Headers.RetryAfter = retry.ToString();
+            if (prepared.Authenticate) context.Response.Headers.WWWAuthenticate = "Bearer error=\"invalid_token\"";
+            ApplyCors(context, CorsTier.Allowed, prepared.Origin);
+        }
+        await context.Response.Body.WriteAsync(prepared.Body, context.RequestAborted);
+    }
+
+    private sealed record PreparedResponse(byte[] Body, int Status, string? ContentType, string? Origin, int? RetryAfter = null, bool Authenticate = false);
+
+    private static byte[] SerializeBounded(object value)
+    {
+        using var stream = new BoundedResponseStream();
+        JsonSerializer.Serialize(stream, value, Json);
+        return stream.ToArray();
+    }
+
+    private sealed class BoundedResponseStream : MemoryStream
+    {
+        private const int MaximumBytes = 4 * 1024 * 1024;
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            if (Length + count > MaximumBytes) throw new InvalidDataException("response budget exceeded");
+            base.Write(buffer, offset, count);
+        }
+        public override void Write(ReadOnlySpan<byte> buffer)
+        {
+            if (Length + buffer.Length > MaximumBytes) throw new InvalidDataException("response budget exceeded");
+            base.Write(buffer);
+        }
     }
 
     private static void ApplyCors(HttpContext context, CorsTier tier, string? origin)

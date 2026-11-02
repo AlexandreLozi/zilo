@@ -17,6 +17,32 @@ public sealed class AuthorizationRaceTests
 {
     private const string Origin = "https://example.test";
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Caps_typed_failure_rechecks_removal_before_error_commit(bool revokeOnly)
+    {
+        var backend = new StalledBackend(stallCaps: true, failCaps: true);
+        await using var agent = await StartAsync(backend, bakedOrigin: false);
+        var consent = agent.App.Services.GetRequiredService<ConsentStore>();
+        consent.Grant(Origin);
+        await agent.App.Services.GetRequiredService<DiscoveryService>().RefreshAsync(TestContext.Current.CancellationToken);
+        var token = await IssueTokenAsync(agent.Client);
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/zilo/v1/devices/device/caps");
+        request.Headers.Add("Origin", Origin);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var pending = agent.Client.SendAsync(request, TestContext.Current.CancellationToken);
+        await backend.CapsCallStarted.Task.WaitAsync(TestContext.Current.CancellationToken);
+        if (revokeOnly) agent.App.Services.GetRequiredService<TokenService>().Revoke(token, Origin);
+        else consent.Remove(Origin);
+        backend.ReleaseCaps.TrySetResult(true);
+        using var response = await pending;
+        Assert.Equal(revokeOnly ? HttpStatusCode.Unauthorized : HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(revokeOnly, response.Headers.Contains("Access-Control-Allow-Origin"));
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(revokeOnly ? "token-revoked" : "unauthorized-origin", problem.RootElement.GetProperty("code").GetString());
+    }
+
     [Fact]
     public async Task Revocation_during_stalled_refresh_denies_without_releasing_discovery_result()
     {
@@ -136,7 +162,7 @@ public sealed class AuthorizationRaceTests
         }
     }
 
-    private sealed class StalledBackend(bool stallRefresh = false, bool stallCaps = false) : IScanBackend
+    private sealed class StalledBackend(bool stallRefresh = false, bool stallCaps = false, bool failCaps = false) : IScanBackend
     {
         private readonly bool _stallRefresh = stallRefresh;
         private readonly bool _stallCaps = stallCaps;
@@ -167,6 +193,7 @@ public sealed class AuthorizationRaceTests
         {
             CapsCallStarted.TrySetResult(true);
             if (_stallCaps) await ReleaseCaps.Task.WaitAsync(cancellationToken);
+            if (failCaps) throw new ScanFailureException(new ScanError("device-busy", "busy", true), 0);
             return _caps;
         }
 
