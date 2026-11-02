@@ -29,6 +29,43 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 |---|---|---|---|---|---|---|---|---|---|---|
 | T04b backend scaffold | 9e43bf7 | 7284a3b (non-docs tree identical at 9e43bf7) | GPT (gpt-6.1-sol) | Claude opus-5-5, PASS, `docs/reviews/T04b-r1.md` | pass (6/6) | pass | local: blocked-by-host-SAC; **hosted windows-latest: pass** | **hosted macos-latest + macos-15-intel: pass** | **pass**: run 41240050339 @35019a3 (backend tree identical to 9e43bf7), ubuntu/windows/macos-arm64/macos-intel all success | `docs/validation/T04b.md`, `docs/validation/logs/T04b/`, https://github.com/AlexandreLozi/zilo/actions/runs/41240050339 |
 
+## Merge record: T12 Virtual driver (2026-11-02, Opus queue)
+- Merged `403222d` (`--no-ff`) from review head 554af95, which contains author head `be7f2a3`.
+  Scope: backend Virtual driver, packaging (zxing payload), T12 logs and reviews.
+- Reviews:
+  - GPT author; Claude r1 changes ae0c712.
+  - Opus r2 changes f5339b3: P2s closed by mutations M1-M5, but hosted P1 Packaging was red.
+  - Opus r3 **PASS** 554af95: the P1 root cause was RegexGenerator source-path hashing across RID
+    ArtifactsPath values, fixed by a project-local PathMap. zxing.dll is in the publish.sh
+    presence and cmp lists; Linux checks it at 0644 root in deb+rpm; the MSI installed-payload
+    proof shows Virtual+ZXing 0.16.11 loading from the install dir.
+- Evidence: exact-head Backend CI 41450179245 (ubuntu, windows, macos arm64, macos-15-intel) and
+  Packaging dry run 41450180019 (MSI, pkg, deb/rpm and both install smokes), both green on
+  be7f2a3.
+- **D-012 reuse.** backend/**, packaging/**, ci-backend.yml, packaging-dryrun.yml and Directory.*
+  are unchanged on main since the T12 base, and the merge is clean. Not an exact-SHA pass: the
+  path-filtered push to main is the backstop.
+- Follow-ups (P3):
+  - move `InstalledPayloadProof.cs` from docs/validation/logs into packaging/windows;
+  - normalize the macOS .app zxing.dll 0744;
+  - T11 rebases its nfpm.yaml ASP.NET dependency onto this change.
+
+## Merge record: T15 UI foundation (2026-11-02, Opus queue)
+- Merged `da42d9a` (`--no-ff`) from review head 8ba61c6, which contains author head `ef8b988`.
+  Scope: packages/ui, packages/react, apps/catalog, T15 logs and reviews.
+- Reviews:
+  - Claude author; GPT r1-r4 changes on layer ownership (topmost-layer Escape, event-time native
+    layers, bounded Escape recovery).
+  - GPT r5 **PASS** 8ba61c6: 18 boundary probes pass.
+- Proofs: the r1-r4 e2e proofs and the React r1 proof are byte-unchanged. pnpm-lock is unchanged
+  and @zilo/ui stays dependency-free.
+- Evidence: **exact-SHA ci-web 41450327698 on the merge commit 372ecb1** (catalog 303/303, 101 per
+  browser x 3, demo 3/3, unit tests green). The author head run 41442971941 on ef8b988 was also
+  green.
+  - main gained two GPT docs commits after the test, so the final merge da42d9a differs from 372ecb1
+    only in docs/planning (DECISIONS, EXECUTION, VALIDATION). The ci-web input diff is empty.
+- Draft PR #2: GitHub marks it merged automatically (ef8b988 is now in main).
+
 ## Merge record: T13 @zilo/sdk core (2026-11-02, Opus queue)
 - Merged at `55cf4c4` (merge commit, no conflicts) from `t13-sdk-core` at
   `8fa9f8c569577e80fba37099c53126843528dfbb`. The scope is `packages/sdk/**`,
