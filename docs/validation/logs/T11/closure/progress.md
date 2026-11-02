@@ -11,4 +11,5 @@
 - Ruling: retain one owned call/backend until completion/process exit, do not force-kill in-process; T24-HANDOFF.md names native isolation ownership. Successful independent backends release independently.
 - Task3: body/rate RED3 (missing Content-Type accepted; consent rates after body), caps RED2 (overflowing area and negative maxPages accepted); focused GREEN11 body/auth, GREEN23 caps, GREEN31 transport/config. Unknown-kind/default, read-limit+1/cancellation, duplicate/malformed transport and config-extreme tests were conformance-green, not claimed RED.
 - Ruling: reject nonfinite derived max-area product and nonpositive source maxPages with existing unknown Problem; no invented finite physical dimension limit.
-- Whole solution pre-final GREEN134 (Agent121, Core7, scaffold6), no skipped tests. Final locked commands/evidence pending.
+- Final source/test SHA70df5ec: locked restore, Release build0 warnings/errors, solution GREEN134 (Agent121/Core7/scaffold6), bounded self-test and contract60 all passed; report.md records exact commands and external hold.
+- Fresh whole-branch review remains the coordinator's Claude HIGH gate, not author self-approval; no duplicate reviewer launched per dispatch constraints.

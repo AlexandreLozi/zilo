@@ -1,0 +1,40 @@
+  Zilo.Core -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Virtual -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Drivers.Naps2 -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Agent -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.88]     Zilo.Agent.Tests.BodyRateTests.Body_without_content_type_is_not_accepted_as_JSON [FAIL]
+[xUnit.net 00:00:00.93]     Zilo.Agent.Tests.BodyRateTests.Consent_rate_limit_precedes_invalid_content_type_and_unread_body(post: False) [FAIL]
+[xUnit.net 00:00:00.94]     Zilo.Agent.Tests.BodyRateTests.Consent_rate_limit_precedes_invalid_content_type_and_unread_body(post: True) [FAIL]
+  Failed Zilo.Agent.Tests.BodyRateTests.Body_without_content_type_is_not_accepted_as_JSON [206 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: BadRequest
+Actual:   Created
+  Stack Trace:
+     at Zilo.Agent.Tests.BodyRateTests.Body_without_content_type_is_not_accepted_as_JSON() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/BodyRateTests.cs:line 50
+   at Zilo.Agent.Tests.BodyRateTests.Body_without_content_type_is_not_accepted_as_JSON() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/BodyRateTests.cs:line 53
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.BodyRateTests.Consent_rate_limit_precedes_invalid_content_type_and_unread_body(post: False) [32 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: TooManyRequests
+Actual:   BadRequest
+  Stack Trace:
+     at Zilo.Agent.Tests.BodyRateTests.Consent_rate_limit_precedes_invalid_content_type_and_unread_body(Boolean post) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/BodyRateTests.cs:line 36
+   at Zilo.Agent.Tests.BodyRateTests.Consent_rate_limit_precedes_invalid_content_type_and_unread_body(Boolean post) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/BodyRateTests.cs:line 42
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.BodyRateTests.Consent_rate_limit_precedes_invalid_content_type_and_unread_body(post: True) [9 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: TooManyRequests
+Actual:   BadRequest
+  Stack Trace:
+     at Zilo.Agent.Tests.BodyRateTests.Consent_rate_limit_precedes_invalid_content_type_and_unread_body(Boolean post) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/BodyRateTests.cs:line 36
+   at Zilo.Agent.Tests.BodyRateTests.Consent_rate_limit_precedes_invalid_content_type_and_unread_body(Boolean post) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/BodyRateTests.cs:line 42
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     3, Passed:     3, Skipped:     0, Total:     6, Duration: 304 ms - Zilo.Agent.Tests.dll (net10.0)

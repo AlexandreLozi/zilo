@@ -1,0 +1,29 @@
+  Zilo.Core -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Virtual -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Drivers.Naps2 -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Agent -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.44]     Zilo.Agent.Tests.DiscoveryClosureTests.Hung_probe_prevents_caps_from_bypassing_backend_admission [FAIL]
+[xUnit.net 00:00:01.44]     Zilo.Agent.Tests.DiscoveryClosureTests.Hung_caps_wait_is_bounded_without_releasing_its_owned_slot [FAIL]
+  Failed Zilo.Agent.Tests.DiscoveryClosureTests.Hung_probe_prevents_caps_from_bypassing_backend_admission [44 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Zilo.Core.ScanFailureException)
+  Stack Trace:
+     at Zilo.Agent.Tests.DiscoveryClosureTests.Hung_probe_prevents_caps_from_bypassing_backend_admission() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/DiscoveryClosureTests.cs:line 41
+   at Zilo.Agent.Tests.DiscoveryClosureTests.Hung_probe_prevents_caps_from_bypassing_backend_admission() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/DiscoveryClosureTests.cs:line 44
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.DiscoveryClosureTests.Hung_caps_wait_is_bounded_without_releasing_its_owned_slot [1 s]
+  Error Message:
+   Assert.Same() Failure: Values are not the same instance
+Expected: Task<DeviceCaps,<GetCapsAsync>d__16> { Status = RanToCompletion }
+Actual:   Task { Status = RanToCompletion }
+  Stack Trace:
+     at Zilo.Agent.Tests.DiscoveryClosureTests.Hung_caps_wait_is_bounded_without_releasing_its_owned_slot() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/DiscoveryClosureTests.cs:line 19
+   at Zilo.Agent.Tests.DiscoveryClosureTests.Hung_caps_wait_is_bounded_without_releasing_its_owned_slot() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/DiscoveryClosureTests.cs:line 27
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     2, Passed:     0, Skipped:     0, Total:     2, Duration: 1 s - Zilo.Agent.Tests.dll (net10.0)
