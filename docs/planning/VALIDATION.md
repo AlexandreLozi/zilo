@@ -7,6 +7,22 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 - **Rule:** pending is never a pass, and these rows are dev-integration evidence only, never release
   clearance.
 
+## Pre-merge evidence: T12 P1 packaging fix (2026-11-02)
+
+- **Not merged / r3 review pending.** Exact pushed author head
+  `be7f2a3ca3e928c9505479e8f6cd93eeb5e02e2c`.
+- GPT coordinator independently checked `gh run view` conclusion and headSha:
+  [Backend41450179245](https://github.com/AlexandreLozi/zilo/actions/runs/41450179245) and
+  [Packaging41450180019](https://github.com/AlexandreLozi/zilo/actions/runs/41450180019)
+  both **success**, both on that exact head. No evidence reuse or main-SHA claim.
+- Author report:42 backend tests on each hosted OS, independent macOS RID managed comparisons
+  including zxing, Linux12-file manifest/0644 zxing and hosted MSI installed Virtual factory/PNG+QR
+  dependency-load proof. Committed root-cause/local evidence:
+  `docs/validation/logs/T12/fix-r2/` on the author branch; hosted final report
+  `/tmp/opencode/t12-packaging-fix-r2/FINAL-REPORT.md` with downloaded logs beside it.
+- Narrow Claude r3 and Opus queue still required. Preserve T11's ASP.NET runtime packaging amendment
+  on integration; hosted tester evidence is not signing, SAC-host execution or release clearance.
+
 ## Merges
 
 | Task | Merged SHA (main) | Validated code SHA | Author | Reviewer (verdict, report) | local-linux | local-win build | local-win runtime | macos | hosted | Evidence |
