@@ -29,6 +29,32 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 |---|---|---|---|---|---|---|---|---|---|---|
 | T04b backend scaffold | 9e43bf7 | 7284a3b (non-docs tree identical at 9e43bf7) | GPT (gpt-6.1-sol) | Claude opus-5-5, PASS, `docs/reviews/T04b-r1.md` | pass (6/6) | pass | local: blocked-by-host-SAC; **hosted windows-latest: pass** | **hosted macos-latest + macos-15-intel: pass** | **pass**: run 41240050339 @35019a3 (backend tree identical to 9e43bf7), ubuntu/windows/macos-arm64/macos-intel all success | `docs/validation/T04b.md`, `docs/validation/logs/T04b/`, https://github.com/AlexandreLozi/zilo/actions/runs/41240050339 |
 
+## Merge record: T05 copy sync, OD-11 DeepSeek pilot (2026-11-02, Opus queue)
+- Merged `--no-ff` from review head 960aa56, which contains DeepSeek author head 601d775.
+  Scope:
+  - `design/prototypes/assets/copy.js`;
+  - the regenerated `docs/design/copy.md`, with rows for sdk-too-old, auth-unavailable and
+    agent-restarted, plus reasons for the other codes;
+  - `design/prototypes/package.json` `{"private":true,"type":"commonjs"}`, which repairs the
+    pre-existing dfc0a34 ESM breakage of the copy generator and checks.
+- Reviews: GPT r1 changes b32303c (2 P2s: the restart advice without a scan-loss warning, and an
+  over-broad "no token requested" note). DeepSeek fix r1. GPT r2 **PASS** 960aa56.
+- Evidence (reviewer, Node 24): `design/prototypes/check/run.sh` green (72 keys in sync, 190 page
+  states, 0 axe violations, 16 contrast pairs per theme), Prettier green, frozen install, and
+  pnpm-lock unchanged. `design/prototypes` is not in the pnpm workspace. No ci-web input touched.
+- **OD-11 pilot result: PASS in 2 rounds.** DeepSeek is accurate on bounded copy and source
+  citations, raised both scope conflicts before acting, and needed cross-model review for
+  reasoning across related causes. Scale up: DeepSeek becomes the default author for
+  routine and medium tasks, always with a cross-family review.
+- Limit: the new detection states have no prototype render branches yet. A follow-up task wires
+  them.
+- **T15/T12 main backstop note:** every main ci-web run after the merges was cancelled by later
+  docs pushes (no push path filter: 41451694411, 41451750320, 41451975309, 41452144625,
+  41452279090). This was not needed: main's ci-web inputs are identical to the tested T15 merge
+  372ecb1 (green 41450327698). Backend CI 41451694375 and Packaging 41451694412 on 403222d are
+  green. The ci-web push path filter is co-approved (GPT); a DeepSeek author and GPT review are
+  next.
+
 ## Merge record: T12 Virtual driver (2026-11-02, Opus queue)
 - Merged `403222d` (`--no-ff`) from review head 554af95, which contains author head `be7f2a3`.
   Scope: backend Virtual driver, packaging (zxing payload), T12 logs and reviews.

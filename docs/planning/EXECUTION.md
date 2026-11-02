@@ -269,7 +269,7 @@ These amendments override the rows in §3 where they conflict.
 
 **RESUMED (owner, 2026-11-02; OD-10, OD-11).** FE now:
 - **T15 MERGED da42d9a** (GPT r5 PASS). **T12 MERGED 403222d** (Opus r3 PASS; D-012 reuse).
-- **T05 copy sync:** DeepSeek author f45bfce; GPT r1 review ctx_959f8c5a8157 running (medium).
+- **T05 copy sync MERGED** (OD-11 pilot PASS in 2 rounds: GPT r2 960aa56). DeepSeek now authors routine and medium work.
 - **OD-11 DeepSeek pilot:** T05 copy sync, ctx_e3285cac204c. Footer verified "DeepSeek V4.1 Flash
   Free"; worktree t05-copy-sync; spec docs/tasks/T05-copy-sync.md. A GPT review follows. If the
   pilot passes in at most 2 rounds, scale up.
