@@ -7,8 +7,25 @@ internal enum LinuxConsentWriteStage { BeforeFileFlush, BeforeRename, BeforeDire
 
 internal sealed class LinuxConsentDirectory : IPrivateConsentDirectory
 {
+    internal static void RequireSupportedPlatform(bool isLinux, Architecture architecture)
+    {
+        if (!isLinux || architecture != Architecture.X64)
+            throw new PlatformNotSupportedException("consent-linux-x64-only");
+    }
+
+    // include/uapi/linux/magic.h. Do not infer POSIX ACL/fsync semantics for unknown types.
+    internal static bool RequireFileSystem(long magic) => magic switch
+    {
+        0xEF53 or 0x58465342 or 0x9123683E or 0xF2F52010 => false, // ext family, xfs, btrfs, f2fs
+        0x01021994 => true, // tmpfs: local process-crash semantics, volatile across reboot
+        _ => throw new IOException("consent-filesystem-unsupported: use a supported local filesystem; do not reset saved permissions")
+    };
+
+    // x86-64 arch/x86/include/uapi/asm/fcntl.h -> include/uapi/asm-generic/fcntl.h.
+    // ARM/ARM64 override these values: the pre-syscall X64 guard is security-critical.
     private const int NoFollow = 0x20000, CloseOnExec = 0x80000, DirectoryFlag = 0x10000, NonBlock = 0x800;
     private const int Create = 0x40, Exclusive = 0x80, ReadWrite = 2;
+    // include/uapi/linux/stat.h: TYPE|MODE|NLINK|UID|INO|SIZE.
     private const uint RequiredStats = 0x30f;
     private readonly object _io = new();
     private readonly List<(string Name, SafeFileHandle Handle)> _ancestors = new();
@@ -17,6 +34,7 @@ internal sealed class LinuxConsentDirectory : IPrivateConsentDirectory
     private SafeFileHandle _lock = null!;
     private bool _disposed, _faulted;
     private SafeFileHandle Root => _ancestors[^1].Handle;
+    internal bool IsVolatile { get; private set; }
 
     private LinuxConsentDirectory(Action<LinuxConsentWriteStage>? fault)
     { _uid = Native.geteuid(); _fault = fault; }
@@ -35,7 +53,7 @@ internal sealed class LinuxConsentDirectory : IPrivateConsentDirectory
 
     internal static LinuxConsentDirectory Open(string absolutePath, Action<LinuxConsentWriteStage>? fault = null)
     {
-        if (!OperatingSystem.IsLinux()) throw new PlatformNotSupportedException("consent-linux-only");
+        RequireSupportedPlatform(OperatingSystem.IsLinux(), RuntimeInformation.ProcessArchitecture);
         if (!Path.IsPathFullyQualified(absolutePath) || absolutePath.Contains('\0')) throw Error();
         var parts = absolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length == 0 || parts.Any(x => x is "." or "..")) throw Error();
@@ -54,11 +72,15 @@ internal sealed class LinuxConsentDirectory : IPrivateConsentDirectory
                     Flush(parent);
                     fd = Native.openat(Fd(parent), part, DirectoryFlag | NoFollow | CloseOnExec, 0);
                 }
+                if (fd < 0 && Named(parent, part) is { } failed && (failed.Mode & 0xf000) == 0xa000)
+                    throw new IOException("consent-symlink-ancestor-unsupported: configure a supported absolute XDG_STATE_HOME with real directory ancestors or request trusted maintenance");
                 var handle = Handle(fd);
                 store._ancestors.Add((part, handle));
                 CheckAncestor(Info(handle), store._uid);
             }
             CheckPrivate(Info(store.Root), store._uid, true);
+            if (Native.fstatfs(Fd(store.Root), out var filesystem) != 0) throw Error();
+            store.IsVolatile = RequireFileSystem(filesystem.Type);
             store._lock = Handle(Native.openat(Fd(store.Root), "consent.lock", ReadWrite | Create | NoFollow | CloseOnExec | NonBlock, 0x180));
             CheckPrivate(Info(store._lock), store._uid, false);
             if (Native.flock(Fd(store._lock), 2 | 4) != 0) throw Error(); // LOCK_EX | LOCK_NB
@@ -202,7 +224,8 @@ internal sealed class LinuxConsentDirectory : IPrivateConsentDirectory
     {
         if ((info.Mode & 0xf000) != 0x4000 || (info.Uid != uid && info.Uid != 0)) throw Error();
         // Writable shared ancestors require root ownership and sticky-bit protection (e.g. /tmp).
-        if ((info.Mode & 0x12) != 0 && !(info.Uid == 0 && (info.Mode & 0x200) != 0)) throw Error();
+        if ((info.Mode & 0x12) != 0 && !(info.Uid == 0 && (info.Mode & 0x200) != 0))
+            throw new IOException("consent-ancestor-writable: trusted maintenance must remove group/other write from state-path ancestors; no automatic chmod or private-group assumption");
     }
 
     private static bool Same(Stat a, Stat b) => a.Inode == b.Inode && a.DeviceMajor == b.DeviceMajor && a.DeviceMinor == b.DeviceMinor;
@@ -220,6 +243,9 @@ internal sealed class LinuxConsentDirectory : IPrivateConsentDirectory
     }
 
     private static void Flush(SafeFileHandle handle) { if (Native.fsync(Fd(handle)) != 0) throw Error(); }
+    // All post-construction fd use and Dispose take _io; Open owns unpublished handles exclusively.
+    // Thus no close/reuse can race DangerousGetHandle within this class. Preserve this invariant
+    // if introducing async/native work; do not release _io while retaining an unprotected integer fd.
     private static int Fd(SafeFileHandle handle) => checked((int)handle.DangerousGetHandle());
     private static SafeFileHandle Handle(int fd) => fd < 0 ? throw Error() : new((nint)fd, ownsHandle: true);
     private static IOException Error() => new("consent-private-storage-unavailable");
@@ -239,6 +265,14 @@ internal sealed class LinuxConsentDirectory : IPrivateConsentDirectory
         [FieldOffset(140)] internal uint DeviceMinor;
     }
 
+    // Linux x86-64 glibc bits/statfs.h: __fsword_t f_type at offset0, sizeof(statfs)==120.
+    // This ABI is valid only after RequireSupportedPlatform; never reuse for ARM or 32-bit.
+    [StructLayout(LayoutKind.Explicit, Size = 120)]
+    private struct FileSystemStat
+    {
+        [FieldOffset(0)] internal long Type;
+    }
+
     private static class Native
     {
         [DllImport("libc", SetLastError = true)] internal static extern int openat(int fd, [MarshalAs(UnmanagedType.LPUTF8Str)] string name, int flags, uint mode);
@@ -247,6 +281,7 @@ internal sealed class LinuxConsentDirectory : IPrivateConsentDirectory
         [DllImport("libc", SetLastError = true)] internal static extern int renameat(int oldFd, [MarshalAs(UnmanagedType.LPUTF8Str)] string oldName, int newFd, [MarshalAs(UnmanagedType.LPUTF8Str)] string newName);
         [DllImport("libc", SetLastError = true)] internal static extern int flock(int fd, int operation);
         [DllImport("libc", SetLastError = true)] internal static extern int fsync(int fd);
+        [DllImport("libc", SetLastError = true)] internal static extern int fstatfs(int fd, out FileSystemStat info);
         [DllImport("libc")] internal static extern uint geteuid();
     }
 }

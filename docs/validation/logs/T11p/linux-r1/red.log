@@ -1,0 +1,120 @@
+  Zilo.Core -> <workspace>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> <workspace>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> <workspace>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Virtual -> <workspace>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> <workspace>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.49]     Zilo.Agent.Tests.LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(architecture: S390x) [FAIL]
+[xUnit.net 00:00:00.50]     Zilo.Agent.Tests.LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(architecture: Arm64) [FAIL]
+[xUnit.net 00:00:00.50]     Zilo.Agent.Tests.LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(architecture: Arm) [FAIL]
+[xUnit.net 00:00:00.50]     Zilo.Agent.Tests.LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(architecture: X86) [FAIL]
+[xUnit.net 00:00:00.50]     Zilo.Agent.Tests.LinuxConsentReviewTests.Group_writable_0775_ancestor_requires_maintenance_not_automatic_chmod [FAIL]
+[xUnit.net 00:00:00.50]     Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(magic: 4283649346) [FAIL]
+[xUnit.net 00:00:00.50]     Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(magic: 2035054128) [FAIL]
+[xUnit.net 00:00:00.50]     Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(magic: 26985) [FAIL]
+  Failed Zilo.Agent.Tests.LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(architecture: S390x) [9 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.PlatformNotSupportedException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(Architecture architecture) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentReviewTests.cs:line 16
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(architecture: Arm64) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.PlatformNotSupportedException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(Architecture architecture) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentReviewTests.cs:line 16
+   at InvokeStub_LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(architecture: Arm) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.PlatformNotSupportedException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(Architecture architecture) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentReviewTests.cs:line 16
+   at InvokeStub_LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(architecture: X86) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.PlatformNotSupportedException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(Architecture architecture) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentReviewTests.cs:line 16
+   at InvokeStub_LinuxConsentReviewTests.Non_x64_architecture_is_rejected_by_pre_syscall_guard(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.LinuxConsentReviewTests.Group_writable_0775_ancestor_requires_maintenance_not_automatic_chmod [3 ms]
+  Error Message:
+   Assert.Contains() Failure: Sub-string not found
+String:    "consent-private-storage-unavailable"
+Not found: "consent-ancestor-writable"
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentReviewTests.Group_writable_0775_ancestor_requires_maintenance_not_automatic_chmod() in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentReviewTests.cs:line 74
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(magic: 4283649346) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(Int64 magic) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentReviewTests.cs:line 47
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(magic: 2035054128) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(Int64 magic) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentReviewTests.cs:line 47
+   at InvokeStub_LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(magic: 26985) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(Int64 magic) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentReviewTests.cs:line 47
+   at InvokeStub_LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.51]     Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(magic: 801189825) [FAIL]
+[xUnit.net 00:00:00.51]     Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(magic: 1702057286) [FAIL]
+[xUnit.net 00:00:00.51]     Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(magic: 0) [FAIL]
+[xUnit.net 00:00:00.51]     Zilo.Agent.Tests.LinuxConsentReviewTests.Symlinked_home_style_ancestor_has_specific_unsupported_diagnostic [FAIL]
+  Failed Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(magic: 801189825) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(Int64 magic) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentReviewTests.cs:line 47
+   at InvokeStub_LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(magic: 1702057286) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(Int64 magic) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentReviewTests.cs:line 47
+   at InvokeStub_LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(magic: 0) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(Int64 magic) in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentReviewTests.cs:line 47
+   at InvokeStub_LinuxConsentReviewTests.Unknown_network_and_other_ACL_models_fail_closed(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.LinuxConsentReviewTests.Symlinked_home_style_ancestor_has_specific_unsupported_diagnostic [2 ms]
+  Error Message:
+   Assert.Contains() Failure: Sub-string not found
+String:    "consent-private-storage-unavailable"
+Not found: "consent-symlink-ancestor-unsupported"
+  Stack Trace:
+     at Zilo.Agent.Tests.LinuxConsentReviewTests.Symlinked_home_style_ancestor_has_specific_unsupported_diagnostic() in <workspace>/backend/tests/Zilo.Agent.Tests/LinuxConsentReviewTests.cs:line 61
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:    12, Passed:     6, Skipped:     0, Total:    18, Duration: 44 ms - Zilo.Agent.Tests.dll (net10.0)

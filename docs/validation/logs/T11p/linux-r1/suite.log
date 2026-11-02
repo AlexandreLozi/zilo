@@ -1,0 +1,18 @@
+Test run for <workspace>/backend/tests/Zilo.Drivers.Virtual.Tests/bin/Release/net10.0/Zilo.Drivers.Virtual.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for <workspace>/backend/tests/Zilo.Core.Tests/bin/Release/net10.0/Zilo.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+Test run for <workspace>/backend/tests/Zilo.Scaffold.Tests/bin/Release/net10.0/Zilo.Scaffold.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     7, Skipped:     0, Total:     7, Duration: 55 ms - Zilo.Core.Tests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:     6, Skipped:     0, Total:     6, Duration: 28 ms - Zilo.Scaffold.Tests.dll (net10.0)
+[xUnit.net 00:00:00.62]     Zilo.Agent.Tests.LinuxConsentReviewTests.Real_named_and_default_POSIX_ACLs_are_rejected_or_masked [SKIP]
+  Skipped Zilo.Agent.Tests.LinuxConsentReviewTests.Real_named_and_default_POSIX_ACLs_are_rejected_or_masked [1 ms]
+
+Passed!  - Failed:     0, Passed:    28, Skipped:     0, Total:    28, Duration: 1 s - Zilo.Drivers.Virtual.Tests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:   190, Skipped:     1, Total:   191, Duration: 1 s - Zilo.Agent.Tests.dll (net10.0)

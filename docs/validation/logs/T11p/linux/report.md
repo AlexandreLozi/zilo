@@ -49,3 +49,27 @@
   other OS adapters; production bounded coordinator/auth composition and monitor/race proof;
   trusted reset/quarantine; HTTP restart and OS session/installer drain; hosted three-OS exact-SHA
   CI, combined review/Opus gates. This storage-slice result is NOT T11p completion or full T11 PASS.
+
+## Claude r1 fix / T05 handoff and tracked product limitation
+
+- Review `e4eccd6:docs/reviews/T11p-linux-r1.md` required CHANGES; follow-up evidence is in
+  `../linux-r1/report.md`. Native adapter is now deliberately **Linux x64 only**, before any syscall.
+- Strict nofollow option(b) remains: symlinked home/state ancestors, including affected Fedora
+  Silverblue/ostree paths, are unsupported; user consent cannot load and prompts stay disabled
+  when this adapter is composed. Separately validated baked authority remains independent; this
+  slice neither wires it nor promises broader distro compatibility.
+- **T11p.1 — REQUIRED BEFORE M6 tester builds:** implement bounded, validated root-owned symlink-
+  ancestor resolution option(a), then obtain independent Claude review. Not implemented here.
+- T05 diagnostic `consent-symlink-ancestor-unsupported`: explain the symbolic-link ancestor and
+  offer a supported absolute XDG_STATE_HOME using real directory ancestors or trusted maintenance;
+  never automatically resolve links, reset permissions, or suggest enabling prompts on failure.
+- T05 diagnostic `consent-ancestor-writable`: explain group/other-write on state-path ancestors;
+  trusted maintenance can remove those write permissions. Never autochmod or assume a primary
+  group is private. The0775 regression verifies refusal without changing existing mode.
+- T05 diagnostic `consent-filesystem-unsupported`: move state through trusted maintenance to a
+  supported local filesystem, not NFS/CIFS/FUSE/unknown ACL models; do not reset saved permissions.
+- tmpfs is allowed for local process-crash semantics but is volatile: no reboot/power-loss retention.
+- Reviewer rulings supersede the earlier pending-matrix wording: admin/root and same-user malware
+  are outside D-013 threat model; real kernel errno faults are not this slice's acceptance bar.
+  Simulated pre-syscall fault acknowledgements and actual process kills remain distinct evidence.
+- Runtime-only libc resolution remains a hosted gate; no new workflow or billed CI was requested.
