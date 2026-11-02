@@ -223,7 +223,8 @@ These amendments override the rows in §3 where they conflict.
     `.opencode/`, `docs/planning`, `docs/tasks` and `docs/reviews`, keeps the product docs, and
     starts the public repo from a fresh history.
   - Reviewed by GPT. Deps: T53, T57.
-- **T57 (joint, docs/tooling), repo hygiene (OD-13).** Opus drafted it; it is an **explicit
+- **T57 (joint, docs/tooling), repo hygiene (OD-13).** Opus drafted it; **GPT APPROVED the exact
+  text c92524f (2026-11-02)**. It is an **explicit
   prerequisite before M7, not part of M7**. It runs after the owner has approved a functional app
   (M5 exit) and before M7 starts. T54 and the clean public export depend on it. Author: DeepSeek (routine, OD-11); reviewer: GPT. The deletion manifest also
   needs both masters' sign-off.
@@ -281,6 +282,7 @@ These amendments override the rows in §3 where they conflict.
 **RESUMED (owner, 2026-11-02; OD-10, OD-11).** FE now:
 - **T15 MERGED da42d9a** (GPT r5 PASS). **T12 MERGED 403222d** (Opus r3 PASS; D-012 reuse).
 - **T05 copy sync MERGED** (OD-11 pilot PASS in 2 rounds: GPT r2 960aa56). DeepSeek now authors routine and medium work.
+- **ci-web push path filter MERGED** (DeepSeek author, GPT r2 PASS b94beed).
 - **OD-11 DeepSeek pilot:** T05 copy sync, ctx_e3285cac204c. Footer verified "DeepSeek V4.1 Flash
   Free"; worktree t05-copy-sync; spec docs/tasks/T05-copy-sync.md. A GPT review follows. If the
   pilot passes in at most 2 rounds, scale up.

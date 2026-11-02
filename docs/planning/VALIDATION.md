@@ -29,6 +29,23 @@ Each row records one merge into `main` (EXECUTION §2.5, D-010, and OD-7: hosted
 |---|---|---|---|---|---|---|---|---|---|---|
 | T04b backend scaffold | 9e43bf7 | 7284a3b (non-docs tree identical at 9e43bf7) | GPT (gpt-6.1-sol) | Claude opus-5-5, PASS, `docs/reviews/T04b-r1.md` | pass (6/6) | pass | local: blocked-by-host-SAC; **hosted windows-latest: pass** | **hosted macos-latest + macos-15-intel: pass** | **pass**: run 41240050339 @35019a3 (backend tree identical to 9e43bf7), ubuntu/windows/macos-arm64/macos-intel all success | `docs/validation/T04b.md`, `docs/validation/logs/T04b/`, https://github.com/AlexandreLozi/zilo/actions/runs/41240050339 |
 
+## Merge record: ci-web push path filter (2026-11-02, Opus queue)
+- Merged `--no-ff` from review head b94beed, which contains DeepSeek author head 4048e10.
+- Change: `.github/workflows/ci-web.yml` triggers only. `push: main` now has the same ordered path
+  list as `pull_request`. Both lists gain:
+  - root `'*'` (AGENTS.md, which `prettier --check .` reads; a future `.npmrc`; root README and
+    configs);
+  - `.gitignore` (licence-gate `--ignore-path`);
+  - `api/openapi.yaml` (read by the SDK `contract.test.ts`).
+- Reviews: GPT r1 changes 20586b7 (P1 api/openapi.yaml; P2 AGENTS.md; P2 .npmrc). DeepSeek fix
+  r1. GPT r2 **PASS** b94beed: 59 sample assertions plus 636 excluded-tree and 130 input paths.
+  P3: wording in the log.
+- Evidence: there is no pre-merge hosted run, because this is a trigger-only change with the job
+  unchanged. The push to main runs ci-web on the exact merge commit, since ci-web.yml is in its
+  own filter.
+- **Effect:** docs/design/backend/spikes/packaging-only pushes no longer start (or cancel) ci-web.
+  The D-012 main backstop still runs whenever a ci-web input changes.
+
 ## Merge record: T05 copy sync, OD-11 DeepSeek pilot (2026-11-02, Opus queue)
 - Merged `--no-ff` from review head 960aa56, which contains DeepSeek author head 601d775.
   Scope:
