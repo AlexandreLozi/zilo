@@ -111,6 +111,13 @@
       primary: "Ask again", secondary: "Close", announce: "polite", t10: "n/a",
       notes: "Provisional (R-A3). Poll returned `none`: the prompt expired or was dismissed. Ask again is a new user action, so it may send `POST /auth/consent` again.",
     },
+    "state.auth-unavailable": {
+      kind: "detection-state", surface: "Connect dialog",
+      title: "Zilo can't finish connecting",
+      body: "This site and Zilo couldn't finish setting up the connection. Try again, or restart Zilo from its icon in the {trayArea}.",
+      primary: "Try again", secondary: "Close", announce: "assertive", t10: "n/a",
+      notes: "SDK state, not a wire code. Reached when a consent request or poll returns a state this SDK does not know (typed cause `consent-state-unknown`), or when a resource bound fails auth (`limits-exceeded`, for example the token-family limit; `retryAfterSeconds` is kept). No token is ever requested. Retryable: restarting Zilo drops its ephemeral families and jobs, so the copy offers it.",
+    },
     "state.outdated": {
       kind: "detection-state", surface: "Update dialog",
       title: "Update Zilo to continue",
@@ -124,6 +131,13 @@
       body: "This site needs Zilo {required} or later. This computer has Zilo {version}.",
       primary: "Download update", secondary: "Close", announce: "none", t10: "n/a",
       notes: "Provisional, after authorisation only: full `hello` carries `version`. \"Update Zilo\" (self-update) replaces the download as primary only once `agent.self-update` is approved and advertised.",
+    },
+    "state.sdk-too-old": {
+      kind: "detection-state", surface: "Connect dialog",
+      title: "This site needs an update",
+      body: "Zilo on this computer is newer than this site can use. Update the site or app you're using, then try again.",
+      primary: "Try again", secondary: "Close", announce: "assertive", t10: "n/a",
+      notes: "SDK state, not a wire code: `fit.reason: sdk-too-old`, because `hello.protocol.min` is above this SDK's maximum. The agent is newer than the site's SDK, so the next step is a site or app update, never a Zilo download or install. Decided from the public `hello` before consent, so no version is shown.",
     },
     "state.updating": {
       kind: "detection-state", surface: "Update dialog",
@@ -403,6 +417,13 @@
       body: "Zilo is starting, updating or closing. Wait a moment, then try again. Pages already shown here are kept.",
       primary: "Try again", secondary: "", announce: "assertive", t10: "added",
       notes: "`503 agent-unavailable`, retryable. The SDK retries after `Retry-After` while the dialog is open and shows this copy only if that fails. If `hello` stops answering, detection takes over (`state.unreachable-or-blocked`).",
+    },
+    "agent-restarted": {
+      kind: "error", surface: "Scan dialog banner",
+      title: "Zilo restarted",
+      body: "The Zilo app was restarted, so this scan and its pages are gone. Scan again to start a new one.",
+      primary: "Scan again", secondary: "", announce: "assertive", t10: "added",
+      notes: "SDK-local outcome, not a wire code (§12, R-R3): the tracked job's agent `instanceId` changed, so the job and its pages are gone. Retryable only by a new user-initiated scan; the SDK never rescans on its own. The same `instanceId` with a missing job is `not-found` instead.",
     },
 
     /* ---------------- Tray / menu-bar agent ---------------- */
