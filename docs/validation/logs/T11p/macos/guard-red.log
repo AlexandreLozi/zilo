@@ -1,0 +1,145 @@
+  Zilo.Core -> <workspace>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> <workspace>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> <workspace>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Virtual -> <workspace>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> <workspace>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.51]     Zilo.Agent.Tests.MacConsentGuardTests.Darwin_64_bit_ABIs_are_the_only_candidates(architecture: Arm64) [FAIL]
+[xUnit.net 00:00:00.51]     Zilo.Agent.Tests.MacConsentGuardTests.Darwin_64_bit_ABIs_are_the_only_candidates(architecture: X64) [FAIL]
+[xUnit.net 00:00:00.52]     Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "exfat") [FAIL]
+[xUnit.net 00:00:00.52]     Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "msdos") [FAIL]
+[xUnit.net 00:00:00.52]     Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "afpfs") [FAIL]
+[xUnit.net 00:00:00.52]     Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "smbfs") [FAIL]
+[xUnit.net 00:00:00.52]     Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "nfs") [FAIL]
+[xUnit.net 00:00:00.52]     Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "webdav") [FAIL]
+[xUnit.net 00:00:00.52]     Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "unknown") [FAIL]
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Darwin_64_bit_ABIs_are_the_only_candidates(architecture: Arm64) [9 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.PlatformNotSupportedException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Darwin_64_bit_ABIs_are_the_only_candidates(Architecture architecture) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 15
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Darwin_64_bit_ABIs_are_the_only_candidates(architecture: X64) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.PlatformNotSupportedException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Darwin_64_bit_ABIs_are_the_only_candidates(Architecture architecture) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 15
+   at InvokeStub_MacConsentGuardTests.Darwin_64_bit_ABIs_are_the_only_candidates(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "exfat") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(String type) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 45
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "msdos") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(String type) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 45
+   at InvokeStub_MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "afpfs") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(String type) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 45
+   at InvokeStub_MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "smbfs") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(String type) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 45
+   at InvokeStub_MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "nfs") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(String type) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 45
+   at InvokeStub_MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "webdav") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(String type) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 45
+   at InvokeStub_MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(type: "unknown") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(String type) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 45
+   at InvokeStub_MacConsentGuardTests.Other_filesystems_do_not_inherit_Darwin_private_storage_guarantees(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.53]     Zilo.Agent.Tests.MacConsentGuardTests.Local_APFS_and_HFS_require_ownership_and_writable_mount(type: "hfs") [FAIL]
+[xUnit.net 00:00:00.53]     Zilo.Agent.Tests.MacConsentGuardTests.Local_APFS_and_HFS_require_ownership_and_writable_mount(type: "apfs") [FAIL]
+[xUnit.net 00:00:00.53]     Zilo.Agent.Tests.MacConsentGuardTests.Other_ABIs_fail_before_native_entry(architecture: Arm) [FAIL]
+[xUnit.net 00:00:00.53]     Zilo.Agent.Tests.MacConsentGuardTests.Other_ABIs_fail_before_native_entry(architecture: X86) [FAIL]
+[xUnit.net 00:00:00.53]     Zilo.Agent.Tests.MacConsentGuardTests.Other_ABIs_fail_before_native_entry(architecture: S390x) [FAIL]
+[xUnit.net 00:00:00.53]     Zilo.Agent.Tests.MacConsentGuardTests.Failed_required_fullflush_never_silently_falls_back [FAIL]
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Local_APFS_and_HFS_require_ownership_and_writable_mount(type: "hfs") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Local_APFS_and_HFS_require_ownership_and_writable_mount(String type) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 31
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Local_APFS_and_HFS_require_ownership_and_writable_mount(type: "apfs") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Local_APFS_and_HFS_require_ownership_and_writable_mount(String type) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 31
+   at InvokeStub_MacConsentGuardTests.Local_APFS_and_HFS_require_ownership_and_writable_mount(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Other_ABIs_fail_before_native_entry(architecture: Arm) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.PlatformNotSupportedException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Other_ABIs_fail_before_native_entry(Architecture architecture) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 23
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Other_ABIs_fail_before_native_entry(architecture: X86) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.PlatformNotSupportedException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Other_ABIs_fail_before_native_entry(Architecture architecture) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 23
+   at InvokeStub_MacConsentGuardTests.Other_ABIs_fail_before_native_entry(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Other_ABIs_fail_before_native_entry(architecture: S390x) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.PlatformNotSupportedException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Other_ABIs_fail_before_native_entry(Architecture architecture) in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 23
+   at InvokeStub_MacConsentGuardTests.Other_ABIs_fail_before_native_entry(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.MacConsentGuardTests.Failed_required_fullflush_never_silently_falls_back [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.IOException)
+  Stack Trace:
+     at Zilo.Agent.Tests.MacConsentGuardTests.Failed_required_fullflush_never_silently_falls_back() in <workspace>/backend/tests/Zilo.Agent.Tests/MacConsentGuardTests.cs:line 51
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:    15, Passed:     0, Skipped:     0, Total:    15, Duration: 37 ms - Zilo.Agent.Tests.dll (net10.0)
