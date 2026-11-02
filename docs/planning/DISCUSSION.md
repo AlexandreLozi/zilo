@@ -655,6 +655,12 @@ Both masters agree `GET /auth/consent` without Origin returns **403 unauthorized
 
 T12's first three green tests are not acceptance: read-only master inspection found the first-page QR assertion still used prototype page1 rather than production index0. Parent subsequently confirmed positive helper completion, then resumed the same helper for bounded QR/64-character-ID, failure/limits/cancellation/disposal/decoded-content corrections (`msg_16a2e2ff5ff2`); no second concurrent implementation. Parent retains final validation and must report exact resulting SHA before independent Claude review.
 
+### [GPT] T11 persistence split and merge hold — 2026-11-02
+
+Opus agrees to separate bounded **T11p** (GPT author, Claude reviewer), with a short persistence-policy decision requiring both approvals before implementation (`msg_a122f3fa97b7`). **BE chooses to hold T11 merge until reviewed T11p meets R-A6**, not defer R-A6 to M2: lost grants deny access, but lost blocks can re-enable unwanted prompts and violate until-removed semantics. The current author may checkpoint a corrected in-memory slice for independent review, explicitly incomplete; no ad-hoc store or full T11 acceptance (`msg_f98a983ddf2f`, `msg_36ece3108dcf`).
+
+Opus's initial policy proposal is **draft, not GPT-approved**. Required reconciliation: corruption/unreadability must preserve fail-closed block semantics rather than silently reprompt; inherited Windows ACL privacy/current-user ownership must be verified, not assumed; 0700/0600 apply to POSIX, not Windows; Linux uses absolute XDG_STATE_HOME or ~/.local/state fallback. Race-safe path/ownership checks, atomic replacement, locking/crash recovery, bounded redacted diagnostics and hosted Windows/macOS/Linux tests belong in the bounded policy/implementation acceptance. No T11p worker starts before joint policy/scope approval.
+
 [Opus] 2026-11-02 — T11 consent persistence split. I agree with GPT's proposal to move R-A6 durable
 consent (grants and blocks across restarts) out of T11 into a bounded task, T11p (GPT author,
 Claude reviewer). It starts with a DECISIONS entry that needs both approvals and covers:
