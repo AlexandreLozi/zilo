@@ -107,3 +107,62 @@ build and format:check all exit 0, as does `git diff --check`. SDK **150/150** (
 dwt-compat 1/1, license-gate 10/10, ui 1/1, demo 1/1. The 10 review proofs (r1 5, r2 2, r3 3) pass
 and are byte-identical to `6b6134a` (blobs `0641aaf`, `d6d547d`, `acd050c`). No existing test
 changed. Not run: browsers, native Windows/macOS, hosted CI.
+
+## Fix r4 (r4 finding 1, P2): restart cleanup honours the run signal
+
+Base `eaf410c` (fix r3 `1a84ea7` plus the r4 review). Files changed: `packages/sdk/src/auth.ts`,
+`packages/sdk/src/client.ts`, a new test file `packages/sdk/src/fix-r4.test.ts`, and this log.
+
+- **The finding.** `readFullHello` → `observeInstance` → `dropAllExcept` now carries the caller's
+  signal (for detection, the run's signal). `dropAllExcept` and `dropFamily` share one guarded
+  `dropWhere`. It calls `assertLive(signal)` (the client is not closed and the signal has not
+  aborted) before it acquires the lock, again when the critical section starts, and again right
+  before `store.write`. The signal also goes to `withLock`, so a queued section skips its callback.
+  No credential write starts after the deadline or after `dispose()`.
+- **Instance loss kept.** Jobs are still marked `agent-restarted` before the drop, and the lost
+  listeners and `instance.changed` log still fire (now from a `finally`, so a deferred drop does not
+  hide lost jobs). Renewal `401 token-invalid` still leads to `agent-restarted`, and the existing
+  tests for that pass unchanged.
+- **Deferred, not lost.** `observeInstance` removes the stale families from `familyInstance` only
+  after the drop has landed. When the drop is skipped because the run aborted, they stay recorded
+  under the old instance. The next live run's full `hello` sees them again and performs the drop.
+  After `dispose()` this client never runs again. A later client over the same store drops those
+  families through the normal R-A10 path, because their tokens get `401 token-invalid` from the
+  restarted agent. The log now records `droppedFamilies` (0 when deferred) and `dropDeferred`.
+
+### Audit: every await reachable from a run that leads to a credential-store write
+
+| Path | Write | Guard |
+| --- | --- | --- |
+| `currentCredential` → `issue` / `renewIfDue` | `store.write` | `assertLive` before the lock (new), as the section starts, before each request and right after each answer; signal passed to `withLock` |
+| `freshCredential` → `renewIfDue` | `store.write` | same (pre-lock `assertLive` new) |
+| `withRecovery` / `readFullHello` → `recoverInvalid` | `store.write` | was signal-only. Now `assertLive` (adds the closed check) before the lock, as the section starts and right before the write |
+| `readFullHello` → `observeInstance` → `dropAllExcept` | `store.write` | **was unguarded (the finding).** Now signal forwarded, and `dropWhere` guards before the lock, as the section starts and before the write |
+| `withRecovery` `token-revoked` → `dropFamily` | `store.write` | **was unguarded**: `throwIfAborted` ran before it, but the lock wait and the write had no checks. Now the signal is forwarded through `dropWhere` |
+| `afterTransportFailure` consent revoked → `dropAllExcept(undefined)` | `store.write` | **was unguarded.** Now the signal is forwarded through `dropWhere` |
+| `afterTransportFailure` / `jobGone` → `checkInstance` → `currentCredential`, `readFullHello` | as above | signal forwarded already; covered by the rows above |
+| `disconnect` → `revokeCurrent` → `dropFamily` | `store.write` | not part of a run (an explicit user call). Now guarded by the closed check through `dropWhere`, before the lock, inside it and before the write. The signal is not forwarded, so a revocation request already sent still drops its local entry |
+| `hasUsableCurrent`, `familyCredential`, `revokeCurrent`'s read | read only | none needed (`hasUsableCurrent` already races the signal) |
+
+`markRevoked()` still runs only after a successful drop. I tried calling it from a `finally`, but
+an aborted, stale run could then stop its replacement, so I reverted that.
+
+New tests (`fix-r4.test.ts`, 7):
+- **Deferred drop.** Connect, plant an extra stored family of the old process, restart the agent,
+  and hold the credential lock when the replacement token's full `hello` arrives. The run reaches
+  its deadline, then the lock is released. The orphan is still stored. The next `connect()` reaches
+  `ready` and drops it, leaving one family. This test also fails if stale families are forgotten
+  before the drop lands (checked by mutation).
+- **Every drop is guarded.** For `dropAllExcept`, `dropFamily` and `recoverInvalid`: a call on a
+  closed client, a call disposed while queued behind the lock, a call with an aborted signal, and a
+  call aborted while waiting for the lock. Each one rejects with `ZiloDisposedError` or
+  `ZiloAbortError`, and the store sees no write.
+
+Against the `eaf410c` sources, 6 of the 7 new tests fail, along with both r4 proofs. The one that
+passes is `recoverInvalid`'s signal case, which already held.
+
+Node v24.22.2, pnpm 11.17.0: frozen install (lockfile unchanged), lint, typecheck, `pnpm -r test`,
+build and format:check all exit 0. SDK **159/159** (14 files), dwt-compat 1/1, license-gate 10/10,
+ui 1/1, demo 1/1. All 12 review proofs (r1 5, r2 2, r3 3, r4 2) pass and are byte-identical to
+`eaf410c` (blobs `0641aaf`, `d6d547d`, `acd050c`, `56f7a90`). No existing test changed. Not run:
+browsers, native Windows/macOS, hosted CI.

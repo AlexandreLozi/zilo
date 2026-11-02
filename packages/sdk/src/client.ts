@@ -292,7 +292,7 @@ export class ZiloClient {
       if (hello === undefined) throw new ZiloProtocolError('foreign service');
       if (hello.scope === 'full') {
         this.familyInstance.set(current.familyId, hello.instanceId);
-        await this.observeInstance(hello.instanceId, current.familyId);
+        await this.observeInstance(hello.instanceId, current.familyId, signal);
         return { hello, cred: current };
       }
       // An invalid token on hello falls back to public (R-V2): treat it as token-invalid (R-A10).
@@ -305,9 +305,15 @@ export class ZiloClient {
   /**
    * R-R3: every tracked job recorded under another instance is `agent-restarted`; the families
    * held before ended with the old process, so their entries are dropped (except `keep`, the
-   * family that just read the new instance).
+   * family that just read the new instance). The drop is a credential write and honours `signal`
+   * and disposal; the stale families stay recorded until it lands, so a drop skipped by an aborted
+   * run happens on the next full `hello` of a live run instead of being lost.
    */
-  private async observeInstance(instanceId: string, keep: string): Promise<void> {
+  private async observeInstance(
+    instanceId: string,
+    keep: string,
+    signal: AbortSignal | undefined,
+  ): Promise<void> {
     const lost: TrackedJob[] = [];
     for (const job of this.jobs.values()) {
       if (job.outcome === undefined && job.instanceId !== instanceId) {
@@ -319,10 +325,19 @@ export class ZiloClient {
       .filter(([, id]) => id !== instanceId)
       .map(([family]) => family);
     if (lost.length === 0 && stale.length === 0) return;
-    for (const f of stale) this.familyInstance.delete(f);
-    await this.auth.dropAllExcept(keep);
-    this.log('instance.changed', { lostJobs: lost.length, droppedFamilies: stale.length });
-    if (lost.length > 0) for (const l of this.lostListeners) l(lost);
+    let dropped = false;
+    try {
+      await this.auth.dropAllExcept(keep, signal);
+      for (const f of stale) this.familyInstance.delete(f);
+      dropped = true;
+    } finally {
+      this.log('instance.changed', {
+        lostJobs: lost.length,
+        droppedFamilies: dropped ? stale.length : 0,
+        dropDeferred: !dropped,
+      });
+      if (lost.length > 0) for (const l of this.lostListeners) l(lost);
+    }
   }
 
   /** Recovery-path instance check (R-R3): re-acquires a credential and reads the full `hello`. */
@@ -403,7 +418,7 @@ export class ZiloClient {
           continue;
         }
         if (isProblem(err, 'token-revoked')) {
-          if (failed !== undefined) await this.auth.dropFamily(failed.familyId);
+          if (failed !== undefined) await this.auth.dropFamily(failed.familyId, signal);
           this.detection.markRevoked();
           throw new ZiloAccessRevokedError('access revoked', { cause: err });
         }
@@ -457,7 +472,7 @@ export class ZiloClient {
     }
     const consent = await this.auth.readConsent(signal).catch(() => undefined);
     if (consent !== undefined && ['none', 'denied', 'blocked'].includes(consent.state)) {
-      await this.auth.dropAllExcept(undefined);
+      await this.auth.dropAllExcept(undefined, signal);
       this.detection.markRevoked();
       throw new ZiloAccessRevokedError('access revoked', { cause });
     }

@@ -101,6 +101,7 @@ export class AuthClient {
     options: { newScan?: boolean; signal?: AbortSignal | undefined } = {},
   ): Promise<FamilyCredential> {
     const { signal } = options;
+    this.assertLive(signal);
     return this.o.store.withLock(
       this.o.origin,
       async () => {
@@ -123,6 +124,7 @@ export class AuthClient {
     familyId: string,
     signal?: AbortSignal,
   ): Promise<FamilyCredential | undefined> {
+    this.assertLive(signal);
     return this.o.store.withLock(
       this.o.origin,
       async () => {
@@ -222,16 +224,17 @@ export class AuthClient {
     failedToken: string,
     signal?: AbortSignal,
   ): Promise<FamilyCredential | undefined> {
+    this.assertLive(signal);
     return this.o.store.withLock(
       this.o.origin,
       async () => {
-        throwIfAborted(signal);
+        this.assertLive(signal);
         const rec = await this.o.store.read(this.o.origin);
         if (rec === undefined) return undefined;
         const entry = rec.families[familyId];
         if (entry !== undefined && entry.token !== failedToken && this.usable(entry)) return entry;
         this.drop(rec, familyId);
-        throwIfAborted(signal);
+        this.assertLive(signal);
         await this.o.store.write(this.o.origin, rec);
         return undefined;
       },
@@ -239,24 +242,40 @@ export class AuthClient {
     );
   }
 
-  /** Removes one family's entry (revoked or ended). */
-  async dropFamily(familyId: string): Promise<void> {
-    await this.o.store.withLock(this.o.origin, async () => {
-      const rec = await this.o.store.read(this.o.origin);
-      if (rec === undefined) return;
-      this.drop(rec, familyId);
-      await this.o.store.write(this.o.origin, rec);
-    });
+  /**
+   * Removes one family's entry (revoked or ended). Guarded like every write: nothing starts once
+   * the client was disposed or `signal` aborted, before the lock, as the section starts and right
+   * before the write.
+   */
+  async dropFamily(familyId: string, signal?: AbortSignal): Promise<void> {
+    await this.dropWhere((id) => id === familyId, signal);
   }
 
-  /** Drops every family except `keep` (agent restart: the families ended with the old process). */
-  async dropAllExcept(keep: string | undefined): Promise<void> {
-    await this.o.store.withLock(this.o.origin, async () => {
-      const rec = await this.o.store.read(this.o.origin);
-      if (rec === undefined) return;
-      for (const id of Object.keys(rec.families)) if (id !== keep) this.drop(rec, id);
-      await this.o.store.write(this.o.origin, rec);
-    });
+  /**
+   * Drops every family except `keep` (agent restart: the families ended with the old process).
+   * Guarded like `dropFamily`; an aborted call writes nothing, and the caller retries later.
+   */
+  async dropAllExcept(keep: string | undefined, signal?: AbortSignal): Promise<void> {
+    await this.dropWhere((id) => id !== keep, signal);
+  }
+
+  private async dropWhere(
+    match: (familyId: string) => boolean,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    this.assertLive(signal);
+    await this.o.store.withLock(
+      this.o.origin,
+      async () => {
+        this.assertLive(signal);
+        const rec = await this.o.store.read(this.o.origin);
+        if (rec === undefined) return;
+        for (const id of Object.keys(rec.families)) if (match(id)) this.drop(rec, id);
+        this.assertLive(signal);
+        await this.o.store.write(this.o.origin, rec);
+      },
+      signal,
+    );
   }
 
   private drop(rec: OriginCredentials, familyId: string): void {
