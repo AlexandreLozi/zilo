@@ -40,6 +40,9 @@ public sealed class ConsentStore
     private readonly Queue<DateTimeOffset> _globalPrompts = new();
     private Guid? _activePrompt;
     private readonly object _gate = new();
+    // One monitor for consent mutations and the bound TokenService. Lock order is
+    // authorization monitor only; callers must never await while holding it.
+    internal object AuthorizationGate => _gate;
 
     public ConsentStore(ConsentOptions? options = null, IClock? clock = null, INativeConsentPrompt? nativeConsent = null, IConsentPersistence? persistence = null)
     {
@@ -136,21 +139,20 @@ public sealed class ConsentStore
 
     public void Deny(string origin)
     {
-        lock (_gate) { var e = GetOrCreate(origin); CancelPrompt(e); ApplyDecision(e, ConsentDecision.Denied, _clock.UtcNow); Save(origin, e); }
+        lock (_gate) { var e = GetOrCreate(origin); CancelPrompt(e); ApplyDecision(e, ConsentDecision.Denied, _clock.UtcNow); OriginRemoved?.Invoke(origin); Save(origin, e); }
     }
 
     public void Block(string origin)
     {
-        lock (_gate) { var e = GetOrCreate(origin); CancelPrompt(e); ApplyDecision(e, ConsentDecision.Blocked, _clock.UtcNow); Save(origin, e); }
+        lock (_gate) { var e = GetOrCreate(origin); CancelPrompt(e); ApplyDecision(e, ConsentDecision.Blocked, _clock.UtcNow); OriginRemoved?.Invoke(origin); Save(origin, e); }
     }
 
     public void Remove(string origin)
     {
         lock (_gate)
         {
-            var e = GetOrCreate(origin); CancelPrompt(e); if (_activePrompt == e.PromptGuid) _activePrompt = null; e.State = "none"; e.Managed = false; e.PendingUntil = DateTimeOffset.MinValue; e.CooldownUntil = DateTimeOffset.MinValue; e.PromptId++; e.DenialStreak = 0; Save(origin, e);
+            var e = GetOrCreate(origin); CancelPrompt(e); if (_activePrompt == e.PromptGuid) _activePrompt = null; e.State = "none"; e.Managed = false; e.PendingUntil = DateTimeOffset.MinValue; e.CooldownUntil = DateTimeOffset.MinValue; e.PromptId++; e.DenialStreak = 0; OriginRemoved?.Invoke(origin); Save(origin, e);
         }
-        OriginRemoved?.Invoke(origin);
     }
 
     private Entry GetOrCreate(string origin)
