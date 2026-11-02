@@ -534,3 +534,104 @@ test('with its initial focus in an older native child, Escape still closes the Z
   await expect(body(page)).toHaveAttribute('data-last-close', 'escape');
   await expect(page.locator('#native-child')).toHaveAttribute('open', '');
 });
+
+/**
+ * A host policy that cancels every Escape in the document capture phase, as a host modal ignoring
+ * the key does (README, "Escape"). With `stop`, it also stops the key: the documented opt-out that
+ * keeps a native layer inside the Zilo dialog open.
+ */
+async function cancelEscapeInDocument(page: Page, stop = false): Promise<void> {
+  await page.evaluate((stopKey) => {
+    document.addEventListener(
+      'keydown',
+      (event) => {
+        if (event.key !== 'Escape') return;
+        event.preventDefault();
+        if (stopKey) event.stopPropagation();
+      },
+      true,
+    );
+  }, stop);
+}
+
+test('a native child in an open shadow root, opened after the Zilo dialog, is dismissed when a host cancels Escape', async ({
+  page,
+}) => {
+  await openZilo(page);
+  await page.locator('#dialog').evaluate((zilo) => {
+    const layerHost = document.createElement('div');
+    layerHost.id = 'layer-host';
+    const root = layerHost.attachShadow({ mode: 'open' });
+    root.innerHTML = '<dialog id="child"><button id="child-action">Child action</button></dialog>';
+    zilo.append(layerHost);
+    root.querySelector('dialog')?.showModal();
+  });
+  await cancelEscapeInDocument(page);
+  await expect(page.locator('#child-action')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#child')).not.toHaveAttribute('open');
+  await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+  await expect(body(page)).not.toHaveAttribute('data-last-close', /.*/);
+});
+
+test('an older native child closed and reopened while the Zilo dialog is open keeps a cancelled Escape', async ({
+  page,
+}) => {
+  // README: a layer that was open when the Zilo dialog opened is of unknown order, even after it
+  // closes and opens again; after a cancellation Zilo does nothing, as the browser does.
+  await page.goto(stateUrl('dialog-trigger', 'light'));
+  await page.locator('#dialog').evaluate(async (zilo) => {
+    const child = document.createElement('dialog');
+    child.id = 'child';
+    child.innerHTML = '<button id="child-action">Child action</button>';
+    zilo.append(child);
+    child.showModal();
+    (zilo as HTMLElement & { show(): void }).show();
+    await new Promise<void>((resolve) => {
+      child.addEventListener('close', () => resolve(), { once: true });
+      child.close();
+    });
+    child.showModal();
+  });
+  await cancelEscapeInDocument(page);
+  await expect(page.locator('#child-action')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#child')).toHaveAttribute('open', '');
+  await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+  await expect(body(page)).not.toHaveAttribute('data-last-close', /.*/);
+});
+
+test('an older popover hidden and shown again while the Zilo dialog is open keeps a cancelled Escape', async ({
+  page,
+}) => {
+  await page.goto(stateUrl('dialog-trigger', 'light'));
+  await page.locator('#dialog').evaluate((zilo) => {
+    const popover = document.createElement('div');
+    popover.id = 'child';
+    popover.popover = 'auto';
+    popover.textContent = 'Suggestions';
+    zilo.append(popover);
+    popover.showPopover();
+    (zilo as HTMLElement & { show(): void }).show();
+    popover.showPopover();
+  });
+  await cancelEscapeInDocument(page);
+  await expect(page.locator('#child')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#child')).toBeVisible();
+  await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+  await expect(body(page)).not.toHaveAttribute('data-last-close', /.*/);
+});
+
+test('opt-out: a host that cancels and stops Escape keeps a newer native child inside the Zilo dialog open', async ({
+  page,
+}) => {
+  await openZilo(page);
+  await openNativeChild(page);
+  await cancelEscapeInDocument(page, true);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#native-child')).toHaveAttribute('open', '');
+  await expect(page.locator('#dialog')).toHaveAttribute('open', '');
+  await expect(body(page)).not.toHaveAttribute('data-last-close', /.*/);
+  await expect(page.locator('#child-action')).toBeFocused();
+});

@@ -10,6 +10,7 @@ import {
   flatParent,
   isEscapeDismissedNatively,
   isOpenLayer,
+  openNativeLayers,
   takesInputWithoutFocus,
 } from './layers.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
@@ -162,11 +163,15 @@ const openStack: ZiloDialog[] = [];
 const claimedEscapes = new WeakSet<Event>();
 
 /**
- * Escape keydowns the topmost dialog left to a native layer that the browser dismisses on Escape:
- * the layer, and whether the key was already cancelled when it reached the layer (or, for a layer
- * that does not hold focus, the focused element). See `#afterWindowKeydown`.
+ * Escape keydowns the topmost dialog left to a native layer that the browser dismisses on Escape and
+ * that the dialog may dismiss in its place (`#mayDismiss`): the dialog, the layer, and whether the
+ * key was already cancelled when it reached the layer (or, for a layer that does not hold focus, the
+ * focused element). See `#afterWindowKeydown`.
  */
-const yieldedEscapes = new WeakMap<Event, { layer: Element; cancelledOutside: boolean }>();
+const yieldedEscapes = new WeakMap<
+  Event,
+  { owner: ZiloDialog; layer: Element; cancelledOutside: boolean }
+>();
 
 /**
  * `<zilo-dialog>`: the modal dialog primitive (accessibility.md §1–§4).
@@ -251,6 +256,11 @@ export class ZiloDialog extends ZiloElement {
   #pressedOutside = false;
   /** ARIA layers already open when this dialog opened: its content, so they never own its input. */
   #ownAriaLayers: AriaLayerSnapshot | null = null;
+  /**
+   * Native layers already open when this dialog opened. It only withholds the Escape recovery
+   * (`#mayDismiss`): such a layer may be below this dialog, even if it closed and opened again since.
+   */
+  #nativeAtOpen: WeakSet<Element> | null = null;
   readonly #resize =
     typeof ResizeObserver === 'function'
       ? new ResizeObserver(() => {
@@ -478,6 +488,8 @@ export class ZiloDialog extends ZiloElement {
     this.#syncDescription();
     this.#opener = deepActiveElement(this.ownerDocument);
     this.#ownAriaLayers = new AriaLayerSnapshot(this.ownerDocument);
+    // Before showModal(), which hides the shown popovers that do not enclose the dialog.
+    this.#nativeAtOpen = openNativeLayers(this.ownerDocument);
     lockScroll(this.ownerDocument);
     if (typeof this.#dialog.showModal === 'function') {
       this.#dialog.showModal();
@@ -550,6 +562,7 @@ export class ZiloDialog extends ZiloElement {
     this.ownerDocument.removeEventListener('focusin', this.#onDocumentFocusIn);
     this.#ownAriaLayers?.dispose();
     this.#ownAriaLayers = null;
+    this.#nativeAtOpen = null;
     if (this.#dialog.classList.contains('fallback')) {
       this.#dialog.classList.remove('fallback');
       this.#dialog.removeAttribute('open');
@@ -635,6 +648,27 @@ export class ZiloDialog extends ZiloElement {
   }
 
   /**
+   * True when this dialog may dismiss `layer` (a native layer it left an Escape to) after a listener
+   * outside the layer cancelled that Escape (`#afterWindowKeydown`). Both must hold:
+   * - the layer is inside this dialog's content, in the flattened tree (light DOM children and open
+   *   shadow roots in them): a layer outside it, such as another modal on `body`, belongs to its own
+   *   owner, whose cancellation stands;
+   * - the layer is known to have opened after this dialog: it was not open when this dialog opened.
+   *   One that was (`#nativeAtOpen`) may be below this dialog, even if it closed and opened again
+   *   since, so its order is unknown and its cancellation stands, as with the browser.
+   * The ownership model (`#newerLayer`) is unchanged; only this active dismissal is restricted.
+   */
+  #mayDismiss(layer: Element): boolean {
+    return (
+      this.#isOpen &&
+      this.#nativeAtOpen !== null &&
+      !this.#nativeAtOpen.has(layer) &&
+      layer !== this.#dialog &&
+      containsFlat(this.#dialog, layer)
+    );
+  }
+
+  /**
    * Window capture phase: runs before any document-level capture listener, which is where host
    * modals such as Radix listen for Escape. While the topmost Zilo dialog is the topmost layer it
    * claims Escape with `preventDefault()` (Radix and similar libraries then leave their own dialog
@@ -642,7 +676,8 @@ export class ZiloDialog extends ZiloElement {
    * Escape by stopping propagation. Escape aimed outside the dialog (nothing focused) closes it here.
    * Escape aimed at a newer layer, or sent while one is open, is left alone: no `preventDefault()`,
    * so that layer closes the normal way (a native `cancel`, or its own listener). For a native layer
-   * that the browser dismisses on Escape, `#afterWindowKeydown` checks the outcome.
+   * that the browser dismisses on Escape, inside this dialog and opened after it (`#mayDismiss`),
+   * `#afterWindowKeydown` checks the outcome.
    */
   static readonly #onWindowKeydown = (event: KeyboardEvent): void => {
     if (event.key !== 'Escape' || event.isComposing || event.defaultPrevented) return;
@@ -653,7 +688,9 @@ export class ZiloDialog extends ZiloElement {
     if ((target.ownerDocument ?? target) !== top.ownerDocument) return;
     const layer = top.#newerLayer(target);
     if (layer !== null) {
-      if (isEscapeDismissedNatively(layer)) watchYieldedEscape(event, layer, target);
+      if (isEscapeDismissedNatively(layer) && top.#mayDismiss(layer)) {
+        watchYieldedEscape(event, top, layer, target);
+      }
       return;
     }
     event.preventDefault();
@@ -662,20 +699,22 @@ export class ZiloDialog extends ZiloElement {
   };
 
   /**
-   * Window bubble phase, for an Escape left to a native layer (`#onWindowKeydown`): if a listener
-   * outside that layer cancelled the key, for example a host modal ignoring this Escape with
-   * `preventDefault()`, the browser will not dismiss the layer, so the layer is dismissed here as the
-   * browser would have (`cancel`, then close; a popover hides). The host meant to keep itself open,
-   * not the layer. A listener inside the layer that stops the key's propagation keeps the layer open
-   * (this listener does not run), as does one that cancels the key when nothing outside the layer
-   * did.
+   * Window bubble phase, for an Escape left to a native layer inside the dialog that opened after it
+   * (`#onWindowKeydown`, `#mayDismiss`): if a listener outside that layer cancelled the key, for
+   * example a host modal ignoring this Escape with `preventDefault()`, the browser will not dismiss
+   * the layer, so the layer is dismissed here as the browser would have (`cancel`, then close; a
+   * popover hides). The host meant to keep itself open, not the layer. Any listener that stops the
+   * key's propagation before it reaches the window in the bubble phase keeps the layer open (this
+   * listener does not run): content in the layer, or a host that cancels and stops the key. So does
+   * a listener inside the layer that cancels the key when nothing outside the layer did.
    */
   static readonly #afterWindowKeydown = (event: KeyboardEvent): void => {
     const yielded = yieldedEscapes.get(event);
     if (!yielded) return;
     yieldedEscapes.delete(event);
-    if (yielded.cancelledOutside && isEscapeDismissedNatively(yielded.layer)) {
-      dismissNatively(yielded.layer);
+    const { owner, layer } = yielded;
+    if (yielded.cancelledOutside && isEscapeDismissedNatively(layer) && owner.#mayDismiss(layer)) {
+      dismissNatively(layer);
     }
   };
 
@@ -749,11 +788,12 @@ function isZiloDialogBelow(el: Element): boolean {
 }
 
 /**
- * Records whether `event` (an Escape left to `layer`) is already cancelled when it reaches the layer
- * or, when the layer does not hold `target`, the target. Listeners up to there are outside the layer.
+ * Records whether `event` (an Escape `owner` left to `layer`) is already cancelled when it reaches
+ * the layer or, when the layer does not hold `target`, the target. Listeners up to there are outside
+ * the layer.
  */
-function watchYieldedEscape(event: Event, layer: Element, target: Node): void {
-  const yielded = { layer, cancelledOutside: false };
+function watchYieldedEscape(event: Event, owner: ZiloDialog, layer: Element, target: Node): void {
+  const yielded = { owner, layer, cancelledOutside: false };
   yieldedEscapes.set(event, yielded);
   const boundary = containsFlat(layer, target) ? layer : target;
   const check = (seen: Event): void => {

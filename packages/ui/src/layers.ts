@@ -142,6 +142,20 @@ export function findDeep(doc: Document, test: (el: Element) => boolean): Element
   return null;
 }
 
+/**
+ * The native layers open in `doc` (open shadow roots included): every open `<dialog>`, modal or
+ * not, and every shown popover. A dialog takes this record when it opens, before `showModal()`, and
+ * uses it only to withhold its Escape recovery (see `ZiloDialog`): an element in it may have opened
+ * before the dialog, even if it has closed and opened again since.
+ */
+export function openNativeLayers(doc: Document): WeakSet<Element> {
+  const open = new WeakSet<Element>();
+  for (const el of deepElements(doc)) {
+    if ((el instanceof HTMLDialogElement && el.open) || isShownPopover(el)) open.add(el);
+  }
+  return open;
+}
+
 /** Changes to these attributes make an element a different kind of layer, or none. */
 const MARKERS = new Set(['role', 'aria-modal', 'popover', 'hidden']);
 
