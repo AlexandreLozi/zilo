@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - '*'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
@@ -12,11 +13,13 @@ on:
       - 'eslint.config.*'
       - '.prettier*'
       - '.gitignore'
+      - 'api/openapi.yaml'
       - 'packages/**'
       - 'apps/**'
       - '.github/workflows/ci-web.yml'
   pull_request:
     paths:
+      - '*'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
@@ -25,6 +28,7 @@ on:
       - 'eslint.config.*'
       - '.prettier*'
       - '.gitignore'
+      - 'api/openapi.yaml'
       - 'packages/**'
       - 'apps/**'
       - '.github/workflows/ci-web.yml'
