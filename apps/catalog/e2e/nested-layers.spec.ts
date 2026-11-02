@@ -61,8 +61,7 @@ async function recordOutsidePressListeners(page: Page): Promise<() => Promise<bo
   await page.addInitScript(() => {
     const active = new Set<unknown>();
     let lastWasAdd = false;
-    const add = Document.prototype.addEventListener;
-    const remove = Document.prototype.removeEventListener;
+    // Document inherits both methods from EventTarget; these overrides call the inherited ones.
     Document.prototype.addEventListener = function (
       this: Document,
       ...args: Parameters<Document['addEventListener']>
@@ -71,14 +70,14 @@ async function recordOutsidePressListeners(page: Page): Promise<() => Promise<bo
         active.add(args[1]);
         lastWasAdd = true;
       }
-      add.apply(this, args);
+      EventTarget.prototype.addEventListener.apply(this, args);
     };
     Document.prototype.removeEventListener = function (
       this: Document,
       ...args: Parameters<Document['removeEventListener']>
     ): void {
       if (args[0] === 'pointerdown' && active.delete(args[1])) lastWasAdd = false;
-      remove.apply(this, args);
+      EventTarget.prototype.removeEventListener.apply(this, args);
     };
     (window as Window & { outsidePressArmed?: () => boolean }).outsidePressArmed = () =>
       lastWasAdd && active.size === 1;

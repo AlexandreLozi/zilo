@@ -30,6 +30,15 @@ export default defineConfig(
     },
   },
   {
+    // The T15 r3 review proof is kept byte-for-byte as the reviewer wrote it (docs/reviews/T15-r3.md),
+    // so its two style findings are waived here, for that file only.
+    files: ['apps/catalog/e2e/review-r3.spec.ts'],
+    rules: {
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-confusing-void-expression': 'off',
+    },
+  },
+  {
     files: ['**/*.{js,mjs,cjs}'],
     languageOptions: { globals: globals.node },
   },
