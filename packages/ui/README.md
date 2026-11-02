@@ -130,17 +130,41 @@ page (`open`, `:modal`, `:popover-open`, rendering), not from a record of what o
   style change that touched no attribute (a media query): mount a new element. Each opening of the
   Zilo dialog records afresh, so a layer still open when the Zilo dialog reopens is its content.
 
+This decides who owns a key that nothing cancels. Dismissing a native layer in its place after a
+cancellation takes a stricter test (see **Escape** below).
+
 While a newer layer is open, or holds the focus or target of the event, the Zilo dialog does nothing
 with it: no `preventDefault()`, no `stopPropagation()`, no close. So:
 
 - **Escape** goes to the newer layer the normal way: a native `cancel` for `<dialog>` and popovers,
   or the library's own listener. Radix layers stack, so with Radix host > Zilo > Radix dialog the
-  first Escape closes the inner Radix dialog, the second closes Zilo and the third the host. If a
-  listener outside a native layer (a modal `<dialog>`, or an `auto` or `hint` popover) cancels that
-  Escape, the browser won't dismiss the layer; the Zilo dialog then dismisses it as the browser
-  would: a `cancel` event, then `close()` (`requestClose()` where supported), or `hidePopover()`.
-  "Outside" means before the key reaches the layer, or the focused element for a popover that does
-  not hold the focus. Content in the layer that keeps Escape for itself stops its propagation.
+  first Escape closes the inner Radix dialog, the second closes Zilo and the third the host.
+
+  If a listener outside a native layer (a modal `<dialog>`, or an `auto` or `hint` popover) cancels
+  that Escape, the browser won't dismiss the layer. "Outside" means before the key reaches the
+  layer, or the focused element for a popover that does not hold the focus. The Zilo dialog then
+  dismisses the layer as the browser would (a `cancel` event, then `close()`, or `requestClose()`
+  where supported; `hidePopover()` for a popover), but only when all of these hold when the key
+  arrives:
+
+  1. **Inside Zilo:** the layer is inside the Zilo dialog's content in the flattened tree, as a
+     light DOM child or inside an open shadow root in that content. A layer outside it, such as a
+     host's own `<dialog>` appended to `body`, belongs to its owner, and its cancellation stands.
+  2. **Opened after Zilo:** the layer was not open (`open`, `:popover-open`) when this opening of
+     the Zilo dialog happened. The Zilo dialog records the native layers open at that moment, and
+     the record can only withhold a dismissal. A recorded layer is **order unknown**, even if it
+     closes and opens again while the Zilo dialog is open: Zilo leaves its cancelled Escape alone,
+     as the browser does, and the layer and the Zilo dialog both stay open.
+  3. **Not opted out:** the key still reaches the window in the bubble phase, where the Zilo dialog
+     checks it. **Opt-out:** a host that wants a native layer inside the Zilo dialog to stay open
+     on Escape calls both `preventDefault()` and `stopPropagation()` on the keydown, in a capture
+     listener on `document` (where Radix runs its `onEscapeKeyDown`). The key then never reaches
+     the window, and the layer and the Zilo dialog stay open.
+
+  When any of these fails, the Zilo dialog does nothing with the cancelled key: no
+  `preventDefault()`, no close. Content in the layer that keeps Escape for itself stops its
+  propagation.
+
 - **Tab** is the newer layer's (its own focus trap, or the browser's); the Zilo trap does not move
   it.
 - **Pointer presses** on the Zilo backdrop are outside the newer layer, not the Zilo dialog: the
@@ -179,9 +203,12 @@ What the host must do for layers Zilo can't detect:
   the layer inside it, as it would without Zilo (pinned by a test in `nested-layers.spec.ts`). Use a
   layer from the host's library (it stacks), or have the host ignore that Escape (for Radix:
   `onEscapeKeyDown={(e) => { if (layerOpen) e.preventDefault(); }}`). That cancels the browser's
-  own dismissal of the native layer too; the Zilo dialog then dismisses the layer (see **Escape**
-  above), so the layer closes while the host and the Zilo dialog stay open (pinned by
-  `review-r3.spec.ts`).
+  own dismissal of the native layer too. If the layer is inside the Zilo dialog and opened after
+  it, the Zilo dialog then dismisses the layer (see **Escape** above), so the layer closes while
+  the host and the Zilo dialog stay open (pinned by `review-r3.spec.ts`). A layer of unknown order
+  (already open when the Zilo dialog opened) or outside the Zilo dialog stays open, and so does
+  everything else: close it yourself in the callback if it should go. To keep the layer open, also
+  call `e.stopPropagation()` there (the opt-out above).
 
 ## Theming API
 

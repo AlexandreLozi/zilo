@@ -635,3 +635,38 @@ test('opt-out: a host that cancels and stops Escape keeps a newer native child i
   await expect(body(page)).not.toHaveAttribute('data-last-close', /.*/);
   await expect(page.locator('#child-action')).toBeFocused();
 });
+
+test('opt-out under a Radix host: cancelling and stopping Escape keeps the native child, Zilo and the host open', async ({
+  page,
+}) => {
+  // As in review-r3.spec.ts, the host callback's operation on the native keydown in document
+  // capture, registered before Radix: README, `e.preventDefault()` and `e.stopPropagation()`.
+  await page.addInitScript(() => {
+    document.addEventListener(
+      'keydown',
+      (event) => {
+        if (event.key === 'Escape' && document.querySelector<HTMLDialogElement>('#child')?.open) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      },
+      true,
+    );
+  });
+  await page.goto(stateUrl('host-modal-radix', 'light'));
+  await page.getByRole('button', { name: 'Scan documents' }).click();
+  await page.getByRole('button', { name: 'Choose scanner' }).click();
+  await page.locator('#zilo').evaluate((zilo) => {
+    const child = document.createElement('dialog');
+    child.id = 'child';
+    child.innerHTML = '<button id="child-action">Child action</button>';
+    zilo.append(child);
+    child.showModal();
+  });
+  await expect(page.locator('#child-action')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#child')).toHaveAttribute('open', '');
+  await expect(host(page)).toBeVisible();
+  await expect(page.locator('#zilo')).toHaveAttribute('open', '');
+  await expect(body(page)).not.toHaveAttribute('data-host-dismiss', /.*/);
+});
