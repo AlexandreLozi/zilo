@@ -18,7 +18,8 @@
 - Required jointly approved persistence plan must cover private ownership/path, atomic replacement,
   crash/corruption fail-closed behavior, concurrency, ACL/symlink defenses and hosted Windows evidence.
 - Coordinator confirms separate **T11p** GPT author/Claude review; no disk store in this slice,
-  and **HOLD T11 merge until T11p meets R-A6**. Policy approvals and dispatch remain pending.
+  and **HOLD T11 merge until T11p meets R-A6**. Coordinator now confirms D-013 jointly approved;
+  T11p implementation starts only after this stable checkpoint, with no parallel writers.
 - Therefore passing measured checks cannot establish full T11 acceptance or permit merge.
 
 ## Measured evidence
@@ -63,3 +64,23 @@
 - Windows unsigned installer/binary was not executed on the owner's SAC-protected host.
 - Self-test is bounded composition smoke, not HTTP/scanner/runtime certification.
 - No performance or broad browser/OS-support claims were measured.
+
+## Stable T11p persistence seam
+
+- `backend/src/Zilo.Security/Consent.cs`: public `IConsentPersistence` has synchronous
+  `ConsentPersistenceRecord? Load(string exactOrigin)` and
+  `void Save(string exactOrigin, ConsentPersistenceRecord record)`.
+- Record signature: `ConsentPersistenceRecord(string State, bool Managed, int DenialStreak,
+  DateTimeOffset CooldownUntil, DateTimeOffset LastDenied = default)`.
+- `ConsentStore(ConsentOptions? options = null, IClock? clock = null,
+  INativeConsentPrompt? nativeConsent = null, IConsentPersistence? persistence = null)`.
+- Clock: `Zilo.Security.IClock.UtcNow` is a read-only `DateTimeOffset`; default `SystemClock` UTC.
+- `Load` is used for missing exact-origin state; `Save` is used on native decisions and internal
+  Grant/Deny/Block/Remove; a grant resets streak, denial doubles 600s to 24h, streak expires after24h.
+- No origin enumeration/load-all API exists; persistence must distinguish missing state from corrupt
+  state. Load/Save exceptions currently propagate: T11p must define fail-closed integration per D-013.
+- `OriginRemoved` is `event Action<string>`; AgentHost wires it to `TokenService.RevokeOrigin`.
+- `backend/src/Zilo.Agent/AgentHost.cs` creates ConsentStore **without persistence**; AgentOptions
+  has NativeConsent/Clock but no persistence option. T11p owns adding configuration/composition wiring.
+- No persistent consent tests exist; current SecurityInvariantTests cover in-memory churn, prompt
+  expiry/stale decisions, deadlines/history. Add reconstruction/crash/corruption and OS ownership tests.
