@@ -30,13 +30,18 @@ export const catalogStates = [
   { id: 'dialog-alert', component: 'Dialog', title: 'Confirmation (alertdialog)' },
   { id: 'dialog-scroll', component: 'Dialog', title: 'Long content (scrolls inside)' },
   { id: 'host-modal-radix', component: 'Host modal', title: 'Inside a Radix Dialog (React)' },
+  {
+    id: 'host-modal-nested',
+    component: 'Host modal',
+    title: 'Inside a Radix Dialog, opening another Radix Dialog inside it',
+  },
 ] as const;
 
 export type CatalogState = (typeof catalogStates)[number];
 export type CatalogStateId = CatalogState['id'];
 
 /** States rendered by React (see `host-modal.tsx`) rather than from static markup. */
-export const reactStates: readonly CatalogStateId[] = ['host-modal-radix'];
+export const reactStates: readonly CatalogStateId[] = ['host-modal-radix', 'host-modal-nested'];
 
 export function stateUrl(id: CatalogStateId, theme: CatalogTheme): string {
   return `/?state=${id}&theme=${theme}`;

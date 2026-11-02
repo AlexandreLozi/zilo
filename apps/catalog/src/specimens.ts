@@ -88,4 +88,5 @@ export const specimens: Readonly<Record<CatalogStateId, string>> = {
     </zilo-dialog>`,
   // Rendered by React into this element (host-modal.tsx).
   'host-modal-radix': '<div id="host-modal-root"></div>',
+  'host-modal-nested': '<div id="host-modal-root"></div>',
 };

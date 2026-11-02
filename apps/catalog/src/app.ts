@@ -80,7 +80,7 @@ export function mount(root: HTMLElement, search: string): void {
     const host = root.querySelector<HTMLElement>('#host-modal-root');
     if (host) {
       void import('./host-modal.js')
-        .then(({ mountHostModal }) => mountHostModal(host, theme))
+        .then(({ mountHostModal }) => mountHostModal(host, theme, state.id))
         .then(markReady);
     }
     return;

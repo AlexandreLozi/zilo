@@ -112,3 +112,10 @@ main {
   color: #e9ebee;
   border-color: #8a9099;
 }
+/* A Radix dialog opened inside the Zilo dialog (host-modal-nested), in the flow of its body. */
+.inner-content {
+  margin-block-start: 1rem;
+  padding: 1rem;
+  border: 1px solid;
+  border-radius: 6px;
+}

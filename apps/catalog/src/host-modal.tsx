@@ -2,7 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { ZiloButton, ZiloDialog, type ZiloDialogCloseReason } from '@zilo/react';
 import { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { CatalogTheme } from './states.js';
+import type { CatalogStateId, CatalogTheme } from './states.js';
 
 /**
  * Host-modal fixture: a React app whose own modal is a Radix `Dialog`, opening a `<zilo-dialog>`
@@ -13,16 +13,28 @@ import type { CatalogTheme } from './states.js';
  * The body records what happened for the E2E suite: `data-host-dismiss` (why Radix closed:
  * `escape`, `outside` or `close`), `data-zilo-close` (the Zilo dialog's close reason) and
  * `data-zilo-action` (a footer action ran).
+ *
+ * With `nested`, the Zilo dialog's content also opens a second Radix `Dialog` (`data-inner-dismiss`
+ * records why it closed). It is portaled into a container inside the Zilo dialog, as the README's
+ * integration contract requires of layers opened from inside one.
  */
-function HostModal({ theme }: { readonly theme: CatalogTheme }): React.JSX.Element {
+type RecordKey = 'hostDismiss' | 'ziloClose' | 'ziloAction' | 'innerDismiss';
+
+function record(key: RecordKey, value: string): void {
+  document.body.dataset[key] = value;
+}
+
+function HostModal({
+  theme,
+  nested,
+}: {
+  readonly theme: CatalogTheme;
+  readonly nested: boolean;
+}): React.JSX.Element {
   const [hostOpen, setHostOpen] = useState(false);
   const [ziloOpen, setZiloOpen] = useState(false);
   // What Radix is about to dismiss for; its handlers run before onOpenChange(false).
   const dismissCause = useRef('close');
-
-  const record = (key: 'hostDismiss' | 'ziloClose' | 'ziloAction', value: string): void => {
-    document.body.dataset[key] = value;
-  };
 
   return (
     <Dialog.Root
@@ -82,6 +94,7 @@ function HostModal({ theme }: { readonly theme: CatalogTheme }): React.JSX.Eleme
           >
             <label htmlFor="zilo-name">Scanner name</label>
             <input id="zilo-name" defaultValue="Canon DR-C225 II" />
+            {nested ? <InnerSettings /> : null}
             <ZiloButton
               slot="footer"
               id="zilo-cancel"
@@ -109,8 +122,62 @@ function HostModal({ theme }: { readonly theme: CatalogTheme }): React.JSX.Eleme
   );
 }
 
-/** Renders the fixture into `root`; resolves once React has committed it. */
-export function mountHostModal(root: HTMLElement, theme: CatalogTheme): Promise<void> {
+/** A Radix dialog opened from inside the Zilo dialog, portaled into a container inside it. */
+function InnerSettings(): React.JSX.Element {
+  const [open, setOpen] = useState(false);
+  const [layers, setLayers] = useState<HTMLDivElement | null>(null);
+  const dismissCause = useRef('close');
+  return (
+    <Dialog.Root
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) record('innerDismiss', dismissCause.current);
+        dismissCause.current = 'close';
+        setOpen(next);
+      }}
+    >
+      <p>
+        <Dialog.Trigger className="host-button" id="open-inner">
+          Scanner settings
+        </Dialog.Trigger>
+      </p>
+      {/* The host's portal container for layers opened from inside the Zilo dialog. */}
+      <div id="zilo-layers" ref={setLayers} />
+      {layers ? (
+        <Dialog.Portal container={layers}>
+          <Dialog.Content
+            className="inner-content"
+            onEscapeKeyDown={(event) => {
+              if (!event.defaultPrevented) dismissCause.current = 'escape';
+            }}
+            onPointerDownOutside={() => {
+              dismissCause.current = 'outside';
+            }}
+          >
+            <Dialog.Title className="host-title">Scanner settings</Dialog.Title>
+            <Dialog.Description>A Radix Dialog opened inside the Zilo dialog.</Dialog.Description>
+            <label className="host-field">
+              Resolution
+              <input id="inner-dpi" defaultValue="300 dpi" />
+            </label>
+            <div className="host-actions">
+              <Dialog.Close className="host-button" id="inner-close">
+                Done
+              </Dialog.Close>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      ) : null}
+    </Dialog.Root>
+  );
+}
+
+/** Renders the fixture for `state` into `root`; resolves once React has committed it. */
+export function mountHostModal(
+  root: HTMLElement,
+  theme: CatalogTheme,
+  state: CatalogStateId,
+): Promise<void> {
   return new Promise((resolve) => {
     const Ready = (): null => {
       useEffect(resolve, []);
@@ -118,7 +185,7 @@ export function mountHostModal(root: HTMLElement, theme: CatalogTheme): Promise<
     };
     createRoot(root).render(
       <StrictMode>
-        <HostModal theme={theme} />
+        <HostModal theme={theme} nested={state === 'host-modal-nested'} />
         <Ready />
       </StrictMode>,
     );
