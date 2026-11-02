@@ -50,10 +50,27 @@ $cmd = (Get-ItemProperty "$protoKey\shell\open\command").'(default)'
 Write-Host "zilo open command = $cmd"
 if ($cmd -ne "`"$installDir\Zilo.Agent.exe`" `"%1`"") { Fail 'zilo open command' }
 
-Write-Host '=== agent runs (framework-dependent; hosted runner has the .NET runtime)'
-$out = & (Join-Path $installDir 'Zilo.Agent.exe')
+Write-Host '=== bounded agent self-test (framework-dependent; hosted runner has the .NET runtime)'
+$agentStdout = Join-Path $LogDir 'agent-self-test.stdout.log'
+$agentStderr = Join-Path $LogDir 'agent-self-test.stderr.log'
+$agent = Start-Process -FilePath (Join-Path $installDir 'Zilo.Agent.exe') `
+  -ArgumentList @('--self-test') -RedirectStandardOutput $agentStdout `
+  -RedirectStandardError $agentStderr -PassThru -NoNewWindow
+if (-not $agent.WaitForExit(30000)) {
+  try {
+    $agent.Kill()
+  } catch {
+    Fail "agent self-test timed out after 30 seconds and could not be terminated: $($_.Exception.Message)"
+  }
+  Fail 'agent self-test timed out after 30 seconds'
+}
+$agent.WaitForExit()
+$out = [IO.File]::ReadAllText($agentStdout)
+$err = [IO.File]::ReadAllText($agentStderr)
 Write-Host $out
-if ($LASTEXITCODE -ne 0 -or $out -ne 'Zilo.Agent scaffold: scanning is not implemented.') { Fail 'agent run' }
+if ($agent.ExitCode -ne 0) { Fail "agent self-test exit $($agent.ExitCode): $out$err" }
+if ($out.TrimEnd([char[]]"`r`n") -ne 'Zilo.Agent self-test: PASS') { Fail "unexpected agent self-test output: $out" }
+if ($err.TrimEnd([char[]]"`r`n") -ne '') { Fail "agent self-test stderr: $err" }
 
 Write-Host '=== uninstall'
 $rc = Msiexec @('/x', "`"$msiPath`"", '/qn', '/norestart', '/l*v', "`"$LogDir\uninstall.log`"")

@@ -24,3 +24,10 @@ Plan: `docs/tasks/T11.md`; base `add1d73` (frozen Core handoff).
 
 - Implementation and CI/package scopes dispatched independently with non-overlapping ownership.
 - Contract check launched against unchanged normative API files.
+- Contract check passed: 60 tests, 60 pass, 0 fail; Redocly lint and generated 2518-line
+  TypeScript surface compile under both pinned compiler versions.
+- Masters approved a narrow packaging exception through coordinator ask: add ASP.NET Core
+  runtime dependencies and metadata/installed-runtime assertions, retaining .NET/SANE checks.
+- CI/package syntax: bash -n passed; actionlint 1.7.7 passed (temporary custom runner config
+  for pre-existing macos-15-intel label); pinned yaml@2.8.1 parsing passed.
+- Native package installs and PowerShell parsing/execution not measured on this Linux host.

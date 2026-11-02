@@ -25,15 +25,21 @@ apt-get install -y -qq --no-install-recommends systemd desktop-file-utils >/dev/
 dpkg-query -W systemd desktop-file-utils
 
 step "dependency resolution (apt, recommends on)"
+step "package dependency metadata"
+depends=$(dpkg-deb -f "$deb" Depends)
+echo "Depends: $depends"
+printf '%s\n' "$depends" \
+  | grep -Eq '(^|,)[[:space:]]*aspnetcore-runtime-10\.0([[:space:]]*,|$)' \
+  || fail "package metadata missing aspnetcore-runtime-10.0 dependency"
 if [ "${ZILO_SMOKE_NO_RECOMMENDS:-}" = 1 ]; then
   # Rootless chroot: resolve with recommends, then install depends + the direct recommend only.
-  apt-get install -y --simulate "$deb" | grep -E '^Inst (zilo-agent|dotnet-runtime-10.0|libsane1|sane-airscan) '
+  apt-get install -y --simulate "$deb" | grep -E '^Inst (zilo-agent|dotnet-runtime-10.0|aspnetcore-runtime-10.0|libsane1|sane-airscan) '
   step "install (no transitive recommends; sane-airscan named explicitly)"
   apt-get install -y --no-install-recommends "$deb" sane-airscan
 else
   apt-get install -y "$deb"
 fi
-dpkg-query -W -f '${Package} ${Version} ${Status}\n' zilo-agent dotnet-runtime-10.0 libsane1 sane-airscan
+dpkg-query -W -f '${Package} ${Version} ${Status}\n' zilo-agent dotnet-runtime-10.0 aspnetcore-runtime-10.0 libsane1 sane-airscan
 
 step "files"
 dpkg -L zilo-agent
@@ -45,9 +51,15 @@ done
 [ -L /etc/systemd/user/default.target.wants/zilo-agent.service ] || fail "user unit not globally enabled"
 ls -l /etc/systemd/user/default.target.wants/zilo-agent.service
 
-step "agent runs against the distro .NET 10 runtime"
-out=$(/usr/bin/zilo-agent); echo "$out"
-[ "$out" = "Zilo.Agent scaffold: scanning is not implemented." ] || fail "unexpected agent output"
+step "bounded agent self-test against the distro .NET 10 runtime"
+if out=$(timeout --foreground 30s /usr/bin/zilo-agent --self-test 2>&1); then
+  rc=0
+else
+  rc=$?
+fi
+echo "$out"
+[ "$rc" -eq 0 ] || fail "agent self-test exit $rc"
+[ "$out" = "Zilo.Agent self-test: PASS" ] || fail "unexpected agent self-test output"
 
 step "unit and desktop entry validate"
 systemd-analyze --version | head -1

@@ -1,0 +1,35 @@
+name: Contract CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**'
+      - '.nvmrc'
+      - '.github/workflows/ci-contract.yml'
+  pull_request:
+    paths:
+      - 'api/**'
+      - '.nvmrc'
+      - '.github/workflows/ci-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-contract-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    name: Contract (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Contract check
+        run: bash api/tools/check.sh

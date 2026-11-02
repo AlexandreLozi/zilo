@@ -53,9 +53,10 @@ jobs:
         run: |
           dotnet test backend/Zilo.slnx --configuration Release --no-build --no-restore -p:RestoreLockedMode=true --logger trx --results-directory "$PWD/backend/artifacts/test-results" 2>&1 | Tee-Object backend/artifacts/logs/test.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Native agent smoke
+      - name: Bounded native agent self-test
+        timeout-minutes: 1
         run: |
-          dotnet backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll 2>&1 | Tee-Object backend/artifacts/logs/agent.log
+          dotnet backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll --self-test 2>&1 | Tee-Object backend/artifacts/logs/agent.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Upload logs and test results
         if: always()
