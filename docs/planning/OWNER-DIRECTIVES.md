@@ -227,3 +227,15 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
 ## OD-5 Reporting
 - The owner talks only to the liaison terminal. Masters send owner-facing questions to the liaison,
   which relays them.
+
+## OD-14 Bun preference, no migration now (owner suggestion, 2026-11-02; liaison decision)
+- **Owner:** prefers Bun where it is easy, because it is faster. This is a suggestion, not a
+  requirement. Don't break or slow current work for it.
+- **Decision: keep pnpm + Node 24 for the workspace.** Switching now would touch the lockfile, 16
+  CI references and the licence gate, which is built on `pnpm licenses list` (Bun has no
+  equivalent). The speed gain is dev-loop only: the shipped product is the browser SDK plus the
+  .NET agent, so Bun changes nothing for users.
+- **Allowed now:** Bun for standalone local scripts and one-off tooling that adds no second
+  lockfile and no CI dependency.
+- **Revisit** during the OD-13 hygiene task. Measure install and test time with pnpm against Bun,
+  and switch only if the gain is real and the licence gate has a replacement.
