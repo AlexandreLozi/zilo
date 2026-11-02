@@ -458,3 +458,14 @@ never completed. Required crash tests include failed BLOCK persistence → kill 
 prompt/mint, failed REMOVE-grant recovery only without lost block intent, clean grant retention and
 consistent unclean recovery without reset. The original fail-closed fallback remains until Task0's
 exact protocol/crash-window proof is approved; this is not permission to implement unproven recovery.
+
+**Task0 practical recovery/durability clarification** (Opus `msg_5cc8334330ea`, GPT
+`msg_03c317ee2f38`): blanket unclean-fence fail-closed is accepted as the safe fallback.
+After explicit confirmation, recovery of an unclean but valid/trusted snapshot may retain durable
+blocks while dropping grants. Copy distinguishes saved blocks from unsaved intent that cannot be
+recovered; this never permits automatic recovery. Corrupt private metadata uses the full quarantine
+path; foreign-owned/insecure/reparse paths still require trusted maintenance, not silent repair.
+Windows uses official temporary-file FlushFileBuffers plus ReplaceFile or
+MoveFileEx(WRITE_THROUGH|REPLACE_EXISTING), with NTFS namespace-flush limitations stated. Acceptance
+requires ordered flush requests and tested process-crash semantics, not an arbitrary-hardware
+power-loss guarantee. Final exact Task0 design approval still precedes implementation.
