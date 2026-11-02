@@ -59,6 +59,11 @@ internal sealed class AgentPipeline
         }
         if (route.Name == "token" && evaluation.Class == OriginClass.Allowed && _tokens.IssueRetryAfter(evaluation.Origin!) is { } retryAfter)
         { await Problem(context, 429, "rate-limited", true, requestId, route.CorsTier, evaluation.Origin, retryAfter); return; }
+        var consentRetry = route.Name == "consent-get" && evaluation.Class != OriginClass.DevEligible && !_origins.IsBaked(evaluation.Origin!)
+            ? _consent.PollRetryAfter(evaluation.Origin!)
+            : route.Name == "consent-post" && !_origins.IsBaked(evaluation.Origin!) ? _consent.PromptRetryAfter(evaluation.Origin!) : null;
+        if (consentRetry is { } consentRetryAfter)
+        { await Problem(context, 429, "rate-limited", true, requestId, route.CorsTier, evaluation.Origin, consentRetryAfter); return; }
         if (!await BodyIsValid(context, requestId, route.CorsTier, route.Name)) return;
         var afterBody = await RecheckAuthorization(context, route, requestId, evaluation);
         if (afterBody is null) return;
@@ -194,6 +199,8 @@ internal sealed class AgentPipeline
         if (context.Request.ContentLength > _options.Limits.MaxRequestBodyBytes) { await Problem(context, 413, "limits-exceeded", true, requestId, tier, context.Request.Headers.Origin, limitName: "maxRequestBodyBytes"); return false; }
         if (!string.IsNullOrEmpty(context.Request.ContentType) && !context.Request.ContentType.Split(';', 2)[0].Trim().Equals("application/json", StringComparison.OrdinalIgnoreCase))
         { await Problem(context, 400, "invalid-request", true, requestId, tier, context.Request.Headers.Origin); return false; }
+        if (context.Request.ContentLength > 0 && string.IsNullOrEmpty(context.Request.ContentType))
+        { await Problem(context, 400, "invalid-request", true, requestId, tier, context.Request.Headers.Origin); return false; }
         if (context.Request.Body.CanRead && (context.Request.ContentLength is > 0 or null))
         {
             await using var body = new MemoryStream();
@@ -203,6 +210,8 @@ internal sealed class AgentPipeline
             {
                 var n = await context.Request.Body.ReadAsync(buffer.AsMemory(0, (int)Math.Min(buffer.Length, (long)_options.Limits.MaxRequestBodyBytes + 1 - read)), context.RequestAborted);
                 if (n == 0) break;
+                if (string.IsNullOrEmpty(context.Request.ContentType))
+                { await Problem(context, 400, "invalid-request", true, requestId, tier, context.Request.Headers.Origin); return false; }
                 await body.WriteAsync(buffer.AsMemory(0, n), context.RequestAborted); read += n;
                 if (read > _options.Limits.MaxRequestBodyBytes) { await Problem(context, 413, "limits-exceeded", true, requestId, tier, context.Request.Headers.Origin, limitName: "maxRequestBodyBytes"); return false; }
             }
