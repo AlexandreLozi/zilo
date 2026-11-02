@@ -166,7 +166,7 @@ What the host must do for layers Zilo can't detect:
 
   ```js
   root.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && dialog.open) {
+    if (event instanceof KeyboardEvent && event.key === 'Escape' && dialog.open) {
       event.stopPropagation();
       dialog.close();
     }

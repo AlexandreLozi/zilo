@@ -314,7 +314,7 @@ async function openClosedRootModal(page: Page, handlesEscape: boolean): Promise<
     if (handles) {
       // packages/ui/README.md, "A layer inside a closed shadow root", word for word.
       root.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && dialog.open) {
+        if (event instanceof KeyboardEvent && event.key === 'Escape' && dialog.open) {
           event.stopPropagation();
           dialog.close();
         }
@@ -373,7 +373,7 @@ test('a closed shadow root whose host is marked role="dialog" is a newer layer',
     root.innerHTML = '<button>Pick</button>';
     // Like Radix, it cancels the Escape it handles (a native dialog under it must not close too).
     root.addEventListener('keydown', (event) => {
-      if (event.key !== 'Escape') return;
+      if (!(event instanceof KeyboardEvent) || event.key !== 'Escape') return;
       picker.dataset['escapePrevented'] = String(event.defaultPrevented);
       event.preventDefault();
       picker.hidden = true;
