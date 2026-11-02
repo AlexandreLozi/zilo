@@ -425,6 +425,75 @@ public sealed class VirtualBackendTests
             PngTestDecoder.Decode(page.Bytes.AsSpan()).Luma));
     }
 
+    [Fact]
+    public async Task First_acquisition_has_one_based_visible_labels_and_zero_based_metadata()
+    {
+        await using var backend = new VirtualScanBackend();
+        var page = await First(backend, Request("virtual", "flatbed", "gray", 1));
+
+        Assert.Equal(0, page.Index);
+        Assert.Equal(0, page.Sheet);
+        using var json = DecodeQrJson(page);
+        Assert.Equal(0, json.RootElement.GetProperty("page").GetInt32());
+        var seed = json.RootElement.GetProperty("seed").GetUInt32();
+
+        var decoded = PngTestDecoder.Decode(page.Bytes.AsSpan());
+        var settings = new PageSettings(75, ColorMode.Gray, PaperSize.A5, ScanSource.Flatbed,
+            "job-virtual-0001");
+        var layout = PageGenerator.Layout(settings, 0, Side.Front, seed);
+
+        var one = new[] { "..#..", ".##..", "..#..", "..#..", "..#..", "..#..", ".###." };
+        var pageNumberScale = Math.Max(1, Math.Min(layout.PageNumber.H / 7,
+            layout.PageNumber.W / one[0].Length));
+        AssertScaledGlyph(decoded.Rgb, decoded.Width, layout.PageNumber.X, layout.PageNumber.Y,
+            pageNumberScale, one, foreground: 0, background: 255);
+
+        var prefix = "75 DPI  gray  A5  flatbed  ";
+        var line2 = $"{prefix}P1 FRONT  SEED {seed}";
+        var pad = layout.Px(15);
+        var lineHeight = (layout.Banner.H - 3 * pad) / 2;
+        var available = layout.Banner.W - 2 * pad;
+        var bannerScale = Math.Max(1, Math.Min(lineHeight / 7,
+            available / (line2.Length * 6 - 1)));
+        var bannerX = layout.Banner.X + pad + prefix.Length * 6 * bannerScale;
+        var bannerY = layout.Banner.Y + 2 * pad + lineHeight;
+        var p = new[] { "####.", "#...#", "#...#", "####.", "#....", "#....", "#...." };
+        AssertScaledGlyph(decoded.Rgb, decoded.Width, bannerX, bannerY, bannerScale, p,
+            foreground: 255, background: 0);
+        AssertScaledGlyph(decoded.Rgb, decoded.Width, bannerX + 6 * bannerScale, bannerY,
+            bannerScale, one, foreground: 255, background: 0);
+    }
+
+    [Fact]
+    public async Task Feeder_three_completes_normally_after_three_zero_based_pages()
+    {
+        await using var backend = new VirtualScanBackend();
+        var pages = new List<Page>();
+        await foreach (var page in backend.AcquireAsync(
+            Request("virtual-feeder-3", "feeder", "gray", null, maxPagesLimit: 5),
+            TestContext.Current.CancellationToken))
+            pages.Add(page);
+
+        Assert.Equal(3, pages.Count);
+        Assert.Equal([0, 1, 2], pages.Select(page => page.Index));
+    }
+
+    private static void AssertScaledGlyph(byte[] rgb, int width, int x, int y, int scale,
+        string[] glyph, byte foreground, byte background)
+    {
+        for (var row = 0; row < 7; row++)
+        for (var column = 0; column < 6; column++)
+        for (var dy = 0; dy < scale; dy++)
+        for (var dx = 0; dx < scale; dx++)
+        {
+            var expected = column < 5 && glyph[row][column] == '#' ? foreground : background;
+            var offset = ((y + row * scale + dy) * width + x + column * scale + dx) * 3;
+            Assert.Equal(expected, rgb[offset]);
+            Assert.Equal(expected, rgb[offset + 1]);
+            Assert.Equal(expected, rgb[offset + 2]);
+        }
+    }
+
     private sealed class ImmediateTimeProvider : TimeProvider
     {
         public override ITimer CreateTimer(TimerCallback callback, object? state,
