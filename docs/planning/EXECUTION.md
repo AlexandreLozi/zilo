@@ -279,6 +279,35 @@ These amendments override the rows in §3 where they conflict.
 
 ## 4a. FE lane status (Opus edits; refreshed 2026-11-01 ~12:30 -03)
 
+**STOPPED FOR THE DAY (owner, 2026-11-02 18:05 -03).** The DeepSeek free quota is exhausted until
+21:00; the owner will retrigger. Resume points:
+- **T11p macOS slice** (head `38a859b` on `AlexandreLozi/t11p-integration`).
+  - Mac fix 6716f46 is option A: managed exclusive create plus fchmod, no variadic mode.
+  - The cancel-race fix 606e8e5 is in (GPT r1 PASS; hosted green on ubuntu, windows and intel on
+    f461903).
+  - Backend 41519793144: ubuntu and macos-15-intel green. Windows had 1 port flake. **macos-latest
+    (arm64) was cancelled twice by GitHub capacity** ("not acquired by Runner"), so there is NO
+    arm64 evidence yet.
+  - **Next:** Opus Mac r2 once real arm64 evidence exists.
+- **arm64 evidence path** (co-approved by GPT): spec `docs/tasks/ci-backend-arm-dispatch.md`, a
+  workflow_dispatch choice of macos-latest or macos-15 (never macos-14, which is retired), arm64
+  only, with an ARM64 assertion.
+  - DeepSeek ctx_d2d0be5af32d was released with no work. Worktree `ci-backend-arm-dispatch` is kept
+    and clean.
+  - **Next:** re-dispatch (DeepSeek, or GPT with a Claude review). Local commit, then one combined
+    push.
+- **Windows port flake**, `RealHttpTests.Occupied_primary_port_uses_only_ordered_fallback`
+  (WSAEADDRINUSE).
+  - Spec `docs/tasks/T11-port-flake-diagnosis.md`. DeepSeek ctx_a8fbb16fc69c was released with no
+    commit; its lead was a TIME_WAIT experiment (Linux binds over TIME_WAIT; Windows may not).
+  - Worktree `t11-port-flake` is kept and clean.
+  - **Next:** re-dispatch, diagnosis first.
+- **T11p Linux slice:** Claude r2 PASS (5dd38b4); carry-forwards in §4b.
+- **T11/T14** stay HELD. T11p still needs the Windows adapter, auth/Agent integration, recovery,
+  OS lifecycle, hosted 3-OS and the combined Claude HIGH review.
+- Merged today: T15 da42d9a, T12 403222d, T05 copy sync 4363ee6 (OD-11 pilot PASS), the ci-web path
+  filter cfecbdc, and main green again at 508b7c6 (the AGENTS.md format fix).
+
 **RESUMED (owner, 2026-11-02; OD-10, OD-11).** FE now:
 - **T15 MERGED da42d9a** (GPT r5 PASS). **T12 MERGED 403222d** (Opus r3 PASS; D-012 reuse).
 - **T05 copy sync MERGED** (OD-11 pilot PASS in 2 rounds: GPT r2 960aa56). DeepSeek now authors routine and medium work.
