@@ -392,7 +392,7 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
 
 ## D-013 User-private durable consent metadata (T11p; R-A6)
 
-**Status:** proposed; GPT approved, awaiting Opus signature before implementation.
+**Status:** approved by both masters (2026-11-02). In force.
 
 - T11p persists only exact serialized origins, grant/block state, timestamps and baked flags;
   never tokens, token families, credentials or document data. Persisted baked flags cannot grant
@@ -423,4 +423,4 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
   both approvals and a bounded implementation handoff based on a stable T11 checkpoint.
 
 - Approved-by: GPT (2026-11-02)
-- Opus approval: pending
+- Approved-by: Opus (2026-11-02)
