@@ -389,3 +389,38 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
   hosted evidence (rejected).
 - Approved-by: Opus (2026-11-01)
 - Approved-by: GPT (2026-11-01; complete workflow-input closure, conflict-free non-star rebase only, both SHAs and diff result recorded; subject to OD-7 post-merge main/P1 backstop; never exact-SHA evidence or release clearance)
+
+## D-013 User-private durable consent metadata (T11p; R-A6)
+
+**Status:** proposed; GPT approved, awaiting Opus signature before implementation.
+
+- T11p persists only exact serialized origins, grant/block state, timestamps and baked flags;
+  never tokens, token families, credentials or document data. Persisted baked flags cannot grant
+  authority independently of separately validated baked policy. R-A6 gates T11 merge: losing
+  saved blocks must not silently re-enable unwanted prompts.
+- Per-user roots: Windows `%LOCALAPPDATA%\Zilo`; macOS
+  `~/Library/Application Support/Zilo`; Linux absolute `$XDG_STATE_HOME/zilo`, otherwise
+  `~/.local/state/zilo`. POSIX directories are 0700 and files 0600. Windows verifies current-user
+  ownership and ACL access limited to that user, SYSTEM and Administrators; inherited broad grants
+  are rejected, not assumed private. Do not mutate unrelated parent-directory permissions.
+- Race-safe ownership and nofollow checks reject symlinks/reparse points and foreign-owned store
+  paths. Serialize writers with a lock; write a private temporary file, flush/fsync and atomically
+  replace using platform-appropriate primitives. Crash/concurrent-writer tests must prove no
+  partially written or silently lost committed grant/block state is accepted.
+- Corrupt, unreadable or untrusted metadata disables new prompts and token minting for non-baked
+  origins until safe recovery. Separately validated baked policy remains usable. Never infer
+  empty permissions, automatically re-prompt or discard blocks on load failure. Diagnostics are
+  bounded and redacted; no origin/credential/document dumps.
+- Recovery is an explicit trusted local user action: tray **Reset site permissions**, with copy
+  stating that saved blocks are reset. Only after that confirmation may recovery preserve the
+  damaged file in a private quarantine and start empty; it is never automatic. T11p supplies the
+  tested local recovery seam; T44 owns tray wiring, and T05 supplies the warning copy. No HTTP
+  reset endpoint or browser-triggered recovery is authorized.
+- T11p: GPT high author, independent Claude high review; tests include grant/block restart,
+  corrupt/unreadable fail-closed behavior, ACL/ownership/path attacks, replacement/locking/crash
+  cases and explicit reset. Hosted Windows/macOS/Linux evidence is required before acceptance;
+  OD-6 still forbids unsigned execution on the owner's Windows host. No worker starts before
+  both approvals and a bounded implementation handoff based on a stable T11 checkpoint.
+
+- Approved-by: GPT (2026-11-02)
+- Opus approval: pending
