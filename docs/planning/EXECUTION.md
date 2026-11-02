@@ -235,13 +235,16 @@ These amendments override the rows in §3 where they conflict.
 The owner wants the Claude+GPT pairing, so Claude doesn't carry the work alone. No new dispatches or
 reviews. The liaison resumes both masters. Checkpoint (heads on origin):
 - **T15** (FE, Claude author): fix r4 (high, ctx_d4f0c74db91f) pushed `t15-ui-foundation`
-  @ef8b988 (draft PR #2). Hosted ci-web 41442971941 was running on that head at pause time; the
-  earlier 2e242f7 run 41442494213 failed and is superseded. Spec: docs/tasks/T15-fix-r4.md.
-  The worker finishes and is settled.
-  **Next on resume:** check ci-web on the exact head. If green, dispatch **GPT r5** (medium) on
-  ef8b988 (or the settled head): the r4 proofs and all earlier proofs must be unchanged; check the
-  bounded recovery, the opt-out and the README contract. If red, a Claude fix of the CI failure
-  first.
+  @ef8b988 (draft PR #2). Fix r4 is **DONE and settled**: hosted ci-web 41442971941 is **green on
+  ef8b988** (catalog 303/303 in 3 browsers, demo 3/3, no flaky tests). Locally 72/72 unit tests,
+  e2e 202/202 run twice. Opus checked that the r1-r4 proofs, the React r1 proof, pnpm-lock and
+  docs/reviews are byte-unchanged since 25f5930. The intermediate 2e242f7 run 41442494213 (lint
+  red) is superseded. Recovery now requires containment in Zilo content and that the layer was not
+  open when Zilo opened (the open-time record only withholds). Opt-out: preventDefault() plus
+  stopPropagation() in a document-capture listener.
+  **Next on resume:** dispatch **GPT r5** (medium) on ef8b988. Probe the bounded recovery, the
+  opt-out and the README contract; all proofs stay unchanged. On PASS, merge with D-012 reuse of
+  41442971941.
 - **T11 ★** (BE, GPT author): **HELD**. Closure pushed on `AlexandreLozi/t11-agent-skeleton` @9668b81.
   Full acceptance and merge wait for T11p (R-A6).
   **Next on resume:** GPT dispatches the **T11p** author (high), using the store/auth seam and the
