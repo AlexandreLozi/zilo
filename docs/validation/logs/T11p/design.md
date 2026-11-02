@@ -347,3 +347,46 @@ milestones with actual red/green logs. Existing ci-backend only; ask before work
 Windows/macOS/Linux on exact resulting code SHA, one bounded run, no owner SAC execution or D-012
 star reuse. Report <=100 lines with exact tested SHA/run IDs and unresolved gates. Combined Claude
 HIGH, Opus queue and exact-resulting-SHA star CI remain external; no full T11 PASS or merge.
+
+## 9. Bounded official-Microsoft research update (Task 0 only)
+
+Coordinator authorized max10min research after checkpoint `fb0fd1a`; no code/test/native execution.
+Retrieved 2026-11-02; the sources below are Microsoft API documentation, not community Q&A.
+
+| Source | Documented guarantee and relevant limit |
+|---|---|
+| [CreateFileW](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew) | OPEN_REPARSE_POINT opens the link itself; it is not an all-ancestor nofollow promise. Pin/check components individually. WRITE_THROUGH requests NTFS metadata flushes, explicitly including rename changes resulting from the request. Hardware write-through support is not universal. |
+| [SetFileInformationByHandle](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-setfileinformationbyhandle) + [FILE_RENAME_INFO](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_rename_info) | Operates on the actual source handle; FileRenameInfo replaces existing destination when requested, and RootDirectory can anchor a relative target. This supplies a single rename request without a copy/delete fallback; these pages do not constitute a formal crash/power-loss atomicity guarantee for every filesystem. |
+| [File caching](https://learn.microsoft.com/en-us/windows/win32/fileio/file-caching) | Metadata is always cached; flush the file or open WRITE_THROUGH to store metadata changes. NO_BUFFERING alone is not a metadata-flush guarantee. |
+| [FlushFileBuffers](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-flushfilebuffers) | Flushes buffered information on the specified file handle with GENERIC_WRITE; volume-wide flush requires administrator privileges. No assumed directory-flush guarantee and no privilege escalation. |
+| [MoveFileExW](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-movefileexw) | WRITE_THROUGH says the operation waits until actually moved on disk; its explicit flush explanation is copy/delete. COPY_ALLOWED permits a non-rename fallback. Do not use COPY_ALLOWED or infer more than documented. |
+| [ReplaceFileW](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew) | REPLACEFILE_WRITE_THROUGH is **unsupported**. ACL merge-ignore flags may fail to preserve ACLs; partial-failure cases can leave changed names. Not the proposed primitive. |
+| [GetSecurityInfo](https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-getsecurityinfo) | Reads owner/DACL from a handle with READ_CONTROL, but explicitly does not handle concurrent security-descriptor changes. Handle anchoring is necessary, not magic ACL-change synchronization. Any query/change uncertainty fails closed; no claim against excluded same-user malware/admin capability. |
+
+**Recommendation for approval:** use retained CreateFileW handles with OPEN_REPARSE_POINT,
+WRITE_THROUGH, explicit protected security attributes and DELETE|GENERIC_WRITE|READ_CONTROL as
+needed; pin/validate ancestry and keep source handle open. Write private temp → FlushFileBuffers →
+SetFileInformationByHandle(FileRenameInfo, ReplaceIfExists=true, RootDirectory=validated root,
+simple fixed destination) → FlushFileBuffers on the still-open renamed source handle → verify its
+identity/ACL. Target local NTFS only until another filesystem is positively evidenced; unsupported
+filesystem/operation is unavailable, never a silent copy/delete fallback. No NO_BUFFERING sector
+alignment complexity, unsupported ReplaceFile WRITE_THROUGH, volume flush or admin requirement.
+Directory handle access/share flags must permit the internal target relative open; hosted tests
+must catch self-conflicting handles, not paper over them with FILE_SHARE_DELETE on ancestry.
+
+**Proposed fence refinement, approval required:** replace the Windows unlink-based fence clear
+with a permanent `session.fence` containing exactly either `zilo-consent-session-v1\n` (dirty,
+24 bytes) or `zilo-consent-clean-v1\n` (clean,22 bytes). Replace that file through the same flushed
+handle-rename helper, never clear it by delete. Unknown/missing marker in an existing store is
+unavailable. Startup replaces clean with dirty before publishing stored grants; clean shutdown
+replaces dirty with clean only after draining all writes. Reset preserves dirty throughout and
+quarantines a validated copy. Initialization writes dirty before empty snapshot; any interruption
+leaves fail-closed evidence. This is two fixed marker values, no intent journal or extra user data.
+If approved, apply the same marker representation on POSIX for one shared state machine, retaining
+POSIX directory fsync; update sections3/6/7 accordingly before implementation.
+
+This meets the coordinator's clarified *ordered flush requests + single namespace operation +
+process-crash evidence* target as a proposed implementation path, not an observed Windows result.
+Native structure layout/access/share compatibility, actual ACL preservation, atomic reader and
+kill/reopen behavior still require hosted Windows tests on the resulting SHA. No claim of formal
+hardware-power-loss proof, no new filesystem support promise, and **implementation remains paused**.
