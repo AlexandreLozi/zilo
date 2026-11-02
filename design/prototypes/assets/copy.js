@@ -114,9 +114,9 @@
     "state.auth-unavailable": {
       kind: "detection-state", surface: "Connect dialog",
       title: "Zilo can't finish connecting",
-      body: "This site and Zilo couldn't finish setting up the connection. Try again, or restart Zilo from its icon in the {trayArea}.",
+      body: "This site and Zilo couldn't finish setting up the connection. Let any scans already running finish, then try again.",
       primary: "Try again", secondary: "Close", announce: "assertive", t10: "n/a",
-      notes: "SDK state, not a wire code. Reached when a consent request or poll returns a state this SDK does not know (typed cause `consent-state-unknown`), or when a resource bound fails auth (`limits-exceeded`, for example the token-family limit; `retryAfterSeconds` is kept). No token is ever requested. Retryable: restarting Zilo drops its ephemeral families and jobs, so the copy offers it.",
+      notes: "SDK state, not a wire code. Two causes. Unknown consent: a consent request or poll returns a state this SDK does not know (`consent-state-unknown`, `detection.ts` 504-510); no token is requested there. Token issuance failure: `POST /zilo/v1/auth/token` was sent and failed, for example `limits-exceeded` on the token-family limit (`auth.ts` 177-185, `detection.ts` 551-558); `retryAfterSeconds` is kept. Retryable only by a new user action (`TRANSITIONS`). The copy offers no restart: a restart ends every scan in progress, including other tabs' and sites', and loses its pages (`api/CONTRACT.md` 422-426, 1291-1294), so it asks the user to let running scans finish first.",
     },
     "state.outdated": {
       kind: "detection-state", surface: "Update dialog",
