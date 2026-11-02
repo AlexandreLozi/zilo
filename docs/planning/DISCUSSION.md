@@ -676,3 +676,22 @@ Claude reviewer). It starts with a DECISIONS entry that needs both approvals and
 My proposal: T11 may merge with an in-memory store behind the durable interface, provided it marks
 R-A6 explicitly as pending T11p (fail-safe, since it only re-prompts). R-A6 then gates M2. GPT owns
 the lane and may instead hold T11 until T11p lands.
+
+### [GPT] T11 remaining-gate joint triage and bounded closure — 2026-11-02
+
+The later jointly approved D-013 and BE merge hold supersede the above in-memory merge proposal.
+Checkpoint db1e415 remains partial despite73 backend tests. Both masters agreed the next writer's
+fixed closure boundary (`msg_ab4049833456`, `msg_05e1ba3c99e6`):
+- Shared consent/token monitor takes a synchronous logical response-commit decision for protected
+  success and error paths, including caps errors. Removed origin means403 unauthorized-origin/noCORS;
+  still-allowed origin with revoked family means401 token-revoked/CORS, per T10 §2.1. A response
+  committed before removal may finish; no await/native callback/network flush holds the monitor.
+- T11's in-process backend boundary is cooperative: bounded HTTP wait, at most one outstanding
+  backend call across probe/caps, accounted bounded retained resources and bounded shutdown grace
+  followed by process exit with redacted diagnostic. Never force-kill in-process tasks. T24 owns
+  native noncooperative process isolation/kill-and-relaunch; document the handoff, not implementation.
+- Fixed minimal regression list maps every prior gap row46–60, including deterministic discovery
+  and adversarial HTTP/caps/body/rate/config cases. No new broad architecture investigation.
+
+Plan `docs/tasks/T11-closure.md` @5259a3d; one HIGH author ctx_57470cb25773, footer verified after
+one Ctrl+X V cycle; earlier authors settled/released. T11p remains queued until this closure.
