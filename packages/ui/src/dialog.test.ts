@@ -298,4 +298,107 @@ describe('<zilo-dialog>', () => {
       expect(document.activeElement?.id).toBe('host');
     });
   });
+
+  describe('newer layers', () => {
+    /** Records, per Escape, whether a host's document capture listener saw it claimed. */
+    function hostCapture(): { seen: boolean[]; stop: () => void } {
+      const seen: boolean[] = [];
+      const listener = (event: KeyboardEvent): void => {
+        if (event.key === 'Escape') seen.push(event.defaultPrevented);
+      };
+      document.addEventListener('keydown', listener, true);
+      const stop = (): void => {
+        document.removeEventListener('keydown', listener, true);
+      };
+      return { seen, stop };
+    }
+
+    /** Opens `dialog`, then adds `html` (a layer holding `#layer-action`) inside it and focuses it. */
+    function openLayerInside(dialog: ZiloDialog, html: string): HTMLElement {
+      dialog.show();
+      dialog.insertAdjacentHTML('beforeend', html);
+      const action = document.querySelector<HTMLElement>('#layer-action');
+      if (!action) throw new Error('fixture');
+      action.focus();
+      return action;
+    }
+
+    it('leaves Escape aimed into an open <dialog> inside it alone, then claims it again', () => {
+      const { dialog } = setup();
+      const host = hostCapture();
+      try {
+        openLayerInside(
+          dialog,
+          '<dialog id="layer" open><button id="layer-action">Act</button></dialog>',
+        );
+        const escape = press('Escape');
+        expect(escape.defaultPrevented).toBe(false);
+        expect(dialog.open).toBe(true);
+        // r1: with the newer layer gone, Zilo claims Escape before the host capture listener.
+        document.querySelector('#layer')?.remove();
+        document.querySelector<HTMLElement>('#name')?.focus();
+        press('Escape');
+        expect(host.seen).toEqual([false, true]);
+        expect(dialog.open).toBe(false);
+      } finally {
+        host.stop();
+      }
+    });
+
+    it('does not trap Tab inside a role="dialog" layer opened inside it', () => {
+      const { dialog } = setup();
+      openLayerInside(
+        dialog,
+        '<div role="dialog" aria-label="Layer"><button id="layer-action">Act</button></div>',
+      );
+      const outer = vi.fn();
+      document.body.addEventListener('keydown', outer);
+      const tab = press('Tab');
+      document.body.removeEventListener('keydown', outer);
+      expect(tab.defaultPrevented).toBe(false);
+      expect(outer).toHaveBeenCalledTimes(1);
+      expect(idOf(focused())).toBe('layer-action');
+    });
+
+    it('defers Escape and backdrop presses to a newer layer that does not hold focus', () => {
+      const { dialog } = setup();
+      dialog.show();
+      dialog.insertAdjacentHTML(
+        'beforeend',
+        '<div role="dialog" aria-label="Layer" id="layer"></div>',
+      );
+      expect(press('Escape').defaultPrevented).toBe(false);
+      const native = nativeDialog(dialog);
+      const at = { clientX: -5, clientY: -5, bubbles: true, composed: true };
+      native.dispatchEvent(new PointerEvent('pointerdown', at));
+      native.dispatchEvent(new MouseEvent('click', at));
+      expect(dialog.open).toBe(true);
+      document.querySelector('#layer')?.remove();
+      native.dispatchEvent(new PointerEvent('pointerdown', at));
+      native.dispatchEvent(new MouseEvent('click', at));
+      expect(dialog.open).toBe(false);
+    });
+
+    it('treats a role="dialog" element already there when it opened as its own content', () => {
+      const { dialog } = setup(
+        '<div role="dialog" aria-label="Inline"><button id="layer-action">Act</button></div>',
+      );
+      dialog.show();
+      document.querySelector<HTMLElement>('#layer-action')?.focus();
+      expect(press('Escape').defaultPrevented).toBe(true);
+      expect(dialog.open).toBe(false);
+    });
+
+    it('treats an enclosing host dialog as older', () => {
+      document.body.innerHTML = `
+        <div role="dialog" aria-label="Host">
+          <zilo-dialog heading="Nested"><button id="inner">Inner</button></zilo-dialog>
+        </div>`;
+      const dialog = document.querySelector('zilo-dialog');
+      if (!dialog) throw new Error('fixture');
+      dialog.show();
+      expect(press('Escape').defaultPrevented).toBe(true);
+      expect(dialog.open).toBe(false);
+    });
+  });
 });

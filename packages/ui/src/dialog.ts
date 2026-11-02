@@ -1,6 +1,14 @@
 import { ZiloElement, defineOnce, writeAttr, type ZiloDialogCloseReason } from './base.js';
 import { canReceiveFocus, deepActiveElement, tabbableElements } from './focus.js';
 import { createIcon } from './icons.js';
+import {
+  composedParent,
+  containsComposed,
+  findDeep,
+  isOpenLayer,
+  isTopmostCandidate,
+  openLayers,
+} from './layers.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 
 const css = `
@@ -141,7 +149,10 @@ footer:not(.has-content) {
 
 let instance = 0;
 
-/** Open dialogs, topmost last. Only the topmost one guards focus and takes Escape. */
+/**
+ * Open Zilo dialogs, topmost last. Only the topmost one guards focus and takes Escape, and only while
+ * no newer non-Zilo layer is above it (see `#newerLayer`).
+ */
 const openStack: ZiloDialog[] = [];
 
 /** Escape keydowns the topmost dialog claimed in the window capture phase (see `#onWindowKeydown`). */
@@ -164,10 +175,13 @@ const claimedEscapes = new WeakSet<Event>();
  * - Escape, the close button and a click on the backdrop (reason `outside`) fire the cancelable
  *   `zilo-cancel`; unless it is prevented, the dialog closes and fires `zilo-close` with the reason.
  *   `close()` closes with reason `api`.
- * - Host modals (Radix and similar, see the README's integration contract): only the topmost dialog
- *   reacts to Escape and outside clicks. Escape is claimed (`preventDefault()`) in the window capture
- *   phase, before a host's document capture listener, and Tab and Escape that the dialog handles do
- *   not propagate past it. Return focus falls back to the enclosing host dialog.
+ * - Layers (see the README's integration contract): only the topmost dialog reacts to Escape, Tab
+ *   and outside clicks, and only while it is the topmost layer. A newer layer (a `<dialog>`, popover
+ *   or `role="dialog"` element opened after it, inside it or above it) owns the keys and pointer
+ *   presses aimed at it; the dialog then does nothing, not even `preventDefault()`. Otherwise Escape
+ *   is claimed (`preventDefault()`) in the window capture phase, before a host modal's document
+ *   capture listener, and Tab and Escape that the dialog handles do not propagate past it. Return
+ *   focus falls back to the enclosing host dialog.
  * - The page behind does not scroll while open; the body scrolls inside the dialog.
  * - Two empty visually hidden live regions (polite and assertive) exist from construction, inside
  *   the dialog, for `announce()`.
@@ -225,6 +239,8 @@ export class ZiloDialog extends ZiloElement {
   #inerted: HTMLElement[] = [];
   /** The current pointer press started on the backdrop (outside the dialog box). */
   #pressedOutside = false;
+  /** Layers already open when this dialog opened: older than it, so they never own its input. */
+  #olderLayers = new Set<Element>();
   readonly #resize =
     typeof ResizeObserver === 'function'
       ? new ResizeObserver(() => {
@@ -310,8 +326,10 @@ export class ZiloDialog extends ZiloElement {
     });
     // Outside click: the backdrop's hits target the <dialog> itself, outside its box. Press and
     // release must both land outside, so a drag that ends on the backdrop does not close.
+    // While a newer layer is open, a press on the backdrop is outside that layer, not this dialog's.
+    // It is checked on press: the newer layer may close itself before the click.
     this.#dialog.addEventListener('pointerdown', (event) => {
-      this.#pressedOutside = this.#isBackdropHit(event);
+      this.#pressedOutside = this.#isBackdropHit(event) && this.#isTopmostLayer();
     });
     this.#dialog.addEventListener('click', (event) => {
       const outside = this.#pressedOutside && this.#isBackdropHit(event);
@@ -319,7 +337,7 @@ export class ZiloDialog extends ZiloElement {
       if (outside && openStack.at(-1) === this) this.#requestClose('outside');
     });
     this.#scrim.addEventListener('click', () => {
-      if (openStack.at(-1) === this) this.#requestClose('outside');
+      if (this.#isTopmostLayer()) this.#requestClose('outside');
     });
     this.#sync();
   }
@@ -447,6 +465,7 @@ export class ZiloDialog extends ZiloElement {
     this.#syncFooter();
     this.#syncDescription();
     this.#opener = deepActiveElement(this.ownerDocument);
+    this.#olderLayers = openLayers(this.ownerDocument);
     lockScroll(this.ownerDocument);
     if (typeof this.#dialog.showModal === 'function') {
       this.#dialog.showModal();
@@ -460,6 +479,9 @@ export class ZiloDialog extends ZiloElement {
     // Same listener and options on the same window register once, however many dialogs are open.
     this.ownerDocument.defaultView?.addEventListener('keydown', ZiloDialog.#onWindowKeydown, true);
     this.ownerDocument.addEventListener('focusin', this.#onDocumentFocusIn);
+    // An older layer that closes and opens again is newer than this dialog from then on.
+    this.ownerDocument.addEventListener('close', this.#onLayerClosed, true);
+    this.ownerDocument.addEventListener('toggle', this.#onLayerClosed, true);
     this.#syncScrollable();
     this.#resize?.observe(this.#body);
     this.#focusInitial();
@@ -514,6 +536,9 @@ export class ZiloDialog extends ZiloElement {
       view.removeEventListener('keydown', ZiloDialog.#onWindowKeydown, true);
     }
     this.ownerDocument.removeEventListener('focusin', this.#onDocumentFocusIn);
+    this.ownerDocument.removeEventListener('close', this.#onLayerClosed, true);
+    this.ownerDocument.removeEventListener('toggle', this.#onLayerClosed, true);
+    this.#olderLayers = new Set();
     if (this.#dialog.classList.contains('fallback')) {
       this.#dialog.classList.remove('fallback');
       this.#dialog.removeAttribute('open');
@@ -556,19 +581,60 @@ export class ZiloDialog extends ZiloElement {
   }
 
   /**
+   * The newer layer that owns input aimed at `target` (or, with `null`, any pointer press), if any:
+   * - a layer around the target that is not this dialog's own and not older than it: a nested
+   *   `<dialog>` (modal, or non-modal holding focus), popover or `role="dialog"` element inside this
+   *   dialog, or one above it in the top layer;
+   * - else a newer layer that takes input without holding focus: a modal `<dialog>` or light-dismiss
+   *   popover anywhere, or a `role="dialog"`/`aria-modal` element inside this dialog.
+   * Layers that enclose this dialog (the host modal) are older and never own its input.
+   */
+  #newerLayer(target: Node | null): Element | null {
+    for (let node = target; node && node !== this; node = composedParent(node)) {
+      if (!(node instanceof Element) || node === this.#dialog || this.#olderLayers.has(node))
+        continue;
+      if (!isOpenLayer(node)) continue;
+      if (containsComposed(node, this)) break;
+      return node;
+    }
+    return findDeep(
+      this.ownerDocument,
+      (el) =>
+        el !== this.#dialog &&
+        !this.#olderLayers.has(el) &&
+        isTopmostCandidate(el, () => containsComposed(this, el)) &&
+        !containsComposed(el, this),
+    );
+  }
+
+  /** This is the topmost Zilo dialog and no newer layer is open above or inside it. */
+  #isTopmostLayer(): boolean {
+    return this.#isOpen && openStack.at(-1) === this && this.#newerLayer(null) === null;
+  }
+
+  readonly #onLayerClosed = (event: Event): void => {
+    if (event.type === 'toggle' && (event as Event & { newState?: string }).newState !== 'closed')
+      return;
+    if (event.target instanceof Element) this.#olderLayers.delete(event.target);
+  };
+
+  /**
    * Window capture phase: runs before any document-level capture listener, which is where host
-   * modals such as Radix listen for Escape. While a Zilo dialog is open it is the topmost layer, so it
+   * modals such as Radix listen for Escape. While the topmost Zilo dialog is the topmost layer it
    * claims Escape with `preventDefault()` (Radix and similar libraries then leave their own dialog
    * open). The dialog itself still decides in its own keydown handler, so content inside it can keep
    * Escape by stopping propagation. Escape aimed outside the dialog (nothing focused) closes it here.
+   * Escape aimed at a newer layer, or sent while one is open, is left alone: no `preventDefault()`,
+   * so that layer closes the normal way (a native `cancel`, or its own listener).
    */
   static readonly #onWindowKeydown = (event: KeyboardEvent): void => {
     if (event.key !== 'Escape' || event.isComposing || event.defaultPrevented) return;
     const top = openStack.at(-1);
-    const target = event.target;
-    if (!top || !(target instanceof Node)) return;
+    const target = eventTarget(event);
+    if (!top || !target) return;
     // Only keys aimed at the top dialog's document (one listener serves each window).
     if ((target.ownerDocument ?? target) !== top.ownerDocument) return;
+    if (top.#newerLayer(target) !== null) return;
     event.preventDefault();
     claimedEscapes.add(event);
     if (!containsComposed(top, target)) top.#requestClose('escape');
@@ -585,9 +651,9 @@ export class ZiloDialog extends ZiloElement {
 
   readonly #onKeydown = (event: KeyboardEvent): void => {
     if (!this.#isOpen || openStack.at(-1) !== this) return;
-    if (event.defaultPrevented && !claimedEscapes.has(event)) return;
     if (event.key === 'Escape') {
-      if (event.isComposing) return;
+      // Only an Escape the window listener claimed for this dialog: not one it left to a newer layer.
+      if (event.isComposing || !claimedEscapes.has(event)) return;
       // Cancelling keydown stops the browser's own close request, so Escape is handled once; not
       // propagating keeps it from host modals' bubble-phase handlers.
       event.preventDefault();
@@ -596,6 +662,9 @@ export class ZiloDialog extends ZiloElement {
       return;
     }
     if (event.key !== 'Tab' || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.defaultPrevented) return;
+    // A newer layer inside this dialog (or open above it) runs its own focus handling.
+    if (this.#newerLayer(eventTarget(event)) !== null) return;
     event.preventDefault();
     // The dialog owns Tab while open: an enclosing host focus trap must not move focus again.
     event.stopPropagation();
@@ -620,22 +689,19 @@ export class ZiloDialog extends ZiloElement {
   /** Pulls focus back if it escapes (fallback mode, or a host script calling `focus()`). */
   readonly #onDocumentFocusIn = (event: FocusEvent): void => {
     if (openStack.at(-1) !== this) return;
-    const target = event.composedPath()[0];
+    const target = eventTarget(event);
     if (target instanceof Element && this.#containsDeep(target)) return;
+    // Focus that moved into a newer layer above this dialog stays there.
+    if (this.#newerLayer(target) !== null) return;
     const first = this.#contentTabStops()[0] ?? this.#heading;
     first.focus();
   };
 }
 
-/** True when `node` is `ancestor` or inside it, crossing shadow boundaries. */
-function containsComposed(ancestor: Node, node: Node): boolean {
-  let current: Node | null = node;
-  while (current) {
-    if (current === ancestor) return true;
-    const root = current.getRootNode();
-    current = current.parentNode ?? (root instanceof ShadowRoot ? root.host : null);
-  }
-  return false;
+/** The node an event was aimed at, inside open shadow roots. */
+function eventTarget(event: Event): Node | null {
+  const target = event.composedPath()[0] ?? event.target;
+  return target instanceof Node ? target : null;
 }
 
 /** The nearest composed ancestor of `el` that is a dialog (`<dialog>` or `role="dialog"`). */
