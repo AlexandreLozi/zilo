@@ -1,0 +1,66 @@
+Behavioral red/green run summaries (credential-bearing assertion payloads omitted).
+Compiler/setup failures are not behavioral-red evidence.
+
+atomic-red.log
+[xUnit.net 00:00:00.40]     Zilo.Agent.Tests.AtomicConsentTests.Removal_or_block_cannot_leave_an_issued_or_renewed_credential(block: True) [FAIL]
+[xUnit.net 00:00:00.41]     Zilo.Agent.Tests.AtomicConsentTests.Removal_or_block_cannot_leave_an_issued_or_renewed_credential(block: False) [FAIL]
+Failed!  - Failed:     2, Passed:     0, Skipped:     0, Total:     2, Duration: 44 ms - Zilo.Agent.Tests.dll (net10.0)
+
+atomic-green.log
+Passed!  - Failed:     0, Passed:    23, Skipped:     0, Total:    23, Duration: 834 ms - Zilo.Agent.Tests.dll (net10.0)
+
+discovery-red.log
+[xUnit.net 00:00:01.39]     Zilo.Agent.Tests.DiscoveryBoundTests.Ignored_cancellation_is_bounded_and_late_result_cannot_overwrite_cache [FAIL]
+[xUnit.net 00:00:01.40]     Zilo.Agent.Tests.DiscoveryBoundTests.Vanished_route_does_not_keep_a_backend_owner [FAIL]
+Failed!  - Failed:     2, Passed:     0, Skipped:     0, Total:     2, Duration: 1 s - Zilo.Agent.Tests.dll (net10.0)
+
+discovery-green.log
+Passed!  - Failed:     0, Passed:     2, Skipped:     0, Total:     2, Duration: 57 ms - Zilo.Agent.Tests.dll (net10.0)
+
+lifetime-red.log
+[xUnit.net 00:00:01.56]     Zilo.Agent.Tests.DiscoveryBoundTests.Host_disposes_each_backend_once_after_owned_work_finishes [FAIL]
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 1 s - Zilo.Agent.Tests.dll (net10.0)
+
+http-caps-red.log
+[xUnit.net 00:00:00.38]     Zilo.Agent.Tests.CapabilityBoundsTests.Unsupported_defaults_are_not_emitted(dpi: 300, color: "gray", size: "absent") [FAIL]
+[xUnit.net 00:00:00.39]     Zilo.Agent.Tests.CapabilityBoundsTests.Unsupported_defaults_are_not_emitted(dpi: 300, color: "color", size: "a4") [FAIL]
+[xUnit.net 00:00:00.39]     Zilo.Agent.Tests.CapabilityBoundsTests.Unsupported_defaults_are_not_emitted(dpi: 301, color: "gray", size: "a4") [FAIL]
+[xUnit.net 00:00:00.39]     Zilo.Agent.Tests.CapabilityBoundsTests.Nonfinite_or_nonpositive_dimensions_are_not_emitted(width: Infinity) [FAIL]
+[xUnit.net 00:00:00.39]     Zilo.Agent.Tests.CapabilityBoundsTests.Nonfinite_or_nonpositive_dimensions_are_not_emitted(width: NaN) [FAIL]
+[xUnit.net 00:00:00.50]     Zilo.Agent.Tests.ContinuationHttpTests.Token_request_matches_T10_optional_diagnostics_schema(body: "null") [FAIL]
+[xUnit.net 00:00:00.50]     Zilo.Agent.Tests.ContinuationHttpTests.Token_request_matches_T10_optional_diagnostics_schema(body: "{\"sdk\":false}") [FAIL]
+[xUnit.net 00:00:00.51]     Zilo.Agent.Tests.ContinuationHttpTests.Token_request_matches_T10_optional_diagnostics_schema(body: "{\"sdk\":{\"name\":42}}") [FAIL]
+[xUnit.net 00:00:00.51]     Zilo.Agent.Tests.ContinuationHttpTests.Token_request_matches_T10_optional_diagnostics_schema(body: "[]") [FAIL]
+[xUnit.net 00:00:00.52]     Zilo.Agent.Tests.ContinuationHttpTests.Token_issue_rate_is_checked_before_content_type_or_body [FAIL]
+Failed!  - Failed:    10, Passed:     2, Skipped:     0, Total:    12, Duration: 165 ms - Zilo.Agent.Tests.dll (net10.0)
+
+config-red-http-green.log
+[xUnit.net 00:00:00.39]     Zilo.Agent.Tests.ConfigurationBoundsTests.Unsafe_token_configuration_is_rejected_at_construction(ttl: 3600, grace: 301, family: 86400) [FAIL]
+[xUnit.net 00:00:00.39]     Zilo.Agent.Tests.ConfigurationBoundsTests.Unsafe_token_configuration_is_rejected_at_construction(ttl: 3600, grace: -1, family: 86400) [FAIL]
+[xUnit.net 00:00:00.39]     Zilo.Agent.Tests.ConfigurationBoundsTests.Unsafe_token_configuration_is_rejected_at_construction(ttl: 299, grace: 60, family: 86400) [FAIL]
+[xUnit.net 00:00:00.40]     Zilo.Agent.Tests.ConfigurationBoundsTests.Unsafe_token_configuration_is_rejected_at_construction(ttl: 0, grace: 60, family: 86400) [FAIL]
+[xUnit.net 00:00:00.40]     Zilo.Agent.Tests.ConfigurationBoundsTests.Unsafe_token_configuration_is_rejected_at_construction(ttl: 3600, grace: 60, family: 0) [FAIL]
+[xUnit.net 00:00:00.42]     Zilo.Agent.Tests.ConfigurationBoundsTests.Unsafe_agent_configuration_is_rejected_before_host_build [FAIL]
+[xUnit.net 00:00:00.42]     Zilo.Agent.Tests.ConfigurationBoundsTests.Nonpositive_discovery_timeout_is_rejected_at_construction [FAIL]
+[xUnit.net 00:00:00.42]     Zilo.Agent.Tests.ConfigurationBoundsTests.Unsafe_consent_arithmetic_is_rejected_at_construction [FAIL]
+Failed!  - Failed:     8, Passed:    12, Skipped:     0, Total:    20, Duration: 167 ms - Zilo.Agent.Tests.dll (net10.0)
+
+callback-red.log
+[xUnit.net 00:00:01.41]     Zilo.Agent.Tests.AtomicConsentTests.Native_cancellation_callbacks_do_not_run_under_authorization_monitor [FAIL]
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 1 s - Zilo.Agent.Tests.dll (net10.0)
+
+poll-red-callback-green.log
+[xUnit.net 00:00:00.38]     Zilo.Agent.Tests.AtomicConsentTests.Unknown_consent_polling_is_rate_limited_without_creating_authorization_state [FAIL]
+Failed!  - Failed:     1, Passed:     1, Skipped:     0, Total:     2, Duration: 35 ms - Zilo.Agent.Tests.dll (net10.0)
+
+history-red.log
+[xUnit.net 00:00:00.42]     Zilo.Agent.Tests.AtomicConsentTests.Expired_prompt_history_does_not_retain_rotating_removed_origins_forever [FAIL]
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 35 ms - Zilo.Agent.Tests.dll (net10.0)
+
+caps-http-red.log
+[xUnit.net 00:00:00.52]     Zilo.Agent.Tests.CapabilityHttpTests.Driver_defaults_are_completed_with_supported_bounded_values(range: True) [FAIL]
+[xUnit.net 00:00:00.54]     Zilo.Agent.Tests.CapabilityHttpTests.Driver_defaults_are_completed_with_supported_bounded_values(range: False) [FAIL]
+Failed!  - Failed:     2, Passed:     6, Skipped:     0, Total:     8, Duration: 207 ms - Zilo.Agent.Tests.dll (net10.0)
+
+final-agent.log
+Passed!  - Failed:     0, Passed:    60, Skipped:     0, Total:    60, Duration: 1 s - Zilo.Agent.Tests.dll (net10.0)
