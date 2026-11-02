@@ -1,0 +1,155 @@
+  Zilo.Core -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Virtual -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Security -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Naps2 -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Agent -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"version\":1", newText: "\"version\":2") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "https://clinic.example", newText: "HTTPS://CLINIC.EXAMPLE") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"baked\":false", newText: "\"baked\":false,\"denialStreak\":3") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "+00:00", newText: "+01:00") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"baked\":false", newText: "\"baked\":false,\"baked\":true") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"state\":\"blocked\"", newText: "\"state\":\"pending\"") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"version\":1", newText: "\"Version\":1") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"generation\":7", newText: "\"generation\":0") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"generation\":7", newText: "\"generation\":-1") [FAIL]
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"version\":1", newText: "\"version\":2") [9 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(String oldText, String newText) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 40
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "https://clinic.example", newText: "HTTPS://CLINIC.EXAMPLE") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(String oldText, String newText) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 40
+   at InvokeStub_ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"baked\":false", newText: "\"baked\":false,\"denialStreak\":3") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(String oldText, String newText) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 40
+   at InvokeStub_ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "+00:00", newText: "+01:00") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(String oldText, String newText) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 40
+   at InvokeStub_ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"baked\":false", newText: "\"baked\":false,\"baked\":true") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(String oldText, String newText) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 40
+   at InvokeStub_ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"state\":\"blocked\"", newText: "\"state\":\"pending\"") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(String oldText, String newText) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 40
+   at InvokeStub_ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"version\":1", newText: "\"Version\":1") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(String oldText, String newText) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 40
+   at InvokeStub_ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"generation\":7", newText: "\"generation\":0") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(String oldText, String newText) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 40
+   at InvokeStub_ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"generation\":7", newText: "\"generation\":-1") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(String oldText, String newText) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 40
+   at InvokeStub_ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "https://clinic.example", newText: "https://localhost") [FAIL]
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "https://clinic.example", newText: "http://clinic.example") [FAIL]
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"state\":\"blocked\"", newText: "\"state\":\"none\"") [FAIL]
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.ConsentSnapshotTests.Trailing_material_and_invalid_utf8_are_rejected [FAIL]
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.ConsentSnapshotTests.Duplicate_origins_cannot_hide_a_block_behind_a_grant [FAIL]
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.ConsentSnapshotTests.Private_snapshot_reconstructs_exact_block_state_without_extra_authority_fields [FAIL]
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.ConsentSnapshotTests.Oversized_file_is_rejected_before_deserialization [FAIL]
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "https://clinic.example", newText: "https://localhost") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(String oldText, String newText) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 40
+   at InvokeStub_ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "https://clinic.example", newText: "http://clinic.example") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(String oldText, String newText) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 40
+   at InvokeStub_ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(oldText: "\"state\":\"blocked\"", newText: "\"state\":\"none\"") [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(String oldText, String newText) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 40
+   at InvokeStub_ConsentSnapshotTests.Invalid_or_unapproved_metadata_is_not_a_snapshot(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Trailing_material_and_invalid_utf8_are_rejected [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Trailing_material_and_invalid_utf8_are_rejected() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 46
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Duplicate_origins_cannot_hide_a_block_behind_a_grant [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Duplicate_origins_cannot_hide_a_block_behind_a_grant() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 55
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Private_snapshot_reconstructs_exact_block_state_without_extra_authority_fields [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 7
+Actual:   0
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Private_snapshot_reconstructs_exact_block_state_without_extra_authority_fields() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 15
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.ConsentSnapshotTests.Oversized_file_is_rejected_before_deserialization [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.IO.InvalidDataException)
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentSnapshotTests.Oversized_file_is_rejected_before_deserialization() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentSnapshotTests.cs:line 61
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:    16, Passed:     0, Skipped:     0, Total:    16, Duration: 35 ms - Zilo.Agent.Tests.dll (net10.0)
