@@ -17,7 +17,7 @@ license: "Proprietary; bundled LGPL-2.1+ components ship as separate files (D-00
 description: |-
   Zilo local scanning agent (SP-4a packaging dry run).
   Per-user agent started by systemd --user; registers the zilo:// URL scheme.
-  This dry-run build is the T04b scaffold: it prints a notice and exits.
+  This build contains an HTTP skeleton with no scanner implementation; --self-test is bounded and exits.
 
 # Framework-dependent publish: the distro .NET 10 runtime is a hard dependency.
 # SANE comes from the system (D-002: SANE is used, not redistributed).
@@ -25,12 +25,14 @@ overrides:
   deb:
     depends:
       - dotnet-runtime-10.0
+      - aspnetcore-runtime-10.0
       - libsane1
     recommends:
       - sane-airscan
   rpm:
     depends:
       - dotnet-runtime-10.0
+      - aspnetcore-runtime-10.0
       - sane-backends
     recommends:
       - sane-airscan

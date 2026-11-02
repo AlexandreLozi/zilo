@@ -22,14 +22,18 @@ dnf -y -q install --setopt=install_weak_deps=False systemd desktop-file-utils fi
 rpm -q systemd desktop-file-utils
 
 step "dependency resolution (dnf, weak deps on)"
+step "package dependency metadata"
+rpm -qp --requires "$rpmf" | grep -Eq '^aspnetcore-runtime-10\.0($|[.(])' \
+  || fail "package metadata missing aspnetcore-runtime-10.0 dependency"
+echo "package metadata includes aspnetcore-runtime-10.0"
 if [ "${ZILO_SMOKE_NO_RECOMMENDS:-}" = 1 ]; then
-  dnf -y install --assumeno "$rpmf" 2>&1 | grep -E 'zilo-agent|dotnet-runtime-10.0|sane-backends |sane-airscan' || true
+  dnf -y install --assumeno "$rpmf" 2>&1 | grep -E 'zilo-agent|dotnet-runtime-10.0|aspnetcore-runtime-10.0|sane-backends |sane-airscan' || true
   step "install (no transitive weak deps; sane-airscan named explicitly)"
   dnf -y install --setopt=install_weak_deps=False "$rpmf" sane-airscan
 else
   dnf -y install "$rpmf"
 fi
-rpm -q zilo-agent dotnet-runtime-10.0 sane-backends sane-airscan
+rpm -q zilo-agent dotnet-runtime-10.0 aspnetcore-runtime-10.0 sane-backends sane-airscan
 
 step "files"
 rpm -ql zilo-agent
@@ -49,9 +53,15 @@ echo "rpm -V negative control: changed mode detected (exit nonzero), as expected
 chmod "$mode" "$dll"
 rpm -V zilo-agent || fail "rpm -V not clean after restoring mode"
 
-step "agent runs against the distro .NET 10 runtime"
-out=$(/usr/bin/zilo-agent); echo "$out"
-[ "$out" = "Zilo.Agent scaffold: scanning is not implemented." ] || fail "unexpected agent output"
+step "bounded agent self-test against the distro .NET 10 runtime"
+if out=$(timeout --foreground 30s /usr/bin/zilo-agent --self-test 2>&1); then
+  rc=0
+else
+  rc=$?
+fi
+echo "$out"
+[ "$rc" -eq 0 ] || fail "agent self-test exit $rc"
+[ "$out" = "Zilo.Agent self-test: PASS" ] || fail "unexpected agent self-test output"
 
 step "unit and desktop entry validate"
 systemd-analyze --version | head -1
