@@ -37,6 +37,20 @@ public sealed record AgentLimits
     public int JobMaxTtlSeconds { get; init; } = 28_800;
     public int TombstoneSeconds { get; init; } = 300;
     public int SseHeartbeatSeconds { get; init; } = 15;
+
+    public void Validate()
+    {
+        foreach (var property in typeof(AgentLimits).GetProperties())
+        {
+            var value = Convert.ToInt64(property.GetValue(this), System.Globalization.CultureInfo.InvariantCulture);
+            if (property.Name != nameof(TokenRenewGraceSeconds) && value <= 0)
+                throw new ArgumentOutOfRangeException(property.Name);
+        }
+        if (MaxPagesPerJob % 2 != 0 || MaxActiveJobsPerDevice != 1 || TokenTtlSeconds < 300 ||
+            TokenRenewGraceSeconds is < 0 or > 300 || FamilyMaxSeconds < 3600 || RevocationCleanupSeconds > 600 ||
+            DiscoveryTimeoutSeconds > 4_294_966)
+            throw new ArgumentOutOfRangeException(nameof(AgentLimits));
+    }
 }
 
 public sealed class AgentOptions
