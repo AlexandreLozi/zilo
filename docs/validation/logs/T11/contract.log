@@ -1,0 +1,386 @@
+== redocly lint (@redocly/cli@2.72.1)
+validating api/openapi.yaml...
+api/openapi.yaml: validated in 52ms
+
+Woohoo! Your API description is valid. 🎉
+2 problems are explicitly ignored.
+
+
+== scratch dir: /tmp/opencode/zilo-t10-types.CZZQJV
+== openapi-typescript@7.13.0
+✨ openapi-typescript 7.13.0
+🚀 /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/api/openapi.yaml → zilo-api.ts [71.6ms]
+== tsc --strict (typescript@6.0.3)
+== tsc --strict (typescript@5.9.3)
+== schema and rule tests (node --test api/tests)
+TAP version 13
+# Subtest: F1 deleteAfterExport is documented receipt-ambiguous and SDK-forbidden
+ok 1 - F1 deleteAfterExport is documented receipt-ambiguous and SDK-forbidden
+  ---
+  duration_ms: 0.894397
+  type: 'test'
+  ...
+# Subtest: F1 rule model: receive-then-DELETE keeps pages until every body is verified
+ok 2 - F1 rule model: receive-then-DELETE keeps pages until every body is verified
+  ---
+  duration_ms: 0.460436
+  type: 'test'
+  ...
+# Subtest: F2 rule model: token times are valid for every permitted TTL and capped by the family
+ok 3 - F2 rule model: token times are valid for every permitted TTL and capped by the family
+  ---
+  duration_ms: 2.364211
+  type: 'test'
+  ...
+# Subtest: F2 Limits forbid a TTL the renewal schedule cannot serve
+ok 4 - F2 Limits forbid a TTL the renewal schedule cannot serve
+  ---
+  duration_ms: 0.088383
+  type: 'test'
+  ...
+# Subtest: F2 rule model: renewal outcomes
+ok 5 - F2 rule model: renewal outcomes
+  ---
+  duration_ms: 0.178798
+  type: 'test'
+  ...
+# Subtest: F3 Token carries the family, not a session
+ok 6 - F3 Token carries the family, not a session
+  ---
+  duration_ms: 0.0693
+  type: 'test'
+  ...
+# Subtest: F3 no session vocabulary remains in the YAML
+ok 7 - F3 no session vocabulary remains in the YAML
+  ---
+  duration_ms: 0.210527
+  type: 'test'
+  ...
+# Subtest: F4 Limits declare the global and auth budgets
+ok 8 - F4 Limits declare the global and auth budgets
+  ---
+  duration_ms: 0.0966
+  type: 'test'
+  ...
+# Subtest: F4 renewToken declares 409 and 429
+ok 9 - F4 renewToken declares 409 and 429
+  ---
+  duration_ms: 0.166855
+  type: 'test'
+  ...
+# Subtest: F5 Unauthorized no longer grants CORS to a removed origin
+ok 10 - F5 Unauthorized no longer grants CORS to a removed origin
+  ---
+  duration_ms: 0.178409
+  type: 'test'
+  ...
+# Subtest: F5 PreflightDenied separates host-denied from the bodyless refusal
+ok 11 - F5 PreflightDenied separates host-denied from the bodyless refusal
+  ---
+  duration_ms: 0.112931
+  type: 'test'
+  ...
+# Subtest: F6 rule model: replay and close
+ok 12 - F6 rule model: replay and close
+  ---
+  duration_ms: 0.288084
+  type: 'test'
+  ...
+# Subtest: F6 async problems require a stable errorId
+ok 13 - F6 async problems require a stable errorId
+  ---
+  duration_ms: 39.513541
+  type: 'test'
+  ...
+# Subtest: F7 every open response enum accepts an unknown value
+ok 14 - F7 every open response enum accepts an unknown value
+  ---
+  duration_ms: 38.741226
+  type: 'test'
+  ...
+# Subtest: F7 request enums stay closed
+ok 15 - F7 request enums stay closed
+  ---
+  duration_ms: 7.329661
+  type: 'test'
+  ...
+# Subtest: F7 unknown events survive the envelope and stop at the known-event boundary
+ok 16 - F7 unknown events survive the envelope and stop at the known-event boundary
+  ---
+  duration_ms: 13.791383
+  type: 'test'
+  ...
+# Subtest: F8 full hello with every field is valid
+ok 17 - F8 full hello with every field is valid
+  ---
+  duration_ms: 7.518779
+  type: 'test'
+  ...
+# Subtest: F8 ConsentStatus requires the state's fields
+ok 18 - F8 ConsentStatus requires the state's fields
+  ---
+  duration_ms: 2.794188
+  type: 'test'
+  ...
+# Subtest: F9 rule model: cancel outcomes
+ok 19 - F9 rule model: cancel outcomes
+  ---
+  duration_ms: 0.079239
+  type: 'test'
+  ...
+# Subtest: F9 done never carries disposed
+ok 20 - F9 done never carries disposed
+  ---
+  duration_ms: 3.985948
+  type: 'test'
+  ...
+# Subtest: F9 rule model: page count completion versus safety bound
+ok 21 - F9 rule model: page count completion versus safety bound
+  ---
+  duration_ms: 0.140138
+  type: 'test'
+  ...
+# Subtest: F10 rule model: page size resolution
+ok 22 - F10 rule model: page size resolution
+  ---
+  duration_ms: 0.449057
+  type: 'test'
+  ...
+# Subtest: F10 rule model: resolution coercion
+ok 23 - F10 rule model: resolution coercion
+  ---
+  duration_ms: 0.125905
+  type: 'test'
+  ...
+# Subtest: F10 caps always carry complete defaults
+ok 24 - F10 caps always carry complete defaults
+  ---
+  duration_ms: 7.715659
+  type: 'test'
+  ...
+# Subtest: F11 rule model: selection snapshot
+ok 25 - F11 rule model: selection snapshot
+  ---
+  duration_ms: 0.188633
+  type: 'test'
+  ...
+# Subtest: F11 ExportRequest encodes the one-image selection
+ok 26 - F11 ExportRequest encodes the one-image selection
+  ---
+  duration_ms: 0.166526
+  type: 'test'
+  ...
+# Subtest: F12 every operation declares the global errors
+ok 27 - F12 every operation declares the global errors
+  ---
+  duration_ms: 0.160765
+  type: 'test'
+  ...
+# Subtest: F12 problem responses carry request ID and CORS headers
+ok 28 - F12 problem responses carry request ID and CORS headers
+  ---
+  duration_ms: 0.065337
+  type: 'test'
+  ...
+# Subtest: F12 the error-code list is frozen for T05
+ok 29 - F12 the error-code list is frozen for T05
+  ---
+  duration_ms: 2.704978
+  type: 'test'
+  ...
+# Subtest: F13 quality is not described as applying to TIFF
+ok 30 - F13 quality is not described as applying to TIFF
+  ---
+  duration_ms: 0.070778
+  type: 'test'
+  ...
+# Subtest: CONTRACT.md has an r1 resolution row for each of the 13 findings, naming real tests
+ok 31 - CONTRACT.md has an r1 resolution row for each of the 13 findings, naming real tests
+  ---
+  duration_ms: 0.492379
+  type: 'test'
+  ...
+# Subtest: r2-1 rule model: export-and-delete waits for a settled acquisition boundary
+ok 32 - r2-1 rule model: export-and-delete waits for a settled acquisition boundary
+  ---
+  duration_ms: 1.001457
+  type: 'test'
+  ...
+# Subtest: r2-1 R-X7 is normative and the export operation documents the boundary
+ok 33 - r2-1 R-X7 is normative and the export operation documents the boundary
+  ---
+  duration_ms: 0.265514
+  type: 'test'
+  ...
+# Subtest: r2-2 rule model: revoke and refill before cleanup never exceeds the physical bound
+ok 34 - r2-2 rule model: revoke and refill before cleanup never exceeds the physical bound
+  ---
+  duration_ms: 0.327935
+  type: 'test'
+  ...
+# Subtest: r2-2 R-L5 separates logical quotas from physical reservations
+ok 35 - r2-2 R-L5 separates logical quotas from physical reservations
+  ---
+  duration_ms: 0.33637
+  type: 'test'
+  ...
+# Subtest: r2-3 rule model: two tabs, a live old job, the final token, a 409 and a new scan
+ok 36 - r2-3 rule model: two tabs, a live old job, the final token, a 409 and a new scan
+  ---
+  duration_ms: 0.303114
+  type: 'test'
+  ...
+# Subtest: r2-3 rule model: no early rollover while the current token is renewable
+ok 37 - r2-3 rule model: no early rollover while the current token is renewable
+  ---
+  duration_ms: 0.083173
+  type: 'test'
+  ...
+# Subtest: r2-3 R-A9, R-A11, R-A15 and the YAML state one rollover policy
+ok 38 - r2-3 R-A9, R-A11, R-A15 and the YAML state one rollover policy
+  ---
+  duration_ms: 0.204879
+  type: 'test'
+  ...
+# Subtest: r2-4 an unknown resolution kind keeps the whole caps response decodable
+ok 39 - r2-4 an unknown resolution kind keeps the whole caps response decodable
+  ---
+  duration_ms: 32.550584
+  type: 'test'
+  ...
+# Subtest: r2-4 exactly two closed response discriminators remain
+ok 40 - r2-4 exactly two closed response discriminators remain
+  ---
+  duration_ms: 0.263468
+  type: 'test'
+  ...
+# Subtest: r2-4 rule model: unknown kind falls back to the default resolution, omitted from the request
+ok 41 - r2-4 rule model: unknown kind falls back to the default resolution, omitted from the request
+  ---
+  duration_ms: 3.717804
+  type: 'test'
+  ...
+# Subtest: r2-5 rule model: ordinary HTTPS eligibility excludes loopback; dev gives diagnostics only
+ok 42 - r2-5 rule model: ordinary HTTPS eligibility excludes loopback; dev gives diagnostics only
+  ---
+  duration_ms: 0.632306
+  type: 'test'
+  ...
+# Subtest: r2-5 R-T3 classifies loopback for every scheme and rejects baked loopback entries
+ok 43 - r2-5 R-T3 classifies loopback for every scheme and rejects baked loopback entries
+  ---
+  duration_ms: 0.076504
+  type: 'test'
+  ...
+# Subtest: r3 rule model: one root dot is removed for classification only; other empty labels reject
+ok 44 - r3 rule model: one root dot is removed for classification only; other empty labels reject
+  ---
+  duration_ms: 0.193931
+  type: 'test'
+  ...
+# Subtest: r3 R-T3 states the root-dot normalisation and the empty-label rejection
+ok 45 - r3 R-T3 states the root-dot normalisation and the empty-label rejection
+  ---
+  duration_ms: 0.122629
+  type: 'test'
+  ...
+# Subtest: N1 instanceId is authenticated-only, and agent-restarted is never a wire code or event
+ok 46 - N1 instanceId is authenticated-only, and agent-restarted is never a wire code or event
+  ---
+  duration_ms: 0.175329
+  type: 'test'
+  ...
+# Subtest: N1 rule model: SDK-local agent-restarted, retryable, no automatic rescan
+ok 47 - N1 rule model: SDK-local agent-restarted, retryable, no automatic rescan
+  ---
+  duration_ms: 6.377763
+  type: 'test'
+  ...
+# Subtest: N2 HelloPublic stays minimal; consent state comes from GET /auth/consent
+ok 48 - N2 HelloPublic stays minimal; consent state comes from GET /auth/consent
+  ---
+  duration_ms: 0.205595
+  type: 'test'
+  ...
+# Subtest: CONTRACT.md has a Fix r2 row for each residual and each new input, naming real tests
+ok 49 - CONTRACT.md has a Fix r2 row for each residual and each new input, naming real tests
+  ---
+  duration_ms: 0.44696
+  type: 'test'
+  ...
+# Subtest: control: documented public hello is valid
+ok 50 - control: documented public hello is valid
+  ---
+  duration_ms: 31.577956
+  type: 'test'
+  ...
+# Subtest: R-V4: response Driver accepts an unknown future value
+ok 51 - R-V4: response Driver accepts an unknown future value
+  ---
+  duration_ms: 2.003871
+  type: 'test'
+  ...
+# Subtest: R-V2: full hello cannot omit authenticated identity and limits
+ok 52 - R-V2: full hello cannot omit authenticated identity and limits
+  ---
+  duration_ms: 8.61946
+  type: 'test'
+  ...
+# Subtest: R-V2/D-004a: public hello cannot carry full-scope identity
+ok 53 - R-V2/D-004a: public hello cannot carry full-scope identity
+  ---
+  duration_ms: 11.445978
+  type: 'test'
+  ...
+# Subtest: R-J6: newly created queued job must report effective settings
+ok 54 - R-J6: newly created queued job must report effective settings
+  ---
+  duration_ms: 10.770195
+  type: 'test'
+  ...
+# Subtest: r2 control: known list and range resolution responses validate
+ok 55 - r2 control: known list and range resolution responses validate
+  ---
+  duration_ms: 0.984713
+  type: 'test'
+  ...
+# Subtest: r2 control: a malformed known resolution response remains invalid
+ok 56 - r2 control: a malformed known resolution response remains invalid
+  ---
+  duration_ms: 0.164967
+  type: 'test'
+  ...
+# Subtest: r2 R-V4: unknown response ResolutionCaps.kind survives decoding
+ok 57 - r2 R-V4: unknown response ResolutionCaps.kind survives decoding
+  ---
+  duration_ms: 0.102715
+  type: 'test'
+  ...
+# Subtest: r3 control: existing localhost and normalized IP loopback cases stay blocked
+ok 58 - r3 control: existing localhost and normalized IP loopback cases stay blocked
+  ---
+  duration_ms: 0.893321
+  type: 'test'
+  ...
+# Subtest: r3 root-qualified localhost is excluded from ordinary HTTPS eligibility
+ok 59 - r3 root-qualified localhost is excluded from ordinary HTTPS eligibility
+  ---
+  duration_ms: 0.648926
+  type: 'test'
+  ...
+# Subtest: r3 root-qualified localhost is diagnostics-only in dev and rejected from baked origins
+ok 60 - r3 root-qualified localhost is diagnostics-only in dev and rejected from baked origins
+  ---
+  duration_ms: 0.142119
+  type: 'test'
+  ...
+1..60
+# tests 60
+# suites 0
+# pass 60
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 260.677604
+OK: lint passed; generated types compile under --strict (2518 lines); tests passed
