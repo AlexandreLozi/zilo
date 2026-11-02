@@ -6,6 +6,7 @@ owner's requirements and working model, which are binding. Owner directives in
 `docs/planning/OWNER-DIRECTIVES.md` (OD-1 onward) are binding too and override older text.
 
 ## Collaboration protocol (masters and workers)
+
 - **Decisions:** `docs/planning/DECISIONS.md`. Each entry has an ID, the decision, rationale,
   alternatives, `Approved-by: Opus` and `Approved-by: GPT`. A decision without both approvals is
   not in force.
@@ -24,6 +25,7 @@ owner's requirements and working model, which are binding. Owner directives in
   `orca-ide skills get orca-cli` and `orca-ide skills get orchestration`.
 
 ## Workers, models and effort
+
 - **Model families and roles (OD-11):**
   - **DeepSeek V4.1 Flash Free (OpenCode):** routine and medium authoring.
   - **GPT-6.1 Sol (OpenCode):** back-end orchestration, ★ back-end authoring, and reviews of
@@ -41,6 +43,7 @@ owner's requirements and working model, which are binding. Owner directives in
 - **Effort is chosen per task** (OD-3). Compact or hand off any session over about 250k tokens.
 
 ## Git and CI
+
 - **Branches:** one per task (`t<NN>-<slug>`). Commit often and push your task branch.
 - **Merging:** only the Opus master merges to `main` (the merge queue), after the cross-family
   review passes and hosted CI is green, or under D-012 evidence reuse.
