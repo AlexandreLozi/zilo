@@ -24,3 +24,15 @@ Hosted run 41350207464 on `e39f524`: everything green except WebKit dark-theme a
 fixture (`color-contrast` on `#host-trigger`, a host button using the WebKit UA dark button style).
 Fixed in the fixture CSS (explicit themed colours for the host buttons and input); not a Zilo
 defect. Chromium and Firefox catalog re-run locally: 144 passed.
+
+## Fix r2 (Node 24.22.2, pnpm 11.17.0)
+
+| Step | Log | Result |
+|---|---|---|
+| Same acceptance chain, every `dist/` deleted first | `local-acceptance-fix-r2.log` | pass. Licence gate: 186 packages (no dependency change). Unit tests: ui 39, react 10, catalog 3, demo 1, sdk 1, dwt-compat 1, license-gate 10 |
+| `CI=1 pnpm e2e` | `local-e2e-fix-r2-webkit-blocked.log` (trimmed) | WebKit fails to launch (missing host libraries), which stops the recursive run |
+| `CI=1` Playwright per app, Chromium + Firefox | `local-e2e-fix-r2-chromium-firefox.log` | catalog 164 passed (82 per browser: 51 axe pages, 11 dialog keyboard/theme, 2 review-r1 proofs, 1 review-r2 proof, 10 host-modal, 7 nested-layers), demo 2 passed, none flaky |
+| Repeat (not kept as a log) | — | `nested-layers` + `review-r2`, Chromium + Firefox, `--repeat-each=10` and `=15`, `--retries=0`: all passed |
+| Negative control (not kept as a log) | — | with the 4ece1fe `dialog.ts` restored: `review-r2` fails, as do 5 of the 7 nested-layers tests in Chromium (inner Radix Escape, outside click, popover Escape, and both Tab tests) and 3 of the 5 new unit tests. The 2 r1/older-layer guards pass on both |
+
+Hosted `ci-web` remains the WebKit evidence.
