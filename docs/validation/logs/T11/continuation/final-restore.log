@@ -1,0 +1,8 @@
+  Determining projects to restore...
+  Restored /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Security/Zilo.Security.csproj (in 78 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Core/Zilo.Core.csproj (in 74 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 78 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 78 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 111 ms).
+  Restored /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj (in 124 ms).
+  2 of 8 projects are up-to-date for restore.
