@@ -95,6 +95,32 @@ public sealed class ConsentStore
         }
     }
 
+    // Non-consuming checks for normative rate-before-body ordering. The operation
+    // rechecks/consumes under this same monitor after a valid body is prepared.
+    public int? PollRetryAfter(string origin)
+    {
+        lock (_gate)
+        {
+            var now = _clock.UtcNow;
+            return _polls.TryGetValue(origin, out var queue) && queue.Count(at => now - at < TimeSpan.FromSeconds(1)) >= 2 ? 1 : null;
+        }
+    }
+
+    public int? PromptRetryAfter(string origin)
+    {
+        lock (_gate)
+        {
+            var now = _clock.UtcNow;
+            ExpireActivePrompt(now);
+            Trim(now);
+            _entries.TryGetValue(origin, out var entry);
+            if (_activePrompt is not null && (entry is null || entry.PromptGuid != _activePrompt)) return 1;
+            if (_globalPrompts.Count >= _options.GlobalPromptsPerHour) return 3600;
+            if (entry is not null && entry.State == "none" && entry.Prompts.Count >= _options.PerOriginPromptsPerHour) return 3600;
+            return null;
+        }
+    }
+
     public async ValueTask<ConsentResult> RequestAsync(string origin, CancellationToken cancellationToken = default)
     {
         Entry entry;

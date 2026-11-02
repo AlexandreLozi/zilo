@@ -229,7 +229,10 @@ public static class CapabilityValidator
         foreach (var source in caps.Sources)
         {
             if (string.IsNullOrWhiteSpace(source.Source) || source.ColorModes.IsDefaultOrEmpty || source.PageSizes.IsDefaultOrEmpty) throw new InvalidDataException("invalid capability snapshot");
-            if (!double.IsFinite(source.MaxAreaMm.WidthMm) || !double.IsFinite(source.MaxAreaMm.HeightMm) || source.MaxAreaMm.WidthMm <= 0 || source.MaxAreaMm.HeightMm <= 0 || source.Defaults.Resolution <= 0) throw new InvalidDataException("invalid capability snapshot");
+            if (!double.IsFinite(source.MaxAreaMm.WidthMm) || !double.IsFinite(source.MaxAreaMm.HeightMm) ||
+                !double.IsFinite(source.MaxAreaMm.WidthMm * source.MaxAreaMm.HeightMm) || source.MaxAreaMm.WidthMm <= 0 ||
+                source.MaxAreaMm.HeightMm <= 0 || source.Defaults.Resolution <= 0 || source.MaxPages is <= 0)
+                throw new InvalidDataException("invalid capability snapshot");
             if (!source.ColorModes.Contains(source.Defaults.ColorMode) || !source.PageSizes.Any(size => size.Id == source.Defaults.PageSize)) throw new InvalidDataException("invalid capability snapshot");
             if (caps.Limits?.MaxResolutionDpi is { } maxResolution && source.Defaults.Resolution > maxResolution) throw new InvalidDataException("invalid capability snapshot");
             foreach (var size in source.PageSizes) if (string.IsNullOrWhiteSpace(size.Id) || !double.IsFinite(size.WidthMm) || !double.IsFinite(size.HeightMm) || size.WidthMm <= 0 || size.HeightMm <= 0 || size.WidthMm > source.MaxAreaMm.WidthMm || size.HeightMm > source.MaxAreaMm.HeightMm) throw new InvalidDataException("invalid capability snapshot");

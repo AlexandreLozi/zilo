@@ -210,6 +210,7 @@ public sealed class AuthorizationRaceTests
 
     private sealed class GatedJsonContent : HttpContent
     {
+        public GatedJsonContent() { Headers.ContentType = new("application/json"); }
         public TaskCompletionSource<bool> FirstByteWritten { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource<bool> Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 

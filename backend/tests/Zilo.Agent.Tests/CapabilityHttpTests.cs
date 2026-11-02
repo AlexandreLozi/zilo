@@ -13,6 +13,61 @@ namespace Zilo.Agent.Tests;
 [Collection("Agent process")]
 public sealed class CapabilityHttpTests
 {
+    [Fact]
+    public async Task Unknown_resolution_kind_and_unknown_response_values_are_retained_with_safe_fallback_default()
+    {
+        var backend = new Backend
+        {
+            Caps = new("device", [new SourceCaps("future-source", new ResolutionCaps("future-resolution", [17, 29], 3, 999, 7),
+                ["future-color"], [new PageSize("future-page", 210, 297)], new SizeMm(210, 297), false, null, new SourceDefaults(300, "future-color", "future-page"))])
+        };
+        var (app, client) = await Start(backend);
+        await using var lifetime = app;
+        using var http = client;
+        using var response = await Caps(client);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        var source = body.RootElement.GetProperty("sources")[0];
+        Assert.Equal("future-source", source.GetProperty("source").GetString());
+        Assert.Equal("future-resolution", source.GetProperty("resolutions").GetProperty("kind").GetString());
+        Assert.Equal(17, source.GetProperty("resolutions").GetProperty("values")[0].GetInt32());
+        Assert.Equal(7, source.GetProperty("resolutions").GetProperty("step").GetInt32());
+        Assert.Equal(300, source.GetProperty("defaults").GetProperty("resolution").GetInt32());
+        Assert.Equal("future-color", source.GetProperty("defaults").GetProperty("colorMode").GetString());
+        Assert.Equal("future-page", source.GetProperty("defaults").GetProperty("pageSize").GetString());
+        await app.StopAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Theory]
+    [InlineData(double.NaN, 300, false)]
+    [InlineData(double.PositiveInfinity, 300, false)]
+    [InlineData(double.MaxValue, 300, false)]
+    [InlineData(-1, 300, false)]
+    [InlineData(210, int.MaxValue, false)]
+    [InlineData(210, 0, false)]
+    [InlineData(210, 300, true)]
+    public async Task Extreme_caps_or_unsupported_opaque_default_return_safe_contract_problem(double width, int dpi, bool invalidPages)
+    {
+        var backend = new Backend
+        {
+            Caps = new("device", [new SourceCaps("flatbed", ResolutionCaps.Unknown("future"), ["gray"], [], new SizeMm(width, 297), false,
+                invalidPages ? -1 : null, new SourceDefaults(dpi, "gray", "max"))])
+        };
+        var (app, client) = await Start(backend);
+        await using var lifetime = app;
+        using var http = client;
+        using var response = await Caps(client);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType!.MediaType);
+        var raw = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var problem = JsonDocument.Parse(raw);
+        Assert.Equal("unknown", problem.RootElement.GetProperty("code").GetString());
+        Assert.DoesNotContain("NaN", raw, StringComparison.Ordinal);
+        Assert.DoesNotContain("Infinity", raw, StringComparison.Ordinal);
+        Assert.DoesNotContain("sources", raw, StringComparison.Ordinal);
+        await app.StopAsync(TestContext.Current.CancellationToken);
+    }
+
     [Theory]
     [InlineData("not-found", 404, false)]
     [InlineData("device-busy", 409, true)]
