@@ -1,0 +1,26 @@
+3660c83330d8b6cc2f69ee8ed17333de5d61b904
+
+Running 4 tests using 4 workers
+
+  ✘  1 [webkit] › e2e/review-r3.spec.ts:55:1 › an older popover reopened in the same task becomes newer despite coalesced toggle events (1ms)
+  ✘  4 [webkit] › e2e/review-r3.spec.ts:76:1 › the documented host Escape prevention must still let the native child dismiss (1ms)
+  ✘  2 [webkit] › e2e/review-r3.spec.ts:4:1 › an older native dialog in an open shadow root becomes newer after close and reopen (0ms)
+  ✘  3 [webkit] › e2e/review-r3.spec.ts:30:1 › an older native dialog closed while detached becomes newer when reinserted and reopened (1ms)
+
+
+  1) [webkit] › e2e/review-r3.spec.ts:4:1 › an older native dialog in an open shadow root becomes newer after close and reopen 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Missing libraries:                                   ║
+    ║     libgtk-4.so.1                                    ║
+    ║     libgraphene-1.0.so.0                             ║
+    ║     libevent-2.1.so.7                                ║
+    ║     libopus.so.0                                     ║
+    ║     libgstallocators-1.0.so.0                        ║
+    ║     libgstapp-1.0.so.0                               ║
+    ║     libgstpbutils-1.0.so.0                           ║
+    ║     libgstaudio-1.0.so.0                             ║
+    ║     libgsttag-1.0.so.0                               ║
+    ║     libgstvideo-1.0.so.0                             ║

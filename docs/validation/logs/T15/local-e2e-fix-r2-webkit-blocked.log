@@ -1,0 +1,40 @@
+Scope: all 8 workspace projects
+✓ Lockfile passes supply-chain policies (verified 5h ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+Done in 395ms using pnpm v11.17.0
+$ pnpm -r --workspace-concurrency=1 e2e
+Scope: 7 of 8 workspace projects
+$ playwright test -c e2e/playwright.config.ts
+Running 3 tests using 3 workers
+  ✓  1 [chromium] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button (75ms)
+  ✘  2 [webkit] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button (1ms)
+  ✘  4 [webkit] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button (retry #1) (1ms)
+  ✓  3 [firefox] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button (627ms)
+  1) [webkit] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button ───────────────────────
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Missing libraries:                                   ║
+    ║     libgtk-4.so.1                                    ║
+    ║     libgraphene-1.0.so.0                             ║
+    ║     libevent-2.1.so.7                                ║
+    ║     libopus.so.0                                     ║
+    ║     libgstallocators-1.0.so.0                        ║
+    ║     libgstapp-1.0.so.0                               ║
+    ║     libgstpbutils-1.0.so.0                           ║
+    ║     libgstaudio-1.0.so.0                             ║
+    ║     libgsttag-1.0.so.0                               ║
+    ║     libgstvideo-1.0.so.0                             ║
+    ║     libgstgl-1.0.so.0                                ║
+    ║     libgstcodecparsers-1.0.so.0                      ║
+    ║     libgstfft-1.0.so.0                               ║
+    ║     libflite.so.1                                    ║
+    ║     libflite_usenglish.so.1                          ║
+    ║     libflite_cmu_grapheme_lang.so.1                  ║
+    ║     libflite_cmu_grapheme_lex.so.1                   ║
+    ║     libflite_cmu_indic_lang.so.1                     ║
+    ║     libflite_cmu_indic_lex.so.1                      ║
+    ║     libflite_cmulex.so.1                             ║
+    ║     libflite_cmu_time_awb.so.1                       ║
+    ║     libflite_cmu_us_awb.so.1                         ║

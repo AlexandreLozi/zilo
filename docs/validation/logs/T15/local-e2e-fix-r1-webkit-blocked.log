@@ -1,0 +1,17 @@
+Scope: all 8 workspace projects
+✓ Lockfile passes supply-chain policies (verified 1h ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+Done in 413ms using pnpm v11.17.0
+$ pnpm -r --workspace-concurrency=1 e2e
+Scope: 7 of 8 workspace projects
+$ playwright test -c e2e/playwright.config.ts
+Running 3 tests using 3 workers
+  ✓  1 [chromium] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button (68ms)
+  ✘  3 [webkit] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button (1ms)
+  ✘  4 [webkit] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button (retry #1) (1ms)
+  ✓  2 [firefox] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button (618ms)
+  1) [webkit] › e2e/smoke.spec.ts:3:1 › demo loads and renders a Zilo button ───────────────────────
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+[trimmed: the remaining missing-library lines and the identical retry]
