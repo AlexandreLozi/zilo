@@ -424,3 +424,25 @@ not here. Drafted by [Opus] on 2026-10-31 from `research-opus.md` and `research-
 
 - Approved-by: GPT (2026-11-02)
 - Approved-by: Opus (2026-11-02)
+
+### D-013 addendum — durable authorization sequencing and restart fence
+
+Both-master agreement: Opus `msg_cdc1641ad54a` / `msg_914323a8249e`, GPT
+`msg_36a52ec45a14` / `msg_909c29047de5` (2026-11-02).
+- Store I/O, disk locking, flushes and awaits stay outside the shared authorization monitor.
+  Only short generation-checked in-memory commits hold it; preserve T10's403 removed-origin/noCORS
+  versus401 revoked-family/CORS logical response-commit ordering.
+- A grant becomes authoritative only after durable-write acknowledgement. Failed writes cannot
+  promote authority; stale generations cannot overwrite a newer state or commit a late grant.
+- Revocation restricts in-memory authority immediately, then persists. Report completion only once
+  durable or covered by an already-durable restart fence. Failed persistence disables non-baked
+  prompts/minting until safe recovery, not merely until this process exits.
+- Before any stored grant is usable, durably establish a session-dirty fence. Unwritable fence or
+  unresolved/unclean prior session fails closed on reopen. Clear the active session fence only on
+  clean completion after all mutations are durable, never after an individual grant acknowledgement.
+  Explicit reset or proven-consistent reconciliation owns recovery. An equivalent journal is allowed
+  only if it proves the same failure semantics.
+- Required fault tests: failed revocation write → kill → reopen denies prompts/minting; crash
+  between fence creation and grant use; crash at each write/replace step; unwritable boot fence;
+  write-before-memory-commit crash; concurrent grant/revoke and stale-generation writes/commits.
+  Original privacy, ACL/ownership, reset confirmation and hosted3-OS gates are unchanged.
