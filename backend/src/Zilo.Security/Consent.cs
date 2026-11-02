@@ -103,10 +103,10 @@ public sealed class ConsentStore
         {
             var now = _clock.UtcNow;
             ExpireActivePrompt(now);
+            Trim(now);
             _entries.TryGetValue(origin, out var existingForOrigin);
             if (_activePrompt is not null && (existingForOrigin is null || existingForOrigin.PromptGuid != _activePrompt))
                 return new(StatusReadOnly(origin), 429, 1, "rate-limited");
-            Trim(now);
             if (_globalPrompts.Count >= _options.GlobalPromptsPerHour)
                 return new(StatusReadOnly(origin), 429, 3600, "rate-limited");
             if (existingForOrigin is not null)
@@ -258,7 +258,13 @@ public sealed class ConsentStore
     private void Trim(DateTimeOffset now)
     {
         while (_globalPrompts.Count > 0 && now - _globalPrompts.Peek() >= TimeSpan.FromHours(1)) _globalPrompts.Dequeue();
-        foreach (var e in _entries.Values) while (e.Prompts.Count > 0 && now - e.Prompts.Peek() >= TimeSpan.FromHours(1)) e.Prompts.Dequeue();
+        foreach (var e in _entries.Values)
+        {
+            Expire(e, now);
+            while (e.Prompts.Count > 0 && now - e.Prompts.Peek() >= TimeSpan.FromHours(1)) e.Prompts.Dequeue();
+        }
+        foreach (var origin in _entries.Where(pair => pair.Value.State == "none" && pair.Value.Prompts.Count == 0 && pair.Value.DenialStreak == 0).Select(pair => pair.Key).ToArray())
+            _entries.Remove(origin);
     }
 
     private sealed class Entry

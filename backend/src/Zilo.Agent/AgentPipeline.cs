@@ -121,7 +121,7 @@ internal sealed class AgentPipeline
                     var currentCapsAuth = await RecheckAuthorization(context, route, requestId);
                     if (currentCapsAuth is null) return;
                     if (caps is null) { await Problem(context, 404, "not-found", true, requestId, route.CorsTier, evaluation.Origin); return; }
-                    CapabilityValidator.Validate(caps);
+                    caps = CapabilityDefaults.Complete(caps, _options.Limits);
                     await WriteJson(context, caps, 200, requestId, route.CorsTier, currentCapsAuth.Origin); return;
                 }
                 catch (OperationCanceledException) { throw; }

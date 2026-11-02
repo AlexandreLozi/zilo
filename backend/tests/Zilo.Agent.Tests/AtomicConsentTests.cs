@@ -8,6 +8,22 @@ public sealed class AtomicConsentTests
     private const string Origin = "https://example.test";
 
     [Fact]
+    public async Task Expired_prompt_history_does_not_retain_rotating_removed_origins_forever()
+    {
+        var clock = new Clock();
+        var consent = new ConsentStore(clock: clock);
+        for (var index = 0; index < 50; index++)
+        {
+            clock.UtcNow = clock.UtcNow.AddHours(25);
+            var origin = $"https://site-{index}.test";
+            Assert.Equal(202, (await consent.RequestAsync(origin, TestContext.Current.CancellationToken)).HttpStatus);
+            consent.Remove(origin);
+        }
+        var entries = (System.Collections.IDictionary)typeof(ConsentStore).GetField("_entries", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(consent)!;
+        Assert.InRange(entries.Count, 0, 1);
+    }
+
+    [Fact]
     public async Task Unknown_consent_polling_is_rate_limited_without_creating_authorization_state()
     {
         var consent = new ConsentStore();
