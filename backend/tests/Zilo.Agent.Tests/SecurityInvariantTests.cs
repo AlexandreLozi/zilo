@@ -55,7 +55,7 @@ public sealed class SecurityInvariantTests
         await prompt.Finished.Task.WaitAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal("none", (await store.GetAsync("https://stale.example", TestContext.Current.CancellationToken)).State);
-        Assert.True(prompt.CancellationRequested);
+        await prompt.FirstCancelled.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class SecurityInvariantTests
         await prompt.Finished.Task.WaitAsync(TestContext.Current.CancellationToken);
         var next = await store.RequestAsync("https://next.example", TestContext.Current.CancellationToken);
         Assert.Equal("pending", next.Status.State);
-        Assert.True(prompt.CancellationRequested);
+        await prompt.FirstCancelled.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -124,14 +124,29 @@ public sealed class SecurityInvariantTests
 
     private sealed class GatePrompt : INativeConsentPrompt
     {
+        private readonly object _sync = new();
+        private readonly List<TaskCompletionSource<bool>> _cancellations = [];
         private TaskCompletionSource<ConsentDecision> _completion = NewCompletion();
         public TaskCompletionSource<bool> Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource<bool> Finished { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public bool CancellationRequested { get; private set; }
+        // One cancellation signal per RequestAsync call. Only the first call's signal is observed,
+        // so a later prompt (the timeout test's next.example call) cannot satisfy the first call's
+        // observation. Completing the signal is ordered by the token callback itself, not by the
+        // wait's own cancellation, which may run first (CTS callbacks are LIFO).
+        public TaskCompletionSource<bool> FirstCancelled
+        {
+            get { lock (_sync) return _cancellations[0]; }
+        }
         public ValueTask<ConsentDecision> RequestAsync(string exactOrigin, CancellationToken cancellationToken = default)
         {
+            TaskCompletionSource<bool> cancelled;
+            lock (_sync)
+            {
+                cancelled = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                _cancellations.Add(cancelled);
+            }
             Started.TrySetResult(true);
-            cancellationToken.Register(() => CancellationRequested = true);
+            cancellationToken.Register(() => cancelled.TrySetResult(true));
             return new(WaitAsync(cancellationToken));
         }
         private async Task<ConsentDecision> WaitAsync(CancellationToken token) { try { return await _completion.Task.WaitAsync(token); } finally { Finished.TrySetResult(true); } }
