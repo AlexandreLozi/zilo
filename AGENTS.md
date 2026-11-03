@@ -21,6 +21,8 @@ owner's requirements and working model, which are binding. Owner directives in
   - Message a peer: `orca-ide terminal send --terminal <handle> --text "<msg>" --enter --json`.
   - Read a peer: `orca-ide terminal read --terminal <handle> --screen --json`.
   - Keep messages short and point to files for long content.
+  - Never put `@` in a message to an OpenCode terminal. It opens the file-mention popup and
+    swallows Enter, so the message sits unsent. Write `at <sha>` instead.
 - **Orca CLI:** use `orca-ide`, never bare `orca`. Load the guides with
   `orca-ide skills get orca-cli` and `orca-ide skills get orchestration`.
 
