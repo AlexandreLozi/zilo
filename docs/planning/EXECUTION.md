@@ -352,8 +352,14 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
     - **P2-1:** native fixtures, so the single hosted run can carry them: foreign owner,
       inherited/deny/Everyone ACEs, process death with reopen, and an external no-share-delete
       handle on the target.
-    - **P2-2:** a bounded rename retry on a sharing violation (32) or access denied (5), or an
-      explicitly recorded trade-off.
+    - **P2-2: both masters co-approved the explicit fail-closed no-retry trade-off for this slice**
+      (GPT proposal msg_7468fdfc9bae). Conditions:
+      1. the report documents the transient 32/5 availability cost and the preserved temp;
+      2. the case-4 fixture asserts the native outcome;
+      3. it is **carried forward to the recovery slice and T11p full acceptance**: a bounded retry,
+         an in-process recovery, or native evidence that it's rare. A store unavailable until
+         restart is not acceptable for M6.
+    - The GPT fix `task_ff191956b0d3` / `ctx_845774123383` is dispatched (local, HOLD PUSH).
     - **P3:** a SID-in-ACE bound, minimal access for ancestors, and leftover-temp behaviour as a
       recovery-slice input.
   - **Next:**
