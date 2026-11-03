@@ -47,7 +47,8 @@ public sealed class ConsentStore : IAsyncDisposable
         : this(options, clock, nativeConsent, persistence, null) { }
 
     internal ConsentStore(ConsentOptions? options, IClock? clock, INativeConsentPrompt? nativeConsent,
-        IConsentPersistence? persistence, Func<Task>? beforeNativeDecisionCommit)
+        IConsentPersistence? persistence, Func<Task>? beforeNativeDecisionCommit,
+        TimeProvider? shutdownTimeProvider = null)
     {
         _beforeNativeDecisionCommit = beforeNativeDecisionCommit;
         _options = options ?? new();
@@ -60,7 +61,8 @@ public sealed class ConsentStore : IAsyncDisposable
         if (persistence is not null)
             _coordinator = new ConsentPersistenceCoordinator(persistence, _gate, HydrateLocked,
                 CurrentRecordLocked, _options.DenialCooldownSeconds, CommitLocked,
-                origin => _entries.ContainsKey(origin), origin => PruneEntryLocked(origin, _clock.UtcNow));
+                origin => _entries.ContainsKey(origin), origin => PruneEntryLocked(origin, _clock.UtcNow),
+                shutdownTimeProvider);
     }
 
     public ValueTask<ConsentStatus> GetAsync(string origin, CancellationToken cancellationToken = default)
@@ -248,6 +250,9 @@ public sealed class ConsentStore : IAsyncDisposable
             ApplyMemoryMutationLocked(GetOrCreate(origin), origin, decision, managed, now);
             return null;
         }
+        // Rejected postseal intent must not mutate metadata or reuse the old dirty-fence proof.
+        if (_coordinator.AdmissionSealedLocked)
+            return _coordinator.ReserveLocked(origin, decision, managed, now);
         _entries.TryGetValue(origin, out var entry);
         if (entry is null)
         {

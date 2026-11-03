@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using Xunit;
+using Zilo.Security;
 using Zilo.Security.Persistence;
 
 namespace Zilo.Agent.Tests;
@@ -214,6 +215,50 @@ public sealed class WindowsConsentDirectoryTests
             await first.DisposeAsync();
         }
         await using var next = WindowsConsentDirectory.Open(fixture.Store);
+    }
+
+    [Fact(SkipUnless = nameof(WindowsHost), Skip = NativeSkip)]
+    public async Task Native_pending_shutdown_retains_lock_32_until_owned_write_and_release_settle()
+    {
+        // The barrier holds a coordinator-owned write, not a simulated abort of a native syscall.
+        using var fixture = new Fixture();
+        var clock = new ConsentShutdownTests.ManualShutdownTime();
+        var persistence = new HeldNativePersistence(WindowsConsentDirectory.Open(fixture.Store));
+        await using var store = new ConsentStore(null, null, null, persistence, null, shutdownTimeProvider: clock);
+        await store.PersistenceCoordinator!.InitializeAsync(Token);
+        var mutation = store.BlockAsync("https://example.test", Token).AsTask();
+        await persistence.WriteEntered.Task.WaitAsync(TimeSpan.FromSeconds(10), Token);
+        var stop = store.PersistenceCoordinator.StopAsync(Token).AsTask();
+        clock.Advance(TimeSpan.FromSeconds(5));
+        try
+        {
+            await stop.WaitAsync(TimeSpan.FromSeconds(10), Token);
+            Assert.True(store.PersistenceCoordinator.ShutdownPending);
+            var error = Assert.Throws<IOException>(() => OpenOnceWithLockDiagnostics(fixture.Store));
+            AssertSharingBudgetExhausted(error);
+        }
+        finally { persistence.WriteRelease.TrySetResult(); }
+        await mutation.WaitAsync(TimeSpan.FromSeconds(10), Token);
+        await persistence.Released.Task.WaitAsync(TimeSpan.FromSeconds(10), Token);
+        await using var next = WindowsConsentDirectory.Open(fixture.Store);
+    }
+
+    private sealed class HeldNativePersistence(IPrivateConsentDirectory directory) : IConsentPersistence
+    {
+        private readonly ConsentSession _session = new(directory);
+        internal TaskCompletionSource WriteEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource WriteRelease { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource Released { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public ValueTask<ConsentOpenResult> OpenSessionAsync(CancellationToken cancellationToken = default) => _session.OpenAsync(cancellationToken);
+        public async ValueTask WriteSnapshotAsync(ConsentSnapshot snapshot, CancellationToken cancellationToken = default)
+        {
+            WriteEntered.TrySetResult();
+            await WriteRelease.Task;
+            await _session.WriteAsync(snapshot, cancellationToken);
+        }
+        public ValueTask CompleteSessionAsync(long durableGeneration, CancellationToken cancellationToken = default) => _session.CompleteAsync(durableGeneration, cancellationToken);
+        public ValueTask<ConsentOpenResult> ResetAsync(ConsentResetConfirmation confirmation, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public async ValueTask DisposeAsync() { await _session.DisposeAsync(); Released.TrySetResult(); }
     }
 
     [Fact(SkipUnless = nameof(WindowsHost), Skip = NativeSkip)]

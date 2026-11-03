@@ -28,19 +28,33 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
     private ConsentStorageHealth _health = ConsentStorageHealth.Starting;
     private Exception? _failure;
     private bool _durableFence;
+    private static readonly TimeSpan ShutdownBudget = TimeSpan.FromSeconds(5);
+    private readonly TimeProvider _shutdownTimeProvider;
+    private readonly Func<Task>? _beforeOpenDispatch;
+    private TaskCompletionSource? _opening;
+    private TaskCompletionSource? _shutdownOwner;
+    private TaskCompletionSource? _shutdownDecision;
+    private long _shutdownStarted;
+    private bool _shutdownMayClean, _shutdownAbandoned, _cleanShutdownSucceeded;
 
     internal ConsentPersistenceCoordinator(IConsentPersistence persistence, object gate,
         Action<ConsentSnapshot> hydrateLocked, Func<string, StoredConsent?> currentLocked,
         int denialCooldownSeconds, Func<ConsentReservation, bool> commitLocked,
-        Func<string, bool> hasEntryLocked, Action<string> pruneEntryLocked)
+        Func<string, bool> hasEntryLocked, Action<string> pruneEntryLocked,
+        TimeProvider? shutdownTimeProvider = null, Func<Task>? beforeOpenDispatch = null)
     {
         _persistence = persistence; _gate = gate; _hydrateLocked = hydrateLocked; _currentLocked = currentLocked;
         _denialCooldownSeconds = denialCooldownSeconds; _commitLocked = commitLocked;
         _hasEntryLocked = hasEntryLocked; _pruneEntryLocked = pruneEntryLocked;
+        _shutdownTimeProvider = shutdownTimeProvider ?? TimeProvider.System;
+        _beforeOpenDispatch = beforeOpenDispatch;
     }
 
     internal ConsentStorageHealth Health { get { lock (_gate) return _health; } }
     internal int OutstandingReservations { get { lock (_gate) return _owned.Count; } }
+    internal bool ShutdownPending { get { lock (_gate) return _shutdownOwner is not null && !_shutdownOwner.Task.IsCompleted; } }
+    internal bool CleanShutdownSucceeded { get { lock (_gate) return _cleanShutdownSucceeded; } }
+    internal bool AdmissionSealedLocked => _workerStopping;
     internal long CurrentOriginSequenceLocked(string origin) => _sequences.TryGetValue(origin, out var value) ? value : 0;
     internal long CurrentLifecycleEpochLocked => _lifecycleEpoch;
     internal bool IsCanonicalOrigin(string origin) => CanonicalOrigin(origin);
@@ -49,7 +63,7 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
 
     internal ConsentReservation RejectCapacityLocked(string origin, ConsentDecision? decision, bool managed)
     {
-        if (decision is not ConsentDecision.Granted) MarkUnavailableLocked();
+        if (!_workerStopping && decision is not ConsentDecision.Granted) MarkUnavailableLocked();
         return ConsentReservation.Rejected(origin, decision, managed, _durableGeneration, HasFenceLocked());
     }
 
@@ -61,38 +75,41 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
     internal async ValueTask InitializeAsync(CancellationToken cancellationToken = default)
     {
         long epoch;
+        TaskCompletionSource opening;
         lock (_gate)
         {
             if (_disposed) throw new ObjectDisposedException(nameof(ConsentPersistenceCoordinator));
             if (_initialized || _workerStopping || _health != ConsentStorageHealth.Starting) return;
             _initialized = true;
             epoch = _lifecycleEpoch;
+            // Reserve before external dispatch, including the testable reserve-to-dispatch gap.
+            _opening = opening = new(TaskCreationOptions.RunContinuationsAsynchronously);
         }
-        ConsentOpenResult opened;
-        try { opened = await _persistence.OpenSessionAsync(cancellationToken).ConfigureAwait(false); }
-        catch
+        try
         {
+            if (_beforeOpenDispatch is not null) await _beforeOpenDispatch().ConfigureAwait(false);
+            // Observer cancellation cannot abandon an admitted operation or release its writer lock.
+            var opened = await _persistence.OpenSessionAsync(CancellationToken.None).ConfigureAwait(false);
             lock (_gate)
             {
-                if (epoch == _lifecycleEpoch && !_disposed && !_workerStopping && _health == ConsentStorageHealth.Starting)
-                    _health = ConsentStorageHealth.Unavailable;
+                if (opened.Health != ConsentStorageHealth.Ready || opened.Snapshot is null || !opened.DurableActiveFence ||
+                    opened.Snapshot.Records.Count > MaxRecords)
+                { MarkUnavailableLocked(); return; }
+                if (epoch != _lifecycleEpoch || _disposed || _workerStopping || _health != ConsentStorageHealth.Starting) return;
+                _durableFence = true;
+                _durableGeneration = opened.Snapshot.Generation; _nextGeneration = _durableGeneration;
+                _desired.Clear();
+                foreach (var record in opened.Snapshot.Records) _desired[record.Origin] = record;
+                _hydrateLocked(opened.Snapshot);
+                _health = ConsentStorageHealth.Ready;
+                _worker = Task.Run(() => WorkerLoop(epoch));
             }
-            return;
         }
-        lock (_gate)
+        catch
         {
-            if (epoch != _lifecycleEpoch || _disposed || _workerStopping || _health != ConsentStorageHealth.Starting) return;
-            if (opened.Health != ConsentStorageHealth.Ready || opened.Snapshot is null || !opened.DurableActiveFence ||
-                opened.Snapshot.Records.Count > MaxRecords)
-            { _health = ConsentStorageHealth.Unavailable; return; }
-            _durableFence = true;
-            _durableGeneration = opened.Snapshot.Generation; _nextGeneration = _durableGeneration;
-            _desired.Clear();
-            foreach (var record in opened.Snapshot.Records) _desired[record.Origin] = record;
-            _hydrateLocked(opened.Snapshot);
-            _health = ConsentStorageHealth.Ready;
-            _worker = Task.Run(() => WorkerLoop(epoch));
+            lock (_gate) MarkUnavailableLocked();
         }
+        finally { opening.TrySetResult(); }
     }
 
     internal ConsentReservation ReserveLocked(string origin, ConsentDecision? decision, bool managed, DateTimeOffset now)
@@ -182,34 +199,137 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
 
     internal async ValueTask StopAsync(CancellationToken cancellationToken = default)
     {
-        Task? worker;
+        TaskCompletionSource owner;
+        Task decision;
+        bool dispatch;
         lock (_gate)
         {
-            if (_disposed || _health == ConsentStorageHealth.Stopped) return;
-            _lifecycleEpoch++;
-            _health = ConsentStorageHealth.Stopping; _workerStopping = true;
-            _signals.Writer.TryComplete(); worker = _worker;
+            owner = ReserveShutdownLocked(dispose: false, out dispatch);
+            decision = _shutdownDecision!.Task;
         }
-        if (worker is null)
-        {
-            lock (_gate) _health = ConsentStorageHealth.Unavailable;
-            return;
-        }
-        if (worker is not null)
-        {
-            try { await worker.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken).ConfigureAwait(false); }
-            catch { return; }
-        }
-        lock (_gate)
-        {
-            if (_failure is not null || _owned.Count != 0 || _durableGeneration != _nextGeneration) { _health = ConsentStorageHealth.Unavailable; return; }
-        }
+        using var registration = cancellationToken.Register(static state =>
+            ((ConsentPersistenceCoordinator)state!).AbandonShutdown(), this);
+        // Only the caller that reserved the slot dispatches; no external code runs under the gate.
+        if (dispatch) _ = Task.Run(() => ShutdownOwnerAsync(owner));
+        await ObserveShutdownAsync(decision, cancellationToken).ConfigureAwait(false);
+    }
+
+    private TaskCompletionSource ReserveShutdownLocked(bool dispose, out bool dispatch)
+    {
+        if (dispose) _disposed = true;
+        dispatch = _shutdownOwner is null;
+        if (!dispatch) return _shutdownOwner!;
+
+        _shutdownStarted = _shutdownTimeProvider.GetTimestamp();
+        _shutdownOwner = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        _shutdownDecision = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        _shutdownMayClean = !dispose && _initialized && _health == ConsentStorageHealth.Ready &&
+            _durableFence && _failure is null;
+        _lifecycleEpoch++;
+        _workerStopping = true;
+        // Sealing invalidates fence acknowledgements for rejected mutations, but admitted
+        // restrictions retain the actual dirty-fence proof until marker ownership is reserved.
+        _health = _failure is not null ? ConsentStorageHealth.Unavailable :
+            dispose ? ConsentStorageHealth.Stopped : ConsentStorageHealth.Stopping;
+        _signals.Writer.TryComplete();
+        return _shutdownOwner;
+    }
+
+    private TimeSpan RemainingShutdownBudgetLocked() =>
+        ShutdownBudget - _shutdownTimeProvider.GetElapsedTime(_shutdownStarted);
+
+    private void AbandonShutdown()
+    {
+        lock (_gate) AbandonShutdownLocked();
+    }
+
+    private void AbandonShutdownLocked()
+    {
+        // A later canceled observer cannot fabricate rollback of an already known timely clean.
+        if (_cleanShutdownSucceeded || _shutdownOwner!.Task.IsCompleted) return;
+        _shutdownAbandoned = true;
+        MarkUnavailableLocked();
+        _shutdownDecision!.TrySetResult();
+    }
+
+    private async ValueTask ObserveShutdownAsync(Task completion, CancellationToken cancellationToken)
+    {
+        TimeSpan remaining;
+        lock (_gate) remaining = RemainingShutdownBudgetLocked();
         try
         {
-            await _persistence.CompleteSessionAsync(_durableGeneration, CancellationToken.None).ConfigureAwait(false);
-            lock (_gate) _health = ConsentStorageHealth.Stopped;
+            if (completion.IsCompleted) { await completion.ConfigureAwait(false); return; }
+            if (remaining <= TimeSpan.Zero) { AbandonShutdown(); return; }
+            await completion.WaitAsync(remaining, _shutdownTimeProvider, cancellationToken).ConfigureAwait(false);
         }
-        catch { lock (_gate) _health = ConsentStorageHealth.Unavailable; }
+        catch { AbandonShutdown(); }
+    }
+
+    private async Task ShutdownOwnerAsync(TaskCompletionSource owner)
+    {
+        try
+        {
+            Task? opening;
+            lock (_gate) opening = _opening?.Task;
+            if (opening is not null) await opening.ConfigureAwait(false);
+            Task? worker;
+            lock (_gate) worker = _worker;
+            if (worker is not null) await worker.ConfigureAwait(false);
+
+            bool issueClean;
+            long generation;
+            lock (_gate)
+            {
+                if (RemainingShutdownBudgetLocked() <= TimeSpan.Zero) AbandonShutdownLocked();
+                // This transaction reserves potentially irreversible marker ownership. Dispose or
+                // cancellation after this boundary cannot abort it, even before external dispatch.
+                issueClean = _shutdownMayClean && !_disposed && !_shutdownAbandoned && _failure is null &&
+                    _owned.Count == 0 && _durableGeneration == _nextGeneration &&
+                    RemainingShutdownBudgetLocked() > TimeSpan.Zero;
+                generation = _durableGeneration;
+                if (issueClean) _durableFence = false;
+                if (!issueClean)
+                {
+                    if (!_disposed) MarkUnavailableLocked();
+                    _shutdownDecision!.TrySetResult();
+                }
+            }
+            if (issueClean)
+            {
+                await _persistence.CompleteSessionAsync(generation, CancellationToken.None).ConfigureAwait(false);
+                lock (_gate)
+                {
+                    if (!_disposed && !_shutdownAbandoned && _failure is null && RemainingShutdownBudgetLocked() > TimeSpan.Zero)
+                    {
+                        _cleanShutdownSucceeded = true;
+                        _health = ConsentStorageHealth.Stopped;
+                    }
+                    else AbandonShutdownLocked();
+                    _shutdownDecision!.TrySetResult();
+                }
+            }
+        }
+        catch
+        {
+            lock (_gate) MarkUnavailableLocked();
+        }
+        finally
+        {
+            lock (_gate) _shutdownDecision!.TrySetResult();
+            // One retained owner observes all admitted I/O before exactly one release. A stalled
+            // operation retains this continuation and persistence; no timeout can unlock/replace it.
+            try { await _persistence.DisposeAsync().ConfigureAwait(false); }
+            catch { lock (_gate) MarkUnavailableLocked(); }
+            lock (_gate)
+            {
+                // Release itself shares the same deadline. Check here as well as in observers so
+                // a late release cannot win a scheduling race with the timeout and publish Stopped.
+                if (!_cleanShutdownSucceeded && RemainingShutdownBudgetLocked() <= TimeSpan.Zero)
+                    AbandonShutdownLocked();
+                if (!_shutdownAbandoned && _failure is null) _health = ConsentStorageHealth.Stopped;
+                owner.TrySetResult();
+            }
+        }
     }
 
     internal ValueTask<ConsentResetResult> ResetAsync(ConsentResetConfirmation confirmation, CancellationToken cancellationToken = default)
@@ -220,16 +340,15 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        Task? worker;
+        TaskCompletionSource owner;
+        bool dispatch;
         lock (_gate)
         {
-            if (_disposed) return;
-            _lifecycleEpoch++;
-            _disposed = true; _workerStopping = true; _health = ConsentStorageHealth.Stopped;
-            _signals.Writer.TryComplete(); worker = _worker;
+            owner = ReserveShutdownLocked(dispose: true, out dispatch);
         }
-        if (worker is not null) { try { await worker.ConfigureAwait(false); } catch { } }
-        await _persistence.DisposeAsync().ConfigureAwait(false);
+        if (dispatch) _ = Task.Run(() => ShutdownOwnerAsync(owner));
+        // Join the original deadline, including release observation; never grant a fresh budget.
+        await ObserveShutdownAsync(owner.Task, CancellationToken.None).ConfigureAwait(false);
     }
 
     private async Task WorkerLoop(long epoch)
@@ -311,7 +430,7 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
     private ConsentMutationOutcome FailureOutcome(ConsentReservation reservation) =>
         reservation.Decision is not ConsentDecision.Granted && _durableFence
             ? ConsentMutationOutcome.FenceCovered : ConsentMutationOutcome.NotSaved;
-    private bool HasFenceLocked() => _durableFence;
+    private bool HasFenceLocked() => !_workerStopping && _durableFence;
     private void MarkUnavailableLocked() { _failure ??= new IOException("consent-storage-unavailable"); _health = ConsentStorageHealth.Unavailable; }
 
     private static bool CanonicalOrigin(string origin)

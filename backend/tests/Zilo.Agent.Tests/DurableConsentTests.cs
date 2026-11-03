@@ -484,9 +484,10 @@ public sealed class DurableConsentTests
         await using var store = new ConsentStore(persistence: disk);
         var opening = store.PersistenceCoordinator!.InitializeAsync(TestContext.Current.CancellationToken).AsTask();
         await disk.OpenEntered.Task.WaitAsync(Limit, TestContext.Current.CancellationToken);
-        await store.DisposeAsync();
+        var disposing = store.DisposeAsync().AsTask();
+        Assert.False(disposing.IsCompleted);
         disk.ReleaseOpen();
-        await opening.WaitAsync(Limit, TestContext.Current.CancellationToken);
+        await Task.WhenAll(opening, disposing).WaitAsync(Limit, TestContext.Current.CancellationToken);
         Assert.Equal(ConsentStorageHealth.Stopped, store.PersistenceCoordinator.Health);
         Assert.False(store.IsGranted(Origin));
         Assert.Null(new TokenService(consent: store).Issue(Origin).Token);
