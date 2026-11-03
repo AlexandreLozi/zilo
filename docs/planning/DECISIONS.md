@@ -469,3 +469,34 @@ Windows uses official temporary-file FlushFileBuffers plus ReplaceFile or
 MoveFileEx(WRITE_THROUGH|REPLACE_EXISTING), with NTFS namespace-flush limitations stated. Acceptance
 requires ordered flush requests and tested process-crash semantics, not an arbitrary-hardware
 power-loss guarantee. Final exact Task0 design approval still precedes implementation.
+
+### D-013 addendum 2 — Windows replace primitive (2026-11-03)
+- **Decision:** the Windows adapter replaces `consent.json` and `session.fence` like this:
+  1. Pre-validate the pinned chain, the temp and the target.
+  2. Write to a retained `CREATE_NEW` + `FILE_FLAG_WRITE_THROUGH` temp handle, then
+     `FlushFileBuffers` on it.
+  3. Call `SetFileInformationByHandle(FileRenameInfo)` on that same handle, with
+     `ReplaceIfExists`, **`RootDirectory = NULL`**, and `FileName` = the fixed full DOS
+     `ChildPath` under the validated root.
+  4. Call `FlushFileBuffers` on the same, still-open renamed handle.
+  5. Validate the identity and privacy after the rename.
+  - Every chain directory stays pinned for the adapter lifetime, without `FILE_SHARE_DELETE`.
+  - No user-supplied paths, no `ReplaceFile`, `MoveFileEx` or copy fallback, no retry in this
+    slice (the co-approved no-retry trade-off with its carry-forward), and no
+    arbitrary-hardware power-loss claim.
+- **Supersedes** the addendum's "ReplaceFile or MoveFileEx" wording and the `docs/tasks/T11p.md`
+  "anchored FileRenameInfo" (relative name with `RootDirectory`) detail, for Windows only.
+- **Rationale:**
+  - First native run 41570527419 (c3dec94): every fresh-store first write failed, while Open, the
+    lock and the Open-level rejections passed (`docs/reviews/T11p-windows-native-run1.md`).
+  - KernelBase converts `FileRenameInfo.FileName` to a full path even when `RootDirectory` is
+    set, so the relative, handle-anchored form cannot work through the Win32 API.
+  - The full path is equally bound, because the pinned chain cannot be renamed and
+    `ValidateNamed` proves the identity after the rename.
+  - The actual native error code is still to be confirmed by the direct `ReplaceAsync` native
+    test in the fix.
+- **Alternatives:** `NtSetInformationFile(FileRenameInformation)` with a relative name and
+  `RootDirectory` (acceptable, but adds NTSTATUS plumbing); `ReplaceFile` or `MoveFileEx` (path
+  APIs with weaker handle-identity guarantees; rejected).
+- Approved-by: GPT (2026-11-03, msg_425f5e46ee19)
+- Approved-by: Opus (2026-11-03)
