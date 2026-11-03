@@ -106,7 +106,7 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
         }
         else record = null;
         if (record is null) _desired.Remove(origin); else _desired[origin] = record;
-        var reservation = new ConsentReservation(origin, decision, managed, generation, sequence, record, true,
+        var reservation = new ConsentReservation(origin, decision, managed, generation, sequence, _lifecycleEpoch, record, true,
             new(TaskCreationOptions.RunContinuationsAsynchronously));
         _pending.Add(reservation); _active++;
         _signals.Writer.TryWrite(true);
@@ -118,12 +118,19 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
         if (!reservation.Accepted) return reservation.RejectedResult;
         if (reservation.Decision == ConsentDecision.Granted && cancellationToken.CanBeCanceled)
         {
+            var cancelled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             using var registration = cancellationToken.Register(static state =>
             {
-                var pair = ((ConsentPersistenceCoordinator Coordinator, ConsentReservation Reservation))state!;
+                var pair = ((ConsentPersistenceCoordinator Coordinator, ConsentReservation Reservation,
+                    TaskCompletionSource Cancelled, CancellationToken Cancellation))state!;
                 pair.Coordinator.CancelGrant(pair.Reservation);
-            }, (this, reservation));
-            return await reservation.Completion.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+                // Publish observer cancellation only after the owned compensation/fail-closed decision.
+                pair.Cancelled.TrySetCanceled(pair.Cancellation);
+            }, (this, reservation, cancelled, cancellationToken));
+            await Task.WhenAny(reservation.Completion.Task, cancelled.Task).ConfigureAwait(false);
+            // A grant already committed under the gate reports its actual result, not a claimed rollback.
+            if (!reservation.Completion.Task.IsCompleted) await cancelled.Task.ConfigureAwait(false);
+            return await reservation.Completion.Task.ConfigureAwait(false);
         }
         return await reservation.Completion.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -133,12 +140,20 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
         lock (_gate)
         {
             if (reservation.Completed || !reservation.Accepted || reservation.Decision != ConsentDecision.Granted) return;
+            if (reservation.OriginSequence != CurrentOriginSequenceLocked(reservation.Origin) ||
+                !DesiredEquals(reservation.Origin, reservation.Record)) return;
+            if (reservation.LifecycleEpoch != _lifecycleEpoch || _disposed || _workerStopping)
+            {
+                // The old epoch cannot reserve compensation; its uncertain grant must retain the fence.
+                MarkUnavailableLocked();
+                return;
+            }
             _sequences[reservation.Origin] = CurrentOriginSequenceLocked(reservation.Origin) + 1;
             _desired.Remove(reservation.Origin);
             if (_active < MaxReservations && _nextGeneration != long.MaxValue)
             {
                 var compensation = new ConsentReservation(reservation.Origin, null, false, ++_nextGeneration,
-                    _sequences[reservation.Origin], null, true, new(TaskCreationOptions.RunContinuationsAsynchronously));
+                    _sequences[reservation.Origin], _lifecycleEpoch, null, true, new(TaskCreationOptions.RunContinuationsAsynchronously));
                 _pending.Add(compensation); _active++; _signals.Writer.TryWrite(true);
             }
             else MarkUnavailableLocked();
@@ -293,6 +308,7 @@ internal sealed class ConsentReservation
     internal bool Managed { get; }
     internal long Generation { get; }
     internal long OriginSequence { get; }
+    internal long LifecycleEpoch { get; }
     internal StoredConsent? Record { get; }
     internal bool Accepted { get; }
     internal TaskCompletionSource<ConsentMutationResult> Completion { get; }
@@ -300,15 +316,16 @@ internal sealed class ConsentReservation
     internal ConsentMutationResult RejectedResult { get; }
 
     internal ConsentReservation(string origin, ConsentDecision? decision, bool managed, long generation,
-        long originSequence, StoredConsent? record, bool accepted, TaskCompletionSource<ConsentMutationResult> completion,
+        long originSequence, long lifecycleEpoch, StoredConsent? record, bool accepted, TaskCompletionSource<ConsentMutationResult> completion,
         ConsentMutationResult? rejected = null)
     {
         Origin = origin; Decision = decision; Managed = managed; Generation = generation; OriginSequence = originSequence;
+        LifecycleEpoch = lifecycleEpoch;
         Record = record; Accepted = accepted; Completion = completion; RejectedResult = rejected ?? new(ConsentMutationOutcome.Rejected, generation);
     }
 
     internal static ConsentReservation Rejected(string origin, ConsentDecision? decision, bool managed, long generation, bool fence) =>
-        new(origin, decision, managed, generation, 0, null, false,
+        new(origin, decision, managed, generation, 0, 0, null, false,
             new(TaskCreationOptions.RunContinuationsAsynchronously),
             new(decision is ConsentDecision.Granted
                 ? ConsentMutationOutcome.Rejected

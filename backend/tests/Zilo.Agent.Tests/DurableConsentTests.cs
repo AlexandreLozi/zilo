@@ -244,9 +244,17 @@ public sealed class DurableConsentTests
         Assert.False(store.IsGranted(Origin));
         write.Acknowledge();
         var compensation = await disk.NextAsync();
-        Assert.Empty(compensation.Snapshot.Records);
-        compensation.Acknowledge();
-        await store.PersistenceCoordinator.StopAsync(TestContext.Current.CancellationToken).AsTask().WaitAsync(Limit, TestContext.Current.CancellationToken);
+        var stopping = store.PersistenceCoordinator.StopAsync(TestContext.Current.CancellationToken).AsTask();
+        try
+        {
+            Assert.Empty(compensation.Snapshot.Records);
+            Assert.False(compensation.Cancellation.CanBeCanceled);
+            Assert.False(stopping.IsCompleted);
+            Assert.Equal(0, disk.Completes);
+            Assert.False(store.IsGranted(Origin));
+        }
+        finally { compensation.Acknowledge(); }
+        await stopping.WaitAsync(Limit, TestContext.Current.CancellationToken);
         Assert.False(store.IsGranted(Origin));
         Assert.Empty(disk.Last!.Records);
         Assert.Equal(1, disk.Completes);
@@ -292,6 +300,159 @@ public sealed class DurableConsentTests
         }
         finally { next.Acknowledge(); }
         Assert.Equal(ConsentMutationOutcome.Durable, (await block.WaitAsync(Limit, TestContext.Current.CancellationToken)).Outcome);
+    }
+
+    [Fact]
+    public async Task Delayed_grant_cancellation_callback_after_new_block_reservation_preserves_block()
+    {
+        var disk = new ControlledConsentPersistence { Pause = true };
+        await using var store = new ConsentStore(persistence: disk);
+        var coordinator = store.PersistenceCoordinator!;
+        await coordinator.InitializeAsync(TestContext.Current.CancellationToken);
+        ConsentReservation reservation;
+        // Force the real reserve-to-observe gap: cancellation registration happens only after Block.
+        lock (store.AuthorizationGate)
+            reservation = coordinator.ReserveLocked(Origin, ConsentDecision.Granted, false, DateTimeOffset.UtcNow);
+        var old = await disk.NextAsync();
+        var block = store.BlockAsync(Origin, TestContext.Current.CancellationToken).AsTask();
+        using var observer = new CancellationTokenSource();
+        observer.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => coordinator.ObserveAsync(reservation, observer.Token).AsTask());
+        old.Acknowledge();
+        var next = await disk.NextAsync();
+        try
+        {
+            Assert.Contains(next.Snapshot.Records, record => record.Origin == Origin && record.State == "blocked");
+            Assert.False(store.IsGranted(Origin));
+        }
+        finally { next.Acknowledge(); }
+        Assert.Equal(ConsentMutationOutcome.Durable, (await block.WaitAsync(Limit, TestContext.Current.CancellationToken)).Outcome);
+        await coordinator.StopAsync(TestContext.Current.CancellationToken);
+        Assert.Contains(disk.Last!.Records, record => record.Origin == Origin && record.State == "blocked");
+        Assert.Equal(1, disk.Completes);
+    }
+
+    [Fact]
+    public async Task Delayed_grant_cancellation_callback_after_new_block_ack_preserves_block()
+    {
+        var disk = new ControlledConsentPersistence { Pause = true };
+        await using var store = new ConsentStore(persistence: disk);
+        var coordinator = store.PersistenceCoordinator!;
+        await coordinator.InitializeAsync(TestContext.Current.CancellationToken);
+        ConsentReservation reservation;
+        lock (store.AuthorizationGate)
+            reservation = coordinator.ReserveLocked(Origin, ConsentDecision.Granted, false, DateTimeOffset.UtcNow);
+        var old = await disk.NextAsync();
+        var block = store.BlockAsync(Origin, TestContext.Current.CancellationToken).AsTask();
+        old.Acknowledge();
+        var next = await disk.NextAsync();
+        next.Acknowledge();
+        Assert.Equal(ConsentMutationOutcome.Durable, (await block.WaitAsync(Limit, TestContext.Current.CancellationToken)).Outcome);
+        using var observer = new CancellationTokenSource();
+        observer.Cancel();
+        Assert.Equal(ConsentMutationOutcome.Superseded, (await coordinator.ObserveAsync(reservation, observer.Token)).Outcome);
+        disk.Pause = false;
+        await store.GrantAsync("https://another.test", cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Contains(disk.Last!.Records, record => record.Origin == Origin && record.State == "blocked");
+        Assert.False(store.IsGranted(Origin));
+    }
+
+    [Fact]
+    public async Task Repeated_cancellation_of_same_pending_grant_creates_one_compensation()
+    {
+        var disk = new ControlledConsentPersistence { Pause = true };
+        await using var store = new ConsentStore(persistence: disk);
+        var coordinator = store.PersistenceCoordinator!;
+        await coordinator.InitializeAsync(TestContext.Current.CancellationToken);
+        ConsentReservation reservation;
+        lock (store.AuthorizationGate)
+            reservation = coordinator.ReserveLocked(Origin, ConsentDecision.Granted, false, DateTimeOffset.UtcNow);
+        var old = await disk.NextAsync();
+        using var observer = new CancellationTokenSource();
+        observer.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => coordinator.ObserveAsync(reservation, observer.Token).AsTask());
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => coordinator.ObserveAsync(reservation, observer.Token).AsTask());
+        var outstanding = coordinator.OutstandingReservations;
+        old.Acknowledge();
+        var compensation = await disk.NextAsync();
+        try
+        {
+            Assert.Empty(compensation.Snapshot.Records);
+            Assert.Equal(old.Snapshot.Generation + 1, compensation.Snapshot.Generation);
+            Assert.False(store.IsGranted(Origin));
+        }
+        finally { compensation.Acknowledge(); }
+        await coordinator.StopAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(2, outstanding);
+        Assert.Equal(2, disk.Writes);
+        Assert.Equal(1, disk.Completes);
+    }
+
+    [Fact]
+    public async Task Cancellation_after_committed_grant_returns_actual_completion_without_rollback()
+    {
+        var disk = new ControlledConsentPersistence();
+        await using var store = new ConsentStore(persistence: disk);
+        var coordinator = store.PersistenceCoordinator!;
+        await coordinator.InitializeAsync(TestContext.Current.CancellationToken);
+        ConsentReservation reservation;
+        lock (store.AuthorizationGate)
+            reservation = coordinator.ReserveLocked(Origin, ConsentDecision.Granted, false, DateTimeOffset.UtcNow);
+        await reservation.Completion.Task.WaitAsync(Limit, TestContext.Current.CancellationToken);
+        using var observer = new CancellationTokenSource();
+        observer.Cancel();
+        Assert.Equal(ConsentMutationOutcome.Durable, (await coordinator.ObserveAsync(reservation, observer.Token)).Outcome);
+        Assert.True(store.IsGranted(Origin));
+        Assert.Equal(1, disk.Writes);
+        await coordinator.StopAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(1, disk.Completes);
+        Assert.Equal("granted", disk.Last!.Records.Single().State);
+    }
+
+    [Fact]
+    public async Task Cancellation_with_no_compensation_capacity_keeps_restart_fence_dirty()
+    {
+        var disk = new ControlledConsentPersistence { Pause = true };
+        await using var store = new ConsentStore(persistence: disk);
+        var coordinator = store.PersistenceCoordinator!;
+        await coordinator.InitializeAsync(TestContext.Current.CancellationToken);
+        using var observer = new CancellationTokenSource();
+        var grant = store.GrantAsync(Origin, cancellationToken: observer.Token).AsTask();
+        var old = await disk.NextAsync();
+        var pending = new List<Task<ConsentMutationResult>>();
+        for (var index = 1; index < 64; index++)
+            pending.Add(store.GrantAsync($"https://site-{index}.test", cancellationToken: TestContext.Current.CancellationToken).AsTask());
+        observer.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => grant);
+        var healthAfterCancel = coordinator.Health;
+        disk.Pause = false;
+        old.Acknowledge();
+        await Task.WhenAll(pending).WaitAsync(Limit, TestContext.Current.CancellationToken);
+        await coordinator.StopAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(ConsentStorageHealth.Unavailable, healthAfterCancel);
+        Assert.False(store.IsGranted(Origin));
+        Assert.Equal(0, disk.Completes);
+    }
+
+    [Fact]
+    public async Task Cancellation_after_stop_does_not_mutate_old_epoch_and_keeps_restart_fence_dirty()
+    {
+        var disk = new ControlledConsentPersistence { Pause = true };
+        await using var store = new ConsentStore(persistence: disk);
+        var coordinator = store.PersistenceCoordinator!;
+        await coordinator.InitializeAsync(TestContext.Current.CancellationToken);
+        using var observer = new CancellationTokenSource();
+        var grant = store.GrantAsync(Origin, cancellationToken: observer.Token).AsTask();
+        var old = await disk.NextAsync();
+        var stopping = coordinator.StopAsync(TestContext.Current.CancellationToken).AsTask();
+        observer.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => grant);
+        disk.Pause = false;
+        old.Acknowledge();
+        await stopping.WaitAsync(Limit, TestContext.Current.CancellationToken);
+        Assert.Equal(1, disk.Writes);
+        Assert.Equal(0, disk.Completes);
+        Assert.False(store.IsGranted(Origin));
     }
 
     [Fact]
