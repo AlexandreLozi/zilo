@@ -1,5 +1,9 @@
 # T11p lifecycle publication fix — bounded result, authorization still UNACCEPTED
 
+Historical checkpoint: the later bounded cancellation correction and final-code results are in
+`../grant-cancellation/report.md`. They correct the compensation RED and forced stale-cancellation
+branch; prompt reservation, metadata bounds and clean-marker completion defects still remain open.
+
 - Starting checkpoint: clean LOCAL `63f10e77d42072face3cb68893a53e885fd9ec22`.
 - Exact tested source/test commit: `0be20c8825a3c38c67439064888255060c24628f`.
 - This report/log commit adds evidence only; **LOCAL COMMIT / HOLD-PUSH**.

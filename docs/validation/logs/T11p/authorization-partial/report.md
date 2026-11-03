@@ -4,6 +4,9 @@ Follow-up: the bounded lifecycle-publication fix and its exact source/test check
 in `../lifecycle-publication/report.md`. It corrects only the two publication reproductions below;
 the compensation RED and other defects remain open, and this authorization WIP is still UNACCEPTED.
 
+Later follow-up: `../grant-cancellation/report.md` corrects that compensation RED and a forced
+stale-cancellation/new-block reproduction; full authorization is still UNACCEPTED, not ready for wiring.
+
 - Baseline: `99766593f46705812dc8ca9f1ea8438b89181a3c`, initially clean.
 - Exact source/test checkpoint: `e170d171fe7307e85a06a2ec8bb4825a6639bbcc`.
 - Following commit is report/evidence only; LOCAL COMMIT / HOLDPUSH. **Do not wire or accept this WIP.**
