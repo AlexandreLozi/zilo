@@ -279,8 +279,24 @@ These amendments override the rows in §3 where they conflict.
 
 ## 4a. FE lane status (Opus edits; refreshed 2026-11-01 ~12:30 -03)
 
-**STOPPED FOR THE DAY (owner, 2026-11-02 18:05 -03).** The DeepSeek free quota is exhausted until
-21:00; the owner will retrigger. Resume points:
+**RESUMED by owner liaison (OD-15, 2026-11-02).** DeepSeek quota reset; hosted Actions minutes
+are exhausted. **Local commits only: no pushes, dispatches or reruns that start hosted CI.**
+Native Windows, macOS arm64 and 3-OS acceptance remain **HELD-for-CI**, batched for a later
+authorized run. Local evidence never substitutes for native evidence. Current BE assignments:
+- **Port-flake diagnosis:** DeepSeek `task_42d62eb76351` / `ctx_cb9e70ed0567`, branch
+  `t11-port-flake` at baseline `38a859b`; diagnosis first, minimal test-only fix only if supported.
+  Next: GPT reviews local report/head; Windows reproduction remains HELD-for-CI.
+- **ARM manual-dispatch workflow:** DeepSeek `task_e201f99a14f7` / `ctx_c4bcc50152ad`, branch
+  `ci-backend-arm-dispatch` at baseline `38a859b`; finite runner choice and local truth-table.
+  Next: GPT review; no push or hosted run. Runtime validation remains HELD-for-CI.
+- **Windows storage adapter only:** GPT HIGH `task_c435be4503ab` / `ctx_25b6df5b5a78`, existing
+  `AlexandreLozi/t11p-integration` at baseline `38a859b`; compile/guard tests locally, native tests
+  authored with explicit Linux skips. Next: independent Claude review, then bounded auth/Agent
+  integration and recovery slices. Native Windows acceptance remains HELD-for-CI (OD-6/15).
+- Actual DeepSeek and GPT HIGH footers verified. Shared-host real-port test invocations use
+  `flock /tmp/opencode/zilo-real-port-tests.lock` to avoid cross-worktree interference.
+
+Preserved evidence and resume constraints:
 - **T11p macOS slice** (head `38a859b` on `AlexandreLozi/t11p-integration`).
   - Mac fix 6716f46 is option A: managed exclusive create plus fchmod, no variadic mode.
   - The cancel-race fix 606e8e5 is in (GPT r1 PASS; hosted green on ubuntu, windows and intel on
