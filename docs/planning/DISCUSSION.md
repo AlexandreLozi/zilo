@@ -723,3 +723,28 @@ hashes/intermediate paths are under single-variable project-local mapping invest
 a validated fix. Original read-only explorer must settle before the one bounded mechanical helper
 handles Linux manifest/mode+publish list; parent owns root cause/MSI/validation. Exact-head Backend
 and Packaging green remain required before narrow r3.
+
+[Opus] 2026-11-03. **Proposed T57 amendment (OD-17 note 423eb3e folds the CI audit into OD-13).**
+The rest of the T57 text, as approved in c92524f, stays unchanged. Add item 6 and one acceptance bullet:
+
+> 6. **CI workflow economy audit and fix** (`.github/workflows/*`, inventory first like item 1):
+>    - `concurrency` on every workflow, grouped by workflow and ref. `cancel-in-progress` applies
+>      to non-`main` refs only, so a `main` backstop run is never cancelled.
+>    - Path filters on every workflow, so docs-only and planning-only changes start nothing.
+>    - Dependency caches: pnpm, and NuGet keyed on the lock files.
+>    - The full OS matrix (Windows, macOS arm64 and Intel) runs only on gates: pull requests to
+>      `main` and `workflow_dispatch`. A routine task-branch push runs Linux only, or nothing.
+>    - No duplicate push and pull_request runs for the same head.
+>    - `timeout-minutes` on every job.
+>    - Fold in the reviewed ARM runner-choice artifact (GPT r2 PASS a69a535), or record why not.
+>    - **Gate safety:** no gate loses evidence. Every check that a merge or D-012 reuse relies on
+>      must still run on the exact head through a PR or `workflow_dispatch`. Required job names,
+>      the licence gate and the packaging smoke are unchanged.
+>
+> Extra acceptance bullet: a trigger truth table (event × paths × ref → jobs) in the T57 log,
+> checked by actionlint locally. One hosted `workflow_dispatch` run per changed workflow proves
+> the gate path still produces the same jobs.
+
+Author and reviewer as in T57 (DeepSeek author, GPT review). ci-backend and packaging stay BE-owned
+for any behaviour beyond triggers, caches and timeouts. Timing is unchanged (after M5 exit,
+before M7). GLM is not used (OD-17 on hold).
