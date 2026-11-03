@@ -481,11 +481,17 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
         old-split mutation each produced 15 failures; final targeted 56/56, full final-code backend
         357 passed / 47 existing skips / 0 failed. Parent sole source author; friend-test-only
         instance barrier/task observation approved, waits outside the authorization monitor.
-      - **Active fix 4:** GPT HIGH `task_9c39f7a8fa23` / `ctx_c24b0acd848b`, from local `d8e038a`;
-        actual HIGH footer verified, context 161k. Scope: bounded retained metadata and safe
-        sequence pruning without stale-callback ABA or eviction of blocks/denials/pending authority.
-        Exact bound/pruning plan precedes implementation; parent sole writer, local HOLD-PUSH/no CI.
-        Clean-marker completion budget/concurrency remains the next separate unresolved defect.
+      - **Fix 4 settled (bounded progress):** local `02bfa3b` (source `efd6913`), report
+        `docs/validation/logs/T11p/metadata-retention/report.md`. Targeted 68/68, full final-code
+        backend 369 passed / 47 existing skips / 0 failed. Capacity, retained-policy preservation,
+        churn and stale-callback ABA covered; sequence-cap boundaries are pure guard evidence,
+        not a fabricated reachable production state. Parent sole source author. HOLD-PUSH/no CI.
+      - **Fix 5 planning/handoff only:** GPT HIGH `task_e46c8ce7253d` / `ctx_86390223e0a7`, clean
+        `02bfa3b`; actual HIGH/context 216k verified. No production edits in this dispatch. Prepare
+        total clean-drain budget, concurrent Stop/Dispose and in-flight ownership proposal, then
+        `/tmp/opencode/t11p-clean-drain-handoff.md` and settle before 250k. Fresh context implements
+        after scope approval. Timeout is not native-I/O abort; never release a writer lock while
+        old I/O can mutate a subsequent session. Full coordinator remains UNACCEPTED/unwired.
         - **Caps jointly approved:** 4160 store entries (4096 + 64) and conservative 8320 sequence
           entries (4096 + 4160 + 64), internal only; no API/status change. Require cap-1/cap/cap+1
           coverage, prune/reuse without stale-callback ABA, and fail-closed generation overflow.
