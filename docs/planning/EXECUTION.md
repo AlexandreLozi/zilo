@@ -444,6 +444,19 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
         authorization monitor. Local commit/HOLD-PUSH, deterministic race tests and one local
         suite, then independent Claude HIGH review. Production Agent HTTP wiring is a separate
         next slice; no recovery/lifecycle implementation in this coordinator task.
+        - Helper disclosure: read-only explorer `ses_e5fd5e36cffeiJiaIJOJ4vzfoM` completed;
+          fixer `ses_e5fd4ab6bffesYYrMMyb2k8Eqs` also completed, touching only `Consent.cs` and
+          `Persistence/ConsentPersistenceCoordinator.cs`. No helper writer remains active; parent
+          Sol owns source reconciliation and `AtomicConsentTests`/`DurableConsentTests`.
+          The worktree's `openai` preset configures explorer and
+          fixer as OpenAI GPT-family `gpt-5.6-luna`; runtime helper model lines are not independently
+          observed. Liaison verified the configured family and explicitly authorized continuation,
+          preserving Claude cross-family review. Keep the work; parent Sol reviews every helper
+          hunk and re-verifies it. The task report and worker_done must list helpers/models/files.
+        - **Future star-BE dispatch rule:** prefer sole GPT-6.1 authoring. If the selected role
+          requires delegation, pin permitted source-authoring helper lanes to GPT-6.1 in the
+          worktree preset before launch, disclose their scope/provenance and retain independent
+          Claude HIGH review. Do not claim a configured model as independently observed runtime.
       - **Next:** Agent composition, then recovery and quarantine
        (leftover-temp parity), then lifecycle. Then the combined T11+T11p Claude HIGH review and
        exact-SHA CI. Still held: T14, the pre-M6 write-retry item, and the Linux
