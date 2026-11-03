@@ -1,0 +1,18 @@
+Command: dotnet build backend/Zilo.slnx --configuration Release --no-restore
+  Zilo.Core -> [workspace]/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Security -> [workspace]/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Naps2 -> [workspace]/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> [workspace]/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> [workspace]/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Core.Tests -> [workspace]/backend/tests/Zilo.Core.Tests/bin/Release/net10.0/Zilo.Core.Tests.dll
+  Zilo.Agent.Tests -> [workspace]/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+  Zilo.Scaffold.Tests -> [workspace]/backend/tests/Zilo.Scaffold.Tests/bin/Release/net10.0/Zilo.Scaffold.Tests.dll
+  Zilo.Drivers.Virtual.Tests -> [workspace]/backend/tests/Zilo.Drivers.Virtual.Tests/bin/Release/net10.0/Zilo.Drivers.Virtual.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.96
+
+Exit: 0

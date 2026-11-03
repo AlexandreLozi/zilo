@@ -1,0 +1,21 @@
+T11p Windows fixture follow-up (sanitized local evidence)
+Host: Linux; Windows-native cases not executed.
+SDK: pinned .NET 10 Release test invocation; local paths omitted.
+
+Fixture mutation regression check:
+- Temporarily changed the inherited-bit mask from 0x10 to 0x00.
+- Filtered Release test: Fixture_inherited_classification_reads_only_the_raw_ace_flag.
+- Result: FAIL, expected True / actual False.
+- Restored the exact 0x10 source expression before the green run.
+
+Restored pure fixture classification check:
+- Filtered Release test: Fixture_inherited_classification_reads_only_the_raw_ace_flag.
+- Result: PASS; 1 passed, 0 failed, 0 skipped.
+
+Source-integrity check:
+- git diff --quiet -- backend/src
+- Result: exit 0; production source unchanged.
+
+Native fixture evidence:
+- Not claimed locally; Windows raw SetFileSecurityW/GetFileSecurityW classification remains
+  bounded to the Windows-gated tests and records stored-inherited-ACE versus exact normalization.

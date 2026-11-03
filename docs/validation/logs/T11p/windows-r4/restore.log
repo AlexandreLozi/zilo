@@ -1,0 +1,5 @@
+Command: dotnet restore backend/Zilo.slnx --locked-mode
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+
+Exit: 0

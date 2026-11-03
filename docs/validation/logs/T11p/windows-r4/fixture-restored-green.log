@@ -1,0 +1,15 @@
+Regression mutation evidence, not pre-implementation TDD/native proof
+Command: dotnet test backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj --configuration Release --no-restore -p:RestoreLockedMode=true --filter FullyQualifiedName~Fixture_inherited_classification_reads_only_the_raw_ace_flag
+  Zilo.Core -> [workspace]/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Security -> [workspace]/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Virtual -> [workspace]/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Drivers.Naps2 -> [workspace]/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Agent -> [workspace]/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> [workspace]/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for [workspace]/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 12 ms - Zilo.Agent.Tests.dll (net10.0)
+
+Exit: 0
+Restored source SHA256: bed56de5d03a986b78cb24b891ddba12c727f321413953fdcd69666a85c35f7f

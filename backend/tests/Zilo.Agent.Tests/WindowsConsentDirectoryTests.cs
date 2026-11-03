@@ -144,6 +144,16 @@ public sealed class WindowsConsentDirectoryTests
         Assert.True(import.ExactSpelling);
     }
 
+    [Fact]
+    public void Fixture_inherited_classification_reads_only_the_raw_ace_flag()
+    {
+        // This is deliberately independent of the product's native flags guard. It keeps the
+        // Linux-side fixture policy check byte-level because RawSecurityDescriptor/native APIs
+        // cannot execute here.
+        Assert.True(ContainsInheritedAceFlag(SelfRelativeDescriptorWithAceFlags(0x10)));
+        Assert.False(ContainsInheritedAceFlag(SelfRelativeDescriptorWithAceFlags(0x00)));
+    }
+
     [Fact(SkipUnless = nameof(WindowsHost), Skip = NativeSkip)]
     public async Task Native_private_store_roundtrips_and_retains_exclusive_lock()
     {
@@ -463,8 +473,6 @@ public sealed class WindowsConsentDirectoryTests
     }
 
     [Theory(SkipUnless = nameof(WindowsHost), Skip = NativeSkip)]
-    [InlineData("inherited", true)]
-    [InlineData("inherited", false)]
     [InlineData("deny", true)]
     [InlineData("deny", false)]
     [InlineData("everyone", true)]
@@ -472,17 +480,35 @@ public sealed class WindowsConsentDirectoryTests
     [InlineData("callback", true)]
     [InlineData("callback", false)]
     public async Task Native_foreign_ace_kind_is_rejected_without_repair(string kind, bool mutateRoot)
+        => await ExerciseForeignAceKind(kind, mutateRoot);
+
+    [Theory(SkipUnless = nameof(WindowsHost), Skip = NativeSkip)]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Native_raw_inherited_fixture_is_rejected_or_exact_normalization_is_recorded(bool mutateRoot)
+        => await ExerciseForeignAceKind("inherited", mutateRoot);
+
+    private static async Task ExerciseForeignAceKind(string kind, bool mutateRoot)
     {
         using var fixture = new Fixture();
         await CreateCleanStore(fixture);
         var user = CurrentUserSid();
         var path = mutateRoot ? fixture.Store : Path.Combine(fixture.Store, "consent.json");
-        var beforeMutation = ReadSecurityDescriptor(path, mutateRoot);
+        var inheritedFixture = kind == "inherited";
+        var beforeMutation = inheritedFixture
+            ? ReadRawSecurityDescriptor(path)
+            : ReadSecurityDescriptor(path, mutateRoot);
         try
         {
             AddRawAce(path, mutateRoot, BuildFixtureAce(kind, user));
-            var fixtureDescriptor = ReadSecurityDescriptor(path, mutateRoot);
-            AssertFixtureAce(fixtureDescriptor, kind, user);
+            var fixtureDescriptor = inheritedFixture
+                ? ReadRawSecurityDescriptor(path)
+                : ReadSecurityDescriptor(path, mutateRoot);
+            if (inheritedFixture)
+            {
+                if (!AssertInheritedFixtureClassification(fixtureDescriptor, beforeMutation, user)) return;
+            }
+            else AssertFixtureAce(fixtureDescriptor, kind, user);
 
             if (mutateRoot)
             {
@@ -496,11 +522,14 @@ public sealed class WindowsConsentDirectoryTests
                 Assert.Equal(ConsentStorageHealth.Unavailable, (await session.OpenAsync(Token)).Health);
             }
 
-            Assert.Equal(fixtureDescriptor, ReadSecurityDescriptor(path, mutateRoot));
+            Assert.Equal(fixtureDescriptor, inheritedFixture
+                ? ReadRawSecurityDescriptor(path)
+                : ReadSecurityDescriptor(path, mutateRoot));
         }
         finally
         {
-            SetSecurityDescriptor(path, mutateRoot, beforeMutation);
+            if (inheritedFixture) SetRawSecurityDescriptor(path, beforeMutation);
+            else SetSecurityDescriptor(path, mutateRoot, beforeMutation);
         }
     }
 
@@ -626,7 +655,9 @@ public sealed class WindowsConsentDirectoryTests
 
     private static void AddRawAce(string path, bool directory, GenericAce ace)
     {
-        var descriptor = new RawSecurityDescriptor(ReadSecurityDescriptor(path, directory), 0);
+        var inherited = ace is CommonAce common && (common.AceFlags & AceFlags.Inherited) != 0;
+        var descriptor = new RawSecurityDescriptor(
+            inherited ? ReadRawSecurityDescriptor(path) : ReadSecurityDescriptor(path, directory), 0);
         Assert.True(descriptor.ControlFlags.HasFlag(ControlFlags.DiscretionaryAclProtected));
         Assert.NotNull(descriptor.DiscretionaryAcl);
         var existing = descriptor.DiscretionaryAcl!;
@@ -637,7 +668,131 @@ public sealed class WindowsConsentDirectoryTests
             descriptor.SystemAcl, updatedAcl);
         var bytes = new byte[updated.BinaryLength];
         updated.GetBinaryForm(bytes, 0);
-        SetSecurityDescriptor(path, directory, bytes);
+        if (inherited)
+            SetRawSecurityDescriptor(path, bytes);
+        else SetSecurityDescriptor(path, directory, bytes);
+    }
+
+    private static bool AssertInheritedFixtureClassification(byte[] descriptorBytes, byte[] baselineBytes,
+        SecurityIdentifier user)
+    {
+        var hasInheritedFlag = ContainsInheritedAceFlag(descriptorBytes);
+        TestContext.Current.TestOutputHelper?.WriteLine(
+            $"inherited-fixture classification={(hasInheritedFlag ? "stored-inherited-ace" : "normalized-no-inherited-ace")}; " +
+            $"rawDescriptorBytes={descriptorBytes.Length}; baselineBytes={baselineBytes.Length}; " +
+            "source=SetFileSecurityW/GetFileSecurityW; classification-is-not-product-proof");
+
+        if (hasInheritedFlag)
+        {
+            // The byte-level classification only finds the flag. This assertion proves that the
+            // stored entry is the intended ACE, not an arbitrary inherited/unknown principal.
+            AssertFixtureAce(descriptorBytes, "inherited", user);
+            return true;
+        }
+
+        // A supported API may normalize this construction. Do not treat that as a bypass or as
+        // proof that the product's flags check is unreachable: assert the complete known result.
+        AssertExpectedInheritedNormalization(descriptorBytes, baselineBytes, user);
+        return false;
+    }
+
+    private static void AssertExpectedInheritedNormalization(byte[] descriptorBytes, byte[] baselineBytes,
+        SecurityIdentifier user)
+    {
+        var baseline = new RawSecurityDescriptor(baselineBytes, 0);
+        var actual = new RawSecurityDescriptor(descriptorBytes, 0);
+        var system = new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null);
+        var administrators = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
+        var expectedSids = new[] { user, system, administrators };
+
+        Assert.True(baseline.ControlFlags.HasFlag(ControlFlags.DiscretionaryAclProtected));
+        Assert.Equal(user, baseline.Owner);
+        Assert.NotNull(baseline.DiscretionaryAcl);
+        Assert.Equal(2, baseline.DiscretionaryAcl!.Revision);
+        Assert.Equal(expectedSids.Length, baseline.DiscretionaryAcl.Count);
+        var baselineAces = baseline.DiscretionaryAcl.Cast<GenericAce>().OfType<CommonAce>().ToArray();
+        Assert.Equal(expectedSids.Length, baselineAces.Length);
+        Assert.Equal(expectedSids, baselineAces.Select(ace => ace.SecurityIdentifier));
+        Assert.All(baselineAces, ace =>
+        {
+            Assert.Equal(AceType.AccessAllowed, ace.AceType);
+            Assert.Equal(AceFlags.None, ace.AceFlags);
+            Assert.Equal(AceQualifier.AccessAllowed, ace.AceQualifier);
+            Assert.False(ace.IsCallback);
+            Assert.Equal(0x1F01FF, ace.AccessMask);
+        });
+
+        Assert.Equal(baseline.ControlFlags, actual.ControlFlags);
+        Assert.Equal(baseline.Group, actual.Group);
+        Assert.Equal(user, actual.Owner);
+        Assert.True(actual.ControlFlags.HasFlag(ControlFlags.DiscretionaryAclProtected));
+        Assert.NotNull(actual.DiscretionaryAcl);
+        Assert.Equal(baseline.DiscretionaryAcl.Revision, actual.DiscretionaryAcl!.Revision);
+        Assert.Equal(expectedSids.Length, actual.DiscretionaryAcl.Count);
+        var actualAces = actual.DiscretionaryAcl.Cast<GenericAce>().OfType<CommonAce>().ToArray();
+        Assert.Equal(expectedSids.Length, actualAces.Length);
+        Assert.Equal(expectedSids, actualAces.Select(ace => ace.SecurityIdentifier));
+        Assert.DoesNotContain(actualAces, ace => (ace.AceFlags & AceFlags.Inherited) != 0);
+        Assert.All(actualAces, ace =>
+        {
+            Assert.Equal(AceType.AccessAllowed, ace.AceType);
+            Assert.Equal(AceFlags.None, ace.AceFlags);
+            Assert.Equal(AceQualifier.AccessAllowed, ace.AceQualifier);
+            Assert.False(ace.IsCallback);
+            Assert.Equal(0x1F01FF, ace.AccessMask);
+        });
+
+        // FA already contains READ_ATTRIBUTES; spell out the normalization expectation so a
+        // future baseline that needs this merge cannot silently weaken the assertion.
+        var currentUser = Assert.Single(actualAces, ace => ace.SecurityIdentifier == user);
+        Assert.Equal(0x1F01FF | 0x80, currentUser.AccessMask);
+
+        // The normalized DACL is the exact clean-store DACL, including revision and order.
+        var expectedAclBytes = new byte[baseline.DiscretionaryAcl.BinaryLength];
+        baseline.DiscretionaryAcl.GetBinaryForm(expectedAclBytes, 0);
+        var actualAclBytes = new byte[actual.DiscretionaryAcl.BinaryLength];
+        actual.DiscretionaryAcl.GetBinaryForm(actualAclBytes, 0);
+        Assert.Equal(expectedAclBytes, actualAclBytes);
+    }
+
+    private static bool ContainsInheritedAceFlag(ReadOnlySpan<byte> descriptor)
+    {
+        if (descriptor.Length < 20) throw new ArgumentException("self-relative descriptor too short", nameof(descriptor));
+        var control = BitConverter.ToUInt16(descriptor[2..4]);
+        var daclOffset = checked((int)BitConverter.ToUInt32(descriptor[16..20]));
+        if ((control & 0x8000) == 0 || daclOffset == 0 || daclOffset > descriptor.Length - 8)
+            throw new ArgumentException("descriptor is not a bounded self-relative DACL", nameof(descriptor));
+        var aclSize = BitConverter.ToUInt16(descriptor[(daclOffset + 2)..(daclOffset + 4)]);
+        var aceCount = BitConverter.ToUInt16(descriptor[(daclOffset + 4)..(daclOffset + 6)]);
+        if (aclSize < 8 || daclOffset + aclSize > descriptor.Length)
+            throw new ArgumentException("descriptor has an invalid ACL", nameof(descriptor));
+
+        var cursor = daclOffset + 8;
+        var end = daclOffset + aclSize;
+        for (var i = 0; i < aceCount; i++)
+        {
+            if (cursor > end - 4) throw new ArgumentException("descriptor has a truncated ACE", nameof(descriptor));
+            var aceSize = BitConverter.ToUInt16(descriptor[(cursor + 2)..(cursor + 4)]);
+            if (aceSize < 4 || cursor + aceSize > end) throw new ArgumentException("descriptor has an invalid ACE", nameof(descriptor));
+            if ((descriptor[cursor + 1] & 0x10) != 0) return true;
+            cursor += aceSize;
+        }
+        return false;
+    }
+
+    private static byte[] SelfRelativeDescriptorWithAceFlags(byte aceFlags)
+    {
+        var descriptor = new byte[36];
+        descriptor[0] = 1;
+        BitConverter.TryWriteBytes(descriptor.AsSpan(2, 2), (ushort)0x8004);
+        BitConverter.TryWriteBytes(descriptor.AsSpan(16, 4), 20u);
+        descriptor[20] = 2;
+        BitConverter.TryWriteBytes(descriptor.AsSpan(22, 2), (ushort)16);
+        BitConverter.TryWriteBytes(descriptor.AsSpan(24, 2), (ushort)1);
+        descriptor[28] = 0;
+        descriptor[29] = aceFlags;
+        BitConverter.TryWriteBytes(descriptor.AsSpan(30, 2), (ushort)8);
+        return descriptor;
     }
 
     private static void AssertFixtureAce(byte[] descriptorBytes, string kind, SecurityIdentifier user)
@@ -668,6 +823,40 @@ public sealed class WindowsConsentDirectoryTests
     private static byte[] ReadSecurityDescriptor(string path, bool directory) =>
         directory ? new DirectoryInfo(path).GetAccessControl().GetSecurityDescriptorBinaryForm() :
         new FileInfo(path).GetAccessControl().GetSecurityDescriptorBinaryForm();
+
+    private static byte[] ReadRawSecurityDescriptor(string path)
+    {
+        const uint requestedInformation = 0x00000007; // OWNER | GROUP | DACL
+        const uint errorInsufficientBuffer = 122;
+        const uint maxDescriptorBytes = 1024 * 1024;
+        var firstSuccess = GetFileSecurityW(path, requestedInformation, null, 0, out var needed);
+        var firstError = Marshal.GetLastPInvokeError();
+        Assert.True(!firstSuccess && firstError == errorInsufficientBuffer,
+            $"GetFileSecurityW size query must return ERROR_INSUFFICIENT_BUFFER; Win32={firstError}; needed={needed}");
+        Assert.InRange(needed, 1u, maxDescriptorBytes);
+
+        var descriptor = new byte[checked((int)needed)];
+        if (!GetFileSecurityW(path, requestedInformation, descriptor, needed, out var readNeeded))
+        {
+            var error = Marshal.GetLastPInvokeError();
+            throw new InvalidOperationException(
+                $"GetFileSecurityW read failed; Win32={error}; requested={needed}; needed={readNeeded}");
+        }
+        Assert.InRange(readNeeded, 1u, maxDescriptorBytes);
+        Assert.Equal(needed, readNeeded);
+        return descriptor;
+    }
+
+    private static void SetRawSecurityDescriptor(string path, byte[] descriptor)
+    {
+        const uint writeDaclAndProtect = 0x80000004; // PROTECTED_DACL_SECURITY_INFORMATION | DACL
+        if (!SetFileSecurityW(path, writeDaclAndProtect, descriptor))
+        {
+            var error = Marshal.GetLastPInvokeError();
+            throw new InvalidOperationException(
+                $"SetFileSecurityW fixture write failed; Win32={error}; descriptorBytes={descriptor.Length}");
+        }
+    }
 
     private static void SetSecurityDescriptor(string path, bool directory, byte[] descriptor)
     {
@@ -729,4 +918,13 @@ public sealed class WindowsConsentDirectoryTests
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool CreateHardLinkW(string fileName, string existingFileName, nint securityAttributes);
+
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetFileSecurityW(string fileName, uint requestedInformation,
+        [Out] byte[]? securityDescriptor, uint descriptorLength, out uint lengthNeeded);
+
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetFileSecurityW(string fileName, uint securityInformation, byte[] securityDescriptor);
 }
