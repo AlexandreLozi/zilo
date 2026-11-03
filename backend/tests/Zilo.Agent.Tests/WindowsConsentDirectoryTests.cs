@@ -674,10 +674,16 @@ public sealed class WindowsConsentDirectoryTests
 
     private static void AssertSharingBudgetExhausted(IOException error)
     {
-        Assert.EndsWith(":32", error.Message, StringComparison.Ordinal);
         var attempts = Assert.IsType<int>(error.Data["OpenLockAttempts"]);
         Assert.InRange(attempts, 2, 41);
         var elapsed = Assert.IsType<double>(error.Data["OpenLockElapsedMilliseconds"]);
+        var sharingFailure = error.Message.EndsWith(":32", StringComparison.Ordinal);
+        var expiredBetweenCreateAndOpen = elapsed >= 2000 &&
+            (error.Message.EndsWith(":80", StringComparison.Ordinal) ||
+             error.Message.EndsWith(":183", StringComparison.Ordinal));
+        // CREATE_NEW may return file-exists as the deadline expires. Product then fails
+        // without starting OPEN_EXISTING, preserving that native diagnostic (not inventing 32).
+        Assert.True(sharingFailure || expiredBetweenCreateAndOpen, error.Message);
         // A sub-millisecond final Sleep may return early; the independent attempt guard can
         // finish just before the deadline. Either bound must fail closed, not flake the test.
         Assert.True(elapsed >= 2000 || attempts == 41, $"attempts={attempts}; elapsedMs={elapsed:F1}");
