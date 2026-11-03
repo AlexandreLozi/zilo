@@ -323,8 +323,16 @@ These amendments override the rows in §3 where they conflict.
 
 ## 4a. FE lane status (Opus edits; refreshed 2026-11-01 ~12:30 -03)
 
-**PAUSED 2026-11-03 about 04:40 -03 (owner rule, via the liaison): GPT hit its usage limit**
-(master and worker), so Claude idles too.
+**RESUMED 2026-11-03 about 09:40 -03 (liaison):** GPT is back. Fix 4 continues
+(`ctx_c24b0acd848b`).
+- **Metadata caps CO-APPROVED** (GPT msg_8966ea9cea30 plus Opus msg_0a4acaf1b545): store 4160
+  and sequence 8320, as internal constants. Conditions:
+  - boundary tests at cap-1, cap and cap+1, and a prune-then-reuse ABA test;
+  - an overflow never evicts existing authority: a grant overflow rejects only that grant, and a
+    restrictive overflow fences fail-closed;
+  - the availability trade-off (a denial-history flood) is recorded beside the pre-M6 item.
+
+Earlier PAUSE about 04:40 (GPT usage limit). The context below still holds.
 - **T11p branch on origin:** the liaison pushed `AlexandreLozi/t11p-integration` at `d8e038a`
   (fix 3: 357 passed, 47 skipped). This push is NOT a CI gate, because the coordinator is
   unaccepted.
