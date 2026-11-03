@@ -37,10 +37,12 @@ public sealed class ConsentStore : IAsyncDisposable
     private readonly object _gate = new();
     private readonly ConsentPersistenceCoordinator? _coordinator;
     private readonly Func<Task>? _beforeNativeDecisionCommit;
+    private readonly TimeProvider _promptTimeProvider;
 
     internal object AuthorizationGate => _gate;
     internal ConsentPersistenceCoordinator? PersistenceCoordinator => _coordinator;
     internal Task? NativePromptResolution { get; private set; }
+    internal Task? NativePromptRetirement { get; private set; }
 
     public ConsentStore(ConsentOptions? options = null, IClock? clock = null,
         INativeConsentPrompt? nativeConsent = null, IConsentPersistence? persistence = null)
@@ -48,9 +50,10 @@ public sealed class ConsentStore : IAsyncDisposable
 
     internal ConsentStore(ConsentOptions? options, IClock? clock, INativeConsentPrompt? nativeConsent,
         IConsentPersistence? persistence, Func<Task>? beforeNativeDecisionCommit,
-        TimeProvider? shutdownTimeProvider = null)
+        TimeProvider? shutdownTimeProvider = null, TimeProvider? promptTimeProvider = null)
     {
         _beforeNativeDecisionCommit = beforeNativeDecisionCommit;
+        _promptTimeProvider = promptTimeProvider ?? TimeProvider.System;
         _options = options ?? new();
         if (_options.PromptTimeoutSeconds is <= 0 or > 4_294_966 || _options.PerOriginPromptsPerHour <= 0 ||
             _options.GlobalPromptsPerHour <= 0 || _options.DenialCooldownSeconds is <= 0 or > 86400)
@@ -131,7 +134,7 @@ public sealed class ConsentStore : IAsyncDisposable
         Entry entry;
         long promptId;
         Guid promptGuid;
-        CancellationTokenSource promptCancellation;
+        PromptCancellationOwner promptCancellation;
         long lifecycleEpoch;
         lock (_gate)
         {
@@ -165,7 +168,9 @@ public sealed class ConsentStore : IAsyncDisposable
             promptId = ++entry.PromptId;
             promptGuid = entry.PromptGuid = Guid.NewGuid();
             _activePrompt = entry.PromptGuid;
-            promptCancellation = entry.PromptCancellation = new CancellationTokenSource(TimeSpan.FromSeconds(_options.PromptTimeoutSeconds));
+            promptCancellation = entry.PromptCancellation = new PromptCancellationOwner(
+                _nativeConsent is not null, TimeSpan.FromSeconds(_options.PromptTimeoutSeconds), _promptTimeProvider);
+            NativePromptRetirement = promptCancellation.Retirement;
             lifecycleEpoch = _coordinator?.CurrentLifecycleEpochLocked ?? 0;
             entry.PendingUntil = now.AddSeconds(_options.PromptTimeoutSeconds);
             entry.Prompts.Enqueue(now);
@@ -395,7 +400,7 @@ public sealed class ConsentStore : IAsyncDisposable
     }
 
     private async Task ResolvePromptAsync(string origin, long promptId, Guid promptGuid,
-        CancellationTokenSource cancellation, long lifecycleEpoch)
+        PromptCancellationOwner cancellation, long lifecycleEpoch)
     {
         try
         {
@@ -433,11 +438,22 @@ public sealed class ConsentStore : IAsyncDisposable
             }
             if (reservation is not null) await _coordinator!.ObserveAsync(reservation).ConfigureAwait(false);
         }
-        finally { cancellation.Dispose(); }
+        finally
+        {
+            lock (_gate)
+            {
+                if (_entries.TryGetValue(origin, out var entry) && ReferenceEquals(entry.PromptCancellation, cancellation))
+                {
+                    entry.PromptCancellation = null;
+                    if (_activePrompt == promptGuid) _activePrompt = null;
+                }
+            }
+            cancellation.FinishResolution();
+        }
     }
 
     private bool TryGetCurrentPromptLocked(string origin, long promptId, Guid promptGuid,
-        CancellationTokenSource cancellation, long lifecycleEpoch, out Entry? entry)
+        PromptCancellationOwner cancellation, long lifecycleEpoch, out Entry? entry)
     {
         return _entries.TryGetValue(origin, out entry) &&
             (_coordinator is null || (_coordinator.Health == ConsentStorageHealth.Ready &&
@@ -448,14 +464,10 @@ public sealed class ConsentStore : IAsyncDisposable
 
     private void CancelPrompt(Entry entry)
     {
-        if (entry.PromptCancellation is { } cancellation) _ = CancelAndDisposeAsync(cancellation);
+        // Reserve cancellation before releasing authorization; execution is always off-stack.
+        entry.PromptCancellation?.RequestCancellation();
         entry.PromptCancellation = null;
         if (_activePrompt == entry.PromptGuid) _activePrompt = null;
-    }
-
-    private static async Task CancelAndDisposeAsync(CancellationTokenSource cancellation)
-    {
-        try { await cancellation.CancelAsync().ConfigureAwait(false); } catch { } finally { cancellation.Dispose(); }
     }
 
     private void ExpireActivePrompt(DateTimeOffset now)
@@ -488,6 +500,85 @@ public sealed class ConsentStore : IAsyncDisposable
         if (_coordinator is not null) await _coordinator.DisposeAsync().ConfigureAwait(false);
     }
 
+    internal sealed class PromptCancellationOwner
+    {
+        private readonly object _gate = new();
+        private readonly CancellationTokenSource _source = new();
+        private readonly ITimer _timer;
+        private readonly bool _hasResolver;
+        private readonly TaskCompletionSource _retirement = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private bool _resolutionFinished;
+        private bool _cancellationReserved;
+        private bool _cancellationFinished;
+        private bool _retired;
+
+        internal CancellationToken Token { get; }
+        internal Task Retirement => _retirement.Task;
+
+        internal PromptCancellationOwner(bool hasResolver, TimeSpan timeout, TimeProvider timeProvider)
+        {
+            _hasResolver = hasResolver;
+            _resolutionFinished = !hasResolver;
+            Token = _source.Token;
+            _timer = timeProvider.CreateTimer(static state => ((PromptCancellationOwner)state!).RequestCancellation(),
+                this, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+            _timer.Change(timeout, Timeout.InfiniteTimeSpan);
+        }
+
+        internal void RequestCancellation()
+        {
+            lock (_gate)
+            {
+                if (_retired || _cancellationReserved) return;
+                _cancellationReserved = true;
+            }
+            _ = Task.Run(CancelAsync);
+        }
+
+        internal void FinishResolution()
+        {
+            bool retire;
+            lock (_gate)
+            {
+                _resolutionFinished = true;
+                retire = TryRetireLocked();
+            }
+            if (retire) Retire();
+        }
+
+        private async Task CancelAsync()
+        {
+            try { await _source.CancelAsync().ConfigureAwait(false); }
+            catch { } // Observe callback failures before allowing source disposal.
+            finally
+            {
+                bool retire;
+                lock (_gate)
+                {
+                    _cancellationFinished = true;
+                    retire = TryRetireLocked();
+                }
+                if (retire) Retire();
+            }
+        }
+
+        private bool TryRetireLocked()
+        {
+            // A prompt without a native resolver remains live until cancellation is requested.
+            if (_retired || !_resolutionFinished ||
+                (_cancellationReserved ? !_cancellationFinished : !_hasResolver)) return false;
+            _retired = true;
+            return true;
+        }
+
+        private void Retire()
+        {
+            _timer.Dispose();
+            _source.Dispose();
+            _retirement.TrySetResult();
+        }
+    }
+
     private sealed class Entry
     {
         public string State { get; set; } = "none"; public bool Managed { get; set; }
@@ -495,6 +586,6 @@ public sealed class ConsentStore : IAsyncDisposable
         public int DenialStreak { get; set; } public Queue<DateTimeOffset> Prompts { get; } = new();
         public DateTimeOffset LastTouched { get; set; } public long PromptId { get; set; }
         public DateTimeOffset LastDenied { get; set; } public Guid PromptGuid { get; set; }
-        public CancellationTokenSource? PromptCancellation { get; set; }
+        public PromptCancellationOwner? PromptCancellation { get; set; }
     }
 }
