@@ -1,0 +1,15 @@
+  Zilo.Core -> <repo>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Security -> <repo>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Naps2 -> <repo>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> <repo>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> <repo>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <repo>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+  Zilo.Core.Tests -> <repo>/backend/tests/Zilo.Core.Tests/bin/Release/net10.0/Zilo.Core.Tests.dll
+  Zilo.Scaffold.Tests -> <repo>/backend/tests/Zilo.Scaffold.Tests/bin/Release/net10.0/Zilo.Scaffold.Tests.dll
+  Zilo.Drivers.Virtual.Tests -> <repo>/backend/tests/Zilo.Drivers.Virtual.Tests/bin/Release/net10.0/Zilo.Drivers.Virtual.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.13
