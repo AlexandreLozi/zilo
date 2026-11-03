@@ -675,8 +675,12 @@ public sealed class WindowsConsentDirectoryTests
     private static void AssertSharingBudgetExhausted(IOException error)
     {
         Assert.EndsWith(":32", error.Message, StringComparison.Ordinal);
-        Assert.InRange(Assert.IsType<int>(error.Data["OpenLockAttempts"]), 2, 41);
-        Assert.True(Assert.IsType<double>(error.Data["OpenLockElapsedMilliseconds"]) >= 2000);
+        var attempts = Assert.IsType<int>(error.Data["OpenLockAttempts"]);
+        Assert.InRange(attempts, 2, 41);
+        var elapsed = Assert.IsType<double>(error.Data["OpenLockElapsedMilliseconds"]);
+        // A sub-millisecond final Sleep may return early; the independent attempt guard can
+        // finish just before the deadline. Either bound must fail closed, not flake the test.
+        Assert.True(elapsed >= 2000 || attempts == 41, $"attempts={attempts}; elapsedMs={elapsed:F1}");
         // The monotonic policy bounds waits/admissions, not OS syscall or scheduler latency.
     }
 
