@@ -296,6 +296,19 @@ authorized run. Local evidence never substitutes for native evidence. Current BE
 - Actual DeepSeek and GPT HIGH footers verified. Shared-host real-port test invocations use
   `flock /tmp/opencode/zilo-real-port-tests.lock` to avoid cross-worktree interference.
 
+Current FE assignments (Opus, 2026-11-02 resume):
+- **T21a SDK jobs/events/pages/export, mock gate:** DeepSeek `task_3abe2cf1c20e` /
+  `ctx_32916f5c7c76`, branch `t21a-sdk-jobs` from `06ed08a`, spec `docs/tasks/T21a.md` (slice 1
+  jobs and events, slice 2 pages and export). Footer verified "DeepSeek V4.1 Flash Free". Local
+  baseline sdk 159/159 on Node 24. Pushing this task branch starts no hosted CI (ci-web runs on
+  push to `main` only). **Next:** GPT review of the head at worker_done (non-★, OD-11). The merge
+  needs one ci-web run on the tested merge, batched after the minutes reset (OD-15).
+- **Queued FE, after T21a:** T22 Scan dialog v1 (design-critical, Claude author, GPT review;
+  deps T15, T21a and T05). T34a weekday checklist draft and T56a harness are low-priority filler
+  for DeepSeek when there is quota headroom.
+- Old FE dispatches ctx_d2d0be5af32d and ctx_a8fbb16fc69c: release_unknown (their terminals
+  vanished in the Orca restart). Their worktrees now belong to the BE dispatches above.
+
 Preserved evidence and resume constraints:
 - **T11p macOS slice** (head `38a859b` on `AlexandreLozi/t11p-integration`).
   - Mac fix 6716f46 is option A: managed exclusive create plus fchmod, no variadic mode.
