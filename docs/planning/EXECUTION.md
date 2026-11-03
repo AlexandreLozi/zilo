@@ -355,8 +355,18 @@ Current FE assignments (Opus, 2026-11-02 resume):
   `ctx_32916f5c7c76`, branch `t21a-sdk-jobs` from `06ed08a`, spec `docs/tasks/T21a.md` (slice 1
   jobs and events, slice 2 pages and export). Footer verified "DeepSeek V4.1 Flash Free". Local
   baseline sdk 159/159 on Node 24. Pushing this task branch starts no hosted CI (ci-web runs on
-  push to `main` only). **Next:** GPT review of the head at worker_done (non-★, OD-11). The merge
-  needs one ci-web run on the tested merge, batched after the minutes reset (OD-15).
+  push to `main` only).
+  - **STOPPED: the DeepSeek free quota ran out mid-slice 1** (it resets at 21:00 on 2026-11-03).
+    The worker was stopped and released.
+  - Opus checkpoint **WIP `f7bbfaa`** pushed on `t21a-sdk-jobs`: `sse.ts`, `events.ts`,
+    `job-state.ts` and `sse.test.ts`, plus edits to client, transport, decode, errors, types and
+    the mock.
+  - It is NOT green: sdk 165/165 tests, but 1 typecheck error (`sse.test.ts`
+    exactOptionalPropertyTypes) and lint fails. The jobs and events suites are not written.
+  - **Next:** after 21:00, re-dispatch DeepSeek from `f7bbfaa` (same worktree and config; fix
+    the typecheck and lint first, then finish slice 1, then slice 2). If DeepSeek quota stays the
+    bottleneck, fall back to GPT authoring (OD-11). Then the GPT review. The merge needs one
+    ci-web run on the tested merge.
 - **Queued FE, after T21a:** T22 Scan dialog v1 (design-critical, Claude author, GPT review;
   deps T15, T21a and T05). T34a weekday checklist draft and T56a harness are low-priority filler
   for DeepSeek when there is quota headroom.
