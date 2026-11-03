@@ -398,9 +398,12 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
        hardlink, DACL cases).
      - Only 2 failures, both the `inherited` ACE fixture. Its precondition fails because Windows
        normalized away the attack state, so the product check was never exercised.
-   - **Next:** a test-only fix that writes the fixture raw (`SetFileSecurityW`), or explicitly
-     asserts that the state is OS-unreachable. Then a local suite, a narrow Claude review, one
-     Backend run, and the auth/Agent integration and recovery slices.
+   - **Inherited-ACE fixture fix** (test-only, raw `SetFileSecurityW` and `GetFileSecurityW`):
+     LOCAL head `65be8ce` (tested fixture `11882fa`). Local evidence: full 293 passed, 45 skipped,
+     0 failed.
+   - **Claude r4 PASS**: `docs/reviews/T11p-windows-r4.md`, commit 94e529a.
+   - **Next:** GPT pushes the exact head, which starts one 4-OS run. Then the auth/Agent
+     integration and recovery slices.
     - **P3:** a SID-in-ACE bound, minimal access for ancestors, and leftover-temp behaviour as a
       recovery-slice input.
   - Native Windows acceptance still needs that combined hosted batch (OD-6/15/16); local guards
