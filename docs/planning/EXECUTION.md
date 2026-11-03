@@ -492,6 +492,23 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
         `/tmp/opencode/t11p-clean-drain-handoff.md` and settle before 250k. Fresh context implements
         after scope approval. Timeout is not native-I/O abort; never release a writer lock while
         old I/O can mutate a subsequent session. Full coordinator remains UNACCEPTED/unwired.
+        - **Joint fix-5 scope approved (GPT/Opus):** one shutdown owner/epoch and one shared
+          monotonic 5-second total observation budget across open, writer and clean completion.
+          Caller cancellation stops observation only. Retain exclusive ownership until all real
+          I/O settles; bounded task count is not a promise of bounded native-call duration.
+        - Dispose-first seals admission, drains and releases without ever issuing clean. Stop
+          may issue clean only after the admission seal, every admitted mutation durable, current
+          generation and zero owned work, with no failure/abandon/dispose and valid remaining
+          budget. Post-seal mutations are rejected, never acknowledged as new durable authority.
+        - A late clean success may truthfully leave disk clean while the timed-out instance stays
+          Unavailable/not Ready. No dirty-after-issued-I/O guarantee or protocol amendment.
+          Stop-first then Dispose suppresses an unissued marker, not an already-issued native write.
+        - Required deterministic evidence: mutation/seal race, Dispose-first never clean, late
+          gated clean with pending ownership and no success publication, bounded sharing failure
+          on reopen while old I/O owns the store, and failed clean with atomic old-dirty/new-clean
+          outcomes. Distinguish controlled acknowledgements from actual native evidence. Fresh
+          author implements after the planning worker settles; report and whole-coordinator
+          Claude HIGH review remain mandatory before acceptance or a combined hosted gate.
         - **Caps jointly approved:** 4160 store entries (4096 + 64) and conservative 8320 sequence
           entries (4096 + 4160 + 64), internal only; no API/status change. Require cap-1/cap/cap+1
           coverage, prune/reuse without stale-callback ABA, and fail-closed generation overflow.
