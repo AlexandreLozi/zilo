@@ -1,0 +1,189 @@
+  Zilo.Core -> <WORKTREE>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> <WORKTREE>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> <WORKTREE>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Virtual -> <WORKTREE>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> <WORKTREE>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <WORKTREE>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for <WORKTREE>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(decision: 99) [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(decision: Granted) [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(decision: Blocked) [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(decision: Pending) [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(decision: Denied) [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.NativeConsentPublicationTests.Native_deadline_is_rechecked_at_the_decision_transaction(decision: Granted) [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.NativeConsentPublicationTests.Native_deadline_is_rechecked_at_the_decision_transaction(decision: Blocked) [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.NativeConsentPublicationTests.Native_deadline_is_rechecked_at_the_decision_transaction(decision: Denied) [FAIL]
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(decision: Blocked) [FAIL]
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(decision: 99) [30 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "pending"
+Actual:   "none"
+           ↑ (pos 0)
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 73
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 81
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 81
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(decision: Granted) [2 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "pending"
+Actual:   "granted"
+           ↑ (pos 0)
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 73
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 81
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 81
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(decision: Blocked) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "pending"
+Actual:   "blocked"
+           ↑ (pos 0)
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 73
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 81
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 81
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(decision: Pending) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "pending"
+Actual:   "none"
+           ↑ (pos 0)
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 73
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 81
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 81
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(decision: Denied) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "pending"
+Actual:   "denied"
+           ↑ (pos 0)
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 73
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 81
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_change_replacement_prompt(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 81
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Native_deadline_is_rechecked_at_the_decision_transaction(decision: Granted) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "none"
+Actual:   "granted"
+           ↑ (pos 0)
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Native_deadline_is_rechecked_at_the_decision_transaction(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 132
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Native_deadline_is_rechecked_at_the_decision_transaction(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 134
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Native_deadline_is_rechecked_at_the_decision_transaction(decision: Blocked) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "none"
+Actual:   "blocked"
+           ↑ (pos 0)
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Native_deadline_is_rechecked_at_the_decision_transaction(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 132
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Native_deadline_is_rechecked_at_the_decision_transaction(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 134
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Native_deadline_is_rechecked_at_the_decision_transaction(decision: Denied) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "none"
+Actual:   "denied"
+           ↑ (pos 0)
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Native_deadline_is_rechecked_at_the_decision_transaction(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 132
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Native_deadline_is_rechecked_at_the_decision_transaction(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 134
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(decision: Blocked) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1
+Actual:   2
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 38
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 43
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(decision: Granted) [FAIL]
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(decision: 99) [FAIL]
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(decision: Denied) [FAIL]
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(decision: Pending) [FAIL]
+[xUnit.net 00:00:00.49]     Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_after_stop_cannot_apply_or_reserve(decision: Denied) [FAIL]
+[xUnit.net 00:00:00.49]     Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_after_stop_cannot_apply_or_reserve(decision: Blocked) [FAIL]
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(decision: Granted) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "blocked"
+Actual:   "granted"
+           ↑ (pos 0)
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 37
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 43
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(decision: 99) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "blocked"
+Actual:   "none"
+           ↑ (pos 0)
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 37
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 43
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(decision: Denied) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "blocked"
+Actual:   "denied"
+           ↑ (pos 0)
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 37
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 43
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(decision: Pending) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "blocked"
+Actual:   "none"
+           ↑ (pos 0)
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 37
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_cannot_overwrite_newer_block(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 43
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_after_stop_cannot_apply_or_reserve(decision: Denied) [3 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   1
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_after_stop_cannot_apply_or_reserve(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 107
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_after_stop_cannot_apply_or_reserve(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 109
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_after_stop_cannot_apply_or_reserve(decision: Blocked) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   1
+  Stack Trace:
+     at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_after_stop_cannot_apply_or_reserve(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 107
+   at Zilo.Agent.Tests.NativeConsentPublicationTests.Old_native_completion_after_stop_cannot_apply_or_reserve(ConsentDecision decision) in <WORKTREE>/backend/tests/Zilo.Agent.Tests/NativeConsentPublicationTests.cs:line 109
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:    15, Passed:     1, Skipped:     0, Total:    16, Duration: 68 ms - Zilo.Agent.Tests.dll (net10.0)

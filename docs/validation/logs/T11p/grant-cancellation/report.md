@@ -1,5 +1,9 @@
 # T11p grant cancellation — bounded correction, full authorization UNACCEPTED
 
+Later bounded correction: `../native-prompt-publication/report.md` fixes the prompt identity/reservation
+gap with forced-interleaving evidence. Metadata bounds and clean-marker completion defects remain open;
+full authorization is still UNACCEPTED.
+
 - Starting checkpoint: clean LOCAL `d660096e725b5a77d51ec4818feef19f1584f8bb`.
 - Exact tested source/test commit: `26808a22c5dc99b2c660577f1e74294297eac934`.
 - This report/log commit adds evidence only; **LOCAL COMMIT / HOLD-PUSH**.
