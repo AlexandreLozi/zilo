@@ -287,8 +287,10 @@ authorized run. Local evidence never substitutes for native evidence. Current BE
   `t11-port-flake` at baseline `38a859b`; diagnosis first, minimal test-only fix only if supported.
   Next: GPT reviews local report/head; Windows reproduction remains HELD-for-CI.
 - **ARM manual-dispatch workflow:** DeepSeek `task_e201f99a14f7` / `ctx_c4bcc50152ad`, branch
-  `ci-backend-arm-dispatch` at baseline `38a859b`; finite runner choice and local truth-table.
-  Next: GPT review; no push or hosted run. Runtime validation remains HELD-for-CI.
+  `ci-backend-arm-dispatch`, local checkpoint `ad986c9` (baseline `38a859b`). GPT r1 requests
+  explicit literal runner mapping and invalid-input rejection rather than relying on the choice UI.
+  Fix active: DeepSeek `task_0c74ce641040` / `ctx_96a4d52d93e1`. Next: GPT r2; no push or hosted
+  run. Runtime validation remains HELD-for-CI.
 - **Windows storage adapter only:** GPT HIGH `task_c435be4503ab` / `ctx_25b6df5b5a78`, existing
   `AlexandreLozi/t11p-integration` at baseline `38a859b`; compile/guard tests locally, native tests
   authored with explicit Linux skips. Next: independent Claude review, then bounded auth/Agent
