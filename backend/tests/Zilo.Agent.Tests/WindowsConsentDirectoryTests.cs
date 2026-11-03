@@ -355,6 +355,151 @@ public sealed class WindowsConsentDirectoryTests
         }
     }
 
+    [Theory(SkipUnless = nameof(WindowsHost), Skip = NativeSkip)]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Native_foreign_administrators_owner_is_rejected_without_repair(bool mutateRoot)
+    {
+        using var fixture = new Fixture();
+        await CreateCleanStore(fixture);
+        var user = CurrentUserSid();
+        var administrators = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
+        Assert.NotEqual(user, administrators);
+
+        if (mutateRoot)
+        {
+            var root = new DirectoryInfo(fixture.Store);
+            try
+            {
+                SetOwner(root, administrators);
+                Assert.Equal(administrators, root.GetAccessControl().GetOwner(typeof(SecurityIdentifier)));
+                Assert.Throws<IOException>(() => WindowsConsentDirectory.Open(fixture.Store));
+                Assert.Equal(administrators, root.GetAccessControl().GetOwner(typeof(SecurityIdentifier)));
+            }
+            finally
+            {
+                SetOwner(root, user);
+            }
+        }
+        else
+        {
+            var snapshot = new FileInfo(Path.Combine(fixture.Store, "consent.json"));
+            try
+            {
+                SetOwner(snapshot, administrators);
+                Assert.Equal(administrators, snapshot.GetAccessControl().GetOwner(typeof(SecurityIdentifier)));
+                try
+                {
+                    await using var directory = WindowsConsentDirectory.Open(fixture.Store);
+                    await Assert.ThrowsAsync<IOException>(() => directory.ReadAsync(Token).AsTask());
+                    await using var session = new ConsentSession(directory);
+                    Assert.Equal(ConsentStorageHealth.Unavailable, (await session.OpenAsync(Token)).Health);
+                }
+                finally
+                {
+                    Assert.Equal(administrators, snapshot.GetAccessControl().GetOwner(typeof(SecurityIdentifier)));
+                }
+            }
+            finally
+            {
+                SetOwner(snapshot, user);
+            }
+        }
+    }
+
+    [Theory(SkipUnless = nameof(WindowsHost), Skip = NativeSkip)]
+    [InlineData("inherited", true)]
+    [InlineData("inherited", false)]
+    [InlineData("deny", true)]
+    [InlineData("deny", false)]
+    [InlineData("everyone", true)]
+    [InlineData("everyone", false)]
+    [InlineData("callback", true)]
+    [InlineData("callback", false)]
+    public async Task Native_foreign_ace_kind_is_rejected_without_repair(string kind, bool mutateRoot)
+    {
+        using var fixture = new Fixture();
+        await CreateCleanStore(fixture);
+        var user = CurrentUserSid();
+        var path = mutateRoot ? fixture.Store : Path.Combine(fixture.Store, "consent.json");
+        var beforeMutation = ReadSecurityDescriptor(path, mutateRoot);
+        try
+        {
+            AddRawAce(path, mutateRoot, BuildFixtureAce(kind, user));
+            var fixtureDescriptor = ReadSecurityDescriptor(path, mutateRoot);
+            AssertFixtureAce(fixtureDescriptor, kind, user);
+
+            if (mutateRoot)
+            {
+                Assert.Throws<IOException>(() => WindowsConsentDirectory.Open(fixture.Store));
+            }
+            else
+            {
+                await using var directory = WindowsConsentDirectory.Open(fixture.Store);
+                await Assert.ThrowsAsync<IOException>(() => directory.ReadAsync(Token).AsTask());
+                await using var session = new ConsentSession(directory);
+                Assert.Equal(ConsentStorageHealth.Unavailable, (await session.OpenAsync(Token)).Health);
+            }
+
+            Assert.Equal(fixtureDescriptor, ReadSecurityDescriptor(path, mutateRoot));
+        }
+        finally
+        {
+            SetSecurityDescriptor(path, mutateRoot, beforeMutation);
+        }
+    }
+
+    [Fact(SkipUnless = nameof(WindowsHost), Skip = NativeSkip)]
+    public async Task Native_external_target_handle_causes_sticky_sharing_failure_without_retry()
+    {
+        using var fixture = new Fixture();
+        await CreateCleanStore(fixture);
+        var snapshotPath = Path.Combine(fixture.Store, "consent.json");
+        var trace = new List<WindowsConsentWriteStage>();
+        byte[] oldBytes;
+
+        await using (var directory = WindowsConsentDirectory.Open(fixture.Store, trace.Add))
+        {
+            await using var session = new ConsentSession(directory);
+            var opened = await session.OpenAsync(Token);
+            Assert.Equal(ConsentStorageHealth.Ready, opened.Health);
+            oldBytes = await File.ReadAllBytesAsync(snapshotPath, Token);
+
+            using (var blocker = new FileStream(snapshotPath, FileMode.Open, FileAccess.Read,
+                       FileShare.Read | FileShare.Write))
+            {
+                trace.Clear();
+                var error = await Assert.ThrowsAsync<IOException>(() => session.WriteAsync(Snapshot(2), Token).AsTask());
+                Assert.True(error.Message.EndsWith(":32", StringComparison.Ordinal) ||
+                            error.Message.EndsWith(":5", StringComparison.Ordinal), error.Message);
+                Assert.Contains(WindowsConsentWriteStage.BeforeRename, trace);
+                Assert.DoesNotContain(WindowsConsentWriteStage.BeforeFinalFlush, trace);
+                Assert.True(File.Exists(Path.Combine(fixture.Store, "consent.tmp")));
+                Assert.Equal(oldBytes, await File.ReadAllBytesAsync(snapshotPath, Token));
+                await Assert.ThrowsAsync<InvalidOperationException>(() => session.CompleteAsync(1, Token).AsTask());
+            }
+
+            await Assert.ThrowsAsync<IOException>(() => directory.ReadAsync(Token).AsTask());
+            await Assert.ThrowsAsync<IOException>(() => directory.ReplaceAsync(
+                "consent.json", ConsentSnapshotCodec.Encode(Snapshot(3)), Token).AsTask());
+        }
+
+        Assert.True(File.Exists(Path.Combine(fixture.Store, "consent.tmp")));
+        Assert.Equal(oldBytes, await File.ReadAllBytesAsync(snapshotPath, Token));
+        await using var reopenedDirectory = WindowsConsentDirectory.Open(fixture.Store);
+        var reopenedContents = await reopenedDirectory.ReadAsync(Token);
+        Assert.True(reopenedContents.InterruptedArtifacts);
+        Assert.Equal(oldBytes, reopenedContents.Snapshot);
+        var reopened = new ConsentSession(reopenedDirectory);
+        await using (reopened)
+        {
+            var result = await reopened.OpenAsync(Token);
+            Assert.Equal(ConsentStorageHealth.Unavailable, result.Health);
+            Assert.Equal("consent-interrupted-state", result.DiagnosticCode);
+        }
+        Assert.Equal(oldBytes, await File.ReadAllBytesAsync(snapshotPath, Token));
+    }
+
     private static CancellationToken Token => TestContext.Current.CancellationToken;
     private static ConsentSnapshot Snapshot(long generation) => new(generation,
         new[] { new StoredConsent("https://windows.example", "granted", false, DateTimeOffset.UnixEpoch, null, null) });
@@ -381,6 +526,104 @@ public sealed class WindowsConsentDirectoryTests
         }
         else security.SetAccessRuleProtection(false, preserveInheritance: true);
         target.SetAccessControl(security);
+    }
+
+    private static async Task CreateCleanStore(Fixture fixture)
+    {
+        await using var session = new ConsentSession(WindowsConsentDirectory.Open(fixture.Store));
+        Assert.Equal(ConsentStorageHealth.Ready, (await session.OpenAsync(Token)).Health);
+        await session.CompleteAsync(1, Token);
+    }
+
+    private static SecurityIdentifier CurrentUserSid()
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        return identity.User ?? throw new InvalidOperationException("missing-current-user");
+    }
+
+    private static void SetOwner(DirectoryInfo target, SecurityIdentifier owner)
+    {
+        var security = target.GetAccessControl();
+        security.SetOwner(owner);
+        target.SetAccessControl(security);
+    }
+
+    private static void SetOwner(FileInfo target, SecurityIdentifier owner)
+    {
+        var security = target.GetAccessControl();
+        security.SetOwner(owner);
+        target.SetAccessControl(security);
+    }
+
+    private static GenericAce BuildFixtureAce(string kind, SecurityIdentifier user) => kind switch
+    {
+        "inherited" => new CommonAce(AceFlags.Inherited, AceQualifier.AccessAllowed, 0x80, user, false, null),
+        "deny" => new CommonAce(AceFlags.None, AceQualifier.AccessDenied, 0x10, user, false, null),
+        "everyone" => new CommonAce(AceFlags.None, AceQualifier.AccessAllowed, 0x80,
+            new SecurityIdentifier(WellKnownSidType.WorldSid, null), false, null),
+        "callback" => new CommonAce(AceFlags.None, AceQualifier.AccessAllowed, 0x80, user, true, null),
+        _ => throw new ArgumentOutOfRangeException(nameof(kind))
+    };
+
+    private static void AddRawAce(string path, bool directory, GenericAce ace)
+    {
+        var descriptor = new RawSecurityDescriptor(ReadSecurityDescriptor(path, directory), 0);
+        Assert.True(descriptor.ControlFlags.HasFlag(ControlFlags.DiscretionaryAclProtected));
+        Assert.NotNull(descriptor.DiscretionaryAcl);
+        var existing = descriptor.DiscretionaryAcl!;
+        var updatedAcl = new RawAcl(existing.Revision, existing.BinaryLength + ace.BinaryLength);
+        for (var i = 0; i < existing.Count; i++) updatedAcl.InsertAce(i, existing[i]);
+        updatedAcl.InsertAce(ace is CommonAce { AceType: AceType.AccessDenied } ? 0 : existing.Count, ace);
+        var updated = new RawSecurityDescriptor(descriptor.ControlFlags, descriptor.Owner, descriptor.Group,
+            descriptor.SystemAcl, updatedAcl);
+        var bytes = new byte[updated.BinaryLength];
+        updated.GetBinaryForm(bytes, 0);
+        SetSecurityDescriptor(path, directory, bytes);
+    }
+
+    private static void AssertFixtureAce(byte[] descriptorBytes, string kind, SecurityIdentifier user)
+    {
+        var descriptor = new RawSecurityDescriptor(descriptorBytes, 0);
+        Assert.True(descriptor.ControlFlags.HasFlag(ControlFlags.DiscretionaryAclProtected));
+        Assert.Equal(user, descriptor.Owner);
+        var ace = Assert.Single(descriptor.DiscretionaryAcl!.Cast<GenericAce>(), candidate =>
+            candidate is CommonAce common && kind switch
+            {
+                "inherited" => common.AceType == AceType.AccessAllowed && common.AceFlags == AceFlags.Inherited &&
+                    common.AceQualifier == AceQualifier.AccessAllowed && common.AccessMask == 0x80 &&
+                    !common.IsCallback && common.SecurityIdentifier == user,
+                "deny" => common.AceType == AceType.AccessDenied && common.AceFlags == AceFlags.None &&
+                    common.AceQualifier == AceQualifier.AccessDenied && common.AccessMask == 0x10 &&
+                    !common.IsCallback && common.SecurityIdentifier == user,
+                "everyone" => common.AceType == AceType.AccessAllowed && common.AceFlags == AceFlags.None &&
+                    common.AceQualifier == AceQualifier.AccessAllowed && common.AccessMask == 0x80 &&
+                    !common.IsCallback && common.SecurityIdentifier == new SecurityIdentifier(WellKnownSidType.WorldSid, null),
+                "callback" => common.AceType == AceType.AccessAllowedCallback && common.AceFlags == AceFlags.None &&
+                    common.AceQualifier == AceQualifier.AccessAllowed && common.AccessMask == 0x80 &&
+                    common.IsCallback && common.SecurityIdentifier == user,
+                _ => false
+            });
+        Assert.NotNull(ace);
+    }
+
+    private static byte[] ReadSecurityDescriptor(string path, bool directory) =>
+        directory ? new DirectoryInfo(path).GetAccessControl().GetSecurityDescriptorBinaryForm() :
+        new FileInfo(path).GetAccessControl().GetSecurityDescriptorBinaryForm();
+
+    private static void SetSecurityDescriptor(string path, bool directory, byte[] descriptor)
+    {
+        if (directory)
+        {
+            var security = new DirectoryInfo(path).GetAccessControl();
+            security.SetSecurityDescriptorBinaryForm(descriptor);
+            new DirectoryInfo(path).SetAccessControl(security);
+        }
+        else
+        {
+            var security = new FileInfo(path).GetAccessControl();
+            security.SetSecurityDescriptorBinaryForm(descriptor);
+            new FileInfo(path).SetAccessControl(security);
+        }
     }
 
     private static void AssertExactPrivateAcl(string path, bool directory)

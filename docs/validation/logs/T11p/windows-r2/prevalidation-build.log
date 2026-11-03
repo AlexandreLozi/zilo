@@ -1,0 +1,23 @@
+  Zilo.Core -> [workspace]/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> [workspace]/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> [workspace]/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Security -> [workspace]/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Core.Tests -> [workspace]/backend/tests/Zilo.Core.Tests/bin/Release/net10.0/Zilo.Core.Tests.dll
+  Zilo.Agent -> [workspace]/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Drivers.Virtual.Tests -> [workspace]/backend/tests/Zilo.Drivers.Virtual.Tests/bin/Release/net10.0/Zilo.Drivers.Virtual.Tests.dll
+  Zilo.Scaffold.Tests -> [workspace]/backend/tests/Zilo.Scaffold.Tests/bin/Release/net10.0/Zilo.Scaffold.Tests.dll
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentProcessTests.cs(31,17): error CS0136: A local or parameter named 'pipeName' cannot be declared in this scope because that name is used in an enclosing local scope to define a local or parameter [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentProcessTests.cs(79,27): error xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentProcessTests.cs(80,27): error xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+
+Build FAILED.
+
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentProcessTests.cs(31,17): error CS0136: A local or parameter named 'pipeName' cannot be declared in this scope because that name is used in an enclosing local scope to define a local or parameter [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentProcessTests.cs(79,27): error xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentProcessTests.cs(80,27): error xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+    0 Warning(s)
+    3 Error(s)
+
+Time Elapsed 00:00:01.38
+
+Exit: 1

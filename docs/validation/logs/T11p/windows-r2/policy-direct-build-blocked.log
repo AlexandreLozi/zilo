@@ -1,0 +1,10 @@
+source=direct-typed-policy-tests
+command_status=1
+  Zilo.Core -> <workspace>/backend/src/Zilo.Core/bin/Debug/net10.0/Zilo.Core.dll
+  Zilo.Security -> <workspace>/backend/src/Zilo.Security/bin/Debug/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Naps2 -> <workspace>/backend/src/Zilo.Drivers.Naps2/bin/Debug/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> <workspace>/backend/src/Zilo.Drivers.Virtual/bin/Debug/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> <workspace>/backend/src/Zilo.Agent/bin/Debug/net10.0/Zilo.Agent.dll
+<workspace>/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(558,20): error CS0246: The type or namespace name 'RawAce' could not be found (are you missing a using directive or an assembly reference?) [<workspace>/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+<workspace>/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(577,64): error CS0246: The type or namespace name 'RawAce' could not be found (are you missing a using directive or an assembly reference?) [<workspace>/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+<workspace>/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(611,58): error CS0246: The type or namespace name 'RawCustomAce' could not be found (are you missing a using directive or an assembly reference?) [<workspace>/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]

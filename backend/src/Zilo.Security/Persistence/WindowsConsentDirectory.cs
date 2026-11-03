@@ -14,7 +14,6 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
     private const uint GenericWrite = 0x40000000;
     private const uint Delete = 0x00010000;
     private const uint ReadControl = 0x00020000;
-    private const uint FileListDirectory = 0x00000001;
     private const uint FileReadAttributes = 0x00000080;
     private const uint Synchronize = 0x00100000;
     private const uint ShareRead = 0x00000001;
@@ -73,6 +72,15 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
             throw new PlatformNotSupportedException("consent-windows-x64-arm64-only");
     }
 
+    internal static uint DirectoryAccess(bool privateDirectory, bool writableRoot) => writableRoot
+        ? GenericRead | GenericWrite | ReadControl
+        : FileReadAttributes | Synchronize | (privateDirectory ? ReadControl : 0);
+
+    internal static void RequireAceSidBounds(int aceLength, int sidLength)
+    {
+        if (aceLength < 8 || sidLength is < 8 or > 68 || sidLength > aceLength - 8) throw Error();
+    }
+
     internal static string ResolveRoot(string localAppData)
     {
         ValidateCanonicalPath(localAppData);
@@ -90,7 +98,7 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
         {
             var parts = Components(path);
             var driveRoot = path[..3];
-            var driveHandle = store.OpenDirectory(driveRoot, final: false);
+            var driveHandle = store.OpenDirectory(driveRoot, privateDirectory: false, writableRoot: false);
             store._chain.Add((driveRoot, driveHandle));
             store.CheckDirectory(driveHandle, requirePrivate: false);
             store.RequireLocalNtfs(driveHandle, driveRoot);
@@ -101,12 +109,11 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
                 var childPath = current + "\\" + parts[i];
                 var final = i == parts.Count - 1;
                 var created = false;
-                var handle = store.TryOpenDirectory(childPath, final, out var error);
+                var handle = store.TryOpenDirectory(childPath, privateDirectory: final, writableRoot: final, out var error);
                 if (handle is null && (error == ErrorFileNotFound || error == ErrorPathNotFound))
                 {
-                    CreatePrivateDirectory(childPath, store._userSid);
-                    created = true;
-                    handle = store.OpenDirectory(childPath, final);
+                    created = CreatePrivateDirectory(childPath, store._userSid);
+                    handle = store.OpenDirectory(childPath, privateDirectory: created || final, writableRoot: final);
                 }
                 else if (handle is null)
                 {
@@ -114,7 +121,7 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
                 }
 
                 store._chain.Add((childPath, handle));
-                store.CheckDirectory(handle, final);
+                store.CheckDirectory(handle, created || final);
                 if (created) store.CheckPrivate(handle, true);
                 if (!SameVolume(store._volumeSerial, FileInfo(handle).VolumeSerialNumber)) throw Error();
                 if (created) store._privateDirectoryPaths.Add(childPath);
@@ -320,7 +327,7 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
         return new SafeFileHandle(raw, ownsHandle: true);
     }
 
-    private static void CreatePrivateDirectory(string path, SecurityIdentifier user)
+    private static bool CreatePrivateDirectory(string path, SecurityIdentifier user)
     {
         using var descriptor = PrivateSecurityDescriptor(user);
         var attributes = new SecurityAttributes { Length = 24, SecurityDescriptor = descriptor, InheritHandle = 0 };
@@ -328,16 +335,17 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
         {
             var error = Marshal.GetLastPInvokeError();
             if (error != ErrorAlreadyExists) throw NativeError(error);
+            return false;
         }
+        return true;
     }
 
-    private SafeFileHandle OpenDirectory(string path, bool final) =>
-        TryOpenDirectory(path, final, out var error) ?? throw NativeError(error);
+    private SafeFileHandle OpenDirectory(string path, bool privateDirectory, bool writableRoot) =>
+        TryOpenDirectory(path, privateDirectory, writableRoot, out var error) ?? throw NativeError(error);
 
-    private SafeFileHandle? TryOpenDirectory(string path, bool final, out int error)
+    private SafeFileHandle? TryOpenDirectory(string path, bool privateDirectory, bool writableRoot, out int error)
     {
-        var desired = final ? GenericRead | GenericWrite | ReadControl :
-            FileListDirectory | FileReadAttributes | ReadControl | Synchronize;
+        var desired = DirectoryAccess(privateDirectory, writableRoot);
         var raw = Native.CreateFileW(path, desired, ShareRead | ShareWrite,
             nint.Zero, OpenExisting, FileFlagBackupSemantics | FileFlagOpenReparsePoint, nint.Zero);
         if (raw == Native.InvalidHandle)
@@ -414,7 +422,7 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
             var privateDirectory = i == _chain.Count - 1 || _privateDirectoryPaths.Contains(_chain[i].Path);
             CheckDirectory(_chain[i].Handle, privateDirectory);
             if (!SameVolume(_volumeSerial, current.VolumeSerialNumber)) throw Error();
-            using var fresh = OpenDirectory(_chain[i].Path, final: false);
+            using var fresh = OpenDirectory(_chain[i].Path, privateDirectory, writableRoot: i == _chain.Count - 1);
             if (privateDirectory) CheckPrivate(fresh, true);
             if (!Same(current, FileInfo(fresh))) throw Error();
         }
@@ -489,7 +497,11 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
                 var header = Marshal.ReadByte(ace, 0);
                 var flags = Marshal.ReadByte(ace, 1);
                 if (header != AccessAllowedAceType || flags != 0) throw Error();
-                var sid = SidAt(IntPtr.Add(ace, 8));
+                var sidPointer = IntPtr.Add(ace, 8);
+                if (!Native.IsValidSid(sidPointer)) throw Error();
+                var sidLength = checked((int)Native.GetLengthSid(sidPointer));
+                RequireAceSidBounds(aceLength, sidLength);
+                var sid = SidAt(sidPointer);
                 if (!sid.Equals(_userSid) && !sid.Equals(_systemSid) && !sid.Equals(_administratorsSid)) throw Error();
                 sawUser |= sid.Equals(_userSid);
             }

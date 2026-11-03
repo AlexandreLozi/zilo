@@ -1,0 +1,18 @@
+mutation=ancestor-list-read-control
+build_status=0
+test_status=1
+Test run for <workspace>/backend/tests/Zilo.Agent.Tests/bin/Debug/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.45]     Zilo.Agent.Tests.WindowsConsentPolicyTests.Directory_access_does_not_request_list_or_control_for_unrelated_ancestors [FAIL]
+  Failed Zilo.Agent.Tests.WindowsConsentPolicyTests.Directory_access_does_not_request_list_or_control_for_unrelated_ancestors [10 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1048704
+Actual:   1179777
+  Stack Trace:
+     at Zilo.Agent.Tests.WindowsConsentPolicyTests.Directory_access_does_not_request_list_or_control_for_unrelated_ancestors() in <workspace>/backend/tests/Zilo.Agent.Tests/WindowsConsentPolicyTests.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     1, Skipped:     0, Total:     2, Duration: 29 ms - Zilo.Agent.Tests.dll (net10.0)
+assertion_result=red
