@@ -6,10 +6,12 @@ uploaded `backend-windows-latest` artifact (`.trx` for `Zilo.Agent.Tests`). No h
 started; no Windows binary was executed natively.
 
 **Result:** the failed bind is the test's own "occupy 47841" socket, not the agent's fallback
-listener. It failed 1 ms after the previous test in the same collection killed its agent, which
-was still the only process using 47841. The evidence supports a test-harness lifecycle defect, not
-a production port-contract defect. A minimal harness fix is included; it is verified on Linux only
-(Windows proof is held for CI, see "Evidence limits").
+listener. It failed 1 ms after the previous test in the same collection killed its agent; the
+timeline puts that test on 47841 immediately before the failure, but no socket or process snapshot
+shows what else, if anything, held the port, so causality and the exact TCP state are not proven.
+The evidence is consistent with a test-harness lifecycle race and does not implicate the production
+port contract. A bounded candidate mitigation is included; this correction only relabels it and the
+prior Linux runs are reused unchanged, while Windows proof is held for CI (see "Evidence limits").
 
 ## 1. Which bind failed
 
@@ -30,9 +32,10 @@ Line 99 at `38a859b` is `using var occupied = new TcpListener(IPAddress.Loopback
 The exception is `WSAEADDRINUSE` (10048), raised before the agent child process is even started
 (line 100), so it is **not** the agent's ordered-fallback bind and not `WSAEACCES` (10013).
 
-## 2. What held 47841 at that moment
+## 2. What the timeline shows about 47841
 
-The measured test timeline from the run's `.trx` (same assembly, same machine, UTC):
+The `.trx` records test timing only; it contains no OS socket or process snapshot. Within the
+assembly's test inventory, the measured timeline from the run (same assembly, same machine, UTC) is:
 
 | start | end | test |
 | --- | --- | --- |
@@ -41,15 +44,19 @@ The measured test timeline from the run's `.trx` (same assembly, same machine, U
 | 20:31:56.305 | 20:31:57.006 | `RealHttpTests.Real_loopback_http_exposes_public_hello_and_enforces_host_first` (agent on 47841) |
 | 20:31:57.007 | 20:31:57.019 | `RealHttpTests.Occupied_primary_port_uses_only_ordered_fallback` — **failed** |
 
-The previous test's agent is the only 47841 user in the preceding millisecond. That test kills the
-agent and awaits `WaitForExitAsync` (`RealHttpTests.cs:94-95` at the fixed head), so the *process*
-is gone. But the test's `HttpClient` is declared at `RealHttpTests.cs:53` and scope disposal runs
-after the `finally`, so the agent is killed first and the client's pooled connection is closed
-afterwards. The server-side connection teardown therefore lands after `WaitForExitAsync` returns —
-inside the next test's bind window. `WaitForExitAsync` waits for process termination, not for the Windows TCP stack
-to release the local port.
+The preceding test is the last test in this assembly's inventory known to use 47841, and its
+recorded end (57.006) is 1 ms before the failing bind (57.007). The `.trx` cannot show whether any
+other OS process or socket also held 47841 at that instant. That test kills the agent and awaits
+`WaitForExitAsync` (`RealHttpTests.cs:94-95` at the fixed head), so the *process* is gone, but
+`WaitForExitAsync` waits for process termination, not for the Windows TCP stack to release the local
+port. The test's `HttpClient` is declared at `RealHttpTests.cs:53` and scope disposal runs after the
+`finally`, so under the original order the agent was killed while the client's pooled connection was
+still open and the client-side close happened afterwards; connection teardown could therefore
+overlap the next test's bind window. That overlap is a hypothesis about timing, not an observed
+socket state.
 
-Every fixed-port and process-spawning test in the assembly:
+Every fixed-port and process-spawning test in this assembly's test inventory (not a snapshot of all
+OS processes or sockets on the runner):
 
 | test | fixed port | process / socket | cleanup |
 | --- | --- | --- | --- |
@@ -64,7 +71,8 @@ Every fixed-port and process-spawning test in the assembly:
 | `BodyRateTests` (`:108-109`), `ResponseCommitTests` (`:33-34,68-69`) | 47841 only as a fake `HttpContext.Connection.LocalPort` | no socket | n/a |
 | `HttpTestAgent` and the other Kestrel-based classes | ephemeral port 0 (`HttpTestAgent.cs:20`) | in-process host | `DisposeAsync` |
 
-Only `RealHttpTests` / `RealAuthHttpTests` bind real contract ports.
+Within this inventory, only `RealHttpTests` / `RealAuthHttpTests` bind real contract ports; that is
+not a claim about other processes on the runner.
 
 ## 3. Is the collection non-parallel?
 
@@ -78,9 +86,9 @@ Only `RealHttpTests` / `RealAuthHttpTests` bind real contract ports.
   in the `.trx`.
 - The collection still runs **in parallel with other collections** (no assembly-wide
   `DisableParallelization`): `ConfigurationBoundsTests` (not in the collection) ran 20:31:49.026–
-  52.245 while `ContinuationHttpTests` (in the collection) ran 20:31:49.797–53.269. That does not
-  matter for the fixed ports, because only the two `RealHttpTests` classes bind them and both are
-  in the collection.
+  52.245 while `ContinuationHttpTests` (in the collection) ran 20:31:49.797–53.269. Within this
+  assembly's test inventory, only the two `RealHttpTests` classes bind the contract ports and both
+  are in the collection; the `.trx` cannot rule out another OS process holding 47841.
 
 ## 4. Exclusive-address / reuse semantics
 
@@ -91,13 +99,15 @@ constructor and `CreateNewSocketIfNeeded`). Kestrel's default listen socket like
 `Socket.Bind` with no socket option (`dotnet/aspnetcore`
 `Transport.Sockets/src/SocketTransportOptions.cs`, `CreateDefaultBoundListenSocket`).
 
-So the difference is not an option the tests set; it is OS teardown/bind timing. On Windows a plain
-bind rejects a local port that any socket still owns, including a socket in deferred TCP teardown
-after its process exited; `WaitForExitAsync` does not order against that kernel work. No Linux
-failure was reproduced (30 targeted repeats, see below), but Linux is **not** Windows proof and
-this note does not claim a Linux-versus-Windows option difference.
+So the difference is not an option the tests set; any Windows-specific effect would come from OS
+teardown/bind timing. As a general Windows behaviour (not observed here), a plain bind rejects a
+local port that a socket still owns, potentially including a socket in deferred TCP teardown after
+its process exited, and `WaitForExitAsync` does not order against that kernel work. No Linux failure
+was reproduced (30 targeted repeats, see below), but Linux is **not** Windows proof, this note does
+not claim a Linux-versus-Windows option difference, and it does not claim that deferred teardown is
+what happened in this run.
 
-## 5. Minimal fix
+## 5. Candidate mitigation (hypothesis, pending Windows proof)
 
 Test harness only, `backend/tests/Zilo.Agent.Tests/RealHttpTests.cs`: dispose each test's
 `HttpClient` **before** killing its agent (in the `finally`), in
@@ -105,13 +115,16 @@ Test harness only, `backend/tests/Zilo.Agent.Tests/RealHttpTests.cs`: dispose ea
 `Occupied_primary_port_uses_only_ordered_fallback`, and
 `RealAuthHttpTests.Baked_origin_can_issue_and_read_full_hello`.
 
-Why this ordering: the client then closes its pooled connection first. The agent side becomes the
-responder, so it does not create a server-side `TIME_WAIT` on 47841, and no user-space close is
-left to happen after `WaitForExitAsync`, which is exactly the window the timeline shows. No sleep,
-retry, skip, arbitrary port, assertion change, or production change is involved; the ordered
-47841 → 47842 → 47843 contract and the fallback assertion are untouched.
+This is a bounded candidate mitigation, not a proven fix. Its only claim is reduced overlap between
+the client's connection lifetime and the agent kill: the client is disposed before the kill instead
+of afterwards. `HttpClient.Dispose` does **not** await the TCP FIN handshake and does not establish
+a kernel release barrier for 47841, so immediate kill can still race socket teardown; the report
+does not claim which side closes first, that the agent becomes the responder, or that no
+server-side `TIME_WAIT`/`FIN_WAIT` can remain. No sleep, retry, skip, arbitrary port, socket-option
+change (reuse/exclusive flags) or production change is involved; the ordered 47841 → 47842 → 47843
+contract and the fallback assertion are untouched.
 
-Fixed diff (three `finally` blocks):
+Code diff under review (behaviour unchanged by this correction; three `finally` blocks):
 
 ```diff
          finally
@@ -124,19 +137,20 @@ Fixed diff (three `finally` blocks):
 
 ## 6. Evidence limits and local validation
 
-- The `.trx` identifies the failing bind and the immediately preceding 47841 user; it does not
-  expose the Windows kernel socket state, so the exact teardown substate (for example a
-  server-side `FIN_WAIT_2`/`TIME_WAIT` for the accepted connection) is inferred from the 1 ms gap,
-  not directly observed. This is a lifecycle-ordering fix supported by the timeline, not a measured
-  Windows fix.
+- The `.trx` proves the failing bind and the immediately preceding test in the same collection. It
+  does **not** prove that the preceding test's agent was the only OS holder of 47841, the exact TCP
+  substate (for example a server-side `FIN_WAIT_2`/`TIME_WAIT`), or causality. Those remain
+  unobserved hypotheses inferred from a 1 ms gap.
 - OD-6/OD-16: no Windows binary was executed natively and no hosted run was started. **Windows
-  proof is held for CI**, to be batched per OD-16.
+  proof is held for CI**, to be batched per OD-16 with the adapter work.
 - Local Linux (WSL, .NET SDK 10.0.403, Linux is not Windows proof), all real-port runs serialized
-  with the shared `flock` path:
-  - targeted `RealHttpTests` + `RealAuthHttpTests`: **30/30 runs passed, 0 failed**;
-  - full locked suite once: **Failed 0** (Agent 208 passed / 14 skipped, Core 7, Scaffold 6,
-    Drivers.Virtual 28).
+  with the shared `flock` path, recorded at `b460df9`: targeted `RealHttpTests` +
+  `RealAuthHttpTests` **30/30 runs passed, 0 failed**; full locked suite once **Failed 0** (Agent
+  208 passed / 14 skipped, Core 7, Scaffold 6, Drivers.Virtual 28). The comment/report correction
+  does not change code behaviour, so these results are reused rather than rerun.
 - Next evidence needed: one batched hosted Windows run of `Zilo.Agent.Tests` on the reviewed head,
-  ideally with the fixed-port classes repeated, showing the occupy-bind failure absent. A stronger
-  optional probe would instrument a Windows-only diagnostic around the bind (active TCP
-  connections for 47841), but that is not required to accept the harness fix.
+  ideally with the fixed-port classes repeated. If the occupy-bind failure still occurs, the next
+  step is to capture actual socket and process state at the failing bind (for example the runner's
+  active TCP connections for 47841 with owning processes, plus a process snapshot) instead of
+  recording another annotation or a pass. Any Windows instrumented diagnostic must stay
+  test-harness-only and public-redacted.
