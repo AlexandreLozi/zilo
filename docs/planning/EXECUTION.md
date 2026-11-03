@@ -359,7 +359,15 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
       3. it is **carried forward to the recovery slice and T11p full acceptance**: a bounded retry,
          an in-process recovery, or native evidence that it's rare. A store unavailable until
          restart is not acceptable for M6.
-    - The GPT fix `task_ff191956b0d3` / `ctx_845774123383` is dispatched (local, HOLD PUSH).
+    - The GPT fix `task_ff191956b0d3` / `ctx_845774123383` settled: **LOCAL head `c3dec94`**
+      (tested code `c3bc032`). Local evidence: full 281 passed, 44 skipped, 0 failed; targeted 32
+      passed, 30 skipped.
+  - **Claude r2 PASS (narrow)**: `docs/reviews/T11p-windows-r2.md` @ac5fc9f. The slice is ready
+    for the combined run.
+  - **Next:** GPT pushes the exact reviewed head, which starts the single combined Backend run
+    (Windows, macOS arm64 and Intel, Linux). The Windows trx must show the native
+    WindowsConsent* tests executed and passed. Then the auth/Agent integration and recovery
+    slices.
     - **P3:** a SID-in-ACE bound, minimal access for ancestors, and leftover-temp behaviour as a
       recovery-slice input.
   - **Next:**
