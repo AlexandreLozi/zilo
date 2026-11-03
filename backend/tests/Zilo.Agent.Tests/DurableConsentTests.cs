@@ -312,6 +312,46 @@ public sealed class DurableConsentTests
         Assert.False(store.IsGranted(Origin));
     }
 
+    [Fact]
+    public async Task Open_ack_after_dispose_must_never_publish_ready_or_saved_authority()
+    {
+        var disk = new ControlledConsentPersistence
+        {
+            PauseOpen = true,
+            Initial = new(8, new[] { new StoredConsent(Origin, "granted", false, DateTimeOffset.UnixEpoch, null, null) })
+        };
+        await using var store = new ConsentStore(persistence: disk);
+        var opening = store.PersistenceCoordinator!.InitializeAsync(TestContext.Current.CancellationToken).AsTask();
+        await disk.OpenEntered.Task.WaitAsync(Limit, TestContext.Current.CancellationToken);
+        await store.DisposeAsync();
+        disk.ReleaseOpen();
+        await opening.WaitAsync(Limit, TestContext.Current.CancellationToken);
+        Assert.Equal(ConsentStorageHealth.Stopped, store.PersistenceCoordinator.Health);
+        Assert.False(store.IsGranted(Origin));
+        Assert.Null(new TokenService(consent: store).Issue(Origin).Token);
+    }
+
+    [Fact]
+    public async Task Dispose_fences_late_grant_commit_from_previous_lifecycle_epoch()
+    {
+        var disk = new ControlledConsentPersistence { Pause = true };
+        await using var store = new ConsentStore(persistence: disk);
+        await store.PersistenceCoordinator!.InitializeAsync(TestContext.Current.CancellationToken);
+        var grant = store.GrantAsync(Origin, cancellationToken: TestContext.Current.CancellationToken).AsTask();
+        var write = await disk.NextAsync();
+        var disposing = store.DisposeAsync().AsTask();
+        try
+        {
+            Assert.Equal(ConsentStorageHealth.Stopped, store.PersistenceCoordinator.Health);
+            Assert.False(store.IsGranted(Origin));
+        }
+        finally { write.Acknowledge(); }
+        await disposing.WaitAsync(Limit, TestContext.Current.CancellationToken);
+        Assert.Equal(ConsentMutationOutcome.Superseded, (await grant.WaitAsync(Limit, TestContext.Current.CancellationToken)).Outcome);
+        Assert.False(store.IsGranted(Origin));
+        Assert.Null(new TokenService(consent: store).Issue(Origin).Token);
+    }
+
     [Theory]
     [InlineData("https://EXAMPLE.test")]
     [InlineData("http://example.test")]

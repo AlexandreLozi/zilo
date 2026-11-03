@@ -21,6 +21,7 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
     private bool _initialized, _disposed, _workerStopping;
     private int _active;
     private long _durableGeneration, _nextGeneration;
+    private long _lifecycleEpoch;
     private ConsentStorageHealth _health = ConsentStorageHealth.Starting;
     private Exception? _failure;
     private bool _durableFence;
@@ -40,17 +41,28 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
 
     internal async ValueTask InitializeAsync(CancellationToken cancellationToken = default)
     {
+        long epoch;
         lock (_gate)
         {
             if (_disposed) throw new ObjectDisposedException(nameof(ConsentPersistenceCoordinator));
-            if (_initialized) return;
+            if (_initialized || _workerStopping || _health != ConsentStorageHealth.Starting) return;
             _initialized = true;
+            epoch = _lifecycleEpoch;
         }
         ConsentOpenResult opened;
         try { opened = await _persistence.OpenSessionAsync(cancellationToken).ConfigureAwait(false); }
-        catch { lock (_gate) _health = ConsentStorageHealth.Unavailable; return; }
+        catch
+        {
+            lock (_gate)
+            {
+                if (epoch == _lifecycleEpoch && !_disposed && !_workerStopping && _health == ConsentStorageHealth.Starting)
+                    _health = ConsentStorageHealth.Unavailable;
+            }
+            return;
+        }
         lock (_gate)
         {
+            if (epoch != _lifecycleEpoch || _disposed || _workerStopping || _health != ConsentStorageHealth.Starting) return;
             if (opened.Health != ConsentStorageHealth.Ready || opened.Snapshot is null || !opened.DurableActiveFence)
             { _health = ConsentStorageHealth.Unavailable; return; }
             _durableFence = true;
@@ -59,7 +71,7 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
             foreach (var record in opened.Snapshot.Records) _desired[record.Origin] = record;
             _hydrateLocked(opened.Snapshot);
             _health = ConsentStorageHealth.Ready;
-            _worker = Task.Run(WorkerLoop);
+            _worker = Task.Run(() => WorkerLoop(epoch));
         }
     }
 
@@ -139,6 +151,7 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
         lock (_gate)
         {
             if (_disposed || _health == ConsentStorageHealth.Stopped) return;
+            _lifecycleEpoch++;
             _health = ConsentStorageHealth.Stopping; _workerStopping = true;
             _signals.Writer.TryComplete(); worker = _worker;
         }
@@ -176,6 +189,7 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
         lock (_gate)
         {
             if (_disposed) return;
+            _lifecycleEpoch++;
             _disposed = true; _workerStopping = true; _health = ConsentStorageHealth.Stopped;
             _signals.Writer.TryComplete(); worker = _worker;
         }
@@ -183,7 +197,7 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
         await _persistence.DisposeAsync().ConfigureAwait(false);
     }
 
-    private async Task WorkerLoop()
+    private async Task WorkerLoop(long epoch)
     {
         try
         {
@@ -204,11 +218,14 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
                     lock (_gate)
                     {
                         _durableGeneration = snapshot.Generation;
+                        // A durable write may finish draining after Stop, but cannot publish authority.
+                        var canCommit = epoch == _lifecycleEpoch && !_disposed && !_workerStopping &&
+                            _health == ConsentStorageHealth.Ready && _failure is null;
                         foreach (var reservation in batch)
                         {
                             var current = _sequences.TryGetValue(reservation.Origin, out var seq) ? seq : 0;
                             var same = current == reservation.OriginSequence && DesiredEquals(reservation.Origin, reservation.Record);
-                            var outcome = same && _commitLocked(reservation) ? ConsentMutationOutcome.Durable : ConsentMutationOutcome.Superseded;
+                            var outcome = canCommit && same && _commitLocked(reservation) ? ConsentMutationOutcome.Durable : ConsentMutationOutcome.Superseded;
                             CompleteLocked(reservation, new(outcome, snapshot.Generation));
                         }
                     }
