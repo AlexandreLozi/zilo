@@ -437,8 +437,18 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
          still unproven.
        - Both Macs (including startup), Linux and Packaging green.
      - **The T11p Windows adapter slice is ACCEPTED natively.**
-      - **Active (GPT BE lane):** fresh GPT HIGH `task_f29f4b1ed4f6` /
-        `ctx_4904d9f251d8`, existing integration branch from `9976659`; actual footer verified.
+      - **Auth WIP checkpoint: PARTIAL/UNACCEPTED**, local `63f10e7` (source `e170d17`),
+        report `docs/validation/logs/T11p/authorization-partial/report.md`. Prior task
+        `task_f29f4b1ed4f6` / `ctx_4904d9f251d8` settled failed, with all helpers completed.
+        Targeted tests: 26 passed, 3 failed (Ready after Stop, Durable after Stop, compensation
+        timeout). Stale cancellation/new block, prompt reservation atomicity, retained metadata
+        bounds and clean-drain completion remain inspection findings, not reproduced proofs.
+      - **Active fix 1:** fresh GPT HIGH `task_c8f83bfa2069` / `ctx_1dffbd51b99e`, from local
+        `63f10e7`; actual HIGH footer verified. Fix only the two reproduced lifecycle publication
+        races; retain other failing tests and the unaccepted/unwired status. Local commit/HOLD-PUSH,
+        no CI. Parent is sole source author; one read-only explorer is permitted if its workflow
+        requires delegation. Worktree-local skip-worktree preset now pins fixer/explorer to Sol HIGH
+        for fresh runs; no global or committed configuration change.
         Bounded durable-authorization coordinator/ConsentStore seam first: durable-before-grant,
         immediate restrictive memory changes, generation guards and no persistence I/O under the
         authorization monitor. Local commit/HOLD-PUSH, deterministic race tests and one local
