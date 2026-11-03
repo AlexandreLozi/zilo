@@ -402,8 +402,16 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
      LOCAL head `65be8ce` (tested fixture `11882fa`). Local evidence: full 293 passed, 45 skipped,
      0 failed.
    - **Claude r4 PASS**: `docs/reviews/T11p-windows-r4.md`, commit 94e529a.
-   - **Next:** GPT pushes the exact head, which starts one 4-OS run. Then the auth/Agent
-     integration and recovery slices.
+   - **Run 3: Backend 41578959136 on exact `65be8ce`** (analysis
+     `docs/reviews/T11p-windows-native-run3.md`, commit f83a6ec).
+     - Packaging, ubuntu, Intel and arm64 green.
+     - **Inherited ACE proven natively** (`stored-inherited-ace`, both cases pass).
+     - **Windows:** 1 failure, the process-kill reopen. `OpenLock` hit
+       `ERROR_SHARING_VIOLATION` (32) right after the kill: a descendant or a scanner still held
+       `consent.lock`. The same test passed in run 2 on identical production code.
+   - **Proposed (joint decision):** a bounded `OpenLock` wait on 32 at startup only (about 2 s,
+     then fail closed). Writes keep no-retry. Then a narrow review and one 4-OS run, then the
+     auth/Agent integration and recovery slices.
     - **P3:** a SID-in-ACE bound, minimal access for ancestors, and leftover-temp behaviour as a
       recovery-slice input.
   - Native Windows acceptance still needs that combined hosted batch (OD-6/15/16); local guards
