@@ -503,11 +503,21 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
         cause remains unproven; existing callback assertions and all fix-5/earlier guards remain.
         One explicit Sol-HIGH source helper completed, parent inspected every hunk; provenance and
         actual-runtime uncertainty are documented. Clean worktree, local HOLD-PUSH, no CI.
-      - **Whole authorization coordinator review queued:** independent **Claude HIGH** requested on
-        exact local `7178250` (review range `9976659..7178250`) via `msg_218f0f56115f`. If Claude is
-        unavailable, this becomes **HELD-for-Claude** under OD-18; no GPT self-review acceptance,
-        star merge or hosted push before the gate. Production Agent/Core/API/native inputs remain
-        unchanged; coordinator is still UNACCEPTED/unwired pending review and cross-OS evidence.
+      - **Whole authorization coordinator Claude HIGH r1 PASS:** exact local `7178250` (code
+        `19d895e`), review `docs/reviews/T11p-auth-coordinator-r1.md` at `8bdd7dc`, no P1/P2.
+        Coordinator slice reviewed only; no full T11p acceptance, Agent wiring or new native proof.
+        Carry-forwards: expired denial retention/store-full recurrence before M6; ShutdownPending,
+        not Stopped health, means resources still owned; inspect Health/CleanShutdownSucceeded
+        after nonthrowing Stop and do not cancel with a shorter token; shutdown Superseded may
+        already be saved (T05/T44 must not say not-saved); Windows retained-lock fixture must execute
+        in the combined Agent integration run.
+      - **Active Agent composition:** fresh GPT HIGH `task_9ca4d4ed63f7` / `ctx_f7ae13dcc61b`,
+        clean local baseline `7178250`, actual HIGH footer verified, fresh 19k. Concrete private
+        factory/session-wrapper, startup/shutdown and isolated-test injection plan precedes production
+        edits. Scope is managed host composition only, not trusted recovery/quarantine or actual
+        OS session/installer hooks. No hidden volatile-success fallback or real-profile test writes.
+        Local commit/HOLD-PUSH, local suite, independent Claude HIGH, then one combined cross-OS run;
+        no coordinator-only CI. Full T11p/T14, pre-M6 availability and Linux carry-forwards remain open.
       - **Claude HIGH whole-coordinator r1 PASS** on `7178250` (tested code `19d895e`):
         `docs/reviews/T11p-auth-coordinator-r1.md`, 8bdd7dc on `t11p-windows-review-r1`. There is
         no P1 or P2. The P3 carry-forwards and their owners:
