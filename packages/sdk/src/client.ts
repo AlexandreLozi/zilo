@@ -7,7 +7,13 @@ import {
   type CredentialStore,
   type FamilyCredential,
 } from './credentials.js';
-import { decodeCaps, decodeDeviceList, decodeHello, decodeJob } from './decode.js';
+import {
+  decodeCaps,
+  decodeDeviceList,
+  decodeHello,
+  decodeJob,
+  decodeJobList,
+} from './decode.js';
 import {
   Detector,
   type DetectionListener,
@@ -23,10 +29,24 @@ import {
   ZiloProtocolError,
   ZiloTransportError,
 } from './errors.js';
+import {
+  DEFAULT_SSE_HEARTBEAT_SECONDS,
+  heartbeatTimeoutFor,
+  JobEventStream,
+  type BackoffOptions,
+  type JobSettledSnapshot,
+} from './events.js';
 import { createLogger, type DebugLogger } from './log.js';
 import type { PermissionsLike } from './permission.js';
 import { HttpTransport, type FetchLike, type HttpResponse } from './transport.js';
-import type { CreateJobRequest, DeviceCaps, DeviceList, HelloFull, Job } from './types.js';
+import type {
+  CreateJobRequest,
+  DeviceCaps,
+  DeviceList,
+  HelloFull,
+  Job,
+  Limits,
+} from './types.js';
 
 /**
  * **Placeholder** agent ports: the fixed port and its two fallbacks (R-T1). They stay a
@@ -57,14 +77,44 @@ export interface ZiloClientOptions {
   recheckCapMs?: number | undefined;
 }
 
-/** A job this SDK instance created and tracks, with its family and agent instance (R-A15, R-R3). */
+/** A job this SDK instance tracks, with its family and agent instance (R-A15, R-R3). */
 export interface TrackedJob {
   readonly id: string;
   readonly familyId: string;
-  readonly instanceId: string;
+  /**
+   * The `instanceId` current when the job was created, or `undefined` for a job discovered
+   * through `GET /jobs` before its family's full `hello` was read (R-R3).
+   */
+  readonly instanceId: string | undefined;
   /** Set when the SDK classified the job as lost (SDK-local, R-R3). */
   outcome?: 'agent-restarted';
 }
+
+/** Options of `cancelJob` (§5.3, R-J2). */
+export interface CancelOptions {
+  signal?: AbortSignal | undefined;
+  /** Dispose the job once it is cancelled (§5.3); ignored on a settled job. */
+  discardPages?: boolean | undefined;
+}
+
+export interface CancelResult {
+  job: Job;
+  /** `202` when the cancellation was accepted; `200` when the job was already settled. */
+  accepted: boolean;
+}
+
+/** Options of `streamEvents` (§6). */
+export interface EventStreamOptions {
+  signal?: AbortSignal | undefined;
+  /** Last `seq` already processed, to resume (R-E5). */
+  lastEventId?: number | undefined;
+  backoff?: BackoffOptions | undefined;
+  /** Overrides the 3× `limits.sseHeartbeatSeconds` dead-stream bound (R-E6). */
+  heartbeatTimeoutMs?: number | undefined;
+  /** Reconnects before the stream fails. */
+  maxReconnects?: number | undefined;
+}
+
 
 export type JobsLostListener = (jobs: readonly TrackedJob[]) => void;
 
@@ -123,6 +173,10 @@ export class ZiloClient {
   private readonly jobs = new Map<string, TrackedJob>();
   /** `instanceId` read with each family's credential (R-R3 recording). */
   private readonly familyInstance = new Map<string, string>();
+  /** Full `hello.limits` of the agent, once a full `hello` was read (§10, R-E6). */
+  private limits: Limits | undefined;
+  /** Open event streams, aborted by `dispose()` (§6, R-A16). */
+  private readonly streams = new Set<JobEventStream>();
   private readonly lostListeners = new Set<JobsLostListener>();
   /** Aborted by `dispose()`: every request of this instance, in flight or later, aborts. */
   private readonly life = new AbortController();
@@ -194,6 +248,8 @@ export class ZiloClient {
   dispose(): void {
     if (this.disposed) return;
     this.life.abort();
+    for (const stream of [...this.streams]) stream.abort();
+    this.streams.clear();
     this.detection.dispose();
     this.lostListeners.clear();
     this.jobs.clear();
@@ -292,6 +348,7 @@ export class ZiloClient {
       if (hello === undefined) throw new ZiloProtocolError('foreign service');
       if (hello.scope === 'full') {
         this.familyInstance.set(current.familyId, hello.instanceId);
+        this.limits = hello.limits;
         await this.observeInstance(hello.instanceId, current.familyId, signal);
         return { hello, cred: current };
       }
@@ -316,7 +373,11 @@ export class ZiloClient {
   ): Promise<void> {
     const lost: TrackedJob[] = [];
     for (const job of this.jobs.values()) {
-      if (job.outcome === undefined && job.instanceId !== instanceId) {
+      if (
+        job.outcome === undefined &&
+        job.instanceId !== undefined &&
+        job.instanceId !== instanceId
+      ) {
         job.outcome = 'agent-restarted';
         lost.push(job);
       }
@@ -547,6 +608,154 @@ export class ZiloClient {
     if (this.disposed) throw new ZiloDisposedError();
     this.jobs.set(job.id, { id: job.id, familyId: used.familyId, instanceId });
     return job;
+  }
+
+  /**
+   * `GET /jobs`: issued once per stored family and merged (R-A15), because the agent lists only
+   * the caller's family's jobs (R-J1). A family whose credential is gone is dropped silently; a
+   * family that answers `token-revoked` is dropped too. Never issues a token, so it cannot prompt.
+   */
+  async listJobs(signal?: AbortSignal): Promise<Job[]> {
+    if (this.disposed) throw new ZiloDisposedError();
+    const families = await this.auth.allCredentials(signal);
+    const merged = new Map<string, Job>();
+    for (const family of families) {
+      const jobs = await this.listFamilyJobs(family, signal);
+      for (const job of jobs) {
+        merged.set(job.id, job);
+        this.rememberJob(job, family.familyId);
+      }
+    }
+    return [...merged.values()];
+  }
+
+  /** One family's `GET /jobs`, with the R-A10 single retry on another stored token of that family. */
+  private async listFamilyJobs(
+    family: FamilyCredential,
+    signal: AbortSignal | undefined,
+  ): Promise<Job[]> {
+    let token = family.token;
+    for (let attempt = 0; ; attempt++) {
+      try {
+        const res = await this.agent().request({
+          op: 'listJobs',
+          method: 'GET',
+          path: '/zilo/v1/jobs',
+          token,
+          signal,
+        });
+        return decodeJobList(res.body).jobs;
+      } catch (err) {
+        if (this.disposed) throw new ZiloDisposedError();
+        throwIfAborted(signal);
+        if (attempt > 0) throw err;
+        if (isProblem(err, 'token-invalid')) {
+          const other = await this.auth.recoverInvalid(family.familyId, token, signal);
+          if (other === undefined) return [];
+          token = other.token;
+          continue;
+        }
+        if (isProblem(err, 'token-revoked')) {
+          await this.auth.dropFamily(family.familyId, signal);
+          return [];
+        }
+        throw err;
+      }
+    }
+  }
+
+  /** Tracks a job discovered through `GET /jobs`, with its family (R-A15). */
+  private rememberJob(job: Job, familyId: string): void {
+    if (this.jobs.has(job.id)) return;
+    this.jobs.set(job.id, {
+      id: job.id,
+      familyId,
+      instanceId: this.familyInstance.get(familyId),
+    });
+  }
+
+  /**
+   * `POST /jobs/{id}/cancel` (§5.3, R-J2). On an active job `accepted` is true (`202`); on a
+   * settled job the call is a `200` no-op and `discardPages` is ignored by the agent.
+   */
+  async cancelJob(id: string, options: CancelOptions = {}): Promise<CancelResult> {
+    const body =
+      options.discardPages === undefined ? undefined : { discardPages: options.discardPages };
+    const { res } = await this.call({
+      op: 'cancelJob',
+      method: 'POST',
+      path: `${this.jobPath(id)}/cancel`,
+      body,
+      signal: options.signal,
+      job: this.jobs.get(id),
+    });
+    const job = decodeJob(res.body);
+    if (job.state === 'disposed') this.jobs.delete(id);
+    return { job, accepted: res.status === 202 };
+  }
+
+  /**
+   * Opens a job event stream (§6). The stream resumes from `lastEventId` (R-E5), reconnects with
+   * bounded backoff, treats a silent stream as dead (R-E6), and ends on the agent's `done`
+   * (R-E7). The credential is always the job's family's (R-A15), re-selected on reconnect
+   * (R-A16); recovery is the same as every other call, including SDK-local `agent-restarted`.
+   */
+  streamEvents(id: string, options: EventStreamOptions = {}): JobEventStream {
+    if (this.disposed) throw new ZiloDisposedError();
+    const path = `${this.jobPath(id)}/events`;
+    const heartbeatSeconds =
+      typeof this.limits?.sseHeartbeatSeconds === 'number'
+        ? this.limits.sseHeartbeatSeconds
+        : DEFAULT_SSE_HEARTBEAT_SECONDS;
+    const stream = new JobEventStream(
+      async ({ lastEventId, signal }) => {
+        const { value } = await this.withRecovery(
+          { signal, job: this.jobs.get(id) },
+          async (credential) => {
+            const raw = await this.agent().open({
+              op: 'streamJobEvents',
+              method: 'GET',
+              path,
+              token: credential.token,
+              signal,
+              headers: {
+                Accept: 'text/event-stream',
+                ...(lastEventId === undefined
+                  ? {}
+                  : { 'Last-Event-ID': String(lastEventId) }),
+              },
+            });
+            return { value: raw.response, cred: credential };
+          },
+        );
+        return value;
+      },
+      {
+        signal: options.signal,
+        lastEventId: options.lastEventId,
+        backoff: options.backoff,
+        heartbeatTimeoutMs: options.heartbeatTimeoutMs ?? heartbeatTimeoutFor(heartbeatSeconds),
+        maxReconnects: options.maxReconnects,
+        snapshot: (signal) => this.jobSnapshot(id, signal),
+      },
+    );
+    this.streams.add(stream);
+    const release = (): boolean => this.streams.delete(stream);
+    void stream.done.then(release, release);
+    return stream;
+  }
+
+  /** The settled state of a job after a stream closed without `done` (R-E7). */
+  private async jobSnapshot(
+    id: string,
+    signal: AbortSignal,
+  ): Promise<JobSettledSnapshot | undefined> {
+    const job = await this.getJob(id, signal);
+    return {
+      state: job.state,
+      pageCount: job.pageCount,
+      ...(job.error === undefined ? {} : { error: job.error }),
+    };
   }
 
   private jobPath(id: string): string {

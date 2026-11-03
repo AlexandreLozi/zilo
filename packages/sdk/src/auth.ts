@@ -93,6 +93,20 @@ export class AuthClient {
   }
 
   /**
+   * Every stored family credential of the origin, current family first and unusable entries
+   * omitted (R-A15: `GET /jobs` is issued per family and the results are merged). Never issues.
+   */
+  async allCredentials(signal?: AbortSignal): Promise<FamilyCredential[]> {
+    throwIfAborted(signal);
+    const rec = await untilAborted(this.o.store.read(this.o.origin), signal);
+    if (rec === undefined) return [];
+    const usable = Object.values(rec.families).filter((c) => this.usable(c));
+    const current = rec.current === undefined ? undefined : rec.families[rec.current];
+    if (current === undefined || !usable.includes(current)) return usable;
+    return [current, ...usable.filter((c) => c !== current)];
+  }
+
+  /**
    * The current family's credential, renewed when due. Starts a new family only under the
    * deterministic rollover rule (R-A15): no usable current entry, or a new scan while the
    * current token is final.

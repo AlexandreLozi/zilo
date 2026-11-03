@@ -8,7 +8,42 @@ export {
   type ZiloClientOptions,
   type TrackedJob,
   type JobsLostListener,
+  type CancelOptions,
+  type CancelResult,
+  type EventStreamOptions,
 } from './client.js';
+export {
+  JobEventStream,
+  DEFAULT_SSE_HEARTBEAT_SECONDS,
+  DEFAULT_BACKOFF,
+  heartbeatTimeoutFor,
+  isFatalStreamError,
+  type JobDone,
+  type JobSettledSnapshot,
+  type JobEventStreamOptions,
+  type StreamOpener,
+  type BackoffOptions,
+} from './events.js';
+export {
+  TERMINAL_STATES,
+  ACTIVE_STATES,
+  JOB_TRANSITIONS,
+  isTerminalState,
+  isSettledState,
+  isActiveState,
+  canJobTransition,
+  applyJobTransition,
+  terminalState,
+} from './job-state.js';
+export { SseParser, SseDecoder, encodeSseFrame, MAX_SSE_FRAME_BYTES, type SseFrame } from './sse.js';
+export {
+  decodeEventEnvelope,
+  decodeJobEvent,
+  decodeJobList,
+  decodePageList,
+  decodePageMeta,
+  isKnownEventType,
+} from './decode.js';
 export {
   Detector,
   TRANSITIONS,
@@ -40,6 +75,7 @@ export {
   ZiloProtocolError,
   ZiloAgentRestartedError,
   ZiloAccessRevokedError,
+  ZiloShortBodyError,
   type ProblemCode,
 } from './errors.js';
 export {

@@ -2,16 +2,28 @@
 // other field, including unknown fields and unknown values of open enums, untouched. A decode
 // failure is a `ZiloProtocolError` that names fields, never values.
 import { ZiloProtocolError } from './errors.js';
+import { terminalState } from './job-state.js';
 import type {
   ConsentStatus,
   DeviceCaps,
   DeviceList,
+  DoneEvent,
+  ErrorEvent,
+  EventTypeKnown,
   HelloFull,
   HelloPublic,
   Job,
+  JobEvent,
+  JobEventEnvelope,
+  JobList,
+  Page,
+  PageList,
+  PageEvent,
+  ProgressEvent,
   ResolutionList,
   ResolutionRange,
   SourceCaps,
+  StateEvent,
   Token,
 } from './types.js';
 
@@ -151,6 +163,111 @@ export function decodeJob(body: unknown): Job {
   const o = obj(body, 'job');
   for (const key of ['id', 'deviceId', 'state']) str(o, key, 'job');
   return o as unknown as Job;
+}
+
+/** `GET /jobs` (R-J1: only the caller's family's jobs). */
+export function decodeJobList(body: unknown): JobList {
+  const o = obj(body, 'jobs');
+  for (const job of arr(o, 'jobs', 'jobs')) decodeJob(job);
+  return o as unknown as JobList;
+}
+
+export function decodePageMeta(o: Obj, what: string): Page {
+  for (const key of ['side', 'etag', 'createdAt']) str(o, key, what);
+  for (const key of ['index', 'sheet', 'widthPx', 'heightPx']) int(o, key, what);
+  const res = obj(o.resolution, `${what}.resolution`);
+  int(res, 'x', `${what}.resolution`);
+  int(res, 'y', `${what}.resolution`);
+  str(o, 'colorMode', what);
+  return o as unknown as Page;
+}
+
+/** `GET /jobs/{id}/pages`, in index order (R-P4). */
+export function decodePageList(body: unknown): PageList {
+  const o = obj(body, 'pages');
+  for (const page of arr(o, 'pages', 'pages')) decodePageMeta(obj(page, 'page'), 'page');
+  return o as unknown as PageList;
+}
+
+const KNOWN_EVENT_TYPES: readonly EventTypeKnown[] = ['state', 'progress', 'page', 'error', 'done'];
+
+export function isKnownEventType(value: string): value is EventTypeKnown {
+  return (KNOWN_EVENT_TYPES as readonly string[]).includes(value);
+}
+
+/**
+ * Decoding step 1 (R-V4, R-E2): `JobEventEnvelope` accepts any `type`, so an unknown event
+ * survives this step. Only `seq`, `type`, `jobId` and `time` are required.
+ */
+export function decodeEventEnvelope(body: unknown): JobEventEnvelope {
+  const o = obj(body, 'event');
+  const seq = int(o, 'seq', 'event');
+  if (seq < 1) throw new ZiloProtocolError('event.seq: expected an integer >= 1');
+  str(o, 'type', 'event');
+  str(o, 'jobId', 'event');
+  const time = str(o, 'time', 'event');
+  if (Number.isNaN(Date.parse(time))) throw new ZiloProtocolError('event.time: expected a timestamp');
+  return o as unknown as JobEventEnvelope;
+}
+
+function decodeAsyncProblem(o: Obj, what: string): void {
+  for (const key of ['code', 'requestId', 'errorId', 'jobId']) str(o, key, what);
+  if (typeof o.status !== 'number' || !Number.isInteger(o.status))
+    throw new ZiloProtocolError(`${what}.status: expected an integer`);
+  if (typeof o.retryable !== 'boolean')
+    throw new ZiloProtocolError(`${what}.retryable: expected a boolean`);
+}
+
+/**
+ * Decoding step 2 (R-V4): a known event. The caller only reaches this for a `type` in
+ * `EventTypeKnown`; every field the SDK relies on is checked, unknown fields are kept.
+ */
+export function decodeJobEvent(type: EventTypeKnown, body: unknown): JobEvent {
+  const o = obj(body, 'event');
+  switch (type) {
+    case 'state': {
+      str(o, 'state', 'stateEvent');
+      if (o.previous !== undefined) str(o, 'previous', 'stateEvent');
+      if (o.effective !== undefined) {
+        const eff = obj(o.effective, 'stateEvent.effective');
+        for (const key of ['source', 'pageSize']) str(eff, key, 'stateEvent.effective');
+        for (const key of ['resolution']) int(eff, key, 'stateEvent.effective');
+        str(eff, 'colorMode', 'stateEvent.effective');
+        const mm = obj(eff.pageSizeMm, 'stateEvent.effective.pageSizeMm');
+        for (const key of ['widthMm', 'heightMm']) {
+          if (typeof mm[key] !== 'number')
+            throw new ZiloProtocolError(`stateEvent.effective.pageSizeMm.${key}: expected a number`);
+        }
+      }
+      if (o.adjustments !== undefined) arr(o, 'adjustments', 'stateEvent');
+      return o as unknown as StateEvent;
+    }
+    case 'progress': {
+      const done = int(o, 'pagesCompleted', 'progressEvent');
+      if (done < 0) throw new ZiloProtocolError('progressEvent.pagesCompleted: expected >= 0');
+      if (o.pageIndex !== undefined) int(o, 'pageIndex', 'progressEvent');
+      if (o.totalPages !== undefined && o.totalPages !== null) int(o, 'totalPages', 'progressEvent');
+      if (o.fraction !== undefined && o.fraction !== null && typeof o.fraction !== 'number')
+        throw new ZiloProtocolError('progressEvent.fraction: expected a number or null');
+      return o as unknown as ProgressEvent;
+    }
+    case 'page':
+      decodePageMeta(obj(o.page, 'pageEvent.page'), 'pageEvent.page');
+      return o as unknown as PageEvent;
+    case 'error': {
+      if (typeof o.fatal !== 'boolean')
+        throw new ZiloProtocolError('errorEvent.fatal: expected a boolean');
+      decodeAsyncProblem(obj(o.problem, 'errorEvent.problem'), 'errorEvent.problem');
+      return o as unknown as ErrorEvent;
+    }
+    case 'done': {
+      terminalState(str(o, 'state', 'doneEvent'));
+      const pageCount = int(o, 'pageCount', 'doneEvent');
+      if (pageCount < 0) throw new ZiloProtocolError('doneEvent.pageCount: expected >= 0');
+      if (o.error !== undefined) decodeAsyncProblem(obj(o.error, 'doneEvent.error'), 'doneEvent.error');
+      return o as unknown as DoneEvent;
+    }
+  }
 }
 
 const positiveInt = (v: unknown): v is number => Number.isInteger(v) && (v as number) >= 1;

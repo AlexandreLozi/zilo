@@ -71,6 +71,16 @@ export class ZiloProblemError<C extends ProblemCode = ProblemCode> extends ZiloE
   get blocked(): boolean {
     return this.problem.blocked === true;
   }
+
+  /** `limits-exceeded`: which limit was hit (§10, R-X6). Typed, never parsed from prose. */
+  get limit(): { name: string; max?: number } | undefined {
+    return this.problem.limit;
+  }
+
+  /** Field-level reasons on `invalid-request`/`invalid-settings` (§9). */
+  get fieldErrors(): readonly { field: string; reason: string }[] {
+    return this.problem.errors ?? [];
+  }
 }
 
 /** Narrows an error to a problem with the given code. */
@@ -96,6 +106,21 @@ export class ZiloTimeoutError extends ZiloError {
   constructor(timeoutMs: number) {
     super(`timed out after ${String(timeoutMs)} ms`);
     this.timeoutMs = timeoutMs;
+  }
+}
+
+/**
+ * A binary reply was shorter than its `Content-Length` (R-X3): the transfer failed, even though
+ * the status line was a `200`. A non-destructive export may be retried (R-X4).
+ */
+export class ZiloShortBodyError extends ZiloTransportError {
+  override name = 'ZiloShortBodyError';
+  readonly expectedBytes: number;
+  readonly receivedBytes: number;
+  constructor(expectedBytes: number, receivedBytes: number) {
+    super(`short body: expected ${String(expectedBytes)} bytes, received ${String(receivedBytes)}`);
+    this.expectedBytes = expectedBytes;
+    this.receivedBytes = receivedBytes;
   }
 }
 
