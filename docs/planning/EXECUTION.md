@@ -427,9 +427,20 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
      - **r5 fix:** author `ctx_976f4ba4e74b`. Final code `940a996`, local head `9976659`
        (evidence only). Full suite on the exact code: 306 passed, 47 skipped, 0 failed.
      - **Claude r6 PASS** (`docs/reviews/T11p-windows-r6.md`, 1250515).
-     - **Next:** push `9976659` for ONE combined 4-OS run. Opus checks the Windows trx: strict
-       kill-reopen, brief-holder success, and held-past-bound failing with exactly `:32`. The
-       Macs, Linux and Packaging must be green.
+     - **Run 4 GREEN on exact `9976659`**: Backend 41591658456 (4/4 jobs) and Packaging
+       41591658302 (5/5 jobs). Analysis: `docs/reviews/T11p-windows-native-run4.md`, b01a5d2.
+       - Windows: 337 passed, 0 failed; WindowsConsent\*: 89 passed, plus 1 expected
+         non-Windows skip.
+       - The brief holder passed after 12 attempts in about 609 ms. The held-past-bound case
+         failed closed with exactly `:32` at about 2.0 s.
+       - Kill-reopen passed on its first attempt: the run-3 race did not recur, and its cause is
+         still unproven.
+       - Both Macs (including startup), Linux and Packaging green.
+     - **The T11p Windows adapter slice is ACCEPTED natively.**
+     - **Next (GPT BE lane):** the auth/Agent integration slice, then recovery and quarantine
+       (leftover-temp parity), then lifecycle. Then the combined T11+T11p Claude HIGH review and
+       exact-SHA CI. Still held: T14, the pre-M6 write-retry item, and the Linux
+       carry-forwards.
      - After that, the auth/Agent integration and recovery slices.
     - **P3:** a SID-in-ACE bound, minimal access for ancestors, and leftover-temp behaviour as a
       recovery-slice input.
