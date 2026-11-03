@@ -486,12 +486,16 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
         backend 369 passed / 47 existing skips / 0 failed. Capacity, retained-policy preservation,
         churn and stale-callback ABA covered; sequence-cap boundaries are pure guard evidence,
         not a fabricated reachable production state. Parent sole source author. HOLD-PUSH/no CI.
-      - **Fix 5 planning/handoff only:** GPT HIGH `task_e46c8ce7253d` / `ctx_86390223e0a7`, clean
-        `02bfa3b`; actual HIGH/context 216k verified. No production edits in this dispatch. Prepare
-        total clean-drain budget, concurrent Stop/Dispose and in-flight ownership proposal, then
-        `/tmp/opencode/t11p-clean-drain-handoff.md` and settle before 250k. Fresh context implements
-        after scope approval. Timeout is not native-I/O abort; never release a writer lock while
-        old I/O can mutate a subsequent session. Full coordinator remains UNACCEPTED/unwired.
+      - **Fix 5 plan settled:** `task_e46c8ce7253d` / `ctx_86390223e0a7` completed PLAN ONLY,
+        no repository changes/tests/helpers. Handoff: `/tmp/opencode/t11p-clean-drain-handoff.md`.
+      - **Active fix 5 implementation:** fresh GPT HIGH `task_85934b0e3720` / `ctx_a22bedba27d5`,
+        existing integration branch from clean `02bfa3b`; actual HIGH footer independently verified.
+        Parent sole source author, at most read-only recon if required. Scope is the jointly approved
+        coordinator ownership/total-budget plan below, not Agent/recovery/OS lifecycle wiring.
+        Local commit/HOLD-PUSH; targeted deterministic RED/GREEN then one final-code local suite,
+        independent Claude HIGH whole-coordinator review before acceptance or combined hosted gate.
+        Timeout is not native-I/O abort; never release a writer lock while old I/O can mutate a
+        subsequent session. Full coordinator remains UNACCEPTED/unwired.
         - **Joint fix-5 scope approved (GPT/Opus):** one shutdown owner/epoch and one shared
           monotonic 5-second total observation budget across open, writer and clean completion.
           Caller cancellation stops observation only. Retain exclusive ownership until all real
