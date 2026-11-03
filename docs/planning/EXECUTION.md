@@ -424,8 +424,12 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
        - P2: remove the deadline check between CREATE_NEW and OPEN_EXISTING, and tighten the
          budget assertion to exactly `:32` (drop the 80/183 allowance).
        - P3: make the brief-holder hold about 500 to 700 ms; align the report wording.
-     - **Next:** the fix, then a local full suite on the exact head, then a narrow r6, then one
-       combined 4-OS push. No CI before r6 PASS.
+     - **r5 fix:** author `ctx_976f4ba4e74b`. Final code `940a996`, local head `9976659`
+       (evidence only). Full suite on the exact code: 306 passed, 47 skipped, 0 failed.
+     - **Claude r6 PASS** (`docs/reviews/T11p-windows-r6.md`, 1250515).
+     - **Next:** push `9976659` for ONE combined 4-OS run. Opus checks the Windows trx: strict
+       kill-reopen, brief-holder success, and held-past-bound failing with exactly `:32`. The
+       Macs, Linux and Packaging must be green.
      - After that, the auth/Agent integration and recovery slices.
     - **P3:** a SID-in-ACE bound, minimal access for ancestors, and leftover-temp behaviour as a
       recovery-slice input.
