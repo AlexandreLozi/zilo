@@ -261,8 +261,52 @@ These amendments override the rows in §3 where they conflict.
     - Only reviewed, non-sensitive false positives and test fixtures may be allowlisted.
     - The full-history scan reports redacted findings. Any history rewrite needs separate owner
       authority. A fresh-history export does not neutralize a live secret, which is still rotated.
+  6. **CI workflow economy audit and fix** (OD-17 note 423eb3e; added 2026-11-03, Opus proposal
+     26eed6b, GPT APPROVED with clarifications (a) to (d) below). Scope is
+     `.github/workflows/*`, with an inventory first, as in item 1.
+     - `concurrency` on every workflow. Cancellation applies off `main` only.
+     - Path filters on every workflow.
+     - pnpm and NuGet caches.
+     - The full OS matrix runs only on gates (PR and `workflow_dispatch`); a task-branch push runs
+       Linux only, or nothing.
+     - No duplicate push and PR runs.
+     - `timeout-minutes` on every job.
+     - Fold in the reviewed ARM runner-choice artifact (a69a535), or record why not.
+     - **(a) Complete input closure.** Each filter covers every input the workflow actually reads:
+       root formatter and ignore files, the licence policy, and CI-used fixtures and proofs. A
+       docs/planning-only change is skipped only when nothing in the workflow consumes it. There
+       is no blanket docs exemption that could lose evidence.
+     - **(b) D-012 backstop on the exact resulting `main` SHA.**
+       - Keep it, with the full set of required OS jobs when they apply.
+       - If the matrix moves to PR or dispatch only, an explicit dispatch on the exact resulting
+         SHA must go green before the next lane merge. That replaces the `main`-push backstop.
+       - PR-head evidence is never mistaken for merge-SHA evidence.
+       - Document the per-workflow proof mapping.
+     - **(c) No lost gates.**
+       - Duplicate suppression never drops a PR gate or the `main` backstop because a Linux-only
+         branch run already happened.
+       - Concurrency groups isolate PRs, refs and events, so a lighter push never cancels or
+         replaces a running gate.
+       - On `main`, there is no cancellation, and pending-run replacement must not silently drop a
+         required intermediate SHA.
+     - **(d) Truth table and boundaries.**
+       - actionlint, plus an event × paths × ref → jobs truth table. It covers:
+         - the `main` backstop;
+         - PRs and merges with changed inputs;
+         - manual runs;
+         - docs that nothing consumes;
+         - unchanged fork-PR defaults and permissions.
+       - Caches are for performance only. Locked restore, the licence assertions and the
+         untrusted-PR boundaries stay unchanged.
+     - **Proof.** One combined hosted proof per changed workflow may batch the safety cases. Don't
+       demand redundant runs when the same exact-input evidence suffices. Required job names, the
+       licence gate and the packaging smoke are unchanged.
+     - Approval covers the scope only, not immediate implementation or CI architecture authority.
+       GLM is not used (OD-17 on hold).
   - **Acceptance:**
     - CI green on the exact head;
+    - item 6: the truth table and the per-workflow proof mapping in the T57 log, both masters
+      signed;
     - no product behaviour change (the full test suites are unchanged);
     - the inventory and manifest signed by both masters;
     - the check clean, apart from the reviewed allowlist, with every live exposure remediated as
@@ -286,7 +330,12 @@ standalone runs per fix. Native Windows, macOS arm64 and 3-OS acceptance remain 
 not waived. Public logs must omit secrets and owner/employer/customer identifiers. Current BE assignments:
 - **Port-flake diagnosis:** DeepSeek `task_42d62eb76351` / `ctx_cb9e70ed0567`, branch
   `t11-port-flake` at baseline `38a859b`; diagnosis first, minimal test-only fix only if supported.
-  Next: GPT reviews local report/head; Windows evidence joins the authorized combined CI batch.
+  **Candidate GPT r2 PASS on LOCAL `22d5194`** (correction of `b460df9`): a test-harness cleanup
+  only, 3 `client.Dispose()` calls before the kill, with the port assertions unchanged. Linux
+  30x, Agent 249 passed and 14 skipped. A hypothesis, not a declared Windows root cause, fix or
+  PASS. **Next:** the T11p Windows author composes it after its own local checkpoint, then the
+  single combined batch. The Windows outcome is pending; if the bind failure recurs, capture
+  socket and PID state, then diagnose within a bound (no retries).
 - **ARM manual-dispatch workflow:** DeepSeek `task_e201f99a14f7` / `ctx_c4bcc50152ad`, branch
   `ci-backend-arm-dispatch`, local checkpoint `a69a535` (baseline `38a859b`), **GPT r2 PASS**:
   literal runner mapping, invalid-input rejection, explicit empty-input default. Report and review
