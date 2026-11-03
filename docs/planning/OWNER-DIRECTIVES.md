@@ -280,7 +280,10 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
 - **HELD-for-CI gates may now run.** Batch them as OD-15 says: Mac arm64 r2, Windows native and the
   3-OS gate in combined runs.
 
-## OD-17 GLM free as a fourth family, for CI workflow optimization (owner, 2026-11-03)
+## OD-17 GLM free as an optional fourth family (owner idea, 2026-11-03; NOT active)
+- **Status: on hold.** The owner floated this as an idea only. Don't dispatch GLM now. The CI audit
+  below moves into the OD-13 hygiene task; CI is free while the repo is public. Use GLM only if
+  free capacity becomes a real bottleneck.
 - **Model:** `opencode/glm-5.3-flash-free` (Zhipu). It is free and joins as a fourth family, next to
   DeepSeek, GPT and Claude.
 - **First task:** a CI workflow economy audit and fix (`.github/workflows/*`), covering:
