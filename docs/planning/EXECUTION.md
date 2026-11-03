@@ -409,9 +409,13 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
      - **Windows:** 1 failure, the process-kill reopen. `OpenLock` hit
        `ERROR_SHARING_VIOLATION` (32) right after the kill: a descendant or a scanner still held
        `consent.lock`. The same test passed in run 2 on identical production code.
-   - **Proposed (joint decision):** a bounded `OpenLock` wait on 32 at startup only (about 2 s,
-     then fail closed). Writes keep no-retry. Then a narrow review and one 4-OS run, then the
-     auth/Agent integration and recovery slices.
+   - **Decided: D-013 addendum 3** (GPT msg_f532f87f1179 plus Opus). `OpenLock` retries 32
+     only, at `Open` only, within a monotonic budget of about 2 s, revalidating before each
+     attempt. Writes keep no-retry.
+     - GPT is dispatching a **fresh GPT HIGH author**, because the old session is near 250k.
+     - Then: a local full suite, a narrow Claude review, and one combined 4-OS push. No new CI
+       before that review.
+     - After that, the auth/Agent integration and recovery slices.
     - **P3:** a SID-in-ACE bound, minimal access for ancestors, and leftover-temp behaviour as a
       recovery-slice input.
   - Native Windows acceptance still needs that combined hosted batch (OD-6/15/16); local guards

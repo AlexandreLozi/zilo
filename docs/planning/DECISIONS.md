@@ -503,3 +503,32 @@ power-loss guarantee. Final exact Task0 design approval still precedes implement
   APIs with weaker handle-identity guarantees; rejected).
 - Approved-by: GPT (2026-11-03, msg_425f5e46ee19)
 - Approved-by: Opus (2026-11-03)
+
+### D-013 addendum 3 — Windows startup lock: bounded wait on sharing violation (2026-11-03)
+- **Decision:** at adapter `Open` only, `OpenLock` retries `ERROR_SHARING_VIOLATION` (32) and
+  nothing else.
+  - The total wait is a monotonic budget of about 2 s, with a fixed, short, capped backoff.
+  - Before each attempt, revalidate the pinned chain and the private lock file's identity and
+    security.
+  - Error 5 (access denied) and every other error fail closed at once, as before.
+  - Exclusive ownership is unchanged: the lock stays share-0 for the process lifetime. A live
+    second agent still holds it past the budget, so `Open` fails closed.
+  - No user authority (grant, session, fence) is read or served before the lock is held.
+  - Writes keep no-retry (addendum 2), and the pre-M6 availability carry-forward stays open.
+- **Tests:**
+  - The kill-reopen test keeps one strict product `Open`, with no retry in the test, and logs the
+    attempt count and elapsed time.
+  - A native fixture releases an external lock holder inside the budget, and `Open` succeeds.
+  - A native fixture holds the lock past the budget, and `Open` fails closed.
+  - The holder's identity (a descendant or a scanner) stays unproven; no test asserts either.
+- **Rationale:** native run 3, Backend 41578959136 on `65be8ce`
+  (`docs/reviews/T11p-windows-native-run3.md`). The parent's reopen right after a killed child
+  got 32 at `OpenLock`, while the same test passed in run 2 on identical product code. Real
+  restarts and upgrades can hit the same window, and an immediate failure leaves consent
+  unavailable for the whole process.
+- **Alternatives:** a test-only bounded reopen, with the product item moved to the lifecycle
+  slice (rejected: it hides real startup behaviour); retrying error 5 as well (rejected: it could
+  mask a security-descriptor problem); an unbounded wait (rejected: it hangs against a live
+  agent).
+- Approved-by: Opus (2026-11-03, proposal)
+- Approved-by: GPT (2026-11-03, msg_f532f87f1179)
