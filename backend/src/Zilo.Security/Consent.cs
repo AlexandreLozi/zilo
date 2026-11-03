@@ -24,6 +24,7 @@ public sealed record ConsentResult(ConsentStatus Status, int HttpStatus = 200, i
 
 public sealed class ConsentStore : IAsyncDisposable
 {
+    internal const int MaxEntries = ConsentPersistenceCoordinator.MaxRecords + ConsentPersistenceCoordinator.MaxReservations;
     public event Action<string>? OriginRemoved;
     private readonly ConsentOptions _options;
     private readonly IClock _clock;
@@ -58,7 +59,8 @@ public sealed class ConsentStore : IAsyncDisposable
         _persistence = persistence;
         if (persistence is not null)
             _coordinator = new ConsentPersistenceCoordinator(persistence, _gate, HydrateLocked,
-                CurrentRecordLocked, _options.DenialCooldownSeconds, CommitLocked);
+                CurrentRecordLocked, _options.DenialCooldownSeconds, CommitLocked,
+                origin => _entries.ContainsKey(origin), origin => PruneEntryLocked(origin, _clock.UtcNow));
     }
 
     public ValueTask<ConsentStatus> GetAsync(string origin, CancellationToken cancellationToken = default)
@@ -133,6 +135,8 @@ public sealed class ConsentStore : IAsyncDisposable
         {
             if (_coordinator is { Health: not ConsentStorageHealth.Ready })
                 return new(StatusReadOnly(origin), 503, ProblemCode: "consent-storage-unavailable");
+            if (_coordinator is not null && !_coordinator.IsCanonicalOrigin(origin))
+                return new(new(origin, "none"), 403, ProblemCode: "consent-denied");
             var now = _clock.UtcNow;
             ExpireActivePrompt(now);
             Trim(now);
@@ -152,6 +156,8 @@ public sealed class ConsentStore : IAsyncDisposable
                 if (existingForOrigin.Prompts.Count >= _options.PerOriginPromptsPerHour)
                     return new(StatusReadOnly(origin), 429, 3600, "rate-limited");
             }
+            if (existingForOrigin is null && _coordinator is not null && !CanAddEntryLocked(now))
+                return new(StatusReadOnly(origin), 429, 1, "rate-limited");
             entry = existingForOrigin ?? GetOrCreate(origin);
             entry.State = "pending";
             promptId = ++entry.PromptId;
@@ -237,7 +243,42 @@ public sealed class ConsentStore : IAsyncDisposable
 
     private ConsentReservation? ApplyMutationLocked(string origin, ConsentDecision? decision, bool managed, DateTimeOffset now)
     {
-        var entry = GetOrCreate(origin);
+        if (_coordinator is null)
+        {
+            ApplyMemoryMutationLocked(GetOrCreate(origin), origin, decision, managed, now);
+            return null;
+        }
+        _entries.TryGetValue(origin, out var entry);
+        if (entry is null)
+        {
+            if (decision is null)
+            {
+                OriginRemoved?.Invoke(origin);
+                return _coordinator.ReserveLocked(origin, decision, managed, now);
+            }
+            if (!CanAddEntryLocked(now))
+            {
+                var rejected = _coordinator.RejectCapacityLocked(origin, decision, managed);
+                if (decision is not ConsentDecision.Granted) OriginRemoved?.Invoke(origin);
+                return rejected;
+            }
+            var admitted = _coordinator.ReserveLocked(origin, decision, managed, now);
+            if (admitted.Accepted) ApplyMemoryMutationLocked(GetOrCreate(origin), origin, decision, managed, now);
+            else if (decision is not ConsentDecision.Granted) OriginRemoved?.Invoke(origin);
+            return admitted;
+        }
+        if (decision == ConsentDecision.Granted)
+        {
+            var admitted = _coordinator.ReserveLocked(origin, decision, managed, now);
+            if (admitted.Accepted) ApplyMemoryMutationLocked(entry, origin, decision, managed, now);
+            return admitted;
+        }
+        ApplyMemoryMutationLocked(entry, origin, decision, managed, now);
+        return _coordinator.ReserveLocked(origin, decision, managed, now);
+    }
+
+    private void ApplyMemoryMutationLocked(Entry entry, string origin, ConsentDecision? decision, bool managed, DateTimeOffset now)
+    {
         CancelPrompt(entry);
         if (_coordinator is not null && decision == ConsentDecision.Granted)
         {
@@ -246,7 +287,6 @@ public sealed class ConsentStore : IAsyncDisposable
         else if (decision is null) ClearEntry(entry);
         else ApplyDecision(entry, decision.Value, now, managed);
         if (decision is not ConsentDecision.Granted) OriginRemoved?.Invoke(origin);
-        return _coordinator?.ReserveLocked(origin, decision, managed, now);
     }
 
     private void RequireInMemory()
@@ -277,8 +317,27 @@ public sealed class ConsentStore : IAsyncDisposable
     private Entry GetOrCreate(string origin)
     {
         if (_entries.TryGetValue(origin, out var e)) { e.LastTouched = _clock.UtcNow; return e; }
-        foreach (var stale in _entries.Where(x => x.Value.State == "denied" && _clock.UtcNow - x.Value.LastDenied >= TimeSpan.FromHours(24)).Select(x => x.Key).ToArray()) _entries.Remove(stale);
+        if (_coordinator is null)
+            foreach (var stale in _entries.Where(x => x.Value.State == "denied" && _clock.UtcNow - x.Value.LastDenied >= TimeSpan.FromHours(24)).Select(x => x.Key).ToArray()) _entries.Remove(stale);
         e = new Entry { LastTouched = _clock.UtcNow }; _entries[origin] = e; return e;
+    }
+
+    private bool CanAddEntryLocked(DateTimeOffset now)
+    {
+        if (_entries.Count < MaxEntries) return true;
+        foreach (var origin in _entries.Keys.ToArray()) PruneEntryLocked(origin, now);
+        return _entries.Count < MaxEntries;
+    }
+
+    private void PruneEntryLocked(string origin, DateTimeOffset now)
+    {
+        if (_coordinator is null || !_entries.TryGetValue(origin, out var entry)) return;
+        while (entry.Prompts.Count > 0 && now - entry.Prompts.Peek() >= TimeSpan.FromHours(1)) entry.Prompts.Dequeue();
+        if (entry.State != "none" || entry.PromptCancellation is not null || entry.Prompts.Count != 0 ||
+            (entry.LastDenied != default && now - entry.LastDenied < TimeSpan.FromHours(24)) ||
+            _coordinator.HasDesiredOrOwnedLocked(origin)) return;
+        _entries.Remove(origin);
+        _coordinator.PruneSequenceLocked(origin);
     }
 
     private StoredConsent? CurrentRecordLocked(string origin)
@@ -304,7 +363,11 @@ public sealed class ConsentStore : IAsyncDisposable
     {
         if (reservation.Decision != ConsentDecision.Granted) return true;
         if (reservation.OriginSequence != _coordinator!.CurrentOriginSequenceLocked(reservation.Origin)) return false;
-        if (!_entries.TryGetValue(reservation.Origin, out var e)) e = GetOrCreate(reservation.Origin);
+        if (!_entries.TryGetValue(reservation.Origin, out var e))
+        {
+            if (_coordinator is not null && !CanAddEntryLocked(_clock.UtcNow)) return false;
+            e = GetOrCreate(reservation.Origin);
+        }
         e.State = "granted"; e.Managed = reservation.Managed; e.PendingUntil = DateTimeOffset.MinValue;
         e.DenialStreak = 0; e.LastTouched = _clock.UtcNow;
         return true;
@@ -409,7 +472,10 @@ public sealed class ConsentStore : IAsyncDisposable
     {
         while (_globalPrompts.Count > 0 && now - _globalPrompts.Peek() >= TimeSpan.FromHours(1)) _globalPrompts.Dequeue();
         foreach (var e in _entries.Values) { Expire(e, now); while (e.Prompts.Count > 0 && now - e.Prompts.Peek() >= TimeSpan.FromHours(1)) e.Prompts.Dequeue(); }
-        foreach (var origin in _entries.Where(pair => pair.Value.State == "none" && pair.Value.Prompts.Count == 0 && pair.Value.DenialStreak == 0).Select(pair => pair.Key).ToArray()) _entries.Remove(origin);
+        if (_coordinator is null)
+            foreach (var origin in _entries.Where(pair => pair.Value.State == "none" && pair.Value.Prompts.Count == 0 && pair.Value.DenialStreak == 0).Select(pair => pair.Key).ToArray()) _entries.Remove(origin);
+        else
+            foreach (var origin in _entries.Keys.ToArray()) PruneEntryLocked(origin, now);
     }
 
     public async ValueTask DisposeAsync()

@@ -5,21 +5,24 @@ namespace Zilo.Security.Persistence;
 
 internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
 {
-    private const int MaxReservations = 64;
-    private const int MaxRecords = 4096;
+    internal const int MaxReservations = 64;
+    internal const int MaxRecords = 4096;
+    internal const int MaxSequenceOrigins = MaxRecords + ConsentStore.MaxEntries + MaxReservations;
     private readonly IConsentPersistence _persistence;
     private readonly object _gate;
     private readonly Action<ConsentSnapshot> _hydrateLocked;
     private readonly Func<string, StoredConsent?> _currentLocked;
     private readonly int _denialCooldownSeconds;
     private readonly Func<ConsentReservation, bool> _commitLocked;
+    private readonly Func<string, bool> _hasEntryLocked;
+    private readonly Action<string> _pruneEntryLocked;
     private readonly Dictionary<string, StoredConsent> _desired = new(StringComparer.Ordinal);
     private readonly Dictionary<string, long> _sequences = new(StringComparer.Ordinal);
     private readonly List<ConsentReservation> _pending = new();
+    private readonly HashSet<ConsentReservation> _owned = new();
     private readonly Channel<bool> _signals = Channel.CreateBounded<bool>(1);
     private Task? _worker;
     private bool _initialized, _disposed, _workerStopping;
-    private int _active;
     private long _durableGeneration, _nextGeneration;
     private long _lifecycleEpoch;
     private ConsentStorageHealth _health = ConsentStorageHealth.Starting;
@@ -28,17 +31,32 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
 
     internal ConsentPersistenceCoordinator(IConsentPersistence persistence, object gate,
         Action<ConsentSnapshot> hydrateLocked, Func<string, StoredConsent?> currentLocked,
-        int denialCooldownSeconds, Func<ConsentReservation, bool> commitLocked)
+        int denialCooldownSeconds, Func<ConsentReservation, bool> commitLocked,
+        Func<string, bool> hasEntryLocked, Action<string> pruneEntryLocked)
     {
         _persistence = persistence; _gate = gate; _hydrateLocked = hydrateLocked; _currentLocked = currentLocked;
         _denialCooldownSeconds = denialCooldownSeconds; _commitLocked = commitLocked;
+        _hasEntryLocked = hasEntryLocked; _pruneEntryLocked = pruneEntryLocked;
     }
 
     internal ConsentStorageHealth Health { get { lock (_gate) return _health; } }
-    internal int OutstandingReservations { get { lock (_gate) return _active; } }
+    internal int OutstandingReservations { get { lock (_gate) return _owned.Count; } }
     internal long CurrentOriginSequenceLocked(string origin) => _sequences.TryGetValue(origin, out var value) ? value : 0;
     internal long CurrentLifecycleEpochLocked => _lifecycleEpoch;
     internal bool IsCanonicalOrigin(string origin) => CanonicalOrigin(origin);
+    internal bool HasDesiredOrOwnedLocked(string origin) => _desired.ContainsKey(origin) || _owned.Any(x => x.Origin == origin);
+    internal static bool HasSequenceCapacity(int count, bool alreadyTracked) => alreadyTracked || count < MaxSequenceOrigins;
+
+    internal ConsentReservation RejectCapacityLocked(string origin, ConsentDecision? decision, bool managed)
+    {
+        if (decision is not ConsentDecision.Granted) MarkUnavailableLocked();
+        return ConsentReservation.Rejected(origin, decision, managed, _durableGeneration, HasFenceLocked());
+    }
+
+    internal void PruneSequenceLocked(string origin)
+    {
+        if (!HasDesiredOrOwnedLocked(origin) && !_hasEntryLocked(origin)) _sequences.Remove(origin);
+    }
 
     internal async ValueTask InitializeAsync(CancellationToken cancellationToken = default)
     {
@@ -64,7 +82,8 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
         lock (_gate)
         {
             if (epoch != _lifecycleEpoch || _disposed || _workerStopping || _health != ConsentStorageHealth.Starting) return;
-            if (opened.Health != ConsentStorageHealth.Ready || opened.Snapshot is null || !opened.DurableActiveFence)
+            if (opened.Health != ConsentStorageHealth.Ready || opened.Snapshot is null || !opened.DurableActiveFence ||
+                opened.Snapshot.Records.Count > MaxRecords)
             { _health = ConsentStorageHealth.Unavailable; return; }
             _durableFence = true;
             _durableGeneration = opened.Snapshot.Generation; _nextGeneration = _durableGeneration;
@@ -83,14 +102,13 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
         if (!CanonicalOrigin(origin))
             return ConsentReservation.Rejected(origin, decision, managed, _durableGeneration, HasFenceLocked());
         var existed = _desired.ContainsKey(origin);
-        if (_active >= MaxReservations || (!existed && decision is not null && _desired.Count >= MaxRecords))
-        {
-            if (decision is not ConsentDecision.Granted) MarkUnavailableLocked();
-            return ConsentReservation.Rejected(origin, decision, managed, _durableGeneration, HasFenceLocked());
-        }
+        if (_owned.Count >= MaxReservations || (!existed && decision is not null && _desired.Count >= MaxRecords) ||
+            !HasSequenceCapacity(_sequences.Count, _sequences.ContainsKey(origin)))
+            return RejectCapacityLocked(origin, decision, managed);
         if (_nextGeneration == long.MaxValue) { MarkUnavailableLocked(); return ConsentReservation.Rejected(origin, decision, managed, _durableGeneration, HasFenceLocked()); }
         var generation = ++_nextGeneration;
-        var sequence = _sequences.TryGetValue(origin, out var old) ? checked(old + 1) : 1;
+        // Global generations never reset when an origin's tombstone is pruned.
+        var sequence = generation;
         _sequences[origin] = sequence;
         StoredConsent? record;
         if (decision == ConsentDecision.Granted)
@@ -109,7 +127,7 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
         if (record is null) _desired.Remove(origin); else _desired[origin] = record;
         var reservation = new ConsentReservation(origin, decision, managed, generation, sequence, _lifecycleEpoch, record, true,
             new(TaskCreationOptions.RunContinuationsAsynchronously));
-        _pending.Add(reservation); _active++;
+        _pending.Add(reservation); _owned.Add(reservation);
         _signals.Writer.TryWrite(true);
         return reservation;
     }
@@ -149,13 +167,14 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
                 MarkUnavailableLocked();
                 return;
             }
-            _sequences[reservation.Origin] = CurrentOriginSequenceLocked(reservation.Origin) + 1;
             _desired.Remove(reservation.Origin);
-            if (_active < MaxReservations && _nextGeneration != long.MaxValue)
+            if (_owned.Count < MaxReservations && _nextGeneration != long.MaxValue)
             {
-                var compensation = new ConsentReservation(reservation.Origin, null, false, ++_nextGeneration,
-                    _sequences[reservation.Origin], _lifecycleEpoch, null, true, new(TaskCreationOptions.RunContinuationsAsynchronously));
-                _pending.Add(compensation); _active++; _signals.Writer.TryWrite(true);
+                var generation = ++_nextGeneration;
+                _sequences[reservation.Origin] = generation;
+                var compensation = new ConsentReservation(reservation.Origin, null, false, generation,
+                    generation, _lifecycleEpoch, null, true, new(TaskCreationOptions.RunContinuationsAsynchronously));
+                _pending.Add(compensation); _owned.Add(compensation); _signals.Writer.TryWrite(true);
             }
             else MarkUnavailableLocked();
         }
@@ -183,7 +202,7 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
         }
         lock (_gate)
         {
-            if (_failure is not null || _active != 0 || _durableGeneration != _nextGeneration) { _health = ConsentStorageHealth.Unavailable; return; }
+            if (_failure is not null || _owned.Count != 0 || _durableGeneration != _nextGeneration) { _health = ConsentStorageHealth.Unavailable; return; }
         }
         try
         {
@@ -268,12 +287,9 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
             lock (_gate)
             {
                 MarkUnavailableLocked();
-                while (_pending.Count > 0)
-                {
-                    var pending = _pending[0];
-                    _pending.RemoveAt(0);
-                    CompleteLocked(pending, new(FailureOutcome(pending), _durableGeneration));
-                }
+                _pending.Clear();
+                foreach (var reservation in _owned.ToArray())
+                    CompleteLocked(reservation, new(FailureOutcome(reservation), _durableGeneration));
             }
         }
     }
@@ -285,7 +301,11 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
     private void CompleteLocked(ConsentReservation reservation, ConsentMutationResult result)
     {
         if (reservation.Completed) return;
-        reservation.Completed = true; _active = Math.Max(0, _active - 1); reservation.Completion.TrySetResult(result);
+        reservation.Completed = true;
+        _owned.Remove(reservation);
+        _pruneEntryLocked(reservation.Origin);
+        PruneSequenceLocked(reservation.Origin);
+        reservation.Completion.TrySetResult(result);
     }
 
     private ConsentMutationOutcome FailureOutcome(ConsentReservation reservation) =>
