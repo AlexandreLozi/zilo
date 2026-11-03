@@ -488,8 +488,22 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
         not a fabricated reachable production state. Parent sole source author. HOLD-PUSH/no CI.
       - **Fix 5 plan settled:** `task_e46c8ce7253d` / `ctx_86390223e0a7` completed PLAN ONLY,
         no repository changes/tests/helpers. Handoff: `/tmp/opencode/t11p-clean-drain-handoff.md`.
-      - **Active fix 5 implementation:** fresh GPT HIGH `task_85934b0e3720` / `ctx_a22bedba27d5`,
-        existing integration branch from clean `02bfa3b`; actual HIGH footer independently verified.
+      - **Fix 5 implementation settled PARTIAL:** local `3ecfe30` (tested source `853bc55`), report
+        `docs/validation/logs/T11p/clean-drain/report.md`. Targeted shutdown cases 86/86 green,
+        but full suite **386 passed / 1 failed / 48 skipped**: prompt cancellation callback
+        observation timed out. Isolated 1/1 passed; that is not proof the full failure is preexisting.
+        Controlled runtime diagnosis confirms a generic CTS-disposal/queued-cancellation hazard;
+        the actual Store interleaving was not reproduced and its cause remains unresolved.
+        Source helper and read-only recon both completed; manifest and runtime uncertainty are in
+        the report. All work preserved, no acceptance/push/CI; whole coordinator stays unwired.
+      - **Active CTS-lifetime correction:** fresh GPT HIGH `task_4c9363804103` /
+        `ctx_ebf0e0f37bd8`, from clean local `3ecfe30`; actual HIGH footer verified, fresh 18k.
+        Scope: bounded per-prompt cancellation/disposal ownership, no premature disposal before
+        real CancelAsync callbacks settle. Small state/ownership plan precedes production edits;
+        preserve the strict callback assertion, fix-5 semantics and all earlier race/bound guards.
+        No timing masks or unchanged-code full-suite reruns. Local HOLD-PUSH, no CI. Independent
+        Claude HIGH whole-coordinator review remains required after the local gate is genuinely green.
+      - Fix-5 authorship constraints:
         The worker's mandatory role requires source delegation; per liaison's prior GPT-helper
         allowance, one bounded fixer source writer is authorized, with parent-owned tests/report
         and full inspection of every source hunk after settlement. No overlapping source writers.
