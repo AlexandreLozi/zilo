@@ -58,6 +58,8 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
 
     private SafeFileHandle Root => _chain[^1].Handle;
     internal bool IsVolatile => false;
+    internal int LockOpenAttempts { get; private set; }
+    internal TimeSpan LockOpenElapsed { get; private set; }
 
     private WindowsConsentDirectory(string rootPath, Action<WindowsConsentWriteStage>? checkpoint)
     {
@@ -308,18 +310,64 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
 
     private void OpenLock()
     {
-        ValidateChain();
-        CheckPrivate(Root, true);
-        var created = TryCreateFile("consent.lock", CreateNew, 0, share: 0, out var error);
-        if (created is null)
+        // Open is synchronous and has no cancellation parameter. This wait owns only startup
+        // storage state, never the authorization monitor; no consent/fence is read before it.
+        var wait = new WindowsConsentLockWait(TimeProvider.System, Thread.Sleep);
+        try
         {
-            if (error is not (ErrorFileExists or ErrorAlreadyExists)) throw NativeError(error);
-            _lock = OpenChild("consent.lock", GenericRead | GenericWrite | Delete | ReadControl, share: 0,
-                FileFlagOpenReparsePoint, out error) ?? throw NativeError(error);
+            while (true)
+            {
+                if (wait.Attempts != 0 && wait.Elapsed >= WindowsConsentLockWait.Budget)
+                    throw NativeError(32);
+                ValidateChain();
+                CheckPrivate(Root, true);
+                // Recheck the monotonic deadline after validation and after every sleep.
+                if (!wait.TryBeginAttempt()) throw NativeError(32);
+                var candidate = TryCreateFile("consent.lock", CreateNew, 0, share: 0, out var error);
+                if (candidate is null && error is (ErrorFileExists or ErrorAlreadyExists))
+                {
+                    // A native call itself is not time-bounded. Do not start another call if
+                    // that call consumed the remaining budget; keep its original failure code.
+                    if (wait.Elapsed >= WindowsConsentLockWait.Budget) throw NativeError(error);
+                    candidate = OpenChild("consent.lock", GenericRead | GenericWrite | Delete | ReadControl, share: 0,
+                        FileFlagOpenReparsePoint, out error);
+                }
+                if (candidate is null)
+                {
+                    if (wait.WaitAfterFailure(error)) continue;
+                    throw NativeError(error);
+                }
+                try
+                {
+                    // The nofollow, share-0 handle pins this file's identity (no delete/rename).
+                    // A held lock cannot be inspected through a second handle. Validate its
+                    // owner, strict private ACL, volume, type and single-link identity once
+                    // exclusive access is acquired, before accepting it or reading authority.
+                    CheckPrivate(candidate, false);
+                    ValidateChain();
+                    CheckPrivate(Root, true);
+                    _lock = candidate;
+                    return;
+                }
+                catch
+                {
+                    candidate.Dispose();
+                    throw; // Security/identity failures are never retried.
+                }
+            }
         }
-        else _lock = created;
-        CheckPrivate(_lock, false);
-        ValidateLock();
+        catch (Exception error)
+        {
+            // Bounded numeric diagnostics only; no path, SID, origin or descriptor output.
+            error.Data["OpenLockAttempts"] = wait.Attempts;
+            error.Data["OpenLockElapsedMilliseconds"] = wait.Elapsed.TotalMilliseconds;
+            throw;
+        }
+        finally
+        {
+            LockOpenAttempts = wait.Attempts;
+            LockOpenElapsed = wait.Elapsed;
+        }
     }
 
     private SafeFileHandle CreatePrivateFile(string name, uint disposition, uint extraFlags)

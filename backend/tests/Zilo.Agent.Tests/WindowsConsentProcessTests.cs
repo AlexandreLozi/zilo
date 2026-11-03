@@ -90,7 +90,25 @@ public sealed class WindowsConsentProcessTests
             await process.WaitForExitAsync(token).WaitAsync(TimeSpan.FromSeconds(10), token);
             Assert.True(process.HasExited);
 
-            await using (var reopenedDirectory = WindowsConsentDirectory.Open(fixture.Store))
+            // Strict single product Open immediately after root exit: no harness reopen retry or
+            // pre-open sleep. The native holder's identity (descendant/scanner/etc.) is unproven.
+            var reopenElapsed = Stopwatch.StartNew();
+            WindowsConsentDirectory reopenedDirectory;
+            try
+            {
+                reopenedDirectory = WindowsConsentDirectory.Open(fixture.Store);
+            }
+            catch (Exception error)
+            {
+                TestContext.Current.TestOutputHelper?.WriteLine(
+                    $"kill-reopen failed; attempts={error.Data["OpenLockAttempts"]}; " +
+                    $"lockElapsedMs={error.Data["OpenLockElapsedMilliseconds"]}; totalElapsedMs={reopenElapsed.Elapsed.TotalMilliseconds:F1}");
+                throw;
+            }
+            TestContext.Current.TestOutputHelper?.WriteLine(
+                $"kill-reopen succeeded; attempts={reopenedDirectory.LockOpenAttempts}; " +
+                $"lockElapsedMs={reopenedDirectory.LockOpenElapsed.TotalMilliseconds:F1}; totalElapsedMs={reopenElapsed.Elapsed.TotalMilliseconds:F1}");
+            await using (reopenedDirectory)
             {
                 var contents = await reopenedDirectory.ReadAsync(token);
                 Assert.Equal(oldSnapshotBytes, contents.Snapshot);

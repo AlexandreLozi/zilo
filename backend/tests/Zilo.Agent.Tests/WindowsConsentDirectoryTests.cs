@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
@@ -205,13 +206,73 @@ public sealed class WindowsConsentDirectoryTests
         var first = WindowsConsentDirectory.Open(fixture.Store);
         try
         {
-            Assert.Throws<IOException>(() => WindowsConsentDirectory.Open(fixture.Store));
+            var error = Assert.Throws<IOException>(() => OpenOnceWithLockDiagnostics(fixture.Store));
+            AssertSharingBudgetExhausted(error);
         }
         finally
         {
             await first.DisposeAsync();
         }
         await using var next = WindowsConsentDirectory.Open(fixture.Store);
+    }
+
+    [Fact(SkipUnless = nameof(WindowsHost), Skip = NativeSkip)]
+    public async Task Native_single_open_waits_for_brief_external_lock_handle_then_succeeds()
+    {
+        using var fixture = new Fixture();
+        await CreateCleanStore(fixture);
+        using var blocker = File.OpenHandle(Path.Combine(fixture.Store, "consent.lock"),
+            FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        using var ready = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        var releaser = new Thread(() =>
+        {
+            ready.Set();
+            release.Wait();
+            // Fixture-controlled holder duration, not a sleep/reopen loop around product Open.
+            Thread.Sleep(200);
+            blocker.Dispose();
+        });
+        releaser.Start();
+        try
+        {
+            Assert.True(ready.Wait(TimeSpan.FromSeconds(5), Token));
+            release.Set();
+            await using var directory = OpenOnceWithLockDiagnostics(fixture.Store);
+            Assert.InRange(directory.LockOpenAttempts, 2, 41);
+            Assert.True(directory.LockOpenElapsed >= TimeSpan.FromMilliseconds(50));
+            var contents = await directory.ReadAsync(Token);
+            Assert.False(contents.InterruptedArtifacts);
+            Assert.NotNull(contents.Snapshot);
+        }
+        finally
+        {
+            release.Set();
+            Assert.True(releaser.Join(TimeSpan.FromSeconds(5)));
+        }
+    }
+
+    [Fact(SkipUnless = nameof(WindowsHost), Skip = NativeSkip)]
+    public async Task Native_single_open_fails_closed_when_external_handle_outlasts_budget()
+    {
+        using var fixture = new Fixture();
+        await CreateCleanStore(fixture);
+        var path = Path.Combine(fixture.Store, "consent.lock");
+        var snapshot = await File.ReadAllBytesAsync(Path.Combine(fixture.Store, "consent.json"), Token);
+        using (var blocker = File.OpenHandle(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            var error = Assert.Throws<IOException>(() => OpenOnceWithLockDiagnostics(fixture.Store));
+            AssertSharingBudgetExhausted(error);
+            Assert.False(blocker.IsClosed);
+            Assert.False(File.Exists(Path.Combine(fixture.Store, "consent.tmp")));
+            Assert.False(File.Exists(Path.Combine(fixture.Store, "fence.tmp")));
+            Assert.Equal(snapshot, await File.ReadAllBytesAsync(Path.Combine(fixture.Store, "consent.json"), Token));
+        }
+        // Failed acquisition must unwind its pins; it must not delete or force-unlock the file.
+        Assert.True(File.Exists(path));
+        var moved = fixture.Store + "-moved";
+        Directory.Move(fixture.Store, moved);
+        Directory.Move(moved, fixture.Store);
     }
 
     [Fact(SkipUnless = nameof(WindowsHost), Skip = NativeSkip)]
@@ -585,6 +646,40 @@ public sealed class WindowsConsentDirectoryTests
     }
 
     private static CancellationToken Token => TestContext.Current.CancellationToken;
+
+    private static WindowsConsentDirectory OpenOnceWithLockDiagnostics(string path)
+    {
+        var elapsed = Stopwatch.StartNew();
+        WindowsConsentDirectory? directory = null;
+        try
+        {
+            directory = WindowsConsentDirectory.Open(path); // Exactly one product Open.
+            return directory;
+        }
+        catch (Exception error)
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(
+                $"single-product-open failed; attempts={error.Data["OpenLockAttempts"]}; " +
+                $"lockElapsedMs={error.Data["OpenLockElapsedMilliseconds"]}; totalElapsedMs={elapsed.Elapsed.TotalMilliseconds:F1}");
+            throw;
+        }
+        finally
+        {
+            if (directory is not null)
+                TestContext.Current.TestOutputHelper?.WriteLine(
+                    $"single-product-open succeeded; attempts={directory.LockOpenAttempts}; " +
+                    $"lockElapsedMs={directory.LockOpenElapsed.TotalMilliseconds:F1}; totalElapsedMs={elapsed.Elapsed.TotalMilliseconds:F1}");
+        }
+    }
+
+    private static void AssertSharingBudgetExhausted(IOException error)
+    {
+        Assert.EndsWith(":32", error.Message, StringComparison.Ordinal);
+        Assert.InRange(Assert.IsType<int>(error.Data["OpenLockAttempts"]), 2, 41);
+        Assert.True(Assert.IsType<double>(error.Data["OpenLockElapsedMilliseconds"]) >= 2000);
+        // The monotonic policy bounds waits/admissions, not OS syscall or scheduler latency.
+    }
+
     private static ConsentSnapshot Snapshot(long generation) => new(generation,
         new[] { new StoredConsent("https://windows.example", "granted", false, DateTimeOffset.UnixEpoch, null, null) });
 
