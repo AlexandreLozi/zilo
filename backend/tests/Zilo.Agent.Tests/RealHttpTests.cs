@@ -88,6 +88,9 @@ public sealed class RealHttpTests
         }
         finally
         {
+            // Close the client's pooled connections first: a graceful client close makes the agent
+            // side the responder, so no server socket on 47841 outlives the process kill.
+            client.Dispose();
             if (!process.HasExited) process.Kill(entireProcessTree: true);
             await process.WaitForExitAsync(TestContext.Current.CancellationToken);
         }
@@ -108,7 +111,14 @@ public sealed class RealHttpTests
             while (response is null) { stop.Token.ThrowIfCancellationRequested(); try { response = await client.GetAsync("/zilo/v1/hello", stop.Token); } catch (HttpRequestException) { await Task.Delay(50, stop.Token); } }
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
-        finally { if (!process.HasExited) process.Kill(entireProcessTree: true); await process.WaitForExitAsync(TestContext.Current.CancellationToken); }
+        finally
+        {
+            // Same ordering as Real_loopback_http: close the client's pooled connection first so the
+            // killed agent cannot leave a server socket on a contract port behind.
+            client.Dispose();
+            if (!process.HasExited) process.Kill(entireProcessTree: true);
+            await process.WaitForExitAsync(TestContext.Current.CancellationToken);
+        }
     }
 }
 
@@ -138,6 +148,13 @@ public sealed class RealAuthHttpTests
             Assert.Equal("full", json.RootElement.GetProperty("scope").GetString());
             Assert.Contains("auth.token", json.RootElement.GetProperty("capabilities").EnumerateArray().Select(x => x.GetString()));
         }
-        finally { if (!process.HasExited) process.Kill(entireProcessTree: true); await process.WaitForExitAsync(TestContext.Current.CancellationToken); }
+        finally
+        {
+            // Same ordering as Real_loopback_http: close the client's pooled connection first so the
+            // killed agent cannot leave a server socket on a contract port behind.
+            client.Dispose();
+            if (!process.HasExited) process.Kill(entireProcessTree: true);
+            await process.WaitForExitAsync(TestContext.Current.CancellationToken);
+        }
     }
 }
