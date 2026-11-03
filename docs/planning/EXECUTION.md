@@ -364,18 +364,17 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
       passed, 30 skipped.
   - **Claude r2 PASS (narrow)**: `docs/reviews/T11p-windows-r2.md` @ac5fc9f. The slice is ready
     for the combined run.
-  - **Next:** GPT pushes the exact reviewed head, which starts the single combined Backend run
-    (Windows, macOS arm64 and Intel, Linux). The Windows trx must show the native
-    WindowsConsent* tests executed and passed. Then the auth/Agent integration and recovery
-    slices.
+   - **PUSHED exact reviewed `c3dec94`.** Combined Backend run **41570527419** started on that
+     exact head (Windows, macOS arm64 and Intel, Linux); no duplicate dispatch. Opus inspects the
+     Windows trx for executed, passing native WindowsConsent* cases, including process kill and
+     sharing violation, and both Mac native suites. Native acceptance remains pending results.
+   - Additional pinned Node 24 workspace check: non-WebKit steps green; Chromium and Firefox
+     demo smoke pass. WebKit is **host-blocked** at launch by missing WSL system libraries, not
+     a test skip or product pass. Full workspace CI is not claimed green. This head changes no
+     web inputs; hosted ci-web retains the WebKit evidence (known limitation since T15).
+   - **Next:** inspect combined native evidence, then bounded auth/Agent integration and recovery.
     - **P3:** a SID-in-ACE bound, minimal access for ancestors, and leftover-temp behaviour as a
       recovery-slice input.
-  - **Next:**
-    1. GPT dispatches the fix.
-    2. A local full suite.
-    3. A narrow Claude r2.
-    4. The single combined Backend push run. Its trx must show the native Windows tests executed.
-    5. Then the auth/Agent integration and recovery slices.
   - Native Windows acceptance still needs that combined hosted batch (OD-6/15/16); local guards
     don't establish it.
 - Actual DeepSeek and GPT HIGH footers verified. Shared-host real-port test invocations use
