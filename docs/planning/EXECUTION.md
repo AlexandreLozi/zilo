@@ -319,10 +319,13 @@ Preserved evidence and resume constraints:
   - Mac fix 6716f46 is option A: managed exclusive create plus fchmod, no variadic mode.
   - The cancel-race fix 606e8e5 is in (GPT r1 PASS; hosted green on ubuntu, windows and intel on
     f461903).
-  - Backend 41519793144: ubuntu and macos-15-intel green. Windows had 1 port flake. **macos-latest
-    (arm64) was cancelled twice by GitHub capacity** ("not acquired by Runner"), so there is NO
-    arm64 evidence yet.
-  - **Next:** Opus Mac r2 once real arm64 evidence exists.
+  - Backend 41519793144: ubuntu and macos-15-intel green. Windows had 1 port flake. The arm64
+    job was cancelled twice by GitHub capacity, then **attempt 3 (the agreed single job-only
+    retry) was GREEN on macos-26-arm64** (job 125689903723): Agent 219/0 failed/3 platform skips,
+    and every native MacConsentDirectoryTests test executed and passed (trx).
+  - **Opus Mac r2 PASS (slice only)**: `docs/reviews/T11p-macos-r2.md` on `t11p-mac-review-r2`
+    @2dc167e. The macOS slice is done. The ARM override workflow (GPT r2 PASS a69a535) is now
+    optional and deferred.
 - **arm64 evidence path** (co-approved by GPT): spec `docs/tasks/ci-backend-arm-dispatch.md`, a
   workflow_dispatch choice of macos-latest or macos-15 (never macos-14, which is retired), arm64
   only, with an ARM64 assertion.
