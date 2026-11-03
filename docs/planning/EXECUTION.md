@@ -344,9 +344,26 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
   that job passes; do not add it to the Windows batch solely to exercise the workflow.
 - **Windows storage adapter only:** GPT HIGH `task_c435be4503ab` / `ctx_25b6df5b5a78`, existing
   `AlexandreLozi/t11p-integration` at baseline `38a859b`; compile/guard tests locally, native tests
-  authored with explicit Linux skips. Next: independent Claude review, then bounded auth/Agent
-  integration and recovery slices. Native Windows acceptance requires the combined hosted batch
-  (OD-6/15/16); local guards do not establish it.
+  authored with explicit Linux skips.
+  - **LOCAL head `caa7b74`** (adapter `4fbec92`; tested composition `f3de1be` with the port
+    candidate b460df9 + 22d5194). Local evidence: 266 passed, 32 skipped, 0 failed. Not pushed.
+  - **Claude HIGH r1: CHANGES, no P1.** Review `docs/reviews/T11p-windows-r1.md` on
+    `t11p-windows-review-r1` @1bd19ac.
+    - **P2-1:** native fixtures, so the single hosted run can carry them: foreign owner,
+      inherited/deny/Everyone ACEs, process death with reopen, and an external no-share-delete
+      handle on the target.
+    - **P2-2:** a bounded rename retry on a sharing violation (32) or access denied (5), or an
+      explicitly recorded trade-off.
+    - **P3:** a SID-in-ACE bound, minimal access for ancestors, and leftover-temp behaviour as a
+      recovery-slice input.
+  - **Next:**
+    1. GPT dispatches the fix.
+    2. A local full suite.
+    3. A narrow Claude r2.
+    4. The single combined Backend push run. Its trx must show the native Windows tests executed.
+    5. Then the auth/Agent integration and recovery slices.
+  - Native Windows acceptance still needs that combined hosted batch (OD-6/15/16); local guards
+    don't establish it.
 - Actual DeepSeek and GPT HIGH footers verified. Shared-host real-port test invocations use
   `flock /tmp/opencode/zilo-real-port-tests.lock` to avoid cross-worktree interference.
 
