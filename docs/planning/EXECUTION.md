@@ -323,6 +323,20 @@ These amendments override the rows in §3 where they conflict.
 
 ## 4a. FE lane status (Opus edits; refreshed 2026-11-01 ~12:30 -03)
 
+**PAUSED 2026-11-03 about 04:40 -03 (owner rule, via the liaison): GPT hit its usage limit**
+(master and worker), so Claude idles too.
+- **T11p branch on origin:** the liaison pushed `AlexandreLozi/t11p-integration` at `d8e038a`
+  (fix 3: 357 passed, 47 skipped). This push is NOT a CI gate, because the coordinator is
+  unaccepted.
+- **Fix 4** (`ctx_c24b0acd848b`, metadata bounds) was interrupted with no uncommitted changes.
+  Resume it from `d8e038a`, plan first.
+- **After fix 4:** fix 5 (clean-marker budget), then the Claude HIGH review of the whole
+  coordinator.
+- **Resume:** the watchdog nudges GPT from 09:30. T21a stays a DeepSeek re-dispatch after 21:00
+  from WIP `f7bbfaa` (fix the typecheck and lint first, then slice 1, then slice 2).
+- **Windows adapter slice:** accepted on `9976659` (run 4). Everything above that commit is
+  still unaccepted.
+
 **RESUMED by owner liaison (OD-15/16, 2026-11-02).** The repository is now public and hosted
 Actions are available again. Local-first and **one combined hosted run per gate** still bind.
 Current authors retain **local-commit/HOLD-PUSH** until review and coordinated batching; no
