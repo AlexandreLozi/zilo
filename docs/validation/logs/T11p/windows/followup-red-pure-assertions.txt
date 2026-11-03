@@ -1,0 +1,30 @@
+RED: follow-up pure reflection assertions before bounded production fixes
+  Zilo.Core -> [workspace]/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Security -> [workspace]/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Naps2 -> [workspace]/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> [workspace]/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> [workspace]/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> [workspace]/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for [workspace]/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.53]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Private_fixed_name_guard_accepts_lifetime_lock [FAIL]
+[xUnit.net 00:00:00.54]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Volume_information_import_uses_unicode_exact_abi [FAIL]
+  Failed Zilo.Agent.Tests.WindowsConsentDirectoryTests.Private_fixed_name_guard_accepts_lifetime_lock [8 ms]
+  Error Message:
+   System.IO.IOException : consent-windows-private-storage-unavailable
+  Stack Trace:
+     at Zilo.Security.Persistence.WindowsConsentDirectory.ValidateFixedName(String name) in [workspace]/backend/src/Zilo.Security/Persistence/WindowsConsentDirectory.cs:line 263
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.WindowsConsentDirectoryTests.Volume_information_import_uses_unicode_exact_abi [4 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Unicode
+Actual:   None
+  Stack Trace:
+     at Zilo.Agent.Tests.WindowsConsentDirectoryTests.Volume_information_import_uses_unicode_exact_abi() in [workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs:line 82
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     2, Passed:     0, Skipped:     0, Total:     2, Duration: 39 ms - Zilo.Agent.Tests.dll (net10.0)
+exit=1

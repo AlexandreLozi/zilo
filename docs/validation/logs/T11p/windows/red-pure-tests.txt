@@ -1,0 +1,19 @@
+RED: pure WindowsConsentDirectory guard/ABI test compile before production implementation
+  Zilo.Core -> [workspace]/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Security -> [workspace]/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Naps2 -> [workspace]/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> [workspace]/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> [workspace]/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(19,13): error CS0103: The name 'WindowsConsentDirectory' does not exist in the current context [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(21,13): error CS0103: The name 'WindowsConsentDirectory' does not exist in the current context [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(23,13): error CS0103: The name 'WindowsConsentDirectory' does not exist in the current context [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(31,32): error CS0103: The name 'WindowsConsentDirectory' does not exist in the current context [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(46,42): error CS0103: The name 'WindowsConsentDirectory' does not exist in the current context [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(52,27): error CS0246: The type or namespace name 'WindowsConsentDirectory' could not be found (are you missing a using directive or an assembly reference?) [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(58,20): error CS0103: The name 'WindowsConsentDirectory' does not exist in the current context [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(58,67): error CS8778: Constant value '1234605616436508552' may overflow 'nint' at runtime (use 'unchecked' syntax to override) [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(60,22): error CS8778: Constant value '1234605616436508552' may overflow 'nint' at runtime (use 'unchecked' syntax to override) [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(69,38): error CS0103: The name 'WindowsConsentDirectory' does not exist in the current context [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(77,55): error CS0103: The name 'WindowsConsentDirectory' does not exist in the current context [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(87,33): error CS0103: The name 'WindowsConsentDirectory' does not exist in the current context [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]
+[workspace]/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs(88,42): error CS0103: The name 'WindowsConsentDirectory' does not exist in the current context [[workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj]

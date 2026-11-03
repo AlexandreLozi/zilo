@@ -1,0 +1,53 @@
+GREEN: final tests-only follow-up; Release build succeeds; WindowsConsentDirectoryTests Linux run: 17 passed, 18 explicitly skipped (Windows-native).
+  Zilo.Core -> [workspace]/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> [workspace]/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> [workspace]/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Virtual -> [workspace]/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> [workspace]/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> [workspace]/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.51
+Test run for [workspace]/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.43]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_second_session_cannot_acquire_lock_until_disposal [SKIP]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_second_session_cannot_acquire_lock_until_disposal [1 ms]
+[xUnit.net 00:00:00.45]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_null_or_unprotected_root_and_lock_dacls_are_rejected_without_repair(nullDacl: False, mutateRoot: True) [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_null_or_unprotected_root_and_lock_dacls_are_rejected_without_repair(nullDacl: False, mutateRoot: False) [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_null_or_unprotected_root_and_lock_dacls_are_rejected_without_repair(nullDacl: True, mutateRoot: False) [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_null_or_unprotected_root_and_lock_dacls_are_rejected_without_repair(nullDacl: True, mutateRoot: True) [SKIP]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_null_or_unprotected_root_and_lock_dacls_are_rejected_without_repair(nullDacl: False, mutateRoot: True) [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_null_or_unprotected_root_and_lock_dacls_are_rejected_without_repair(nullDacl: False, mutateRoot: False) [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_null_or_unprotected_root_and_lock_dacls_are_rejected_without_repair(nullDacl: True, mutateRoot: False) [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_null_or_unprotected_root_and_lock_dacls_are_rejected_without_repair(nullDacl: True, mutateRoot: True) [1 ms]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_oversize_snapshot_is_rejected_before_read_allocation [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_directory_reparse_ancestors_are_rejected_without_creating_new_store(rootLink: True) [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_directory_reparse_ancestors_are_rejected_without_creating_new_store(rootLink: False) [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_root_is_owned_and_protected_and_cannot_be_renamed_while_pinned [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_flush_failure_leaves_dirty_temp_evidence_and_unclean_reopen [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_private_store_roundtrips_and_retains_exclusive_lock [SKIP]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_oversize_snapshot_is_rejected_before_read_allocation [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_directory_reparse_ancestors_are_rejected_without_creating_new_store(rootLink: True) [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_directory_reparse_ancestors_are_rejected_without_creating_new_store(rootLink: False) [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_root_is_owned_and_protected_and_cannot_be_renamed_while_pinned [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_flush_failure_leaves_dirty_temp_evidence_and_unclean_reopen [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_private_store_roundtrips_and_retains_exclusive_lock [1 ms]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_snapshot_hardlink_is_rejected_and_victim_bytes_remain_unchanged [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_reparse_snapshot_is_rejected_and_victim_is_untouched [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_unknown_dacl_principal_is_rejected_without_repair [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_failed_open_unwinds_all_directory_handles [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_authored_checkpoint_faults_leave_session_unavailable_and_preserve_expected_evidence(stageValue: 0) [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_authored_checkpoint_faults_leave_session_unavailable_and_preserve_expected_evidence(stageValue: 1) [SKIP]
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_authored_checkpoint_faults_leave_session_unavailable_and_preserve_expected_evidence(stageValue: 2) [SKIP]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_snapshot_hardlink_is_rejected_and_victim_bytes_remain_unchanged [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_reparse_snapshot_is_rejected_and_victim_is_untouched [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_unknown_dacl_principal_is_rejected_without_repair [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_failed_open_unwinds_all_directory_handles [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_authored_checkpoint_faults_leave_session_unavailable_and_preserve_expected_evidence(stageValue: 0) [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_authored_checkpoint_faults_leave_session_unavailable_and_preserve_expected_evidence(stageValue: 1) [1 ms]
+  Skipped Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_authored_checkpoint_faults_leave_session_unavailable_and_preserve_expected_evidence(stageValue: 2) [1 ms]
+
+Passed!  - Failed:     0, Passed:    17, Skipped:    18, Total:    35, Duration: 37 ms - Zilo.Agent.Tests.dll (net10.0)

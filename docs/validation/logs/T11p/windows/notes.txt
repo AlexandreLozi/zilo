@@ -1,0 +1,6 @@
+Scope: the Windows adapter slice adds WindowsConsentDirectory.cs, WindowsConsentDirectoryTests.cs and evidence logs only; final fixture corrections are test-only.
+Native Windows x64/arm64 tests are authored with explicit xUnit SkipUnless and were not executed on Linux.
+Initial implementation RED was an expected pre-type compile failure and is not behavioral TDD proof.
+Follow-up RED/green evidence contains two actual reflection assertions for the lock-name guard and volume-import marshaling declaration; it is structure/guard evidence only, not native Windows proof.
+The final test-only follow-up adds authored checkpoint-fault variants, null/unprotected DACL cases, hardlink/reparse cases, failed-open handle-unwind, and non-Windows Open guard coverage. These remain pending on Linux; checkpoint injections are not kernel-failure proof.
+No full-suite, hosted Windows, foreign-owner, or crash durability claim is made here.
