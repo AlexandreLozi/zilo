@@ -1,0 +1,48 @@
+  Zilo.Core -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Security -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Virtual -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Drivers.Naps2 -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Agent -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.96]     Zilo.Agent.Tests.ConsentShutdownTests.Cancelled_clean_observer_is_nonthrowing_unavailable_and_late_ack_is_not_success [FAIL]
+[xUnit.net 00:00:00.97]     Zilo.Agent.Tests.ConsentShutdownTests.Dispose_joins_open_and_never_releases_before_late_open_or_issues_clean [FAIL]
+[xUnit.net 00:00:00.97]     Zilo.Agent.Tests.ConsentShutdownTests.Restriction_after_clean_reservation_has_no_fence_or_durable_claim_and_no_metadata_growth [FAIL]
+[xUnit.net 00:00:00.98]     Zilo.Agent.Tests.ConsentShutdownTests.Concurrent_stop_callers_share_epoch_and_one_clean_operation [FAIL]
+  Failed Zilo.Agent.Tests.ConsentShutdownTests.Cancelled_clean_observer_is_nonthrowing_unavailable_and_late_ack_is_not_success [523 ms]
+  Error Message:
+   System.TimeoutException : The operation has timed out.
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentShutdownTests.Cancelled_clean_observer_is_nonthrowing_unavailable_and_late_ack_is_not_success() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentShutdownTests.cs:line 50
+   at Zilo.Agent.Tests.ConsentShutdownTests.Cancelled_clean_observer_is_nonthrowing_unavailable_and_late_ack_is_not_success() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentShutdownTests.cs:line 59
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentShutdownTests.Dispose_joins_open_and_never_releases_before_late_open_or_issues_clean [4 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   1
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentShutdownTests.Dispose_joins_open_and_never_releases_before_late_open_or_issues_clean() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentShutdownTests.cs:line 95
+   at Zilo.Agent.Tests.ConsentShutdownTests.Dispose_joins_open_and_never_releases_before_late_open_or_issues_clean() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentShutdownTests.cs:line 104
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentShutdownTests.Restriction_after_clean_reservation_has_no_fence_or_durable_claim_and_no_metadata_growth [7 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: NotSaved
+Actual:   FenceCovered
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentShutdownTests.Restriction_after_clean_reservation_has_no_fence_or_durable_claim_and_no_metadata_growth() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentShutdownTests.cs:line 74
+   at Zilo.Agent.Tests.ConsentShutdownTests.Restriction_after_clean_reservation_has_no_fence_or_durable_claim_and_no_metadata_growth() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentShutdownTests.cs:line 81
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentShutdownTests.Concurrent_stop_callers_share_epoch_and_one_clean_operation [2 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1
+Actual:   2
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentShutdownTests.Concurrent_stop_callers_share_epoch_and_one_clean_operation() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentShutdownTests.cs:line 29
+   at Zilo.Agent.Tests.ConsentShutdownTests.Concurrent_stop_callers_share_epoch_and_one_clean_operation() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentShutdownTests.cs:line 34
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     4, Passed:     0, Skipped:     0, Total:     4, Duration: 560 ms - Zilo.Agent.Tests.dll (net10.0)

@@ -1,0 +1,2 @@
+dispose-before-CancelAsync-worker=False; task-settled=True; native-callback-calls=1
+dispose-before-CancelAsync-worker=True; task-settled=True; native-callback-calls=0

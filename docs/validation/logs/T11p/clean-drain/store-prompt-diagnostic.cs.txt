@@ -1,0 +1,38 @@
+using System.Reflection;
+using Zilo.Security;
+
+// Diagnostic only: orchestrates CancelAsync callback ownership, not a production source change.
+var prompt = new GatedCancellationPrompt();
+var store = new ConsentStore(nativeConsent: prompt);
+await store.RequestAsync("https://stale.example");
+var resolution = (Task)typeof(ConsentStore).GetProperty("NativePromptResolution", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(store)!;
+var source = (CancellationTokenSource)typeof(CancellationToken).GetField("_source", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(prompt.Token)!;
+// Retain the real CancelAsync task so the diagnostic can prove all handlers have finished.
+var cancelling = source.CancelAsync();
+try
+{
+    await prompt.HandlerEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+    store.Remove("https://stale.example");
+    await resolution.WaitAsync(TimeSpan.FromSeconds(5));
+}
+finally { prompt.ReleaseHandler.Set(); }
+await cancelling.WaitAsync(TimeSpan.FromSeconds(5));
+Console.WriteLine($"CancelAsync settled; earliest native callback calls={prompt.NativeCancellationCalls}; expected=1; state={(await store.GetAsync("https://stale.example")).State}; granted={store.IsGranted("https://stale.example")}");
+return prompt.NativeCancellationCalls == 0 ? 1 : 0;
+
+sealed class GatedCancellationPrompt : INativeConsentPrompt
+{
+    public CancellationToken Token;
+    public int NativeCancellationCalls;
+    public TaskCompletionSource HandlerEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public ManualResetEventSlim ReleaseHandler { get; } = new();
+    private readonly TaskCompletionSource<ConsentDecision> _decision = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public ValueTask<ConsentDecision> RequestAsync(string exactOrigin, CancellationToken cancellationToken = default)
+    {
+        Token = cancellationToken;
+        cancellationToken.Register(() => Interlocked.Increment(ref NativeCancellationCalls));
+        // LIFO: real inner/outer wait callbacks run first, this gate next, native callback last.
+        cancellationToken.Register(() => { HandlerEntered.TrySetResult(); if (!ReleaseHandler.Wait(TimeSpan.FromSeconds(10))) throw new TimeoutException("diagnostic-gate"); });
+        return new(_decision.Task.WaitAsync(cancellationToken));
+    }
+}
