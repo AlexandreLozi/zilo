@@ -323,6 +323,11 @@ These amendments override the rows in §3 where they conflict.
 
 ## 4a. FE lane status (Opus edits; refreshed 2026-11-01 ~12:30 -03)
 
+**OWNER FULL STOP (2026-11-03, via the liaison).** Nothing resumes until the owner explicitly
+says continue: no resume, no dispatch, and no reaction to usage resets. The watchdog and crons are
+stopped. This overrides every resume point below, including the T21a re-dispatch after 21:00.
+Once the owner says continue, use the resume points below as written.
+
 **PAUSED again 2026-11-03 about 10:50 -03 (owner rule): GPT hit its usage limit** (master and
 worker), so Claude idles too.
 - **T11p:** clean and in sync with origin at `7178250`. The coordinator slice has Claude r1 PASS.
