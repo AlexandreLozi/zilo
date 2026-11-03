@@ -1,0 +1,112 @@
+  Zilo.Core -> <repo>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Virtual -> <repo>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Drivers.Naps2 -> <repo>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> <repo>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Agent -> <repo>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <repo>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for <repo>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.14)
+[xUnit.net 00:00:00.10]   Discovering: Zilo.Agent.Tests
+[xUnit.net 00:00:00.27]   Discovered:  Zilo.Agent.Tests
+[xUnit.net 00:00:00.38]   Starting:    Zilo.Agent.Tests
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_continuous_sharing_failure_exhausts_monotonic_total_budget [FAIL]
+[xUnit.net 00:00:00.47]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:00.47]       Expected: 00:00:02
+[xUnit.net 00:00:00.47]       Actual:   00:00:00
+[xUnit.net 00:00:00.47]       Stack Trace:
+[xUnit.net 00:00:00.47]         <repo>/backend/tests/Zilo.Agent.Tests/WindowsConsentLockWaitTests.cs(53,0): at Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_continuous_sharing_failure_exhausts_monotonic_total_budget()
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_sharing_failure_allows_short_fixed_backoff_then_success [FAIL]
+[xUnit.net 00:00:00.47]       Assert.True() Failure
+[xUnit.net 00:00:00.47]       Expected: True
+[xUnit.net 00:00:00.47]       Actual:   False
+[xUnit.net 00:00:00.47]       Stack Trace:
+[xUnit.net 00:00:00.47]         <repo>/backend/tests/Zilo.Agent.Tests/WindowsConsentLockWaitTests.cs(16,0): at Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_sharing_failure_allows_short_fixed_backoff_then_success()
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_non_sharing_errors_fail_immediately_without_delay(error: 5) [10 ms]
+  Passed Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_non_sharing_errors_fail_immediately_without_delay(error: 183) [1 ms]
+  Passed Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_non_sharing_errors_fail_immediately_without_delay(error: 3) [1 ms]
+  Passed Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_non_sharing_errors_fail_immediately_without_delay(error: 2) [1 ms]
+  Passed Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_non_sharing_errors_fail_immediately_without_delay(error: 80) [1 ms]
+  Passed Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_non_sharing_errors_fail_immediately_without_delay(error: 995) [1 ms]
+  Passed Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_non_sharing_errors_fail_immediately_without_delay(error: 0) [1 ms]
+  Failed Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_continuous_sharing_failure_exhausts_monotonic_total_budget [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 00:00:02
+Actual:   00:00:00
+  Stack Trace:
+     at Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_continuous_sharing_failure_exhausts_monotonic_total_budget() in <repo>/backend/tests/Zilo.Agent.Tests/WindowsConsentLockWaitTests.cs:line 53
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_sharing_failure_allows_short_fixed_backoff_then_success [1 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_sharing_failure_allows_short_fixed_backoff_then_success() in <repo>/backend/tests/Zilo.Agent.Tests/WindowsConsentLockWaitTests.cs:line 16
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_oversleep_does_not_admit_a_post_budget_attempt [FAIL]
+[xUnit.net 00:00:00.47]       Assert.True() Failure
+[xUnit.net 00:00:00.47]       Expected: True
+[xUnit.net 00:00:00.47]       Actual:   False
+[xUnit.net 00:00:00.47]       Stack Trace:
+[xUnit.net 00:00:00.47]         <repo>/backend/tests/Zilo.Agent.Tests/WindowsConsentLockWaitTests.cs(105,0): at Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_oversleep_does_not_admit_a_post_budget_attempt()
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_last_delay_is_capped_by_remaining_budget [FAIL]
+[xUnit.net 00:00:00.47]       Assert.True() Failure
+[xUnit.net 00:00:00.47]       Expected: True
+[xUnit.net 00:00:00.47]       Actual:   False
+[xUnit.net 00:00:00.47]       Stack Trace:
+[xUnit.net 00:00:00.47]         <repo>/backend/tests/Zilo.Agent.Tests/WindowsConsentLockWaitTests.cs(81,0): at Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_last_delay_is_capped_by_remaining_budget()
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_attempt_guard_bounds_even_a_frozen_clock_and_noop_delay [FAIL]
+[xUnit.net 00:00:00.47]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:00.47]       Expected: 41
+[xUnit.net 00:00:00.47]       Actual:   1
+[xUnit.net 00:00:00.47]       Stack Trace:
+[xUnit.net 00:00:00.47]         <repo>/backend/tests/Zilo.Agent.Tests/WindowsConsentLockWaitTests.cs(68,0): at Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_attempt_guard_bounds_even_a_frozen_clock_and_noop_delay()
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.48]   Finished:    Zilo.Agent.Tests (ID = 'eab730562fa8b9aecf4f9f4393ab44e79081ecda71d225edc55093c898d9b662')
+  Failed Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_oversleep_does_not_admit_a_post_budget_attempt [1 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_oversleep_does_not_admit_a_post_budget_attempt() in <repo>/backend/tests/Zilo.Agent.Tests/WindowsConsentLockWaitTests.cs:line 105
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_last_delay_is_capped_by_remaining_budget [1 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_last_delay_is_capped_by_remaining_budget() in <repo>/backend/tests/Zilo.Agent.Tests/WindowsConsentLockWaitTests.cs:line 81
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_attempt_guard_bounds_even_a_frozen_clock_and_noop_delay [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 41
+Actual:   1
+  Stack Trace:
+     at Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_attempt_guard_bounds_even_a_frozen_clock_and_noop_delay() in <repo>/backend/tests/Zilo.Agent.Tests/WindowsConsentLockWaitTests.cs:line 68
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Zilo.Agent.Tests.WindowsConsentLockWaitTests.Simulation_slow_attempt_consumes_budget_without_extra_delay_or_attempt [1 ms]
+
+Test Run Failed.
+Total tests: 13
+     Passed: 8
+     Failed: 5
+ Total time: 0.6953 Seconds

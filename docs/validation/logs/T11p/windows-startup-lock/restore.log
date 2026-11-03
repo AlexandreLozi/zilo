@@ -1,0 +1,10 @@
+  Determining projects to restore...
+  Restored <repo>/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 81 ms).
+  Restored <repo>/backend/src/Zilo.Core/Zilo.Core.csproj (in 76 ms).
+  Restored <repo>/backend/src/Zilo.Security/Zilo.Security.csproj (in 81 ms).
+  Restored <repo>/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 1.17 sec).
+  Restored <repo>/backend/tests/Zilo.Core.Tests/Zilo.Core.Tests.csproj (in 1.17 sec).
+  Restored <repo>/backend/tests/Zilo.Drivers.Virtual.Tests/Zilo.Drivers.Virtual.Tests.csproj (in 1.17 sec).
+  Restored <repo>/backend/tests/Zilo.Scaffold.Tests/Zilo.Scaffold.Tests.csproj (in 1.17 sec).
+  Restored <repo>/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj (in 1.17 sec).
+  Restored <repo>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 1.17 sec).
