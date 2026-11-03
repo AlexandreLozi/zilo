@@ -1,0 +1,50 @@
+  Zilo.Core -> <WORKTREE>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> <WORKTREE>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Drivers.Virtual -> <WORKTREE>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Security -> <WORKTREE>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Agent -> <WORKTREE>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <WORKTREE>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for <WORKTREE>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.DurableConsentTests.Open_ack_after_dispose_must_never_publish_ready_or_saved_authority [FAIL]
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.DurableConsentTests.Stop_fences_late_grant_commit_and_rejects_new_mutations [FAIL]
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.DurableConsentTests.Dispose_fences_late_grant_commit_from_previous_lifecycle_epoch [FAIL]
+[xUnit.net 00:00:00.48]     Zilo.Agent.Tests.DurableConsentTests.Open_ack_after_stop_must_never_publish_ready_or_saved_authority [FAIL]
+  Failed Zilo.Agent.Tests.DurableConsentTests.Open_ack_after_dispose_must_never_publish_ready_or_saved_authority [17 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Stopped
+Actual:   Ready
+  Stack Trace:
+     at Zilo.Agent.Tests.DurableConsentTests.Open_ack_after_dispose_must_never_publish_ready_or_saved_authority() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 329
+   at Zilo.Agent.Tests.DurableConsentTests.Open_ack_after_dispose_must_never_publish_ready_or_saved_authority() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 331
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.DurableConsentTests.Stop_fences_late_grant_commit_and_rejects_new_mutations [12 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Superseded
+Actual:   Durable
+  Stack Trace:
+     at Zilo.Agent.Tests.DurableConsentTests.Stop_fences_late_grant_commit_and_rejects_new_mutations() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 270
+   at Zilo.Agent.Tests.DurableConsentTests.Stop_fences_late_grant_commit_and_rejects_new_mutations() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 272
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.DurableConsentTests.Dispose_fences_late_grant_commit_from_previous_lifecycle_epoch [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Superseded
+Actual:   Durable
+  Stack Trace:
+     at Zilo.Agent.Tests.DurableConsentTests.Dispose_fences_late_grant_commit_from_previous_lifecycle_epoch() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 350
+   at Zilo.Agent.Tests.DurableConsentTests.Dispose_fences_late_grant_commit_from_previous_lifecycle_epoch() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 352
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.DurableConsentTests.Open_ack_after_stop_must_never_publish_ready_or_saved_authority [1 ms]
+  Error Message:
+   Assert.NotEqual() Failure: Values are equal
+Expected: Not Ready
+Actual:       Ready
+  Stack Trace:
+     at Zilo.Agent.Tests.DurableConsentTests.Open_ack_after_stop_must_never_publish_ready_or_saved_authority() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 311
+   at Zilo.Agent.Tests.DurableConsentTests.Open_ack_after_stop_must_never_publish_ready_or_saved_authority() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 312
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     4, Passed:     0, Skipped:     0, Total:     4, Duration: 58 ms - Zilo.Agent.Tests.dll (net10.0)
