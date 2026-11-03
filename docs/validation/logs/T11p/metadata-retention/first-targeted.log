@@ -1,0 +1,20 @@
+  Zilo.Core -> <WORKTREE>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Virtual -> <WORKTREE>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Drivers.Naps2 -> <WORKTREE>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> <WORKTREE>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Agent -> <WORKTREE>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <WORKTREE>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for <WORKTREE>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.50]     Zilo.Agent.Tests.ConsentMetadataRetentionTests.Volatile_prompt_history_has_finite_headroom_without_evicting_saved_policy [FAIL]
+  Failed Zilo.Agent.Tests.ConsentMetadataRetentionTests.Volatile_prompt_history_has_finite_headroom_without_evicting_saved_policy [19 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 429
+Actual:   202
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentMetadataRetentionTests.Volatile_prompt_history_has_finite_headroom_without_evicting_saved_policy() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/ConsentMetadataRetentionTests.cs:line 104
+   at Zilo.Agent.Tests.ConsentMetadataRetentionTests.Volatile_prompt_history_has_finite_headroom_without_evicting_saved_policy() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/ConsentMetadataRetentionTests.cs:line 110
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     1, Passed:    60, Skipped:     0, Total:    61, Duration: 148 ms - Zilo.Agent.Tests.dll (net10.0)

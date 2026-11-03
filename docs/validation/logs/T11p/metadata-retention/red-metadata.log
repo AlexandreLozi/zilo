@@ -1,0 +1,58 @@
+  Zilo.Core -> <WORKTREE>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> <WORKTREE>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> <WORKTREE>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Virtual -> <WORKTREE>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> <WORKTREE>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <WORKTREE>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for <WORKTREE>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.52]     Zilo.Agent.Tests.ConsentMetadataRetentionTests.Queue_rejected_grants_do_not_leave_empty_entries_and_restriction_stays_fail_closed [FAIL]
+[xUnit.net 00:00:00.54]     Zilo.Agent.Tests.ConsentMetadataRetentionTests.Volatile_prompt_history_has_finite_headroom_without_evicting_saved_policy [FAIL]
+[xUnit.net 00:00:00.96]     Zilo.Agent.Tests.ConsentMetadataRetentionTests.Unknown_remove_churn_releases_empty_entries_and_sequence_tombstones [FAIL]
+[xUnit.net 00:00:00.99]     Zilo.Agent.Tests.ConsentMetadataRetentionTests.Full_record_rejection_and_unknown_reads_do_not_allocate_authority_entries [FAIL]
+[xUnit.net 00:00:01.02]     Zilo.Agent.Tests.ConsentMetadataRetentionTests.Inflight_origin_survives_churn_then_prunes_without_sequence_ABA_or_stale_cancel [FAIL]
+  Failed Zilo.Agent.Tests.ConsentMetadataRetentionTests.Queue_rejected_grants_do_not_leave_empty_entries_and_restriction_stays_fail_closed [90 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 64
+Actual:   2112
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentMetadataRetentionTests.Queue_rejected_grants_do_not_leave_empty_entries_and_restriction_stays_fail_closed() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/ConsentMetadataRetentionTests.cs:line 83
+   at Zilo.Agent.Tests.ConsentMetadataRetentionTests.Queue_rejected_grants_do_not_leave_empty_entries_and_restriction_stays_fail_closed() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/ConsentMetadataRetentionTests.cs:line 85
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentMetadataRetentionTests.Volatile_prompt_history_has_finite_headroom_without_evicting_saved_policy [14 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 429
+Actual:   202
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentMetadataRetentionTests.Volatile_prompt_history_has_finite_headroom_without_evicting_saved_policy() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/ConsentMetadataRetentionTests.cs:line 100
+   at Zilo.Agent.Tests.ConsentMetadataRetentionTests.Volatile_prompt_history_has_finite_headroom_without_evicting_saved_policy() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/ConsentMetadataRetentionTests.cs:line 110
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentMetadataRetentionTests.Unknown_remove_churn_releases_empty_entries_and_sequence_tombstones [424 ms]
+  Error Message:
+   Retained empty entries=8330, sequences=8330
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentMetadataRetentionTests.Unknown_remove_churn_releases_empty_entries_and_sequence_tombstones() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/ConsentMetadataRetentionTests.cs:line 24
+   at Zilo.Agent.Tests.ConsentMetadataRetentionTests.Unknown_remove_churn_releases_empty_entries_and_sequence_tombstones() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/ConsentMetadataRetentionTests.cs:line 28
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentMetadataRetentionTests.Full_record_rejection_and_unknown_reads_do_not_allocate_authority_entries [30 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 4096
+Actual:   4608
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentMetadataRetentionTests.Full_record_rejection_and_unknown_reads_do_not_allocate_authority_entries() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/ConsentMetadataRetentionTests.cs:line 47
+   at Zilo.Agent.Tests.ConsentMetadataRetentionTests.Full_record_rejection_and_unknown_reads_do_not_allocate_authority_entries() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/ConsentMetadataRetentionTests.cs:line 53
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentMetadataRetentionTests.Inflight_origin_survives_churn_then_prunes_without_sequence_ABA_or_stale_cancel [28 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   1087
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentMetadataRetentionTests.Inflight_origin_survives_churn_then_prunes_without_sequence_ABA_or_stale_cancel() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/ConsentMetadataRetentionTests.cs:line 141
+   at Zilo.Agent.Tests.ConsentMetadataRetentionTests.Inflight_origin_survives_churn_then_prunes_without_sequence_ABA_or_stale_cancel() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/ConsentMetadataRetentionTests.cs:line 156
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     5, Passed:     0, Skipped:     0, Total:     5, Duration: 611 ms - Zilo.Agent.Tests.dll (net10.0)

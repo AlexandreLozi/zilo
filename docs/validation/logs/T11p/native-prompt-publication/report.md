@@ -1,5 +1,9 @@
 # T11p native prompt publication — bounded fix, full authorization UNACCEPTED
 
+Later bounded correction: `../metadata-retention/report.md` addresses retained metadata and records
+that the liaison externally pushed this historical baseline as WIP. New metadata work remains LOCAL
+HOLD-PUSH; clean-marker completion and full independent review still block authorization acceptance.
+
 - Starting checkpoint: clean LOCAL `612fc0b33989bb478cfb9bdcb52423083e0ec6c7`.
 - Exact tested source/test commit: `eda265ea6dda50f9d64084f3d1cc755e317137af`.
 - This report/log commit is evidence only; **LOCAL COMMIT / HOLD-PUSH**.
