@@ -486,6 +486,16 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
         sequence pruning without stale-callback ABA or eviction of blocks/denials/pending authority.
         Exact bound/pruning plan precedes implementation; parent sole writer, local HOLD-PUSH/no CI.
         Clean-marker completion budget/concurrency remains the next separate unresolved defect.
+        - **Caps jointly approved:** 4160 store entries (4096 + 64) and conservative 8320 sequence
+          entries (4096 + 4160 + 64), internal only; no API/status change. Require cap-1/cap/cap+1
+          coverage, prune/reuse without stale-callback ABA, and fail-closed generation overflow.
+          Never evict protected authority/history for capacity; reject only the new overflowing
+          grant. A restrictive overflow immediately restricts authority and fences fail-closed.
+        - Availability carry-forward beside the pre-M6 item: a distinct-origin flood retained by
+          24-hour denial history may reject new grants or fence the store, never create a grant.
+        - **Push provenance correction:** liaison pushed `d8e038a` during the pause; remote SHA
+          independently verified. That authorization WIP remains UNACCEPTED/unwired. New metadata
+          edits retain HOLD-PUSH; any baseline CI is not evidence for the pending fix or acceptance.
         Full coordinator stays UNACCEPTED/unwired; local commit/HOLD-PUSH, no CI. Worktree-local
         skip-worktree preset pins fixer/explorer to Sol HIGH for fresh runs; actual helper routing
         must not be inferred from config. No global or committed configuration change.
