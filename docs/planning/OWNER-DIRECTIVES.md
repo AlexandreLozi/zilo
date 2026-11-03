@@ -279,3 +279,19 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
   - First-time-contributor PRs need approval before their workflows run (the GitHub default; keep it).
 - **HELD-for-CI gates may now run.** Batch them as OD-15 says: Mac arm64 r2, Windows native and the
   3-OS gate in combined runs.
+
+## OD-17 GLM free as a fourth family, for CI workflow optimization (owner, 2026-11-03)
+- **Model:** `opencode/glm-5.3-flash-free` (Zhipu). It is free and joins as a fourth family, next to
+  DeepSeek, GPT and Claude.
+- **First task:** a CI workflow economy audit and fix (`.github/workflows/*`), covering:
+  - `concurrency` with `cancel-in-progress` on every workflow;
+  - path filters for every workflow, with docs-only pushes triggering nothing;
+  - dependency caches (NuGet and pnpm);
+  - an OS matrix that runs on gates and `workflow_dispatch`, not on every push;
+  - no duplicate push and pull_request runs;
+  - job timeouts.
+- **Review:** a cross-family reviewer, GPT or Claude, per the usual rule.
+- **Scope:** routine, low-risk work only (CI, docs, specs, small fixes). GLM may also give a
+  second-opinion review of DeepSeek routine work. ★ work and its reviews stay with GPT or Claude.
+- **Dispatch:** same OpenCode per-worktree recipe as OD-3 and OD-11, with the model set to
+  `opencode/glm-5.3-flash-free`. Check the footer before relying on it.
