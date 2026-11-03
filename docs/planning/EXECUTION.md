@@ -490,7 +490,13 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
         no repository changes/tests/helpers. Handoff: `/tmp/opencode/t11p-clean-drain-handoff.md`.
       - **Active fix 5 implementation:** fresh GPT HIGH `task_85934b0e3720` / `ctx_a22bedba27d5`,
         existing integration branch from clean `02bfa3b`; actual HIGH footer independently verified.
-        Parent sole source author, at most read-only recon if required. Scope is the jointly approved
+        The worker's mandatory role requires source delegation; per liaison's prior GPT-helper
+        allowance, one bounded fixer source writer is authorized, with parent-owned tests/report
+        and full inspection of every source hunk after settlement. No overlapping source writers.
+        Verify configured fixer Sol HIGH before launch; list IDs/configured versus actually observed
+        models/files/status in the report and worker_done. Read-only docs recon may complete without
+        edits. This narrowly supersedes the preferred parent-sole-source wording, not review gates.
+        Scope is the jointly approved
         coordinator ownership/total-budget plan below, not Agent/recovery/OS lifecycle wiring.
         Local commit/HOLD-PUSH; targeted deterministic RED/GREEN then one final-code local suite,
         independent Claude HIGH whole-coordinator review before acceptance or combined hosted gate.
