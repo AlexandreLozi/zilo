@@ -385,12 +385,15 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
      - **arm64:** 1 failure, the `StartupTests` self-test, which hit its 10 s timeout. It passed
        on 3 other arm64 runs, so it is a cold-start timeout candidate and is not waived.
      - **Port test:** 3/3 green on Windows since the client-disposal change.
-   - **Next:**
-     1. GPT fixes the rename and diagnosability.
-     2. A local full suite.
-     3. A Claude narrow r3.
-     4. One Backend run.
-     5. Then the auth/Agent integration and recovery slices.
+   - **Rename fix:** D-013 addendum 2 (both masters), LOCAL head `a7b05e2` (tested code
+     `9a508b7`). Local evidence: full 292 passed, 45 skipped, 0 failed.
+   - **Claude r3 PASS (narrow)**: `docs/reviews/T11p-windows-r3.md` on `t11p-windows-review-r1`,
+     commit 96d4734.
+   - **Next:** GPT pushes the exact head, which starts one combined Backend run. Mandatory:
+     - every native WindowsConsent* test executed and passed, including direct-replace,
+       process-kill and sharing-violation;
+     - Mac arm64 and Intel green, including the arm64 startup self-test.
+     Then the auth/Agent integration and recovery slices.
     - **P3:** a SID-in-ACE bound, minimal access for ancestors, and leftover-temp behaviour as a
       recovery-slice input.
   - Native Windows acceptance still needs that combined hosted batch (OD-6/15/16); local guards
