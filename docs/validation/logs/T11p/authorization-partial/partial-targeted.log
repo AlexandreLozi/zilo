@@ -1,0 +1,39 @@
+  Zilo.Core -> <WORKTREE>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Virtual -> <WORKTREE>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Drivers.Naps2 -> <WORKTREE>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> <WORKTREE>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Agent -> <WORKTREE>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <WORKTREE>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for <WORKTREE>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.52]     Zilo.Agent.Tests.DurableConsentTests.Stop_fences_late_grant_commit_and_rejects_new_mutations [FAIL]
+  Failed Zilo.Agent.Tests.DurableConsentTests.Stop_fences_late_grant_commit_and_rejects_new_mutations [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Superseded
+Actual:   Durable
+  Stack Trace:
+     at Zilo.Agent.Tests.DurableConsentTests.Stop_fences_late_grant_commit_and_rejects_new_mutations() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 270
+   at Zilo.Agent.Tests.DurableConsentTests.Stop_fences_late_grant_commit_and_rejects_new_mutations() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 272
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:10.52]     Zilo.Agent.Tests.DurableConsentTests.Cancelled_grant_requires_durable_compensation_before_clean_drain [FAIL]
+  Failed Zilo.Agent.Tests.DurableConsentTests.Cancelled_grant_requires_durable_compensation_before_clean_drain [10 s]
+  Error Message:
+   System.TimeoutException : The operation has timed out.
+  Stack Trace:
+     at Zilo.Agent.Tests.ControlledConsentPersistence.NextAsync() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 480
+   at Zilo.Agent.Tests.DurableConsentTests.Cancelled_grant_requires_durable_compensation_before_clean_drain() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 246
+   at Zilo.Agent.Tests.DurableConsentTests.Cancelled_grant_requires_durable_compensation_before_clean_drain() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 252
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:10.53]     Zilo.Agent.Tests.DurableConsentTests.Open_ack_after_stop_must_never_publish_ready_or_saved_authority [FAIL]
+  Failed Zilo.Agent.Tests.DurableConsentTests.Open_ack_after_stop_must_never_publish_ready_or_saved_authority [1 ms]
+  Error Message:
+   Assert.NotEqual() Failure: Values are equal
+Expected: Not Ready
+Actual:       Ready
+  Stack Trace:
+     at Zilo.Agent.Tests.DurableConsentTests.Open_ack_after_stop_must_never_publish_ready_or_saved_authority() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 311
+   at Zilo.Agent.Tests.DurableConsentTests.Open_ack_after_stop_must_never_publish_ready_or_saved_authority() in <WORKTREE>/backend/tests/Zilo.Agent.Tests/DurableConsentTests.cs:line 312
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     3, Passed:    26, Skipped:     0, Total:    29, Duration: 10 s - Zilo.Agent.Tests.dll (net10.0)
