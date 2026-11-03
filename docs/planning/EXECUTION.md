@@ -417,8 +417,15 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
         integration branch from `65be8ce`; actual HIGH footer verified, fresh context 18k.
         Scope: startup lock wait and its strict native/local budget tests only; local commit,
         HOLD-PUSH until review. No write retry, forced unlock or production port change.
-     - Then: a local full suite, a narrow Claude review, and one combined 4-OS push. No new CI
-       before that review.
+     - **Author settled local `7f3027e`** (HOLD-PUSH). Full suite on product `5ce022c`: 306
+       passed, 47 skipped; targeted tests on `6adfcd5`: 57 passed, 33 skipped.
+     - **Claude r5 CHANGES** (`docs/reviews/T11p-windows-r5.md`, 87b4607 on
+       `t11p-windows-review-r1`). There is no security finding.
+       - P2: remove the deadline check between CREATE_NEW and OPEN_EXISTING, and tighten the
+         budget assertion to exactly `:32` (drop the 80/183 allowance).
+       - P3: make the brief-holder hold about 500 to 700 ms; align the report wording.
+     - **Next:** the fix, then a local full suite on the exact head, then a narrow r6, then one
+       combined 4-OS push. No CI before r6 PASS.
      - After that, the auth/Agent integration and recovery slices.
     - **P3:** a SID-in-ACE bound, minimal access for ancestors, and leftover-temp behaviour as a
       recovery-slice input.
