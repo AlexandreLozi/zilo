@@ -437,7 +437,14 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
          still unproven.
        - Both Macs (including startup), Linux and Packaging green.
      - **The T11p Windows adapter slice is ACCEPTED natively.**
-     - **Next (GPT BE lane):** the auth/Agent integration slice, then recovery and quarantine
+      - **Active (GPT BE lane):** fresh GPT HIGH `task_f29f4b1ed4f6` /
+        `ctx_4904d9f251d8`, existing integration branch from `9976659`; actual footer verified.
+        Bounded durable-authorization coordinator/ConsentStore seam first: durable-before-grant,
+        immediate restrictive memory changes, generation guards and no persistence I/O under the
+        authorization monitor. Local commit/HOLD-PUSH, deterministic race tests and one local
+        suite, then independent Claude HIGH review. Production Agent HTTP wiring is a separate
+        next slice; no recovery/lifecycle implementation in this coordinator task.
+      - **Next:** Agent composition, then recovery and quarantine
        (leftover-temp parity), then lifecycle. Then the combined T11+T11p Claude HIGH review and
        exact-SHA CI. Still held: T14, the pre-M6 write-retry item, and the Linux
        carry-forwards.
