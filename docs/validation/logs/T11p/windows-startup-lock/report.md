@@ -1,9 +1,12 @@
 # T11p Windows startup lock — bounded availability checkpoint
 
+Original pre-r5 evidence; current review-fix evidence is recorded in
+`../windows-startup-lock-r6/report.md`. Product/fixture wording below incorporates the r5 fix.
+
 Base: `65be8ce55e3f385509279c8f93ea93ec08149477`.
 Production/full-suite checkpoint: `5ce022c0f3180de3712997f16307e70391645d09`.
-Final code/test checkpoint: `6adfcd5006fe97c11c40ff3d7627942154d45d47`.
-The following evidence-only commit changes no tested code. LOCAL COMMIT / HOLDPUSH.
+Pre-r5 code/test checkpoint: `6adfcd5006fe97c11c40ff3d7627942154d45d47`.
+Those original logs describe the pre-r5 checkpoint, not the later product correction. HOLDPUSH.
 
 The coordinator independently confirmed actual GPT HIGH before authoring. Read current main
 AGENTS, BRIEF, OD-15/16/17, execution resume board and D-013 (including addendum 3 at main
@@ -15,8 +18,9 @@ Scope is the joint Opus proposal / GPT approval `msg_f532f87f1179`, now recorded
 Only adapter startup `OpenLock` waits on native **ERROR_SHARING_VIOLATION (32)**. It uses
 `TimeProvider.System` monotonic timestamps, a **2-second total policy budget**, fixed **50 ms**
 backoff capped to the remaining budget, and an independent **41-attempt maximum**. The deadline
-is checked after sleep, before revalidation, again after revalidation/before acquisition, and
-before the existing-file open following CREATE_NEW's file-exists result. Attempts count logical
+is checked after sleep, before revalidation and again after revalidation/before acquisition.
+CREATE_NEW plus OPEN_EXISTING on file-exists is one admitted logical attempt, with no deadline
+check splitting the pair. Attempts count logical
 lock-acquisition attempts (CREATE_NEW, and OPEN_EXISTING if already present), not every native
 call. Native syscalls and scheduler latency are not themselves hard-time-bounded; a call admitted
 inside the budget can return later. No post-deadline retry is intentionally admitted.
@@ -39,14 +43,12 @@ parameter; no cancellation API or seam redesign was introduced.
 
 Flushes, retained-handle full-path rename, ACL/NTFS checks, lifetime exclusivity and recovery
 semantics remain unchanged. No auth/Agent wiring, lifecycle or recovery expansion, dependency,
-helper executable, workflow, main write, push, or hosted dispatch. Production files are identical
-between `5ce022c` and `6adfcd5`; follow-ups only correct Windows-native assertions to accept
-exhaustion of either bound (a sub-millisecond final sleep can exhaust attempts just before the
-time deadline) and the preserved file-exists diagnostic if the deadline expires between the two
-native acquisition calls. That diagnostic is accepted only after at least two attempts and
-elapsed time of at least 2 seconds; 5/access denied and other errors remain forbidden outcomes.
+helper executable, workflow, main write, push, or hosted dispatch. The r5 correction removes the
+mid-attempt deadline check and restores the native held-lock assertion to exactly `:32`.
+Exhaustion of either bound remains valid: a sub-millisecond final sleep can exhaust attempts
+just before the time deadline. File-exists is never an accepted held-lock failure diagnostic.
 
-## Evidence matrix (Linux, SDK 10.0.403)
+## Original pre-r5 evidence matrix (Linux, SDK 10.0.403)
 
 | Evidence | Exact code state | Result | Boundary |
 | --- | --- | --- | --- |
@@ -57,7 +59,7 @@ elapsed time of at least 2 seconds; 5/access denied and other errors remain forb
 | Full backend suite, **one invocation** | same `5ce022c` | **306 passed, 47 skipped, 0 failed** | Agent 265/47; Virtual 28/0; Core 7/0; Scaffold 6/0 |
 | Final rebuilt WindowsConsent targeted | `6adfcd5006fe97c11c40ff3d7627942154d45d47` | **57 passed, 33 skipped, 0 failed** | Native-only assertion follow-ups compiled; no native execution |
 
-Full-suite evidence is reused for the native-only assertion follow-up, not falsely attributed
+At that original checkpoint, full-suite evidence was reused for the native-only assertion follow-up, not falsely attributed
 as a second exact-head full-suite execution. Product code, all executed Linux test bodies and
 the other projects are unchanged. Full-suite skips: Windows-native 33, Darwin-native 12,
 Windows-only managed guard 1, Linux setfacl-dependent 1. Web inputs are unchanged; pnpm/web CI
@@ -77,7 +79,7 @@ server retained an inherited flock FD. Pinned `dotnet build-server shutdown` rel
 subsequent commands used `flock --close` and `UseSharedCompilation=false`, with no source/config
 change for that execution issue.
 
-The final combined local validation used the shared
+The original combined local validation used the shared
 `flock --close /tmp/opencode/zilo-real-port-tests.lock` for locked restore, Release build, and
 full `dotnet test backend/Zilo.slnx -c Release --no-build --no-restore`, exactly once.
 Adjacent logs are sanitized to replace checkout/home/SDK paths; numeric operation diagnostics
@@ -85,11 +87,12 @@ contain no private paths, origins, SIDs or raw security descriptors. `git diff -
 
 ## Authored native acceptance, still pending
 
-- A clean store's external share-0 lock handle is released after a fixture-controlled 200 ms;
+- A clean store's external share-0 lock handle is released after a fixture-controlled 600 ms;
   **one product Open** must succeed after more than one acquisition attempt. The fixture sleep
-  controls the holder, not a harness reopen loop or a pre-open accommodation.
+  controls the holder, not a harness reopen loop or a pre-open accommodation. The longer hold
+  gives cold validation more headroom, not a universal host-speed guarantee.
 - An external handle remains open throughout one product Open; it must fail closed after error-32
-  retries within the policy/attempt bounds (or preserve file-exists at the between-call deadline),
+  retries within the policy/attempt bounds, with exactly the `:32` diagnostic,
   leave snapshot bytes and temp absence unchanged, retain the lock
   file, and unwind directory pins. The live-other-agent case asserts the same bounded failure.
 - The existing process-kill case still performs one immediate strict product Open, without

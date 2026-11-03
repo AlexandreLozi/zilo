@@ -326,9 +326,9 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
                 var candidate = TryCreateFile("consent.lock", CreateNew, 0, share: 0, out var error);
                 if (candidate is null && error is (ErrorFileExists or ErrorAlreadyExists))
                 {
-                    // A native call itself is not time-bounded. Do not start another call if
-                    // that call consumed the remaining budget; keep its original failure code.
-                    if (wait.Elapsed >= WindowsConsentLockWait.Budget) throw NativeError(error);
+                    // CREATE_NEW plus this existing-file open is one admitted logical attempt.
+                    // Native syscall duration is not hard-bounded; do not split the attempt at
+                    // the deadline and misreport file-exists instead of the actual lock result.
                     candidate = OpenChild("consent.lock", GenericRead | GenericWrite | Delete | ReadControl, share: 0,
                         FileFlagOpenReparsePoint, out error);
                 }
