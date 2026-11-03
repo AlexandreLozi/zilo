@@ -453,10 +453,17 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
         forced stale-callback/newer-block cases now pass: targeted 37/37, full final-code backend
         338 passed / 47 existing skips / 0 failed. Parent sole source author; reused explorer
         remained read-only with its configured/runtime discrepancy disclosed.
-      - **Active fix 3:** GPT HIGH `task_31f38055b290` / `ctx_e9e5719b6852`, from local `612fc0b`;
-        actual HIGH footer verified. Scope: native prompt identity validation and decision reservation
-        in one short memory transaction, with persistence waits outside it. Parent sole writer.
-        Metadata bounds and clean-drain completion remain separate unresolved defects.
+      - **Fix 3 settled (bounded progress):** local `d8e038a` (source `eda265e`), report
+        `docs/validation/logs/T11p/native-prompt-publication/report.md`. Native prompt validation
+        and reservation now share one short memory transaction. Deterministic baseline and restored
+        old-split mutation each produced 15 failures; final targeted 56/56, full final-code backend
+        357 passed / 47 existing skips / 0 failed. Parent sole source author; friend-test-only
+        instance barrier/task observation approved, waits outside the authorization monitor.
+      - **Active fix 4:** GPT HIGH `task_9c39f7a8fa23` / `ctx_c24b0acd848b`, from local `d8e038a`;
+        actual HIGH footer verified, context 161k. Scope: bounded retained metadata and safe
+        sequence pruning without stale-callback ABA or eviction of blocks/denials/pending authority.
+        Exact bound/pruning plan precedes implementation; parent sole writer, local HOLD-PUSH/no CI.
+        Clean-marker completion budget/concurrency remains the next separate unresolved defect.
         Full coordinator stays UNACCEPTED/unwired; local commit/HOLD-PUSH, no CI. Worktree-local
         skip-worktree preset pins fixer/explorer to Sol HIGH for fresh runs; actual helper routing
         must not be inferred from config. No global or committed configuration change.
