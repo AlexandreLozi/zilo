@@ -54,26 +54,28 @@ public sealed class AtomicConsentTests
     [InlineData(true)]
     public async Task Removal_or_block_cannot_leave_an_issued_or_renewed_credential(bool block)
     {
-        var persistence = new GatedPersistence();
-        var consent = new ConsentStore(persistence: persistence);
+        var persistence = new ControlledConsentPersistence();
+        await using var consent = new ConsentStore(persistence: persistence);
+        await consent.PersistenceCoordinator!.InitializeAsync(TestContext.Current.CancellationToken);
         var clock = new Clock();
         var tokens = new TokenService(clock: clock, consent: consent);
         consent.OriginRemoved += origin => tokens.RevokeOrigin(origin);
-        consent.Grant(Origin);
+        await consent.GrantAsync(Origin, cancellationToken: TestContext.Current.CancellationToken);
         var first = tokens.Issue(Origin).Token!;
         clock.UtcNow = first.RenewAfter;
-        persistence.Gate = true;
-        var removal = Task.Run(() => { if (block) consent.Block(Origin); else consent.Remove(Origin); }, TestContext.Current.CancellationToken);
-        await persistence.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        persistence.Pause = true;
+        var removal = (block ? consent.BlockAsync(Origin, TestContext.Current.CancellationToken) : consent.RemoveAsync(Origin, TestContext.Current.CancellationToken)).AsTask();
+        var write = await persistence.NextAsync();
         var issue = Task.Run(() => tokens.Issue(Origin), TestContext.Current.CancellationToken);
         var renew = Task.Run(() => tokens.Renew(first.Token, Origin), TestContext.Current.CancellationToken);
-        persistence.Release.Set();
+        write.Acknowledge();
         await removal;
         var issued = await issue;
         var renewed = await renew;
         Assert.Null(issued.Token);
         Assert.Null(renewed.Token);
-        consent.Grant(Origin);
+        persistence.Pause = false;
+        await consent.GrantAsync(Origin, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal("token-revoked", tokens.Validate(first.Token, Origin).Code);
         Assert.NotNull(tokens.Issue(Origin).Token);
     }
@@ -92,17 +94,4 @@ public sealed class AtomicConsentTests
         }
     }
 
-    private sealed class GatedPersistence : IConsentPersistence
-    {
-        public bool Gate { get; set; }
-        public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public ManualResetEventSlim Release { get; } = new();
-        public ConsentPersistenceRecord? Load(string origin) => null;
-        public void Save(string origin, ConsentPersistenceRecord record)
-        {
-            if (!Gate) return;
-            Entered.TrySetResult();
-            if (!Release.Wait(TimeSpan.FromSeconds(5))) throw new TimeoutException();
-        }
-    }
 }

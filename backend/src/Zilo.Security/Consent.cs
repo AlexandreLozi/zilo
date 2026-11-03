@@ -1,3 +1,5 @@
+using Zilo.Security.Persistence;
+
 namespace Zilo.Security;
 
 public enum ConsentDecision { Pending, Granted, Denied, Blocked }
@@ -20,15 +22,7 @@ public sealed record ConsentStatus(string Origin, string State, bool? Managed = 
 public sealed record ConsentResult(ConsentStatus Status, int HttpStatus = 200, int? RetryAfterSeconds = null,
     string? ProblemCode = null);
 
-public interface IConsentPersistence
-{
-    ConsentPersistenceRecord? Load(string exactOrigin);
-    void Save(string exactOrigin, ConsentPersistenceRecord record);
-}
-
-public sealed record ConsentPersistenceRecord(string State, bool Managed, int DenialStreak, DateTimeOffset CooldownUntil, DateTimeOffset LastDenied = default);
-
-public sealed class ConsentStore
+public sealed class ConsentStore : IAsyncDisposable
 {
     public event Action<string>? OriginRemoved;
     private readonly ConsentOptions _options;
@@ -40,11 +34,13 @@ public sealed class ConsentStore
     private readonly Queue<DateTimeOffset> _globalPrompts = new();
     private Guid? _activePrompt;
     private readonly object _gate = new();
-    // One monitor for consent mutations and the bound TokenService. Lock order is
-    // authorization monitor only; callers must never await while holding it.
-    internal object AuthorizationGate => _gate;
+    private readonly ConsentPersistenceCoordinator? _coordinator;
 
-    public ConsentStore(ConsentOptions? options = null, IClock? clock = null, INativeConsentPrompt? nativeConsent = null, IConsentPersistence? persistence = null)
+    internal object AuthorizationGate => _gate;
+    internal ConsentPersistenceCoordinator? PersistenceCoordinator => _coordinator;
+
+    public ConsentStore(ConsentOptions? options = null, IClock? clock = null,
+        INativeConsentPrompt? nativeConsent = null, IConsentPersistence? persistence = null)
     {
         _options = options ?? new();
         if (_options.PromptTimeoutSeconds is <= 0 or > 4_294_966 || _options.PerOriginPromptsPerHour <= 0 ||
@@ -53,6 +49,9 @@ public sealed class ConsentStore
         _clock = clock ?? new SystemClock();
         _nativeConsent = nativeConsent;
         _persistence = persistence;
+        if (persistence is not null)
+            _coordinator = new ConsentPersistenceCoordinator(persistence, _gate, HydrateLocked,
+                CurrentRecordLocked, _options.DenialCooldownSeconds, CommitLocked);
     }
 
     public ValueTask<ConsentStatus> GetAsync(string origin, CancellationToken cancellationToken = default)
@@ -65,11 +64,8 @@ public sealed class ConsentStore
     {
         lock (_gate)
         {
-            if (!_entries.TryGetValue(origin, out var entry))
-            {
-                var saved = _persistence?.Load(origin);
-                return saved is null ? false : saved.State == "granted";
-            }
+            if (_coordinator is not null && _coordinator.Health != ConsentStorageHealth.Ready) return false;
+            if (!_entries.TryGetValue(origin, out var entry)) return false;
             Expire(entry, _clock.UtcNow);
             return entry.State == "granted";
         }
@@ -95,8 +91,6 @@ public sealed class ConsentStore
         }
     }
 
-    // Non-consuming checks for normative rate-before-body ordering. The operation
-    // rechecks/consumes under this same monitor after a valid body is prepared.
     public int? PollRetryAfter(string origin)
     {
         lock (_gate)
@@ -124,9 +118,11 @@ public sealed class ConsentStore
     public async ValueTask<ConsentResult> RequestAsync(string origin, CancellationToken cancellationToken = default)
     {
         Entry entry;
-        long promptId = 0;
+        long promptId;
         lock (_gate)
         {
+            if (_coordinator is { Health: not ConsentStorageHealth.Ready })
+                return new(StatusReadOnly(origin), 503, ProblemCode: "consent-storage-unavailable");
             var now = _clock.UtcNow;
             ExpireActivePrompt(now);
             Trim(now);
@@ -140,9 +136,11 @@ public sealed class ConsentStore
                 Expire(existingForOrigin, now);
                 if (existingForOrigin.State == "granted") return new(StatusReadOnly(origin));
                 if (existingForOrigin.State == "blocked") return new(StatusReadOnly(origin), 403, ProblemCode: "consent-denied");
-                if (existingForOrigin.State == "denied" && existingForOrigin.CooldownUntil > now) return new(StatusReadOnly(origin), 403, (int)Math.Ceiling((existingForOrigin.CooldownUntil - now).TotalSeconds), "consent-denied");
+                if (existingForOrigin.State == "denied" && existingForOrigin.CooldownUntil > now)
+                    return new(StatusReadOnly(origin), 403, (int)Math.Ceiling((existingForOrigin.CooldownUntil - now).TotalSeconds), "consent-denied");
                 if (existingForOrigin.PendingUntil > now) return new(StatusReadOnly(origin), 202);
-                if (existingForOrigin.Prompts.Count >= _options.PerOriginPromptsPerHour) return new(StatusReadOnly(origin), 429, 3600, "rate-limited");
+                if (existingForOrigin.Prompts.Count >= _options.PerOriginPromptsPerHour)
+                    return new(StatusReadOnly(origin), 429, 3600, "rate-limited");
             }
             entry = existingForOrigin ?? GetOrCreate(origin);
             entry.State = "pending";
@@ -155,56 +153,112 @@ public sealed class ConsentStore
             _globalPrompts.Enqueue(now);
         }
 
-        if (_nativeConsent is not null) _ = ResolvePromptAsync(origin, promptId, entry.PromptGuid, entry.PromptCancellation!);
+        if (_nativeConsent is not null)
+            _ = ResolvePromptAsync(origin, promptId, entry.PromptGuid, entry.PromptCancellation!);
         return new(new ConsentStatus(origin, "pending", PollAfterSeconds: 2, PromptExpiresAt: entry.PendingUntil), 202);
     }
 
     public void Grant(string origin, bool managed = false)
     {
-        lock (_gate) { var e = GetOrCreate(origin); CancelPrompt(e); e.State = "granted"; e.Managed = managed; e.PendingUntil = DateTimeOffset.MinValue; e.PromptId++; e.DenialStreak = 0; Save(origin, e); }
+        lock (_gate)
+        {
+            RequireInMemory();
+            var e = GetOrCreate(origin); CancelPrompt(e); e.State = "granted"; e.Managed = managed;
+            e.PendingUntil = DateTimeOffset.MinValue; e.PromptId++; e.DenialStreak = 0;
+        }
     }
 
     public void Deny(string origin)
     {
-        lock (_gate) { var e = GetOrCreate(origin); CancelPrompt(e); ApplyDecision(e, ConsentDecision.Denied, _clock.UtcNow); OriginRemoved?.Invoke(origin); Save(origin, e); }
+        lock (_gate)
+        {
+            RequireInMemory();
+            var e = GetOrCreate(origin); CancelPrompt(e); ApplyDecision(e, ConsentDecision.Denied, _clock.UtcNow);
+            OriginRemoved?.Invoke(origin);
+        }
     }
 
     public void Block(string origin)
     {
-        lock (_gate) { var e = GetOrCreate(origin); CancelPrompt(e); ApplyDecision(e, ConsentDecision.Blocked, _clock.UtcNow); OriginRemoved?.Invoke(origin); Save(origin, e); }
+        lock (_gate)
+        {
+            RequireInMemory();
+            var e = GetOrCreate(origin); CancelPrompt(e); ApplyDecision(e, ConsentDecision.Blocked, _clock.UtcNow);
+            OriginRemoved?.Invoke(origin);
+        }
     }
 
     public void Remove(string origin)
     {
         lock (_gate)
         {
-            var e = GetOrCreate(origin); CancelPrompt(e); if (_activePrompt == e.PromptGuid) _activePrompt = null; e.State = "none"; e.Managed = false; e.PendingUntil = DateTimeOffset.MinValue; e.CooldownUntil = DateTimeOffset.MinValue; e.PromptId++; e.DenialStreak = 0; OriginRemoved?.Invoke(origin); Save(origin, e);
+            RequireInMemory();
+            var e = GetOrCreate(origin); CancelPrompt(e); ClearEntry(e);
+            OriginRemoved?.Invoke(origin);
         }
     }
 
-    private Entry GetOrCreate(string origin)
+    public ValueTask<ConsentMutationResult> GrantAsync(string origin, bool managed = false,
+        CancellationToken cancellationToken = default) => MutateAsync(origin, ConsentDecision.Granted, managed, cancellationToken);
+
+    public ValueTask<ConsentMutationResult> DenyAsync(string origin, CancellationToken cancellationToken = default) =>
+        MutateAsync(origin, ConsentDecision.Denied, false, cancellationToken);
+
+    public ValueTask<ConsentMutationResult> BlockAsync(string origin, CancellationToken cancellationToken = default) =>
+        MutateAsync(origin, ConsentDecision.Blocked, false, cancellationToken);
+
+    public ValueTask<ConsentMutationResult> RemoveAsync(string origin, CancellationToken cancellationToken = default) =>
+        MutateAsync(origin, null, false, cancellationToken);
+
+    private async ValueTask<ConsentMutationResult> MutateAsync(string origin, ConsentDecision? decision, bool managed, CancellationToken cancellationToken)
     {
-        if (_entries.TryGetValue(origin, out var e)) { e.LastTouched = _clock.UtcNow; return e; }
-        if (_persistence?.Load(origin) is { } saved)
-            e = new Entry { State = saved.State, Managed = saved.Managed, DenialStreak = saved.DenialStreak, CooldownUntil = saved.CooldownUntil, LastDenied = saved.LastDenied };
-        else e = new Entry();
-        foreach (var stale in _entries.Where(x => x.Value.State == "denied" && _clock.UtcNow - x.Value.LastDenied >= TimeSpan.FromHours(24)).Select(x => x.Key).ToArray()) _entries.Remove(stale);
-        e.LastTouched = _clock.UtcNow; _entries[origin] = e; return e;
+        cancellationToken.ThrowIfCancellationRequested();
+        if (_coordinator is null)
+        {
+            lock (_gate)
+            {
+                var e = GetOrCreate(origin); CancelPrompt(e);
+                if (decision is null) ClearEntry(e);
+                else ApplyDecision(e, decision.Value, _clock.UtcNow, managed);
+                if (decision is not ConsentDecision.Granted) OriginRemoved?.Invoke(origin);
+                return new(ConsentMutationOutcome.Durable, 0);
+            }
+        }
+
+        ConsentReservation reservation;
+        lock (_gate)
+        {
+            if (!_coordinator.IsCanonicalOrigin(origin))
+                return new(ConsentMutationOutcome.Rejected, 0);
+            var now = _clock.UtcNow;
+            if (decision == ConsentDecision.Granted)
+            {
+                var e = GetOrCreate(origin);
+                CancelPrompt(e);
+                if (e.State == "pending") e.State = "none";
+            }
+            else
+            {
+                var e = GetOrCreate(origin); CancelPrompt(e);
+                if (decision is null) ClearEntry(e);
+                else ApplyDecision(e, decision.Value, now);
+                OriginRemoved?.Invoke(origin);
+            }
+            reservation = _coordinator.ReserveLocked(origin, decision, managed, now);
+        }
+        return await _coordinator.ObserveAsync(reservation, cancellationToken).ConfigureAwait(false);
     }
 
-    private void Save(string origin, Entry entry) => _persistence?.Save(origin, new(entry.State, entry.Managed, entry.DenialStreak, entry.CooldownUntil, entry.LastDenied));
+    private void RequireInMemory()
+    {
+        if (_persistence is not null) throw new InvalidOperationException("consent-persistence-bound-use-async-api");
+    }
 
     private ConsentStatus StatusReadOnly(string origin)
     {
-        if (_entries.TryGetValue(origin, out var entry)) return StatusForEntry(origin, entry);
-        var saved = _persistence?.Load(origin);
-        return saved is null ? new(origin, "none") : new(origin, saved.State, saved.Managed, RetryAfterSeconds: saved.State == "denied" ? Math.Max(0, (int)Math.Ceiling((saved.CooldownUntil - _clock.UtcNow).TotalSeconds)) : null, Blocked: saved.State == "blocked");
-    }
-
-    private ConsentStatus StatusLocked(string origin)
-    {
-        var e = GetOrCreate(origin); Expire(e, _clock.UtcNow);
-        return StatusForEntry(origin, e);
+        if (_coordinator is not null && _coordinator.Health != ConsentStorageHealth.Ready)
+            return new(origin, "none");
+        return _entries.TryGetValue(origin, out var entry) ? StatusForEntry(origin, entry) : new(origin, "none");
     }
 
     private ConsentStatus StatusForEntry(string origin, Entry e)
@@ -220,29 +274,75 @@ public sealed class ConsentStore
         };
     }
 
-    private void ApplyDecision(Entry e, ConsentDecision decision, DateTimeOffset now)
+    private Entry GetOrCreate(string origin)
+    {
+        if (_entries.TryGetValue(origin, out var e)) { e.LastTouched = _clock.UtcNow; return e; }
+        foreach (var stale in _entries.Where(x => x.Value.State == "denied" && _clock.UtcNow - x.Value.LastDenied >= TimeSpan.FromHours(24)).Select(x => x.Key).ToArray()) _entries.Remove(stale);
+        e = new Entry { LastTouched = _clock.UtcNow }; _entries[origin] = e; return e;
+    }
+
+    private StoredConsent? CurrentRecordLocked(string origin)
+    {
+        if (!_entries.TryGetValue(origin, out var e) || e.State == "none") return null;
+        return new StoredConsent(origin, e.State, false, e.LastTouched == default ? _clock.UtcNow : e.LastTouched,
+            e.State == "denied" ? e.CooldownUntil : null, e.State == "denied" ? e.LastDenied : null);
+    }
+
+    private void HydrateLocked(ConsentSnapshot snapshot)
+    {
+        _entries.Clear();
+        foreach (var record in snapshot.Records)
+        {
+            var e = new Entry { State = record.State, Managed = false, LastTouched = record.UpdatedAt,
+                CooldownUntil = record.CooldownUntil ?? DateTimeOffset.MinValue,
+                LastDenied = record.LastDenied ?? DateTimeOffset.MinValue };
+            _entries[record.Origin] = e;
+        }
+    }
+
+    private bool CommitLocked(ConsentReservation reservation)
+    {
+        if (reservation.Decision != ConsentDecision.Granted) return true;
+        if (reservation.OriginSequence != _coordinator!.CurrentOriginSequenceLocked(reservation.Origin)) return false;
+        if (!_entries.TryGetValue(reservation.Origin, out var e)) e = GetOrCreate(reservation.Origin);
+        e.State = "granted"; e.Managed = reservation.Managed; e.PendingUntil = DateTimeOffset.MinValue;
+        e.DenialStreak = 0; e.LastTouched = _clock.UtcNow;
+        return true;
+    }
+
+    private void ApplyDecision(Entry e, ConsentDecision decision, DateTimeOffset now, bool managed = false)
     {
         e.PendingUntil = DateTimeOffset.MinValue;
-        if (decision == ConsentDecision.Granted) { e.State = "granted"; e.Managed = false; e.DenialStreak = 0; return; }
-        if (decision == ConsentDecision.Blocked) { e.State = "blocked"; return; }
-        if (decision == ConsentDecision.Denied)
-        {
-            e.DenialStreak = Math.Min(e.DenialStreak + 1, 9);
-            var seconds = Math.Min(86400L, (long)_options.DenialCooldownSeconds * (1 << (e.DenialStreak - 1)));
-            e.CooldownUntil = now.AddSeconds(seconds); e.LastDenied = now; e.State = "denied";
-        }
+        if (decision == ConsentDecision.Granted) { e.State = "granted"; e.Managed = managed; e.DenialStreak = 0; return; }
+        if (decision == ConsentDecision.Blocked) { e.State = "blocked"; e.Managed = false; return; }
+        e.DenialStreak = Math.Min(e.DenialStreak + 1, 9);
+        var seconds = Math.Min(86400L, (long)_options.DenialCooldownSeconds * (1 << (e.DenialStreak - 1)));
+        e.CooldownUntil = now.AddSeconds(seconds); e.LastDenied = now; e.State = "denied"; e.Managed = false;
+    }
+
+    private static void ClearEntry(Entry e)
+    {
+        e.State = "none"; e.Managed = false; e.PendingUntil = DateTimeOffset.MinValue;
+        e.CooldownUntil = DateTimeOffset.MinValue; e.PromptId++; e.DenialStreak = 0;
     }
 
     private async Task ResolvePromptAsync(string origin, long promptId, Guid promptGuid, CancellationTokenSource cancellation)
     {
         ConsentDecision decision;
         try { decision = await _nativeConsent!.RequestAsync(origin, cancellation.Token).AsTask().WaitAsync(cancellation.Token).ConfigureAwait(false); }
-        catch { lock (_gate) { if (_entries.TryGetValue(origin, out var timedOut) && timedOut.PromptId == promptId && timedOut.PromptGuid == promptGuid && ReferenceEquals(timedOut.PromptCancellation, cancellation) && timedOut.State == "pending") { timedOut.State = "none"; if (_activePrompt == promptGuid) _activePrompt = null; timedOut.PromptCancellation?.Dispose(); timedOut.PromptCancellation = null; } } return; }
+        catch { lock (_gate) { if (_entries.TryGetValue(origin, out var timedOut) && timedOut.PromptId == promptId && timedOut.PromptGuid == promptGuid && ReferenceEquals(timedOut.PromptCancellation, cancellation) && timedOut.State == "pending") { timedOut.State = "none"; if (_activePrompt == promptGuid) _activePrompt = null; timedOut.PromptCancellation = null; } } cancellation.Dispose(); return; }
+
         lock (_gate)
         {
-            if (!_entries.TryGetValue(origin, out var entry) || entry.PromptId != promptId || entry.PromptGuid != promptGuid || _activePrompt != promptGuid || !ReferenceEquals(entry.PromptCancellation, cancellation) || entry.State != "pending" || entry.PendingUntil <= _clock.UtcNow) return;
-            ApplyDecision(entry, decision, _clock.UtcNow); Save(origin, entry); _activePrompt = null; entry.PromptCancellation?.Dispose(); entry.PromptCancellation = null;
+            if (!_entries.TryGetValue(origin, out var entry) || entry.PromptId != promptId || entry.PromptGuid != promptGuid || _activePrompt != promptGuid || !ReferenceEquals(entry.PromptCancellation, cancellation) || entry.State != "pending" || entry.PendingUntil <= _clock.UtcNow) { cancellation.Dispose(); return; }
+            if (_activePrompt == promptGuid) _activePrompt = null;
+            entry.PromptCancellation = null;
         }
+        cancellation.Dispose();
+        if (decision == ConsentDecision.Granted) await GrantAsync(origin, false).ConfigureAwait(false);
+        else if (decision == ConsentDecision.Denied) await DenyAsync(origin).ConfigureAwait(false);
+        else if (decision == ConsentDecision.Blocked) await BlockAsync(origin).ConfigureAwait(false);
+        else lock (_gate) { if (_entries.TryGetValue(origin, out var e)) e.State = "none"; }
     }
 
     private void CancelPrompt(Entry entry)
@@ -254,11 +354,7 @@ public sealed class ConsentStore
 
     private static async Task CancelAndDisposeAsync(CancellationTokenSource cancellation)
     {
-        // CancelAsync dispatches registered native callbacks off the monitor-owning
-        // thread. Observe callback faults and dispose only after they have returned.
-        try { await cancellation.CancelAsync().ConfigureAwait(false); }
-        catch { /* A native cancellation callback must not break revocation. */ }
-        finally { cancellation.Dispose(); }
+        try { await cancellation.CancelAsync().ConfigureAwait(false); } catch { } finally { cancellation.Dispose(); }
     }
 
     private void ExpireActivePrompt(DateTimeOffset now)
@@ -271,12 +367,7 @@ public sealed class ConsentStore
 
     private void Expire(Entry e, DateTimeOffset now)
     {
-        if (e.State == "pending" && e.PendingUntil <= now)
-        {
-            e.State = "none";
-            if (_activePrompt == e.PromptGuid) _activePrompt = null;
-            CancelPrompt(e);
-        }
+        if (e.State == "pending" && e.PendingUntil <= now) { e.State = "none"; if (_activePrompt == e.PromptGuid) _activePrompt = null; CancelPrompt(e); }
         if (e.State == "denied" && e.CooldownUntil <= now) e.State = "none";
         if (e.LastDenied != DateTimeOffset.MinValue && now - e.LastDenied >= TimeSpan.FromHours(24)) e.DenialStreak = 0;
     }
@@ -284,27 +375,22 @@ public sealed class ConsentStore
     private void Trim(DateTimeOffset now)
     {
         while (_globalPrompts.Count > 0 && now - _globalPrompts.Peek() >= TimeSpan.FromHours(1)) _globalPrompts.Dequeue();
-        foreach (var e in _entries.Values)
-        {
-            Expire(e, now);
-            while (e.Prompts.Count > 0 && now - e.Prompts.Peek() >= TimeSpan.FromHours(1)) e.Prompts.Dequeue();
-        }
-        foreach (var origin in _entries.Where(pair => pair.Value.State == "none" && pair.Value.Prompts.Count == 0 && pair.Value.DenialStreak == 0).Select(pair => pair.Key).ToArray())
-            _entries.Remove(origin);
+        foreach (var e in _entries.Values) { Expire(e, now); while (e.Prompts.Count > 0 && now - e.Prompts.Peek() >= TimeSpan.FromHours(1)) e.Prompts.Dequeue(); }
+        foreach (var origin in _entries.Where(pair => pair.Value.State == "none" && pair.Value.Prompts.Count == 0 && pair.Value.DenialStreak == 0).Select(pair => pair.Key).ToArray()) _entries.Remove(origin);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_coordinator is not null) await _coordinator.DisposeAsync().ConfigureAwait(false);
     }
 
     private sealed class Entry
     {
-        public string State { get; set; } = "none";
-        public bool Managed { get; set; }
-        public DateTimeOffset PendingUntil { get; set; }
-        public DateTimeOffset CooldownUntil { get; set; }
-        public int DenialStreak { get; set; }
-        public Queue<DateTimeOffset> Prompts { get; } = new();
-        public DateTimeOffset LastTouched { get; set; }
-        public long PromptId { get; set; }
-        public DateTimeOffset LastDenied { get; set; }
-        public Guid PromptGuid { get; set; }
+        public string State { get; set; } = "none"; public bool Managed { get; set; }
+        public DateTimeOffset PendingUntil { get; set; } public DateTimeOffset CooldownUntil { get; set; }
+        public int DenialStreak { get; set; } public Queue<DateTimeOffset> Prompts { get; } = new();
+        public DateTimeOffset LastTouched { get; set; } public long PromptId { get; set; }
+        public DateTimeOffset LastDenied { get; set; } public Guid PromptGuid { get; set; }
         public CancellationTokenSource? PromptCancellation { get; set; }
     }
 }
