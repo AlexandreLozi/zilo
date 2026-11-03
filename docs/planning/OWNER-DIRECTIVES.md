@@ -239,3 +239,26 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
   lockfile and no CI dependency.
 - **Revisit** during the OD-13 hygiene task. Measure install and test time with pnpm against Bun,
   and switch only if the gain is real and the licence gate has a replacement.
+
+## OD-15 Economy without losing quality; free CI minutes exhausted (owner, 2026-11-02 23:30)
+- **Event:** the account's 2,000 free GitHub Actions minutes for the month are used up. Hosted CI
+  is **unavailable** until the monthly reset, unless the owner buys minutes, which he may do for
+  macOS or Linux evidence only when it is truly valuable. Ask through the liaison, with a concrete
+  minute estimate.
+- **Quality first.** Never lower a gate because CI is missing. A task whose acceptance needs hosted
+  evidence (3-OS, macOS arm64, Windows native) **waits** in HELD-for-CI. Meanwhile, work continues
+  on anything verifiable locally.
+- **Local-first verification:** run the full local suite before every push: `dotnet test` and pnpm
+  `ci` on WSL Linux, with headless Playwright. Record the local evidence in the task log.
+- **Hosted CI only when it matters:**
+  - merge gates for ★ tasks;
+  - cross-OS evidence that can't be produced locally;
+  - one combined run per task head, never per fix commit.
+  Use workflow_dispatch and path filters, and **no macOS runs (10×)** unless macOS evidence is the
+  gate. Batch the gates that wait for CI so a single run covers several tasks after the reset.
+- **Economy in usage:** everyone has limits. The DeepSeek free tier comes first for routine work
+  (OD-11), GPT reviews, and Claude stays lean. Restart large sessions fresh rather than resume them
+  (over about 250k tokens).
+- **Progress file:** any agent must be able to pick up from the docs alone. **EXECUTION.md §4a (top
+  "resume points") is the canonical pickup board.** Each master updates it at every checkpoint: task,
+  head SHA, state, next action, and what is waiting on CI. No knowledge may live only in a session.
