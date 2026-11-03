@@ -372,7 +372,25 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
      demo smoke pass. WebKit is **host-blocked** at launch by missing WSL system libraries, not
      a test skip or product pass. Full workspace CI is not claimed green. This head changes no
      web inputs; hosted ci-web retains the WebKit evidence (known limitation since T15).
-   - **Next:** inspect combined native evidence, then bounded auth/Agent integration and recovery.
+   - **Combined run RESULT (Opus):** NOT accepted. Analysis in
+     `docs/reviews/T11p-windows-native-run1.md` @eda2855.
+     - Packaging is green on all 5 jobs; ubuntu and Intel are green.
+     - **Windows:** the native tests EXECUTED, with 20 failures. All fail at the first session
+       open on a fresh store, while Open, the lock and the Open-level rejections pass natively.
+       Most likely cause: KernelBase `SetFileInformationByHandle(FileRenameInfo)` converts the
+       relative name to an absolute path while `RootDirectory` is still set.
+     - **Fix:** a full-path rename with `RootDirectory = NULL`, safe under the pinned chain, plus
+       a direct `ReplaceAsync` native test that surfaces the error code, and `DiagnosticCode` in
+       the assert messages.
+     - **arm64:** 1 failure, the `StartupTests` self-test, which hit its 10 s timeout. It passed
+       on 3 other arm64 runs, so it is a cold-start timeout candidate and is not waived.
+     - **Port test:** 3/3 green on Windows since the client-disposal change.
+   - **Next:**
+     1. GPT fixes the rename and diagnosability.
+     2. A local full suite.
+     3. A Claude narrow r3.
+     4. One Backend run.
+     5. Then the auth/Agent integration and recovery slices.
     - **P3:** a SID-in-ACE bound, minimal access for ancestors, and leftover-temp behaviour as a
       recovery-slice input.
   - Native Windows acceptance still needs that combined hosted batch (OD-6/15/16); local guards
