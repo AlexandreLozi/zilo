@@ -448,10 +448,15 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
         REDs now pass; targeted 30 passed / 1 failed, with compensation timeout still open.
         Parent was sole source author; completed read-only explorer made no edits. Its configured
         Sol HIGH versus self-reported Luna discrepancy is disclosed, actual helper runtime unverified.
-      - **Active fix 2:** GPT HIGH `task_3fc2b0048e12` / `ctx_92436fce8ed9`, from local `d660096`;
-        actual HIGH footer verified. Scope: cancellation compensation and stale-callback sequence
-        ownership only, with deterministic newer-block coverage. Parent sole writer, no new helper.
-        Prompt reservation, metadata bounds and clean-drain completion remain separate defects.
+      - **Fix 2 settled (bounded progress):** local `612fc0b` (source `26808a2`), report
+        `docs/validation/logs/T11p/grant-cancellation/report.md`. Cancellation compensation and
+        forced stale-callback/newer-block cases now pass: targeted 37/37, full final-code backend
+        338 passed / 47 existing skips / 0 failed. Parent sole source author; reused explorer
+        remained read-only with its configured/runtime discrepancy disclosed.
+      - **Active fix 3:** GPT HIGH `task_31f38055b290` / `ctx_e9e5719b6852`, from local `612fc0b`;
+        actual HIGH footer verified. Scope: native prompt identity validation and decision reservation
+        in one short memory transaction, with persistence waits outside it. Parent sole writer.
+        Metadata bounds and clean-drain completion remain separate unresolved defects.
         Full coordinator stays UNACCEPTED/unwired; local commit/HOLD-PUSH, no CI. Worktree-local
         skip-worktree preset pins fixer/explorer to Sol HIGH for fresh runs; actual helper routing
         must not be inferred from config. No global or committed configuration change.
