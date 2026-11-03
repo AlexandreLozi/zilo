@@ -288,10 +288,11 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
   `t11-port-flake` at baseline `38a859b`; diagnosis first, minimal test-only fix only if supported.
   Next: GPT reviews local report/head; Windows evidence joins the authorized combined CI batch.
 - **ARM manual-dispatch workflow:** DeepSeek `task_e201f99a14f7` / `ctx_c4bcc50152ad`, branch
-  `ci-backend-arm-dispatch`, local checkpoint `ad986c9` (baseline `38a859b`). GPT r1 requests
-  explicit literal runner mapping and invalid-input rejection rather than relying on the choice UI.
-  Fix active: DeepSeek `task_0c74ce641040` / `ctx_96a4d52d93e1`. Next: GPT r2, then coordinated
-  batching. Runtime validation is still pending; no standalone workflow push/dispatch.
+  `ci-backend-arm-dispatch`, local checkpoint `a69a535` (baseline `38a859b`), **GPT r2 PASS**:
+  literal runner mapping, invalid-input rejection, explicit empty-input default. Report and review
+  are committed locally; no push or hosted workflow result. The existing exact-`38a859b` ARM job
+  acquired a runner; Opus consumes that evidence for Mac r2. Preserve the override as optional if
+  that job passes; do not add it to the Windows batch solely to exercise the workflow.
 - **Windows storage adapter only:** GPT HIGH `task_c435be4503ab` / `ctx_25b6df5b5a78`, existing
   `AlexandreLozi/t11p-integration` at baseline `38a859b`; compile/guard tests locally, native tests
   authored with explicit Linux skips. Next: independent Claude review, then bounded auth/Agent
