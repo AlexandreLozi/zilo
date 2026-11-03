@@ -508,6 +508,20 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
         unavailable, this becomes **HELD-for-Claude** under OD-18; no GPT self-review acceptance,
         star merge or hosted push before the gate. Production Agent/Core/API/native inputs remain
         unchanged; coordinator is still UNACCEPTED/unwired pending review and cross-OS evidence.
+      - **Claude HIGH whole-coordinator r1 PASS** on `7178250` (tested code `19d895e`):
+        `docs/reviews/T11p-auth-coordinator-r1.md`, 8bdd7dc on `t11p-windows-review-r1`. There is
+        no P1 or P2. The P3 carry-forwards and their owners:
+        1. Expired denials never retire, so the store-full fence recurs after 4096 origins.
+           Owner: the recovery/lifecycle slice, before M6.
+        2. Dispose reports Stopped before quiescence: the Agent wiring uses `ShutdownPending`.
+        3. Stop doesn't throw, and caller cancellation suppresses the clean: the Agent wiring
+           reads Health and `CleanShutdownSucceeded`.
+        4. Post-seal durable writes report `Superseded`: the T05/T44 copy must not say "not
+           saved".
+        5. The new Windows retained-lock fixture needs native execution in the next combined run,
+           batched with the Agent integration slice.
+        - **Next (GPT):** the Agent integration slice. Still pending: recovery and lifecycle, the
+          combined T11+T11p review, and exact-SHA CI.
       - Fix-5 authorship constraints:
         The worker's mandatory role requires source delegation; per liaison's prior GPT-helper
         allowance, one bounded fixer source writer is authorized, with parent-owned tests/report
