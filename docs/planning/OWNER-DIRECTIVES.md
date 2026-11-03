@@ -262,3 +262,20 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
 - **Progress file:** any agent must be able to pick up from the docs alone. **EXECUTION.md §4a (top
   "resume points") is the canonical pickup board.** Each master updates it at every checkpoint: task,
   head SHA, state, next action, and what is waiting on CI. No knowledge may live only in a session.
+
+## OD-16 Repo is public (owner, 2026-11-02 23:50)
+- `AlexandreLozi/zilo` is **public** at the owner's request: the goal is open source anyway. GitHub
+  Actions minutes are now free.
+- **Supersedes:** OD-7's billing constraint and OD-9's "private until M7". M7 still owns the licence
+  choice, the hygiene pass (OD-13) and the release.
+- **Still binding:** OD-15 CI economy. Run locally first, use hosted CI only for gates, and make
+  one combined run per task head. CI is optimized, never abused.
+- **Before publishing:** the liaison scanned the full history and found no tokens, keys or
+  credentials, no employer name, no `pull_request_target` workflows and no repo secrets. Until a
+  LICENSE is added, the code is all-rights-reserved by default.
+- **Public-repo hygiene from now on:**
+  - Never commit secrets, owner or employer identifiers, or customer data.
+  - Hold planning docs to the standard of a public project.
+  - First-time-contributor PRs need approval before their workflows run (the GitHub default; keep it).
+- **HELD-for-CI gates may now run.** Batch them as OD-15 says: Mac arm64 r2, Windows native and the
+  3-OS gate in combined runs.

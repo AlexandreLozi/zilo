@@ -48,8 +48,8 @@ owner's requirements and working model, which are binding. Owner directives in
 - **Merging:** only the Opus master merges to `main` (the merge queue), after the cross-family
   review passes and hosted CI is green, or under D-012 evidence reuse.
 - **Pruning:** only the Opus master deletes local worktrees and branches.
-- **CI:** hosted CI runs on the private repo `AlexandreLozi/zilo` (OD-7). Actions minutes are
-  billed (macOS 10×), so avoid redundant runs.
+- **CI:** hosted CI runs on the now **public** repo `AlexandreLozi/zilo` (OD-16). Minutes are free but
+  still optimized (OD-15): local-first, one combined run per gate.
 - **Never run unsigned binaries natively on the Windows host** (Smart App Control, OD-6). Use
   hosted CI instead.
 - **Browser tests run headless** (Playwright headless or the Orca browser). No visible windows on
