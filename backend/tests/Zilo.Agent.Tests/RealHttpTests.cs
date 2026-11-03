@@ -88,8 +88,9 @@ public sealed class RealHttpTests
         }
         finally
         {
-            // Close the client's pooled connections first: a graceful client close makes the agent
-            // side the responder, so no server socket on 47841 outlives the process kill.
+            // Candidate mitigation, pending Windows proof: dispose the client first to shorten how
+            // long its pooled connection to the contract port can outlive the agent kill. Dispose
+            // does not await the FIN exchange and no kernel release of the port is guaranteed.
             client.Dispose();
             if (!process.HasExited) process.Kill(entireProcessTree: true);
             await process.WaitForExitAsync(TestContext.Current.CancellationToken);
@@ -113,8 +114,8 @@ public sealed class RealHttpTests
         }
         finally
         {
-            // Same ordering as Real_loopback_http: close the client's pooled connection first so the
-            // killed agent cannot leave a server socket on a contract port behind.
+            // Same candidate mitigation as Real_loopback_http: dispose the client first to reduce
+            // connection lifetime overlap with the agent kill. No kernel release barrier is claimed.
             client.Dispose();
             if (!process.HasExited) process.Kill(entireProcessTree: true);
             await process.WaitForExitAsync(TestContext.Current.CancellationToken);
@@ -150,8 +151,8 @@ public sealed class RealAuthHttpTests
         }
         finally
         {
-            // Same ordering as Real_loopback_http: close the client's pooled connection first so the
-            // killed agent cannot leave a server socket on a contract port behind.
+            // Same candidate mitigation as Real_loopback_http: dispose the client first to reduce
+            // connection lifetime overlap with the agent kill. No kernel release barrier is claimed.
             client.Dispose();
             if (!process.HasExited) process.Kill(entireProcessTree: true);
             await process.WaitForExitAsync(TestContext.Current.CancellationToken);
