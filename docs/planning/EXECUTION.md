@@ -389,11 +389,18 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
      `9a508b7`). Local evidence: full 292 passed, 45 skipped, 0 failed.
    - **Claude r3 PASS (narrow)**: `docs/reviews/T11p-windows-r3.md` on `t11p-windows-review-r1`,
      commit 96d4734.
-   - **Next:** GPT pushes the exact head, which starts one combined Backend run. Mandatory:
-     - every native WindowsConsent* test executed and passed, including direct-replace,
-       process-kill and sharing-violation;
-     - Mac arm64 and Intel green, including the arm64 startup self-test.
-     Then the auth/Agent integration and recovery slices.
+   - **Run 2: Backend 41577346041 on exact `a7b05e2`** (analysis
+     `docs/reviews/T11p-windows-native-run2.md`, commit 330b86c).
+     - Packaging green on all 5 jobs. ubuntu, Intel and **arm64 green**: the startup self-test
+       passed and the Mac native tests passed.
+     - **Windows: all product native cases executed and PASSED** (direct replace, round trip,
+       process kill, sharing violation, foreign owner, deny/Everyone/callback ACEs, reparse,
+       hardlink, DACL cases).
+     - Only 2 failures, both the `inherited` ACE fixture. Its precondition fails because Windows
+       normalized away the attack state, so the product check was never exercised.
+   - **Next:** a test-only fix that writes the fixture raw (`SetFileSecurityW`), or explicitly
+     asserts that the state is OS-unreachable. Then a local suite, a narrow Claude review, one
+     Backend run, and the auth/Agent integration and recovery slices.
     - **P3:** a SID-in-ACE bound, minimal access for ancestors, and leftover-temp behaviour as a
       recovery-slice input.
   - Native Windows acceptance still needs that combined hosted batch (OD-6/15/16); local guards
