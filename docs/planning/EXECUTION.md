@@ -279,22 +279,24 @@ These amendments override the rows in §3 where they conflict.
 
 ## 4a. FE lane status (Opus edits; refreshed 2026-11-01 ~12:30 -03)
 
-**RESUMED by owner liaison (OD-15, 2026-11-02).** DeepSeek quota reset; hosted Actions minutes
-are exhausted. **Local commits only: no pushes, dispatches or reruns that start hosted CI.**
-Native Windows, macOS arm64 and 3-OS acceptance remain **HELD-for-CI**, batched for a later
-authorized run. Local evidence never substitutes for native evidence. Current BE assignments:
+**RESUMED by owner liaison (OD-15/16, 2026-11-02).** The repository is now public and hosted
+Actions are available again. Local-first and **one combined hosted run per gate** still bind.
+Current authors retain **local-commit/HOLD-PUSH** until review and coordinated batching; no
+standalone runs per fix. Native Windows, macOS arm64 and 3-OS acceptance remain pending evidence,
+not waived. Public logs must omit secrets and owner/employer/customer identifiers. Current BE assignments:
 - **Port-flake diagnosis:** DeepSeek `task_42d62eb76351` / `ctx_cb9e70ed0567`, branch
   `t11-port-flake` at baseline `38a859b`; diagnosis first, minimal test-only fix only if supported.
-  Next: GPT reviews local report/head; Windows reproduction remains HELD-for-CI.
+  Next: GPT reviews local report/head; Windows evidence joins the authorized combined CI batch.
 - **ARM manual-dispatch workflow:** DeepSeek `task_e201f99a14f7` / `ctx_c4bcc50152ad`, branch
   `ci-backend-arm-dispatch`, local checkpoint `ad986c9` (baseline `38a859b`). GPT r1 requests
   explicit literal runner mapping and invalid-input rejection rather than relying on the choice UI.
-  Fix active: DeepSeek `task_0c74ce641040` / `ctx_96a4d52d93e1`. Next: GPT r2; no push or hosted
-  run. Runtime validation remains HELD-for-CI.
+  Fix active: DeepSeek `task_0c74ce641040` / `ctx_96a4d52d93e1`. Next: GPT r2, then coordinated
+  batching. Runtime validation is still pending; no standalone workflow push/dispatch.
 - **Windows storage adapter only:** GPT HIGH `task_c435be4503ab` / `ctx_25b6df5b5a78`, existing
   `AlexandreLozi/t11p-integration` at baseline `38a859b`; compile/guard tests locally, native tests
   authored with explicit Linux skips. Next: independent Claude review, then bounded auth/Agent
-  integration and recovery slices. Native Windows acceptance remains HELD-for-CI (OD-6/15).
+  integration and recovery slices. Native Windows acceptance requires the combined hosted batch
+  (OD-6/15/16); local guards do not establish it.
 - Actual DeepSeek and GPT HIGH footers verified. Shared-host real-port test invocations use
   `flock /tmp/opencode/zilo-real-port-tests.lock` to avoid cross-worktree interference.
 
