@@ -323,6 +323,19 @@ These amendments override the rows in §3 where they conflict.
 
 ## 4a. FE lane status (Opus edits; refreshed 2026-11-01 ~12:30 -03)
 
+**PAUSED again 2026-11-03 about 10:50 -03 (owner rule): GPT hit its usage limit** (master and
+worker), so Claude idles too.
+- **T11p:** clean and in sync with origin at `7178250`. The coordinator slice has Claude r1 PASS.
+- **Agent composition** (`ctx_f7ae13dcc61b`): the plan is co-approved (GPT msg_b1f887d7d5de and
+  Opus msg_3c5e2778364a), and the production edit is authorized but not yet made.
+  - Linux `IsVolatile` gives Unavailable with `consent-storage-volatile`.
+  - Default per-OS paths, using `XDG_STATE_HOME` only when it is absolute.
+  - A single coordinator Stop starts on ApplicationStopping, with Discovery concurrent,
+    `HostShutdownTimeout = max(grace, about 6 s)`, and the original 5 s budget.
+- **Resume:** the watchdog nudges GPT. The next gate is the Claude HIGH review of the
+  composition, then one Agent cross-OS batch that includes the Windows retained-lock fixture.
+- **T21a:** the DeepSeek re-dispatch after 21:00, from `f7bbfaa`, is unchanged.
+
 **RESUMED 2026-11-03 about 09:40 -03 (liaison):** GPT is back. Fix 4 continues
 (`ctx_c24b0acd848b`).
 - **Metadata caps CO-APPROVED** (GPT msg_8966ea9cea30 plus Opus msg_0a4acaf1b545): store 4160
