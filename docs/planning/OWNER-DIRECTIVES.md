@@ -298,3 +298,24 @@ without DECISIONS.md double approval. The GPT master is briefed when it resumes.
   second-opinion review of DeepSeek routine work. ★ work and its reviews stay with GPT or Claude.
 - **Dispatch:** same OpenCode per-worktree recipe as OD-3 and OD-11, with the model set to
   `opencode/glm-5.3-flash-free`. Check the footer before relying on it.
+
+## OD-18 Claude weekly-limit mode (owner concern, 2026-11-03)
+When Claude, both the Opus master and the liaison, is out for the week, **work continues without
+Claude, but no gate is lowered**:
+- **The GPT master acts as sole orchestrator** for both lanes. It dispatches DeepSeek authors for
+  routine FE and BE work, with GPT reviewing, and continues GPT ★ BE authoring.
+- **Claude-required reviews** (★ work authored by GPT, design-critical FE) queue as
+  **HELD-for-Claude** in EXECUTION §4a. Nothing ★ merges without its cross-family review. A
+  DeepSeek or GLM "pre-review" may run to find issues early, but it is not the gate.
+- **Merges during the outage:** the GPT master may merge **non-★ work authored by DeepSeek and
+  reviewed by GPT** with green CI, acting for the merge queue. Each such merge is logged in §4a
+  so Opus can audit it on return. Pruning still waits for Opus.
+- **The watchdog** (a bash script, not Claude) keeps running: it backs up pushes and nudges GPT
+  on a limit.
+- **When Claude returns:** read §4a, audit the outage merges, then process the HELD-for-Claude
+  queue in dependency order.
+- **Before the limit, save Claude usage:**
+  - the Opus master orchestrates at medium effort and uses high only for ★ reviews;
+  - DeepSeek gets first pick of authoring;
+  - fresh sessions replace bloated ones;
+  - the liaison keeps check-ins minimal.
