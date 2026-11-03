@@ -336,6 +336,8 @@ worker), so Claude idles too.
   composition, then one Agent cross-OS batch that includes the Windows retained-lock fixture.
 - **T21a:** the DeepSeek re-dispatch after 21:00, from `f7bbfaa`, is unchanged.
 
+**FULL STOP (owner, 2026-11-03 14:10): do not resume until the owner says so. Watchdog and crons stopped. Resume from this board.**
+
 **RESUMED 2026-11-03 about 09:40 -03 (liaison):** GPT is back. Fix 4 continues
 (`ctx_c24b0acd848b`).
 - **Metadata caps CO-APPROVED** (GPT msg_8966ea9cea30 plus Opus msg_0a4acaf1b545): store 4160
