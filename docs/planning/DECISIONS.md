@@ -489,8 +489,11 @@ power-loss guarantee. Final exact Task0 design approval still precedes implement
 - **Rationale:**
   - First native run 41570527419 (c3dec94): every fresh-store first write failed, while Open, the
     lock and the Open-level rejections passed (`docs/reviews/T11p-windows-native-run1.md`).
-  - KernelBase converts `FileRenameInfo.FileName` to a full path even when `RootDirectory` is
-    set, so the relative, handle-anchored form cannot work through the Win32 API.
+  - **Working hypothesis (not established; no official source confirms it):** KernelBase
+    converts `FileRenameInfo.FileName` to a full path even when `RootDirectory` is set, so the
+    relative, handle-anchored form fails through the Win32 API. Wine's implementation behaves
+    this way. The decision does not depend on the hypothesis: the full-path form is the
+    documented usage either way.
   - The full path is equally bound, because the pinned chain cannot be renamed and
     `ValidateNamed` proves the identity after the rename.
   - The actual native error code is still to be confirmed by the direct `ReplaceAsync` native
