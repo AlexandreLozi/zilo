@@ -37,6 +37,7 @@ internal sealed class ConsentPersistenceCoordinator : IAsyncDisposable
     internal ConsentStorageHealth Health { get { lock (_gate) return _health; } }
     internal int OutstandingReservations { get { lock (_gate) return _active; } }
     internal long CurrentOriginSequenceLocked(string origin) => _sequences.TryGetValue(origin, out var value) ? value : 0;
+    internal long CurrentLifecycleEpochLocked => _lifecycleEpoch;
     internal bool IsCanonicalOrigin(string origin) => CanonicalOrigin(origin);
 
     internal async ValueTask InitializeAsync(CancellationToken cancellationToken = default)

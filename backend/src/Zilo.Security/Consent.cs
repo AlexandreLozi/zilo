@@ -35,13 +35,20 @@ public sealed class ConsentStore : IAsyncDisposable
     private Guid? _activePrompt;
     private readonly object _gate = new();
     private readonly ConsentPersistenceCoordinator? _coordinator;
+    private readonly Func<Task>? _beforeNativeDecisionCommit;
 
     internal object AuthorizationGate => _gate;
     internal ConsentPersistenceCoordinator? PersistenceCoordinator => _coordinator;
+    internal Task? NativePromptResolution { get; private set; }
 
     public ConsentStore(ConsentOptions? options = null, IClock? clock = null,
         INativeConsentPrompt? nativeConsent = null, IConsentPersistence? persistence = null)
+        : this(options, clock, nativeConsent, persistence, null) { }
+
+    internal ConsentStore(ConsentOptions? options, IClock? clock, INativeConsentPrompt? nativeConsent,
+        IConsentPersistence? persistence, Func<Task>? beforeNativeDecisionCommit)
     {
+        _beforeNativeDecisionCommit = beforeNativeDecisionCommit;
         _options = options ?? new();
         if (_options.PromptTimeoutSeconds is <= 0 or > 4_294_966 || _options.PerOriginPromptsPerHour <= 0 ||
             _options.GlobalPromptsPerHour <= 0 || _options.DenialCooldownSeconds is <= 0 or > 86400)
@@ -119,6 +126,9 @@ public sealed class ConsentStore : IAsyncDisposable
     {
         Entry entry;
         long promptId;
+        Guid promptGuid;
+        CancellationTokenSource promptCancellation;
+        long lifecycleEpoch;
         lock (_gate)
         {
             if (_coordinator is { Health: not ConsentStorageHealth.Ready })
@@ -145,16 +155,17 @@ public sealed class ConsentStore : IAsyncDisposable
             entry = existingForOrigin ?? GetOrCreate(origin);
             entry.State = "pending";
             promptId = ++entry.PromptId;
-            entry.PromptGuid = Guid.NewGuid();
+            promptGuid = entry.PromptGuid = Guid.NewGuid();
             _activePrompt = entry.PromptGuid;
-            entry.PromptCancellation = new CancellationTokenSource(TimeSpan.FromSeconds(_options.PromptTimeoutSeconds));
+            promptCancellation = entry.PromptCancellation = new CancellationTokenSource(TimeSpan.FromSeconds(_options.PromptTimeoutSeconds));
+            lifecycleEpoch = _coordinator?.CurrentLifecycleEpochLocked ?? 0;
             entry.PendingUntil = now.AddSeconds(_options.PromptTimeoutSeconds);
             entry.Prompts.Enqueue(now);
             _globalPrompts.Enqueue(now);
         }
 
         if (_nativeConsent is not null)
-            _ = ResolvePromptAsync(origin, promptId, entry.PromptGuid, entry.PromptCancellation!);
+            NativePromptResolution = ResolvePromptAsync(origin, promptId, promptGuid, promptCancellation, lifecycleEpoch);
         return new(new ConsentStatus(origin, "pending", PollAfterSeconds: 2, PromptExpiresAt: entry.PendingUntil), 202);
     }
 
@@ -213,40 +224,29 @@ public sealed class ConsentStore : IAsyncDisposable
     private async ValueTask<ConsentMutationResult> MutateAsync(string origin, ConsentDecision? decision, bool managed, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (_coordinator is null)
-        {
-            lock (_gate)
-            {
-                var e = GetOrCreate(origin); CancelPrompt(e);
-                if (decision is null) ClearEntry(e);
-                else ApplyDecision(e, decision.Value, _clock.UtcNow, managed);
-                if (decision is not ConsentDecision.Granted) OriginRemoved?.Invoke(origin);
-                return new(ConsentMutationOutcome.Durable, 0);
-            }
-        }
-
-        ConsentReservation reservation;
+        ConsentReservation? reservation;
         lock (_gate)
         {
-            if (!_coordinator.IsCanonicalOrigin(origin))
+            if (_coordinator is not null && !_coordinator.IsCanonicalOrigin(origin))
                 return new(ConsentMutationOutcome.Rejected, 0);
-            var now = _clock.UtcNow;
-            if (decision == ConsentDecision.Granted)
-            {
-                var e = GetOrCreate(origin);
-                CancelPrompt(e);
-                if (e.State == "pending") e.State = "none";
-            }
-            else
-            {
-                var e = GetOrCreate(origin); CancelPrompt(e);
-                if (decision is null) ClearEntry(e);
-                else ApplyDecision(e, decision.Value, now);
-                OriginRemoved?.Invoke(origin);
-            }
-            reservation = _coordinator.ReserveLocked(origin, decision, managed, now);
+            reservation = ApplyMutationLocked(origin, decision, managed, _clock.UtcNow);
         }
-        return await _coordinator.ObserveAsync(reservation, cancellationToken).ConfigureAwait(false);
+        return reservation is null ? new(ConsentMutationOutcome.Durable, 0)
+            : await _coordinator!.ObserveAsync(reservation, cancellationToken).ConfigureAwait(false);
+    }
+
+    private ConsentReservation? ApplyMutationLocked(string origin, ConsentDecision? decision, bool managed, DateTimeOffset now)
+    {
+        var entry = GetOrCreate(origin);
+        CancelPrompt(entry);
+        if (_coordinator is not null && decision == ConsentDecision.Granted)
+        {
+            if (entry.State == "pending") entry.State = "none";
+        }
+        else if (decision is null) ClearEntry(entry);
+        else ApplyDecision(entry, decision.Value, now, managed);
+        if (decision is not ConsentDecision.Granted) OriginRemoved?.Invoke(origin);
+        return _coordinator?.ReserveLocked(origin, decision, managed, now);
     }
 
     private void RequireInMemory()
@@ -326,23 +326,56 @@ public sealed class ConsentStore : IAsyncDisposable
         e.CooldownUntil = DateTimeOffset.MinValue; e.PromptId++; e.DenialStreak = 0;
     }
 
-    private async Task ResolvePromptAsync(string origin, long promptId, Guid promptGuid, CancellationTokenSource cancellation)
+    private async Task ResolvePromptAsync(string origin, long promptId, Guid promptGuid,
+        CancellationTokenSource cancellation, long lifecycleEpoch)
     {
-        ConsentDecision decision;
-        try { decision = await _nativeConsent!.RequestAsync(origin, cancellation.Token).AsTask().WaitAsync(cancellation.Token).ConfigureAwait(false); }
-        catch { lock (_gate) { if (_entries.TryGetValue(origin, out var timedOut) && timedOut.PromptId == promptId && timedOut.PromptGuid == promptGuid && ReferenceEquals(timedOut.PromptCancellation, cancellation) && timedOut.State == "pending") { timedOut.State = "none"; if (_activePrompt == promptGuid) _activePrompt = null; timedOut.PromptCancellation = null; } } cancellation.Dispose(); return; }
-
-        lock (_gate)
+        try
         {
-            if (!_entries.TryGetValue(origin, out var entry) || entry.PromptId != promptId || entry.PromptGuid != promptGuid || _activePrompt != promptGuid || !ReferenceEquals(entry.PromptCancellation, cancellation) || entry.State != "pending" || entry.PendingUntil <= _clock.UtcNow) { cancellation.Dispose(); return; }
-            if (_activePrompt == promptGuid) _activePrompt = null;
-            entry.PromptCancellation = null;
+            ConsentDecision decision;
+            try { decision = await _nativeConsent!.RequestAsync(origin, cancellation.Token).AsTask().WaitAsync(cancellation.Token).ConfigureAwait(false); }
+            catch
+            {
+                lock (_gate)
+                {
+                    if (TryGetCurrentPromptLocked(origin, promptId, promptGuid, cancellation, lifecycleEpoch, out var timedOut))
+                    {
+                        timedOut!.State = "none";
+                        _activePrompt = null;
+                        timedOut.PromptCancellation = null;
+                    }
+                }
+                return;
+            }
+
+            if (_beforeNativeDecisionCommit is not null) await _beforeNativeDecisionCommit().ConfigureAwait(false);
+            ConsentReservation? reservation = null;
+            lock (_gate)
+            {
+                if (!TryGetCurrentPromptLocked(origin, promptId, promptGuid, cancellation, lifecycleEpoch, out var entry)) return;
+                var now = _clock.UtcNow;
+                _activePrompt = null;
+                entry!.PromptCancellation = null;
+                if (entry.PendingUntil <= now) { entry.State = "none"; return; }
+                if (decision is ConsentDecision.Granted or ConsentDecision.Denied or ConsentDecision.Blocked)
+                {
+                    if (_coordinator is not null && !_coordinator.IsCanonicalOrigin(origin)) return;
+                    reservation = ApplyMutationLocked(origin, decision, false, now);
+                }
+                else entry.State = "none";
+            }
+            if (reservation is not null) await _coordinator!.ObserveAsync(reservation).ConfigureAwait(false);
         }
-        cancellation.Dispose();
-        if (decision == ConsentDecision.Granted) await GrantAsync(origin, false).ConfigureAwait(false);
-        else if (decision == ConsentDecision.Denied) await DenyAsync(origin).ConfigureAwait(false);
-        else if (decision == ConsentDecision.Blocked) await BlockAsync(origin).ConfigureAwait(false);
-        else lock (_gate) { if (_entries.TryGetValue(origin, out var e)) e.State = "none"; }
+        finally { cancellation.Dispose(); }
+    }
+
+    private bool TryGetCurrentPromptLocked(string origin, long promptId, Guid promptGuid,
+        CancellationTokenSource cancellation, long lifecycleEpoch, out Entry? entry)
+    {
+        return _entries.TryGetValue(origin, out entry) &&
+            (_coordinator is null || (_coordinator.Health == ConsentStorageHealth.Ready &&
+                _coordinator.CurrentLifecycleEpochLocked == lifecycleEpoch)) &&
+            entry.PromptId == promptId && entry.PromptGuid == promptGuid && _activePrompt == promptGuid &&
+            ReferenceEquals(entry.PromptCancellation, cancellation) && entry.State == "pending";
     }
 
     private void CancelPrompt(Entry entry)
