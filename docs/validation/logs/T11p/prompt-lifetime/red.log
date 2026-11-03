@@ -1,0 +1,75 @@
+  Zilo.Core -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Virtual -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Security -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Naps2 -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Agent -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+Test run for /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(mutation: "remove", state: "none") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(mutation: "block", state: "blocked") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(mutation: "deny", state: "denied") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(mutation: "grant", state: "granted") [FAIL]
+[xUnit.net 00:00:00.47]     Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(mutation: "expire", state: "none") [FAIL]
+  Failed Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(mutation: "remove", state: "none") [23 ms]
+  Error Message:
+   Assert.Null() Failure: Value is not null
+Expected: null
+Actual:   System.ObjectDisposedException: The CancellationTokenSource has been disposed.
+   at System.Threading.CancellationTokenSource.get_Token()
+   at Zilo.Agent.Tests.ConsentPromptLifetimeTests.<>c__DisplayClass0_0.<Resolution_cannot_dispose_source_while_native_cancellation_is_running>b__0() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 42
+   at Xunit.Record.Exception(Func`1 testCode) in /_/src/xunit.v3.core/Record.cs:line 55
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(String mutation, String state) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 42
+   at Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(String mutation, String state) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 54
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(mutation: "block", state: "blocked") [1 ms]
+  Error Message:
+   Assert.Null() Failure: Value is not null
+Expected: null
+Actual:   System.ObjectDisposedException: The CancellationTokenSource has been disposed.
+   at System.Threading.CancellationTokenSource.get_Token()
+   at Zilo.Agent.Tests.ConsentPromptLifetimeTests.<>c__DisplayClass0_0.<Resolution_cannot_dispose_source_while_native_cancellation_is_running>b__0() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 42
+   at Xunit.Record.Exception(Func`1 testCode) in /_/src/xunit.v3.core/Record.cs:line 55
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(String mutation, String state) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 42
+   at Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(String mutation, String state) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 54
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(mutation: "deny", state: "denied") [1 ms]
+  Error Message:
+   Assert.Null() Failure: Value is not null
+Expected: null
+Actual:   System.ObjectDisposedException: The CancellationTokenSource has been disposed.
+   at System.Threading.CancellationTokenSource.get_Token()
+   at Zilo.Agent.Tests.ConsentPromptLifetimeTests.<>c__DisplayClass0_0.<Resolution_cannot_dispose_source_while_native_cancellation_is_running>b__0() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 42
+   at Xunit.Record.Exception(Func`1 testCode) in /_/src/xunit.v3.core/Record.cs:line 55
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(String mutation, String state) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 42
+   at Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(String mutation, String state) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 54
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(mutation: "grant", state: "granted") [1 ms]
+  Error Message:
+   Assert.Null() Failure: Value is not null
+Expected: null
+Actual:   System.ObjectDisposedException: The CancellationTokenSource has been disposed.
+   at System.Threading.CancellationTokenSource.get_Token()
+   at Zilo.Agent.Tests.ConsentPromptLifetimeTests.<>c__DisplayClass0_0.<Resolution_cannot_dispose_source_while_native_cancellation_is_running>b__0() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 42
+   at Xunit.Record.Exception(Func`1 testCode) in /_/src/xunit.v3.core/Record.cs:line 55
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(String mutation, String state) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 42
+   at Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(String mutation, String state) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 54
+--- End of stack trace from previous location ---
+  Failed Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(mutation: "expire", state: "none") [1 ms]
+  Error Message:
+   Assert.Null() Failure: Value is not null
+Expected: null
+Actual:   System.ObjectDisposedException: The CancellationTokenSource has been disposed.
+   at System.Threading.CancellationTokenSource.get_Token()
+   at Zilo.Agent.Tests.ConsentPromptLifetimeTests.<>c__DisplayClass0_0.<Resolution_cannot_dispose_source_while_native_cancellation_is_running>b__0() in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 42
+   at Xunit.Record.Exception(Func`1 testCode) in /_/src/xunit.v3.core/Record.cs:line 55
+  Stack Trace:
+     at Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(String mutation, String state) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 42
+   at Zilo.Agent.Tests.ConsentPromptLifetimeTests.Resolution_cannot_dispose_source_while_native_cancellation_is_running(String mutation, String state) in /home/alexandre/orca/workspaces/zilo/t11-agent-skeleton/backend/tests/Zilo.Agent.Tests/ConsentPromptLifetimeTests.cs:line 54
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     5, Passed:     0, Skipped:     0, Total:     5, Duration: 40 ms - Zilo.Agent.Tests.dll (net10.0)
