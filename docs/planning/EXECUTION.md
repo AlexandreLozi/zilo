@@ -496,13 +496,18 @@ not waived. Public logs must omit secrets and owner/employer/customer identifier
         the actual Store interleaving was not reproduced and its cause remains unresolved.
         Source helper and read-only recon both completed; manifest and runtime uncertainty are in
         the report. All work preserved, no acceptance/push/CI; whole coordinator stays unwired.
-      - **Active CTS-lifetime correction:** fresh GPT HIGH `task_4c9363804103` /
-        `ctx_ebf0e0f37bd8`, from clean local `3ecfe30`; actual HIGH footer verified, fresh 18k.
-        Scope: bounded per-prompt cancellation/disposal ownership, no premature disposal before
-        real CancelAsync callbacks settle. Small state/ownership plan precedes production edits;
-        preserve the strict callback assertion, fix-5 semantics and all earlier race/bound guards.
-        No timing masks or unchanged-code full-suite reruns. Local HOLD-PUSH, no CI. Independent
-        Claude HIGH whole-coordinator review remains required after the local gate is genuinely green.
+      - **CTS-lifetime correction settled locally green:** `7178250` (tested code `19d895e`),
+        report `docs/validation/logs/T11p/prompt-lifetime/report.md`; targeted 251 passed / 48
+        existing skips, one changed-final-code full backend suite **397 passed / 48 skipped / 0 failed**.
+        Five authentic premature-disposal REDs now pass. The original FirstCancelled timeout's exact
+        cause remains unproven; existing callback assertions and all fix-5/earlier guards remain.
+        One explicit Sol-HIGH source helper completed, parent inspected every hunk; provenance and
+        actual-runtime uncertainty are documented. Clean worktree, local HOLD-PUSH, no CI.
+      - **Whole authorization coordinator review queued:** independent **Claude HIGH** requested on
+        exact local `7178250` (review range `9976659..7178250`) via `msg_218f0f56115f`. If Claude is
+        unavailable, this becomes **HELD-for-Claude** under OD-18; no GPT self-review acceptance,
+        star merge or hosted push before the gate. Production Agent/Core/API/native inputs remain
+        unchanged; coordinator is still UNACCEPTED/unwired pending review and cross-OS evidence.
       - Fix-5 authorship constraints:
         The worker's mandatory role requires source delegation; per liaison's prior GPT-helper
         allowance, one bounded fixer source writer is authorized, with parent-owned tests/report
