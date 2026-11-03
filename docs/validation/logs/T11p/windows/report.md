@@ -1,5 +1,8 @@
 # T11p Windows storage adapter — local checkpoint, acceptance HELD
 
+Historical checkpoint: the Windows relative-root primitive below is superseded by D-013 addendum 2
+(`93a8783`) and `../windows-r3/report.md`; first native run41570527419 was NOT accepted.
+
 ## Exact scope and provenance
 
 - Clean starting head: `38a859b33076785132cc60350086ab8c69fa3cff`.

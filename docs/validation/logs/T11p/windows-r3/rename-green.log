@@ -1,0 +1,31 @@
+Validation: restored original pure rename ABI implementation
+SDK: <sdk>/dotnet
+SourceSHA256BeforeBuild: c11c72ae6c00ac33134c92032061aee92fc728b5be78290e2c9a81b564821c25
+
+Build output:
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Zilo.Core -> <workspace>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Virtual -> <workspace>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Security -> <workspace>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Naps2 -> <workspace>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Agent -> <workspace>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.83
+BuildExitCode: 0
+
+Filtered test output:
+Test run for <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    12, Skipped:     0, Total:    12, Duration: 27 ms - Zilo.Agent.Tests.dll (net10.0)
+SourceSHA256AfterTest: c11c72ae6c00ac33134c92032061aee92fc728b5be78290e2c9a81b564821c25
+SourceUnchanged: true
+ExpectedOriginalSHA256: c11c72ae6c00ac33134c92032061aee92fc728b5be78290e2c9a81b564821c25
+MatchesOriginal: true
+TestExitCode: 0

@@ -41,7 +41,7 @@ public sealed class WindowsConsentProcessTests
                 never.Wait(token); // The parent must terminate this process; no clean shutdown is allowed.
             }));
 
-            Assert.Equal(ConsentStorageHealth.Ready, (await session.OpenAsync(token)).Health);
+            AssertReady(await session.OpenAsync(token));
             armed = true;
             await session.WriteAsync(Snapshot(3, "blocked"), token);
             Assert.Fail("Parent did not terminate the child at its requested checkpoint");
@@ -52,7 +52,7 @@ public sealed class WindowsConsentProcessTests
         byte[] oldSnapshotBytes;
         await using (var session = new ConsentSession(WindowsConsentDirectory.Open(fixture.Store)))
         {
-            Assert.Equal(ConsentStorageHealth.Ready, (await session.OpenAsync(token)).Health);
+            AssertReady(await session.OpenAsync(token));
             await session.WriteAsync(Snapshot(2, "granted"), token);
             await session.CompleteAsync(2, token);
         }
@@ -114,6 +114,10 @@ public sealed class WindowsConsentProcessTests
 
     private static ConsentSnapshot Snapshot(long generation, string state) => new(generation,
         new[] { new StoredConsent("https://windows-crash.example", state, false, DateTimeOffset.UnixEpoch, null, null) });
+
+    private static void AssertReady(ConsentOpenResult result) =>
+        Assert.True(result.Health == ConsentStorageHealth.Ready,
+            $"Expected Ready, got {result.Health}; DiagnosticCode={result.DiagnosticCode ?? "<null>"}");
 
     private static async Task KillAndWaitAsync(Process process)
     {

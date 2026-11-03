@@ -21,6 +21,22 @@ Task0 sequencing; it is not a claim that implementation or hosted evidence alrea
    unsaved intent not recoverable) from CORRUPT full reset (all saved permissions/blocks reset).
    T44 owns trusted action wiring; no idle CLEAN optimization, new HTTP/reset UI or browser input.
 
+### Current Windows primitive amendment (2026-11-03)
+
+D-013 addendum 2, jointly approved in `93a878382d681bb584d6998df6d29c20f1045e64`,
+supersedes the Windows relative-name/RootDirectory detail below, not the shared session protocol.
+After validating the pinned chain, temp and target, retain the CREATE_NEW WRITE_THROUGH temp,
+write and FlushFileBuffers, then request FileRenameInfo replacement using the **fixed full DOS
+ChildPath beneath the immutable validated root, with RootDirectory=NULL**. Flush the same still-open
+renamed handle and revalidate identity/privacy. Every directory remains pinned without
+FILE_SHARE_DELETE. Only consent.json/session.fence are legal targets; no caller-supplied filename,
+copy/path fallback, NtAPI, retry, recovery change or arbitrary-hardware power-loss claim is added.
+The payload's UTF-16 terminator is included in the buffer, excluded from FileNameLength.
+Earlier relative-root wording in sections5/9 is historical and superseded for Windows only.
+Microsoft documents both relative-with-root and absolute forms; the full-path candidate is
+authorized for compatibility, not proof that the prior form caused run41570527419's failures.
+See `windows-r3/report.md` for native diagnostics and the still-required evidence gate.
+
 Base: `9668b8121fb05cc07aed1fff7af7547ee06ee7b9`; plan and D-013/addendum read in full
 from `7d034e7`. Also read CLAUDE, BRIEF, T10, current Consent/Tokens/Agent composition,
 AtomicConsent/SecurityInvariant tests, closure report and T24 handoff.

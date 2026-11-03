@@ -1,0 +1,11 @@
+Command: dotnet restore backend/Zilo.slnx --locked-mode
+  Determining projects to restore...
+  Restored [workspace]/backend/src/Zilo.Core/Zilo.Core.csproj (in 77 ms).
+  Restored [workspace]/backend/src/Zilo.Security/Zilo.Security.csproj (in 82 ms).
+  Restored [workspace]/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 82 ms).
+  Restored [workspace]/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 129 ms).
+  Restored [workspace]/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj (in 134 ms).
+  Restored [workspace]/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 136 ms).
+  3 of 9 projects are up-to-date for restore.
+
+Exit: 0

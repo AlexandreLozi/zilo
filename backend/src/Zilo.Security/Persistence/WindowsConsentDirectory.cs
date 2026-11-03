@@ -51,7 +51,7 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
     private readonly SecurityIdentifier _systemSid = new(WellKnownSidType.LocalSystemSid, null);
     private readonly SecurityIdentifier _administratorsSid = new(WellKnownSidType.BuiltinAdministratorsSid, null);
     private uint _volumeSerial;
-    private string _rootPath = null!;
+    private readonly string _rootPath;
     private SafeFileHandle _lock = null!;
     private bool _disposed;
     private bool _faulted;
@@ -59,8 +59,9 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
     private SafeFileHandle Root => _chain[^1].Handle;
     internal bool IsVolatile => false;
 
-    private WindowsConsentDirectory(Action<WindowsConsentWriteStage>? checkpoint)
+    private WindowsConsentDirectory(string rootPath, Action<WindowsConsentWriteStage>? checkpoint)
     {
+        _rootPath = rootPath;
         _checkpoint = checkpoint;
         using var identity = WindowsIdentity.GetCurrent();
         _userSid = identity.User ?? throw Error();
@@ -93,7 +94,7 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
         // touched until the process is Windows x64/arm64.
         RequireSupportedPlatform(OperatingSystem.IsWindows(), RuntimeInformation.ProcessArchitecture);
         ValidateCanonicalPath(path);
-        var store = new WindowsConsentDirectory(checkpoint) { _rootPath = path };
+        var store = new WindowsConsentDirectory(path, checkpoint);
         try
         {
             var parts = Components(path);
@@ -196,7 +197,7 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
                 Validate();
                 ValidateNamed(tempName, temp);
                 ValidateTarget(name);
-                var rename = BuildRenameInformation(Root.DangerousGetHandle(), name);
+                var rename = BuildRenameInformation(_rootPath, name);
                 if (!Native.SetFileInformationByHandle(temp, FileRenameInfo, rename, checked((uint)rename.Length)))
                     throw NativeError(Marshal.GetLastPInvokeError());
                 _checkpoint?.Invoke(WindowsConsentWriteStage.BeforeFinalFlush);
@@ -225,13 +226,15 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
         }
     }
 
-    internal static byte[] BuildRenameInformation(nint rootDirectory, string name)
+    internal static byte[] BuildRenameInformation(string rootPath, string name)
     {
+        ValidateCanonicalPath(rootPath);
         ValidateRenameTarget(name);
-        var nameBytes = System.Text.Encoding.Unicode.GetBytes(name);
-        var result = new byte[20 + nameBytes.Length];
+        var fullPath = rootPath + "\\" + name;
+        ValidateWellFormedUtf16(fullPath);
+        var nameBytes = new System.Text.UnicodeEncoding(false, false, true).GetBytes(fullPath);
+        var result = new byte[20 + nameBytes.Length + 2];
         result[0] = 1; // ReplaceIfExists = TRUE; the union is a DWORD at 0, padded to RootDirectory at 8.
-        BitConverter.GetBytes(rootDirectory.ToInt64()).CopyTo(result, 8);
         BitConverter.GetBytes(nameBytes.Length).CopyTo(result, 16);
         nameBytes.CopyTo(result, 20);
         return result;
@@ -248,6 +251,7 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
         if (string.IsNullOrEmpty(path) || path.Length < 3 || path.Contains('\0') ||
             !((path[0] is >= 'A' and <= 'Z') || (path[0] is >= 'a' and <= 'z')) ||
             path[1] != ':' || path[2] != '\\' || path.EndsWith('\\')) throw Error();
+        ValidateWellFormedUtf16(path);
         if (path.StartsWith("\\\\", StringComparison.Ordinal) || path.Contains('/')) throw Error();
         for (var i = 2; i < path.Length; i++)
         {
@@ -263,6 +267,19 @@ internal sealed class WindowsConsentDirectory : IPrivateConsentDirectory
                 (stem.Length == 4 && (stem.StartsWith("COM", StringComparison.OrdinalIgnoreCase) ||
                                       stem.StartsWith("LPT", StringComparison.OrdinalIgnoreCase)) && stem[3] is >= '1' and <= '9'))
                 throw Error();
+        }
+    }
+
+    private static void ValidateWellFormedUtf16(string value)
+    {
+        for (var i = 0; i < value.Length; i++)
+        {
+            if (char.IsHighSurrogate(value[i]))
+            {
+                if (i + 1 >= value.Length || !char.IsLowSurrogate(value[i + 1])) throw Error();
+                i++;
+            }
+            else if (char.IsLowSurrogate(value[i])) throw Error();
         }
     }
 

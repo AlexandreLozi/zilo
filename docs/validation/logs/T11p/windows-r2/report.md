@@ -1,5 +1,8 @@
 # T11p Windows r1 response — bounded authored slice, native evidence pending
 
+Historical checkpoint: first native run41570527419 on this code was NOT accepted; the current
+jointly approved Windows primitive amendment and next evidence gate are in `../windows-r3/report.md`.
+
 Base: `caa7b740e7641c81e159ea49e1f6ebf0c8c172ef`.
 Verified code/fixture checkpoint: `c3bc032cdbde8f1a6081be16a2e4e469bbe4c03c`;
 the following report-only commit does not change that tested code.

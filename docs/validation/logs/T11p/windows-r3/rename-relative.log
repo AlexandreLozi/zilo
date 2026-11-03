@@ -1,0 +1,46 @@
+Mutation: relative
+SDK: <sdk>/dotnet
+OriginalSourceSHA256: c11c72ae6c00ac33134c92032061aee92fc728b5be78290e2c9a81b564821c25
+MutatedSourceSHA256: 30b9fef8f319b1167dfca512809e908596687a645a0897934fff58cd15c74623
+
+Build output:
+  Determining projects to restore...
+  Restored <workspace>/backend/src/Zilo.Security/Zilo.Security.csproj (in 71 ms).
+  Restored <workspace>/backend/src/Zilo.Drivers.Naps2/Zilo.Drivers.Naps2.csproj (in 71 ms).
+  Restored <workspace>/backend/src/Zilo.Core/Zilo.Core.csproj (in 67 ms).
+  Restored <workspace>/backend/src/Zilo.Drivers.Virtual/Zilo.Drivers.Virtual.csproj (in 820 ms).
+  Restored <workspace>/backend/tests/Zilo.Agent.Tests/Zilo.Agent.Tests.csproj (in 824 ms).
+  Restored <workspace>/backend/src/Zilo.Agent/Zilo.Agent.csproj (in 827 ms).
+  Zilo.Core -> <workspace>/backend/src/Zilo.Core/bin/Release/net10.0/Zilo.Core.dll
+  Zilo.Drivers.Naps2 -> <workspace>/backend/src/Zilo.Drivers.Naps2/bin/Release/net10.0/Zilo.Drivers.Naps2.dll
+  Zilo.Security -> <workspace>/backend/src/Zilo.Security/bin/Release/net10.0/Zilo.Security.dll
+  Zilo.Drivers.Virtual -> <workspace>/backend/src/Zilo.Drivers.Virtual/bin/Release/net10.0/Zilo.Drivers.Virtual.dll
+  Zilo.Agent -> <workspace>/backend/src/Zilo.Agent/bin/Release/net10.0/Zilo.Agent.dll
+  Zilo.Agent.Tests -> <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.53
+BuildExitCode: 0
+
+Filtered test output:
+Test run for <workspace>/backend/tests/Zilo.Agent.Tests/bin/Release/net10.0/Zilo.Agent.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.46]     Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_abi_layouts_are_explicit_and_rename_info_uses_full_dos_path_and_null_root [FAIL]
+  Failed Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_abi_layouts_are_explicit_and_rename_info_uses_full_dos_path_and_null_root [11 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 70
+Actual:   24
+  Stack Trace:
+     at Zilo.Agent.Tests.WindowsConsentDirectoryTests.Native_abi_layouts_are_explicit_and_rename_info_uses_full_dos_path_and_null_root() in <workspace>/backend/tests/Zilo.Agent.Tests/WindowsConsentDirectoryTests.cs:line 76
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:    11, Skipped:     0, Total:    12, Duration: 34 ms - Zilo.Agent.Tests.dll (net10.0)
+RestoredSourceSHA256: c11c72ae6c00ac33134c92032061aee92fc728b5be78290e2c9a81b564821c25
+SourceRestoredIdentical: true
+TestExitCode: 1
+Classification: MUTATION_RED_ASSERTION_OR_TEST_FAILURE

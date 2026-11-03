@@ -52,7 +52,7 @@ public sealed class WindowsConsentDirectoryTests
     }
 
     [Fact]
-    public void Native_abi_layouts_are_explicit_and_rename_info_is_handle_relative()
+    public void Native_abi_layouts_are_explicit_and_rename_info_uses_full_dos_path_and_null_root()
     {
         var type = typeof(WindowsConsentDirectory);
         var securityAttributes = type.GetNestedType("SecurityAttributes", BindingFlags.NonPublic)!;
@@ -66,12 +66,49 @@ public sealed class WindowsConsentDirectoryTests
         Assert.Equal(44, Marshal.OffsetOf(byHandle, "FileIndexHigh").ToInt32());
         Assert.Equal(48, Marshal.OffsetOf(byHandle, "FileIndexLow").ToInt32());
 
-        var info = WindowsConsentDirectory.BuildRenameInformation(unchecked((nint)0x1122334455667788), "consent.json");
+        var root = @"C:\Löcal 🧪 State\Zilo";
+        var target = root + "\\consent.json";
+        var targetBytes = new System.Text.UnicodeEncoding(false, false, true).GetBytes(target);
+        var info = WindowsConsentDirectory.BuildRenameInformation(root, "consent.json");
         Assert.Equal(1, info[0]);
-        Assert.Equal(unchecked((nint)0x1122334455667788), (nint)BitConverter.ToInt64(info, 8));
-        Assert.Equal("consent.json".Length * 2, BitConverter.ToInt32(info, 16));
-        Assert.Equal((ushort)'c', BitConverter.ToUInt16(info, 20));
-        Assert.Throws<IOException>(() => WindowsConsentDirectory.BuildRenameInformation(nint.Zero, "consent.lock"));
+        Assert.Equal(new byte[7], info[1..8]);
+        Assert.Equal(nint.Zero, (nint)BitConverter.ToInt64(info, 8));
+        Assert.Equal(targetBytes.Length, BitConverter.ToInt32(info, 16));
+        Assert.Equal(targetBytes, info[20..^2]);
+        Assert.Equal(new byte[] { 0, 0 }, info[^2..]);
+        Assert.Equal(20 + targetBytes.Length + 2, info.Length);
+        Assert.Equal((ushort)'C', BitConverter.ToUInt16(info, 20));
+        Assert.Equal((ushort)':', BitConverter.ToUInt16(info, 22));
+    }
+
+    [Theory]
+    [InlineData("relative")]
+    [InlineData(@"\\server\share\Local")]
+    [InlineData(@"\\?\C:\Local")]
+    [InlineData(@"C:\Local\..\State")]
+    [InlineData("C:\\Local\0State")]
+    public void Rename_info_rejects_noncanonical_or_unpaired_root(string root)
+    {
+        Assert.Throws<IOException>(() => WindowsConsentDirectory.BuildRenameInformation(root, "consent.json"));
+    }
+
+    [Fact]
+    public void Rename_info_rejects_unpaired_utf16_without_replacement()
+    {
+        foreach (var surrogate in new[] { '\uD800', '\uDC00' })
+            Assert.Throws<IOException>(() => WindowsConsentDirectory.BuildRenameInformation(
+                "C:\\Local" + surrogate + "State", "consent.json"));
+    }
+
+    [Theory]
+    [InlineData("consent.lock")]
+    [InlineData("consent.tmp")]
+    [InlineData("../consent.json")]
+    [InlineData(@"C:\Local\consent.json")]
+    [InlineData("consent.json:stream")]
+    public void Rename_info_rejects_non_fixed_target_names(string name)
+    {
+        Assert.Throws<IOException>(() => WindowsConsentDirectory.BuildRenameInformation(@"C:\Local\State\Zilo", name));
     }
 
     [Fact]
@@ -115,7 +152,7 @@ public sealed class WindowsConsentDirectoryTests
         await using (var directory = WindowsConsentDirectory.Open(fixture.Store, trace.Add))
         {
             await using var session = new ConsentSession(directory);
-            Assert.Equal(ConsentStorageHealth.Ready, (await session.OpenAsync(Token)).Health);
+            AssertReady(await session.OpenAsync(Token));
             trace.Clear();
             await session.WriteAsync(Snapshot(2), Token);
             // This is an authored checkpoint trace, not proof that the native flush completed.
@@ -129,8 +166,26 @@ public sealed class WindowsConsentDirectoryTests
 
         await using var reopened = new ConsentSession(WindowsConsentDirectory.Open(fixture.Store));
         var result = await reopened.OpenAsync(Token);
-        Assert.Equal(ConsentStorageHealth.Ready, result.Health);
+        AssertReady(result);
         Assert.Equal("granted", Assert.Single(result.Snapshot!.Records).State);
+    }
+
+    [Fact(SkipUnless = nameof(WindowsHost), Skip = NativeSkip)]
+    public async Task Native_fresh_directory_direct_fence_replace_roundtrips_bytes()
+    {
+        using var fixture = new Fixture();
+        var token = TestContext.Current.CancellationToken;
+        await using var directory = WindowsConsentDirectory.Open(fixture.Store);
+
+        var fresh = await directory.ReadAsync(token);
+        Assert.Null(fresh.Snapshot);
+        Assert.Null(fresh.Fence);
+        Assert.False(fresh.InterruptedArtifacts);
+
+        var dirtyMarker = System.Text.Encoding.UTF8.GetBytes("zilo-consent-session-v1\n");
+        await directory.ReplaceAsync("session.fence", dirtyMarker, token);
+        var readback = await directory.ReadAsync(token);
+        Assert.Equal(dirtyMarker, readback.Fence);
     }
 
     [Fact(SkipUnless = nameof(WindowsHost), Skip = NativeSkip)]
@@ -167,7 +222,7 @@ public sealed class WindowsConsentDirectoryTests
         using var fixture = new Fixture();
         await using (var session = new ConsentSession(WindowsConsentDirectory.Open(fixture.Store)))
         {
-            Assert.Equal(ConsentStorageHealth.Ready, (await session.OpenAsync(Token)).Health);
+            AssertReady(await session.OpenAsync(Token));
             await session.CompleteAsync(1, Token);
         }
         using (var stream = new FileStream(Path.Combine(fixture.Store, "consent.json"), FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
@@ -196,7 +251,7 @@ public sealed class WindowsConsentDirectoryTests
         using var fixture = new Fixture();
         await using (var session = new ConsentSession(WindowsConsentDirectory.Open(fixture.Store)))
         {
-            Assert.Equal(ConsentStorageHealth.Ready, (await session.OpenAsync(Token)).Health);
+            AssertReady(await session.OpenAsync(Token));
             await session.CompleteAsync(1, Token);
         }
         var victim = Path.Combine(fixture.Parent, "victim");
@@ -219,7 +274,7 @@ public sealed class WindowsConsentDirectoryTests
             if (armed && stage == WindowsConsentWriteStage.BeforeFlush) throw new IOException("simulated-flush-failure");
         })))
         {
-            Assert.Equal(ConsentStorageHealth.Ready, (await session.OpenAsync(Token)).Health);
+            AssertReady(await session.OpenAsync(Token));
             armed = true;
             await Assert.ThrowsAsync<IOException>(() => session.WriteAsync(Snapshot(2), Token).AsTask());
         }
@@ -243,7 +298,7 @@ public sealed class WindowsConsentDirectoryTests
             if (armed && checkpoint == stage) throw new IOException("simulated-checkpoint-failure");
         })))
         {
-            Assert.Equal(ConsentStorageHealth.Ready, (await session.OpenAsync(Token)).Health);
+            AssertReady(await session.OpenAsync(Token));
             armed = true;
             await Assert.ThrowsAsync<IOException>(() => session.WriteAsync(Snapshot(2), Token).AsTask());
             await Assert.ThrowsAsync<InvalidOperationException>(() => session.CompleteAsync(1, Token).AsTask());
@@ -291,7 +346,7 @@ public sealed class WindowsConsentDirectoryTests
         using var fixture = new Fixture();
         await using (var session = new ConsentSession(WindowsConsentDirectory.Open(fixture.Store)))
         {
-            Assert.Equal(ConsentStorageHealth.Ready, (await session.OpenAsync(Token)).Health);
+            AssertReady(await session.OpenAsync(Token));
             await session.CompleteAsync(1, Token);
         }
         var snapshot = Path.Combine(fixture.Store, "consent.json");
@@ -462,7 +517,7 @@ public sealed class WindowsConsentDirectoryTests
         {
             await using var session = new ConsentSession(directory);
             var opened = await session.OpenAsync(Token);
-            Assert.Equal(ConsentStorageHealth.Ready, opened.Health);
+            AssertReady(opened);
             oldBytes = await File.ReadAllBytesAsync(snapshotPath, Token);
 
             using (var blocker = new FileStream(snapshotPath, FileMode.Open, FileAccess.Read,
@@ -504,6 +559,10 @@ public sealed class WindowsConsentDirectoryTests
     private static ConsentSnapshot Snapshot(long generation) => new(generation,
         new[] { new StoredConsent("https://windows.example", "granted", false, DateTimeOffset.UnixEpoch, null, null) });
 
+    private static void AssertReady(ConsentOpenResult result) =>
+        Assert.True(result.Health == ConsentStorageHealth.Ready,
+            $"Expected Ready, got {result.Health}; DiagnosticCode={result.DiagnosticCode ?? "<null>"}");
+
     private static void SetUnsafeDacl(DirectoryInfo target, bool nullDacl)
     {
         var security = target.GetAccessControl();
@@ -531,7 +590,7 @@ public sealed class WindowsConsentDirectoryTests
     private static async Task CreateCleanStore(Fixture fixture)
     {
         await using var session = new ConsentSession(WindowsConsentDirectory.Open(fixture.Store));
-        Assert.Equal(ConsentStorageHealth.Ready, (await session.OpenAsync(Token)).Health);
+        AssertReady(await session.OpenAsync(Token));
         await session.CompleteAsync(1, Token);
     }
 
